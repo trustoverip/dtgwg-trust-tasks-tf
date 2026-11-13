@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/create/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/create/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -196,7 +196,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/create/0.2")]
+#[deprecated(note = "superseded by rooms/create/0.3")]
 pub struct Payload {
     ///What this room intends about anchoring. OPTIONAL; absent reads as `manual`, which draws no expectation and is the honest default for a room whose owner has not decided. A host stores it and serves it back — it constrains nothing the host does.
     #[serde(
@@ -240,7 +240,7 @@ impl Payload {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/create/0.2")]
+#[deprecated(note = "superseded by rooms/create/0.3")]
 pub struct Response {
     ///Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member.
     #[serde(

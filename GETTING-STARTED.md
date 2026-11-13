@@ -2,9 +2,9 @@
 
 A [Trust Task](https://trusttasks.org/) is a self-contained, transport-agnostic
 JSON document describing verifiable work between two parties. This page takes
-you from nothing to a **signed `acl/grant` round trip** — sender and receiver,
-Rust and TypeScript — and then names the four things that reliably cost an
-afternoon.
+you from nothing to a **signed `acl/grant` round trip** — sender and receiver
+in Rust, the consuming side in TypeScript, Go and Dart — and then names the
+four things that reliably cost an afternoon.
 
 If you are writing a *specification* rather than consuming one, you want
 [`CONTRIBUTING-SPECS.md`](./CONTRIBUTING-SPECS.md) and [`SPEC.md`](./SPEC.md)
@@ -13,7 +13,7 @@ instead. This page is for consumers.
 > **You generate the tasks you use.** Every library still ships a prebuilt
 > module for every registry specification, but those are deprecated and will be
 > removed in a future release. This page pins the one task it uses,
-> `acl/grant/0.2`, and generates it. The framework's own specifications
+> `acl/grant/0.3`, and generates it. The framework's own specifications
 > (`trust-task-*`) come with the runtime in every language.
 
 ---
@@ -25,7 +25,7 @@ An application names the versions it speaks, and generates their types:
 
 ```sh
 cargo install trust-tasks-cli
-trust-tasks add acl/grant/0.2      # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
+trust-tasks add acl/grant/0.3      # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
 ```
 
 Commit all three. The lock pins each version by digest and the bundles under
@@ -33,13 +33,19 @@ Commit all three. The lock pins each version by digest and the bundles under
 so run it in CI, and `trust-tasks update` moves pins, saying whether a move needs
 code changes. The same three files drive every language.
 
+```sh
+cargo add trust-tasks --features https,proof-affinidi
+cargo add --build trust-tasks-build
+```
+
+That writes the current versions into `Cargo.toml`:
+
 ```toml
-# Cargo.toml
 [dependencies]
-trust-tasks = { version = "0.35", default-features = false, features = ["https", "proof-affinidi"] }
+trust-tasks = { version = "…", features = ["https", "proof-affinidi"] }
 
 [build-dependencies]
-trust-tasks-build = "0.1"
+trust-tasks-build = "…"
 ```
 
 ```rust
@@ -67,9 +73,10 @@ dart pub add trust_tasks
 trust-tasks generate --lang dart --out lib/trust_tasks
 ```
 
-`default-features = false` matters: the facade's default is `all-specs`, every
-prebuilt module (~90 MB of generated Rust, minutes and over 16 GB of memory for
-a cold build, and deprecated). Generating three tasks instead builds in about 8
+Leave out `all-specs`: it is every prebuilt module (~90 MB of generated Rust,
+minutes and over 16 GB of memory for a cold build, and deprecated), and it is
+off by default (on by default in 0.38 and earlier, where the line above needs
+`default-features = false`). Generating three tasks instead builds in about 8
 seconds and 0.4 GB. `trust-tasks generate` verifies the lock, then runs each
 language's own generator — it installs nothing, and Rust needs no command at
 all because `build.rs` is the generator.
@@ -87,8 +94,8 @@ validation" fails open. See
 features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**
 `trust_tasks_rs::TrustTask` — so dropping the facade later is a
-find-and-replace, not a migration: depend on `trust-tasks-rs` with
-`default-features = false` and leave out `.runtime_path`.
+find-and-replace, not a migration: depend on `trust-tasks-rs` and leave out
+`.runtime_path`.
 
 ### The crate matrix
 
@@ -109,7 +116,7 @@ Pick one row per thing you want to do; features combine.
 | use JWT bearer auth on the HTTPS server | `https-jwt` | `trust_tasks::https::JwtBearerAuth` | `trust-tasks-https` |
 
 **You almost certainly want a transport plus `proof-affinidi`.** A task whose
-specification declares `proof` REQUIRED — `acl/grant/0.2` is one — cannot be
+specification declares `proof` REQUIRED — `acl/grant/0.3` is one — cannot be
 produced or consumed without a signer and a verifier.
 
 **To turn off a transport crate's own defaults** (`trust-tasks-https`'s
@@ -141,7 +148,7 @@ cargo run -p trust-tasks-example-getting-started
 ### Imports
 
 Everything comes through the facade — one crate name in every path — except
-the task itself, which `build.rs` generated into `tasks`. `tasks::acl::grant::v0_2`
+the task itself, which `build.rs` generated into `tasks`. `tasks::acl::grant::v0_3`
 is the path the prebuilt `trust_tasks::specs` module gave the same version, so
 moving code over is a change to its `use` line.
 
@@ -157,7 +164,7 @@ use trust_tasks::TrustTask;
 mod tasks {
     include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
 }
-use tasks::acl::grant::v0_2 as grant;
+use tasks::acl::grant::v0_3 as grant;
 ```
 
 ### Identity
@@ -243,20 +250,24 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // validating newtype rather than a bare `String`, so the bound is checked
     // where the value is authored instead of at the far end of the wire.
     //
-    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // acl/grant/0.3 states every authority axis explicitly — there is no
     // default and no implicit form. Carol may act everywhere, may use no
-    // keys, and holds the full ceiling of the `moderator` role.
+    // keys, holds the full ceiling of the `moderator` role, and may use what
+    // she reads for any purpose (`any` never includes `modelTraining`).
     let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
     let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
     let capabilities = grant::CapabilityScopeCeiling::try_from(
         grant::CapabilityScopeCeiling::builder().scope("ceiling"),
     )?;
+    let purposes =
+        grant::PurposeScopeAny::try_from(grant::PurposeScopeAny::builder().scope("any"))?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
         .act(act)
         .keys(keys)
         .capabilities(capabilities)
+        .purposes(purposes)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -276,7 +287,7 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // server rejects as `proofInvalid`.
     request.issuer = Some(my_did.to_string());
     request.recipient = Some("did:web:maintainer.example".into());
-    request.issued_at = Some(chrono::Utc::now());
+    request.issued_at = Some(trust_tasks::issued_at_now()); // whole seconds, UTC
     request.sign(secret, SignOptions::new()).await?;
 
     println!("  [client] POST /trust-tasks  id={}", request.id);
@@ -305,10 +316,10 @@ Real output, from the command above:
 
 ```text
   [server] listening on http://127.0.0.1:3000/trust-tasks (vid did:web:maintainer.example)
-  [client] POST /trust-tasks  id=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284
+  [client] POST /trust-tasks  id=urn:uuid:e7df506b-7994-42ba-94d4-3ff4dda46bd0
   [server] acl/grant from did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z → subject=did:web:carol.example role=moderator
-  [client] ← https://trusttasks.org/spec/acl/grant/0.2#response
-           threadId=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284 entry: subject=did:web:carol.example role=moderator
+  [client] ← https://trusttasks.org/spec/acl/grant/0.3#response
+           threadId=urn:uuid:e7df506b-7994-42ba-94d4-3ff4dda46bd0 entry: subject=did:web:carol.example role=moderator
 ```
 
 Note the `threadId` on the response: it echoes the request's `id`, which is how
@@ -323,8 +334,8 @@ The TypeScript package is `@openvtc/trust-tasks`; import its runtime from
 `trust-tasks generate --lang ts` wrote (§1). Producing a document is the mirror
 of the Rust; the interesting half is **consuming** one, where
 [`consumeInbound`](./trust-tasks-ts/README.md) runs the SPEC §7.2 pipeline
-(items 2 and 4–8, the freshness bound, and item 11's duplicate-execution
-record) and then calls your handler.
+(items 2–8, item 11's duplicate-execution record and item 13's freshness
+bound) and then calls your handler.
 
 ```ts
 import {
@@ -334,7 +345,7 @@ import {
   respondWith,
   StaticTransport,
 } from "@openvtc/trust-tasks/runtime";
-import { AclGrant_v0_2, declareExtends } from "./trust-tasks/index.js"; // generated
+import { AclGrant_v0_3, declareExtends } from "./trust-tasks/index.js"; // generated
 
 declareExtends(); // once at start-up: route a newer version that `extends` a pinned one
 
@@ -342,9 +353,9 @@ declareExtends(); // once at start-up: route a newer version that `extends` a pi
 // the process's lifetime. Back it with a shared store if you run replicas.
 const guard = new InMemoryReplayGuard();
 
-const outcome = await consumeInbound<AclGrant_v0_2.Payload, AclGrant_v0_2.Response>({
+const outcome = await consumeInbound<AclGrant_v0_3.Payload, AclGrant_v0_3.Response>({
   transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
-  spec: AclGrant_v0_2.SPEC,
+  spec: AclGrant_v0_3.SPEC,
   proofPolicy: { kind: "verify", verify: myVerifier },
   payloadPolicy: { kind: "validate", validate: myValidator },
   // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -376,15 +387,25 @@ switch (outcome.kind) {
 }
 ```
 
+A consumer may keep its record for less time than a producer's `expiresAt`
+asks, provided it stops accepting the document when it stops remembering it
+(SPEC §7.2, *Bounding the record*): the consequential policies in all four
+libraries honour an `expiresAt` up to 30 days after `issuedAt` and treat the
+document as expiring there. The in-memory guard refuses new documents
+`unavailable` when full of live records, and lets no single issuer hold more
+than a tenth of it; size it for your retention window, or use a shared store.
+
 `consequentialChecks(guard)` is correct for any task whose execution grants
 access, moves value, discloses a secret, or is otherwise irreversible — SPEC
 §7.2 item 11 makes duplicate-execution protection normative for those, and every
 transport binding delegates it to the consumer. `notConsequentialChecks()` keeps
 no record and is conformant only where repeated execution is safe and intended.
 
-Items 1 and 3 (framework schema, unknown `type`) belong to your parse and
-dispatch and have already succeeded by the time you hold a typed document. Full
-detail is in [`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
+Item 1 (framework schema) belongs to your parse. Item 3 is checked for you: a
+document whose `type` is not the `spec` it is consumed under (or a later
+version extending it) is refused `unsupportedType` / `unsupportedVersion`
+before the handler runs. Full detail is in
+[`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
 
 ---
 
@@ -401,7 +422,7 @@ module (§1).
 import (
     "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 
-    aclgrantv0_2 "example.com/my-app/internal/tasks/acl/grant/v0_2" // generated
+    aclgrantv0_3 "example.com/my-app/internal/tasks/acl/grant/v0_3" // generated
 )
 
 // The guard IS the duplicate-execution record — one per consumer, held for the
@@ -409,9 +430,9 @@ import (
 guard := trusttasks.NewInMemoryReplayGuard(0)
 
 outcome, err := trusttasks.ConsumeInbound(ctx,
-    trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
+    trusttasks.ConsumeOptions[aclgrantv0_3.Payload, aclgrantv0_3.Response]{
         Transport:     trusttasks.StaticTransport{Context: trusttasks.TransportContext{Issuer: &peerVID}},
-        Spec:          aclgrantv0_2.Spec,
+        Spec:          aclgrantv0_3.Spec,
         ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
         PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
         // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -422,15 +443,15 @@ outcome, err := trusttasks.ConsumeInbound(ctx,
         NewErrorID: uuid.NewString,
         Handler: func(
             ctx context.Context,
-            accepted *trusttasks.Document[aclgrantv0_2.Payload],
+            accepted *trusttasks.Document[aclgrantv0_3.Payload],
             parties trusttasks.ResolvedParties,
-        ) (*trusttasks.Document[aclgrantv0_2.Response], error) {
+        ) (*trusttasks.Document[aclgrantv0_3.Response], error) {
             entry, err := applyGrant(ctx, accepted.Payload.Entry, parties)
             if err != nil {
                 return nil, err
             }
-            return trusttasks.RespondWith[aclgrantv0_2.Payload, aclgrantv0_2.Response](
-                accepted, uuid.NewString(), aclgrantv0_2.Response{Entry: entry}, nil), nil
+            return trusttasks.RespondWith[aclgrantv0_3.Payload, aclgrantv0_3.Response](
+                accepted, uuid.NewString(), aclgrantv0_3.Response{Entry: entry}, nil), nil
         },
     })
 ```
@@ -445,7 +466,7 @@ Three Go-specific things worth knowing before you write the handler:
 - **`encoding/json` enforces less than it looks like it does.** It ignores
   unknown members and does not require a single REQUIRED one, so a payload
   missing everything unmarshals cleanly. Pass a real `PayloadValidator`; the
-  schema ships as `aclgrantv0_2.PayloadSchemaJSON`.
+  schema ships as `aclgrantv0_3.PayloadSchemaJSON`.
 - **Optional members are pointers, including slices** — `*[]string`. That is how
   "present and empty" stays distinguishable from "absent", which several specs
   make load-bearing.
@@ -465,7 +486,7 @@ your own package (§1), imported with a prefix.
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:my_app/trust_tasks/acl/grant/v0_2/payload.dart' as acl_grant; // generated
+import 'package:my_app/trust_tasks/acl/grant/v0_3/payload.dart' as acl_grant; // generated
 
 // The guard IS the duplicate-execution record — one per consumer, held for the
 // process's lifetime. Back it with a shared store if you run replicas.
@@ -481,11 +502,11 @@ final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   doc: doc,
   myVid: 'did:web:maintainer.example',
   now: DateTime.now(),
-  newErrorId: () => uuid.v4(),
   payloadToJson: (p) => p.toJson(),
+  responseToJson: (r) => r.toJson(),
   handler: (accepted, parties) async => respondWith(
     accepted,
-    uuid.v4(),
+    newUrnUuid(),
     acl_grant.Response(entry: await applyGrant(accepted.payload.entry, parties)),
   ),
 );
@@ -496,8 +517,9 @@ switch (outcome) {
   case Suppressed(:final reason):         return log(reason);
   case Accepted():                        return;  // fire-and-forget
   case DuplicateOutcome(:final priorResponse):
-    // §7.2 item 11: this document already executed.
-    if (priorResponse != null) send(priorResponse);
+    // §7.2 item 11: this document already executed. The recorded response,
+    // as JSON — a success or (isError) the refusal.
+    if (priorResponse != null) sendJson(priorResponse);
 }
 ```
 
@@ -551,9 +573,15 @@ one costs an afternoon the first time.
 ```rust,ignore
 request.issuer     = Some(my_did.to_string());
 request.recipient  = Some("did:web:maintainer.example".into());
-request.issued_at  = Some(chrono::Utc::now());
+request.issued_at  = Some(trust_tasks::issued_at_now());  // whole seconds, UTC
 request.sign(&secret, SignOptions::new()).await?;   // ← signing comes LAST
 ```
+
+`issued_at_now()` stamps the current instant in whole seconds, UTC — never
+write `chrono::Utc::now()` (or `toISOString()` in TypeScript) into a document
+field: the sub-second digits are a fingerprint (SPEC §13.1 item 3), and some
+RFC 3339 readers refuse them. TypeScript's `issuedAtNow()` writes the same
+form.
 
 `HttpsClient::send` fills in any party member and `issuedAt` still unset when
 the document reaches it. That is a convenience for unsigned tasks and a trap for
@@ -602,17 +630,20 @@ additive schema change — a new optional member, a new enum variant — is no
 longer a source break. See the `#[non_exhaustive]` section of
 [`CLAUDE.md`](./CLAUDE.md) for the full reasoning.
 
-### 4.4 Eight crates, five version numbers — and the facade does not track them
+### 4.4 The facade and the crates it re-exports share one version
 
-`trust-tasks-rs` is 0.14, `-https` and `-didcomm` are 0.15, `-proof` is 0.13,
-`-ceremony` is 0.2. They move independently and that is deliberate: each
-binding versions over *its* API. The facade is `0.1.0` and does **not** chase
-them — it pins compatible ranges so you do not have to.
+`trust-tasks`, `trust-tasks-rs` and the crates that expose `trust-tasks-rs`
+types in their own API — the transport bindings, `-proof` and
+`-capability-client` — release together at **one shared version**, so a break
+in the runtime is a break in every one of them (release-plz's `core` version
+group). `trust-tasks-ceremony`, `trust-tasks-build` and `trust-tasks-cli` do
+not depend on `trust-tasks-rs` and version on their own.
 
-Consequence worth knowing: a leading-component bump in `trust-tasks-rs` is a
-workspace event that moves six dependent crates with it (see
-[`CLAUDE.md`](./CLAUDE.md)). If you pin the individual crates yourself, pin them
-as a set.
+Consequence worth knowing: if you depend on the individual crates rather than
+the facade, pin them as a set at the same version. Two copies of
+`trust-tasks-rs` in one dependency graph produce
+`expected TrustTask<Value>, found a different TrustTask<Value>`. Depending on
+the facade alone avoids that by construction.
 
 ---
 

@@ -1,0 +1,59 @@
+[
+  {
+    "note": "No entry: a wall is read off a directory entry the viewer is shown, never without one.",
+    "payload": {}
+  },
+  {
+    "note": "An entry named by DID: members are addressed by their community-scoped entry, never by DID.",
+    "payload": {
+      "entryId": "did:example:ben"
+    }
+  },
+  {
+    "note": "There is no `includeHidden`: hidden badges are the holder's business, and only vtc/badges/mine/list shows them to the holder.",
+    "payload": {
+      "entryId": "dir_BenOkafor0000000",
+      "includeHidden": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "entryId": "dir_BenOkafor0000000",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A wall without `visibility`: the viewer must know whether the member shows their badges to members, or they are looking at their own wall.",
+    "payload": {
+      "entries": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A wall entry carrying `hidden`: a hidden badge is never a wall entry, so the wall has no such flag; MyBadge, the holder's own view, does.",
+    "payload": {
+      "visibility": "members",
+      "entries": [
+        {
+          "badge": {
+            "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+            "kind": "community",
+            "name": "Workshop host",
+            "description": "Ran a workshop for the community.",
+            "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "mediaType": "image/png", "size": 61440 },
+            "repeatable": true,
+            "listed": true,
+            "state": "active",
+            "createdAt": "2026-03-01T09:00:02Z"
+          },
+          "count": 1,
+          "since": "2026-03-14T19:30:00Z",
+          "pinned": false,
+          "hidden": true
+        }
+      ]
+    }
+  }
+]

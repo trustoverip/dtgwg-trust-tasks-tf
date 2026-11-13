@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by acl/list/0.3");
+pub const DEPRECATION: Option<&str> = Some("superseded by acl/list/0.4");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -998,7 +998,7 @@ impl KeyScopeNone {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/list/0.3")]
+#[deprecated(note = "superseded by acl/list/0.4")]
 pub struct Payload {
     ///Optional filter — only entries whose EFFECTIVE capability set includes this capability (the role's full ceiling for `capabilities: {scope: ceiling}`, nothing for `none`, and for `listed` the ceiling ∩ the non-additive grants plus the additive grants). Combined with `resource`, the capability must be held at a qualifier related to that resource by `direction`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1368,7 +1368,7 @@ impl<'de> ::serde::Deserialize<'de> for ResourceQualifier {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/list/0.3")]
+#[deprecated(note = "superseded by acl/list/0.4")]
 pub struct Response {
     ///Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point. Binds the request's filters and direction. Consumers MUST treat it as opaque and re-send it verbatim.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

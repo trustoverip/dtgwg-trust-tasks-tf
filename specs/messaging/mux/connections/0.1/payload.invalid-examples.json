@@ -1,0 +1,68 @@
+[
+  {
+    "note": "memberLimit above the per-page member budget of 1000.",
+    "payload": {
+      "memberLimit": 1001
+    }
+  },
+  {
+    "note": "limit of zero — a page returns at least one connection when any remain.",
+    "payload": {
+      "limit": 0
+    }
+  },
+  {
+    "note": "principal that is not a DID.",
+    "payload": {
+      "principal": "phone.example"
+    }
+  },
+  {
+    "note": "Unknown wire — a mux connection is DIDComm or raw TSP.",
+    "variant": "response",
+    "payload": {
+      "connections": [
+        {
+          "sessionId": "s1",
+          "principal": "did:web:phone.example",
+          "wire": "http",
+          "openedAt": "2026-11-11T09:00:00Z",
+          "memberCount": 0,
+          "members": []
+        }
+      ],
+      "coverage": "allInstances"
+    }
+  },
+  {
+    "note": "Response without coverage — an answer must say whether it covers every instance of the mediator.",
+    "variant": "response",
+    "payload": {
+      "connections": []
+    }
+  },
+  {
+    "note": "Member entry without deliveryActive — whether a member's live traffic arrives here is the point of the view.",
+    "variant": "response",
+    "payload": {
+      "connections": [
+        {
+          "sessionId": "s1",
+          "principal": "did:web:phone.example",
+          "wire": "tsp",
+          "openedAt": "2026-11-11T09:00:00Z",
+          "memberCount": 1,
+          "members": [
+            {
+              "did": "did:web:alice.example",
+              "source": "attach",
+              "scope": ["receive"],
+              "expiresAt": "2026-11-11T10:00:00Z"
+            }
+          ]
+        }
+      ],
+      "coverage": "thisInstance"
+    }
+  }
+]

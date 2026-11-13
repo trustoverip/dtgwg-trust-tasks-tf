@@ -42,7 +42,7 @@ related:
 
 ## Abstract
 
-The **VTC Roles — List** Trust Task returns a Verifiable Trust Community's administrative roles: the built-in set and any custom roles, each as a [`RoleDefinition`](../../_shared/0.1/role.schema.json) carrying its capability ceiling and approve ceiling. A client reads it to know which roles it can grant through [`acl/grant/0.2`](../../../../acl/grant/0.2/spec.md) and what each admits.
+The **VTC Roles — List** Trust Task returns a Verifiable Trust Community's administrative roles: the built-in set and any custom roles, each as a [`RoleDefinition`](../../_shared/0.1/role.schema.json) carrying its capability ceiling and approve ceiling. A client reads it to know which roles it can grant through [`acl/grant/0.3`](../../../../acl/grant/0.3/spec.md) and what each admits.
 
 It is the enumeration half of the split pair with [`vtc/roles/show`](../../show/0.1/spec.md), which fetches one role by name and answers `notFound` for an unknown one. The list is not paged: a community's role vocabulary is small and bounded (seven built-in roles plus what the community defines), so a complete answer is always practical.
 
@@ -141,7 +141,7 @@ Failures use `trust-task-error` ([SPEC §8](/SPEC.md#8-error-responses)).
 
 ### Data carried
 
-The request carries one optional flag. The response carries the community's administrative vocabulary: role names, descriptions, capability ceilings with resource qualifiers (which can name repositories, policies and join criteria), and the identifiers of the administrators who defined custom roles. It carries no information about which subjects hold which role; that is `acl/list/0.3`, under its own access policy.
+The request carries one optional flag. The response carries the community's administrative vocabulary: role names, descriptions, capability ceilings with resource qualifiers (which can name repositories, policies and join criteria), and the identifiers of the administrators who defined custom roles. It carries no information about which subjects hold which role; that is `acl/list/0.4`, under its own access policy.
 
 ### Correlation
 

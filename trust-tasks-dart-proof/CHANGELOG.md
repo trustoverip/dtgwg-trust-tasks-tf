@@ -10,6 +10,154 @@ Publishing is triggered by the `trust-tasks-dart-proof-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.0 — 2026-11-12
+
+
+### Fixed
+
+- **proof,ts-proof,go-proof,dart-proof**: Follow the JCS cryptosuites' @context rule in all four proof backends (#1233)
+
+Signers copy a document's @context into the proof (eddsa-jcs-2022 /
+  ecdsa-jcs-2019 section 3.3.1 step 2). Verifiers hash the proof
+  configuration as received, and refuse a proof whose @context is not
+  exactly the document's (section 3.3.2 step 4, held to equality because a
+  ProofVerifier returns no verified document). The Dart verifier no longer
+  lets ssi copy the document's @context into the configuration, which made
+  it refuse what the other three signers emit. Documents without @context
+  get byte-identical proofs. Six shared vectors in fixtures/proof pin the
+  behaviour in every library.
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **rs,ts,go,dart,proof,ts-proof,go-proof,dart-proof**: Refuse out-of-range timestamp fields instead of rolling them over (#1210)
+
+issuedAt and expiresAt, and a proof's created, are now read with every
+  field range-checked after the shared pattern: month 1-12, a day the month
+  has, hour 0-23, minute and second 0-59 (no leap second), and an offset of
+  at most 23:59 (14:00 for a proof's dateTimeStamp, as for expires).
+
+  Before, the four runtimes disagreed on the same bytes. TypeScript's
+  Date.parse read 2026-02-30 as 2 March and 24:00 as the next day; Dart's
+  DateTime.tryParse rolled 2026-13-45T25:61:61Z over into 2027 and took any
+  offset; Rust's chrono read :60 as a leap second and accepted a space for
+  the T; Go's time.Parse accepted +24:00 and +23:60. In the TypeScript proof
+  verifier a regex-valid but unparseable created (month 13) gave NaN, which
+  never compares later than the clock-skew horizon, so it was accepted.
+
+  New shared vectors: fixtures/consume/timestamps.json, run by all four
+  runtimes, and five correctly signed created-* proof vectors.
+
+- **go-proof, ts-proof, dart-proof**: Check proofPurpose and expires, and sign with authentication by default (#1168)
+
+* fix(go-proof, ts-proof, dart-proof)!: check proofPurpose and expires, and sign with authentication by default
+
+  The Go, TypeScript and Dart proof verifiers accepted any non-empty
+  proofPurpose, including keyAgreement, and none of the four read a proof's
+  expires. They now apply the rule trust-tasks-proof (Rust) already applies
+  (SPEC §4.7.3):
+
+  - proofPurpose must be authentication, assertionMethod,
+    capabilityInvocation or capabilityDelegation; keyAgreement and any other
+    value are malformedProof.
+  - Dart's withResolver path checks that the issuer's DID document lists the
+    exact verificationMethod under the relationship proofPurpose names (by
+    absolute reference, relative fragment, or embedded), defines it under
+    verificationMethod, and names the issuer as its controller. The document
+    is resolved once per verification and shared with ssi.
+  - expires, when present, must be a dateTimeStamp (Z or an explicit offset)
+    that has not passed; no clock-skew allowance. All four runtimes.
+  - The Go, TypeScript and Dart signers default proofPurpose to
+    authentication, as the Rust signer does, and refuse a purpose naming no
+    signing relationship.
+  - TypeScript verifies Ed25519 with RFC 8032 decoding ({ zip215: false }),
+    as Go, Rust and Dart do.
+
+  Three shared vectors (fixtures/proof) are correctly signed and must fail in
+  every runtime: proofPurpose keyAgreement, an unrecognised proofPurpose, and
+  a passed expires.
+
+- **proof, ts-proof, dart-proof, dart-didcomm, ceremony**: Bound multibase decoding of unauthenticated values (#1167)
+
+* fix(proof, ts-proof, dart-proof): bound base58 decoding of proofValue and did:key
+
+  The Rust, TypeScript and Dart proof verifiers decode a proof's proofValue
+  and its did:key multikey with base58btc decoders whose cost grows with
+  the square of the input length, and they do so before any signature is
+  checked. A 1 MiB value took about 50 s per field in trust-tasks-proof
+  (release build), and would take minutes in the Dart package and in the
+  TypeScript package on @scure/base 2.0-2.3 (2.4 refuses over 4096
+  characters itself).
+
+  Each verifier now refuses a base58btc value longer than 175 characters
+  before decoding it, or one that decodes to more than 128 bytes - the
+  bounds the Go module adopts in #1166. The largest value any of them reads
+  is a 96-byte P-384 signature; a did:key multikey is at most 51 bytes;
+  175 = ceil(128 * log 256 / log 58).
+
+  Nothing that could verify before is refused: a value over the bounds
+  always decoded to more bytes than any supported key or signature.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.10.0 (was ^0.9.6), the core released beside it.
+
+## 0.1.8 — 2026-11-10
+
+
+### Added
+
+- **acl**: Purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2) (#1074)
+
+* feat(acl): purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2)
+
+  An access-control entry says who may do what, where and until when, but not
+  what for. An agent granted a read of its principal's memory can use the content
+  for anything, and nothing records the use it intended. The VTI specification
+  now requires the purpose (VTI-ACL-100 – 110, trustoverip/dtgwg-vti-spec#115);
+  these are the wire shapes.
+
+  acl/_shared/0.3 — AclEntry 0.3 adds one REQUIRED axis, `purposes`:
+  `{"scope": "any"}` or `{"scope": "listed", "purposes": [...]}` with at least
+  one `Purpose` — a lowerCamelCase name registered in the VTI purpose registry
+  (personalisation, taskExecution, analytics, modelTraining) or an absolute IRI
+  such as a DPV purpose. `any` never grants `modelTraining`. Delegated purposes
+  are a subset of the granter's. CONVENTIONS.md §8a maps a 0.2 entry onto 0.3
+  (`any`, the authority it already held, now stated) and §12 states the rules.
+
+  acl tasks on AclEntry 0.3: grant/0.3, update/0.3, show/0.3, revoke/0.3,
+  change-role/0.3, list/0.4. New errors on grant and update: `purposeOutsideDelegator`
+  (purposes wider than the granter's) and `purposeRefused` (policy will not grant
+  a purpose, refused by name, never dropped). update/0.3 replaces `purposes`
+  wholesale; narrowing it is an audited privilege reduction. `purposes` is never
+  redacted by show or list. No `extends`: a REQUIRED member on the entry cannot
+  be added to a version a 0.2 consumer still reads.
+
+  vta/memory put/0.3, delete/0.3, list/0.3, get/0.2 (each `extends` its
+  predecessor) add an optional `purpose` (`MemoryPurpose`, new in
+  vta/_shared/0.1/memory-record, a reference to acl's `Purpose`) and a
+  `purposeNotGranted` error that discloses nothing and is distinct from
+  `contextForbidden`. A recall, and a listing with values, is purpose-bound:
+  refused for a purpose the entry does not grant, or for none under an entry
+  listing several, and audited with its purpose either way. A write is not
+  purpose-bound, but a conflict that returns `currentValue` is: the value is
+  withheld unless the request's purpose is granted.
+
+  Data rooms (a room authority credential's `purposes`, VTI-ACL-110) are a
+  follow-up.
+
+  Samples in other specs that named the superseded acl versions now name the new
+  ones, with `purposes` on every embedded entry; prose links were moved by
+  `npm run fix-stale-references`.
+
 ## 0.1.7 — 2026-10-27
 
 ## 0.1.6 — 2026-10-27

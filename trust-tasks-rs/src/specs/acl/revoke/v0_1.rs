@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by acl/revoke/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by acl/revoke/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -372,7 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/revoke/0.2")]
+#[deprecated(note = "superseded by acl/revoke/0.3")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -514,7 +514,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopesItem {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/revoke/0.2")]
+#[deprecated(note = "superseded by acl/revoke/0.3")]
 pub struct Response {
     ///The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.
     pub entry: ::std::option::Option<AclEntry>,

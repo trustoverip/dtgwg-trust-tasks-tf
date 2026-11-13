@@ -49,9 +49,9 @@
 //!
 //! The generated code names the runtime as `::trust_tasks_rs`, and serde,
 //! serde_json, regress and chrono through `trust_tasks_rs::__private`, so an
-//! application needs exactly two dependencies — `trust-tasks-rs` (with
-//! `default-features = false` to leave out the prebuilt specification
-//! modules) and this crate as a build dependency.
+//! application needs exactly two dependencies — `trust-tasks-rs` (its default
+//! features, which leave out every prebuilt specification module) and this
+//! crate as a build dependency.
 //!
 //! # What is checked
 //!
@@ -126,6 +126,12 @@ pub use names::{
 /// stable API.
 #[doc(hidden)]
 pub use error_codes::error_code_decls;
+
+/// How a slug segment becomes a Rust module name, shared with the
+/// repository's own codegen so the two trees name a module alike. Not a
+/// stable API.
+#[doc(hidden)]
+pub use names::{module_file_name, module_name};
 
 /// The file [`Config::compile`] writes into the output directory.
 pub const GENERATED_FILE: &str = "trust_tasks_generated.rs";
@@ -523,6 +529,85 @@ mod tests {
         fs::remove_dir_all(&dir).ok();
     }
 
+    /// A slug segment that is a Rust keyword names a raw module, and one no
+    /// raw identifier can spell takes a `_` suffix — in the tree and in the
+    /// index's paths alike.
+    #[test]
+    fn keyword_slug_segments_generate() {
+        let dir = scratch("keywords");
+        let mut tasks = String::new();
+        for slug in ["keys/move", "self/type"] {
+            let mut v: serde_json::Value = serde_json::from_slice(&demo_bundle()).unwrap();
+            let uri = format!("https://trusttasks.org/spec/{slug}/0.2");
+            v["slug"] = json!(slug);
+            v["typeUri"] = json!(uri);
+            v["errorCodes"] = json!([]);
+            let bytes = serde_json::to_vec(&v).unwrap();
+            vendor(&dir, slug, "0.2", &bytes);
+            tasks.push_str(&format!(
+                "\n[[task]]\nslug = \"{slug}\"\nversion = \"0.2\"\ntype_uri = \"{uri}\"\n\
+                 digest = \"{}\"\n",
+                sha256_digest(&bytes)
+            ));
+        }
+        let lock = dir.join("trust-tasks.lock");
+        fs::write(
+            &lock,
+            format!("version = 1\nregistry = \"https://trusttasks.org\"\n{tasks}"),
+        )
+        .unwrap();
+        let source = Config::new()
+            .lockfile(&lock)
+            .index(true)
+            .generate()
+            .unwrap()
+            .source;
+        syn::parse_file(&source).expect("the generated file parses");
+        assert!(source.contains("pub mod keys {\npub mod r#move {\npub mod v0_2 {"));
+        assert!(source.contains("pub mod self_ {\npub mod r#type {\npub mod v0_2 {"));
+        assert!(source.contains("super::keys::r#move::v0_2::ERROR_CODES"));
+        assert!(source.contains("super::self_::r#type::v0_2::ERROR_CODES"));
+        fs::remove_dir_all(&dir).ok();
+
+        // A source named for a keyword is a raw module too.
+        let dir = scratch("keyword-source");
+        let lock = two_authorities(
+            &dir,
+            "type",
+            "https://tasks.example.com/spec/demo/thing/0.2",
+        );
+        let source = Config::new().lockfile(&lock).generate().unwrap().source;
+        syn::parse_file(&source).expect("the generated file parses");
+        assert!(source.contains("pub mod r#type {\npub mod demo {"));
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    /// A schema `description` holding the marker of the doc block the
+    /// generator strips: the block goes, the description and every item after
+    /// it stay — including `PAYLOAD_SCHEMA`, whose string literal carries the
+    /// marker verbatim.
+    #[test]
+    fn a_description_holding_the_doc_block_marker_loses_nothing() {
+        let mut v: serde_json::Value = serde_json::from_slice(&demo_bundle()).unwrap();
+        v["schema"]["description"] =
+            json!("Renders <details><summary>JSON schema</summary>\n</details> as HTML.");
+        v["schema"]["properties"]["name"]["description"] =
+            json!("<details><summary>JSON schema</summary>");
+        let bundle = Bundle::from_slice(&serde_json::to_vec(&v).unwrap()).unwrap();
+        let source = generate_module(&bundle, &Target::default()).unwrap();
+        syn::parse_file(&source).expect("the module parses");
+        for item in [
+            "const PAYLOAD_SCHEMA",
+            "pub const ERROR_CODES",
+            "pub const EXTENDS",
+            "impl ::trust_tasks_rs::Payload for Response",
+            "Renders <details><summary>JSON schema</summary>",
+        ] {
+            assert!(source.contains(item), "lost {item:?}:\n{source}");
+        }
+        assert!(!source.contains("```json"), "a schema block survived");
+    }
+
     /// The demo bundle re-issued under another Type URI, as a third-party
     /// source would publish its own `demo/thing` 0.2.
     fn bundle_at(type_uri: &str) -> Vec<u8> {
@@ -622,9 +707,6 @@ mod tests {
         // A source named for an official family.
         let e = err("demo", acme);
         assert!(e.contains("share one generated namespace"), "{e}");
-        // A source whose name is no Rust module name.
-        let e = err("type", acme);
-        assert!(e.contains("is not a Rust module name"), "{e}");
         // A Type URI naming another slug.
         let e = err("acme", "https://tasks.example.com/spec/demo/other/0.2");
         assert!(e.contains("names demo/other 0.2"), "{e}");

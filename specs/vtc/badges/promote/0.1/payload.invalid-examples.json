@@ -1,0 +1,56 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED.",
+    "payload": {
+      "owners": ["dir_Pr1yaNatarajan00"],
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "owners": ["dir_Pr1yaNatarajan00"]
+    }
+  },
+  {
+    "note": "`kind` is not sent: promotion always makes a community badge, and nothing makes a kudos badge of a community badge.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "kind": "community",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`automatic` is not a promotion setting: a promoted badge's holders are the members who accepted it, never a rule's result.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "automatic": { "rule": { "all": [ { "fact": "tenureDays", "op": "gte", "value": 365 } ] } },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`owners` names members by EntryId, never by DID.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "owners": ["did:example:priya"],
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`owners` lists each member once.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "owners": ["dir_Pr1yaNatarajan00", "dir_Pr1yaNatarajan00"],
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_Kd3mR9vXs2Wq8LpN",
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  }
+]

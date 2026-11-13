@@ -1,10 +1,10 @@
-//! Inbound-document orchestration for SPEC.md §7.2 item 2 and items 4–8.
+//! Inbound-document orchestration for SPEC.md §7.2: items 2–8, item 11
+//! (the duplicate-execution record) and item 13 (the freshness bound).
 //!
 //! [`consume_inbound`] is the framework-level helper a *consumer* uses to
-//! avoid hand-wiring the eight-step §7.2 list across every spec they
-//! implement. It accepts a typed [`TrustTask<P>`] (items 1 and 3 having
-//! already been handled by the caller's [`Dispatcher`](crate::Dispatcher) /
-//! `serde` pipeline), runs the remaining framework checks, optionally
+//! avoid hand-wiring the §7.2 list across every spec they implement. It
+//! accepts a typed [`TrustTask<P>`] (item 1 having already been handled by the
+//! caller's `serde` pipeline), runs the remaining framework checks, optionally
 //! verifies the `proof` and the payload schema, and either calls the caller's
 //! business handler or builds the [`ErrorResponse`] routed per §8.1.
 //!
@@ -50,7 +50,7 @@
 //!     match outcome {
 //!         ConsumeOutcome::Handled(response) => emit(response),
 //!         ConsumeOutcome::Rejected(error)   => emit(error),
-//!         ConsumeOutcome::Suppressed        => {} // identity_mismatch w/o transport sender
+//!         ConsumeOutcome::Suppressed        => {} // identityMismatch w/o transport sender
 //!         // §7.2 item 11: already executed. Not an error — return the prior
 //!         // result if there is one, otherwise emit nothing.
 //!         ConsumeOutcome::Duplicate { prior_response, .. } => {
@@ -60,10 +60,12 @@
 //! }
 //! ```
 //!
-//! The function does not attempt item 1 (framework outer-schema validation)
-//! or item 3 (unknown Type URI). Those belong to the caller's deserialize +
-//! [`Dispatcher`](crate::Dispatcher) pipeline — by the time you hold a
-//! `TrustTask<P>` they have already succeeded.
+//! The function does not attempt item 1 (framework outer-schema validation);
+//! that belongs to the caller's deserialize step. Item 3 is checked here:
+//! deserializing into `TrustTask<P>` does not compare `type` with `P`, so
+//! [`consume_inbound`] refuses a document whose `type` is neither `P`'s Type
+//! URI nor a later version declaring an extension chain to it (SPEC §5.2) —
+//! `unsupportedVersion` for the same slug, `unsupportedType` otherwise.
 //!
 //! Item 2 (payload schema) is deliberately *not* in that list, though it once
 //! was. Deserializing into `P` performs most of it — required members, member
@@ -87,7 +89,10 @@ use crate::error::{ErrorPayload, RejectReason};
 use crate::freshness::{FreshnessPolicy, StaleReason};
 use crate::payload::{Payload, SpecPolicy};
 use crate::proof::{ProofVerifier, VerificationError};
-use crate::replay::{document_digest, DocumentDigest, ReplayGuard, ReplayPolicy, ReplayVerdict};
+use crate::replay::{
+    document_digest, received_document_digest, DocumentDigest, ReplayGuard, ReplayPolicy,
+    ReplayVerdict,
+};
 use crate::transport::{ResolvedParties, TransportHandler};
 
 /// The two stateful consumer checks SPEC.md §7.2 requires and that no runtime
@@ -108,7 +113,8 @@ use crate::transport::{ResolvedParties, TransportHandler};
 /// getting it wrong silently — an ACL grant applied twice by a mediator retry
 /// — is not one to discover after the fact.
 pub struct ConsumeChecks<'a> {
-    /// Bounds the document in time (SPEC §4.2, §7.2 item 4).
+    /// Bounds the document in time (SPEC §4.2; §7.2 item 4, expiry, and
+    /// item 13, the acceptance window over `issuedAt`).
     pub freshness: FreshnessPolicy,
     /// Applies (or knowingly disapplies) the duplicate-execution rule of
     /// SPEC §7.2 item 11.
@@ -169,7 +175,7 @@ impl<'a> ConsumeChecks<'a> {
 pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// Verify the proof when present using `V`. When `doc.proof` is
     /// `Some`, the verifier is consulted and failures map to
-    /// `proof_invalid`. This is the safe default for any consumer that
+    /// `proofInvalid`. This is the safe default for any consumer that
     /// expects to honour in-band proofs.
     Verify(&'a V),
 
@@ -187,10 +193,16 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// [`consume_inbound`] re-parses it and refuses (`proofInvalid`) when the
     /// two disagree, since a proof over one document vouches for nothing
     /// about another.
+    ///
+    /// The §7.2 item 11 digest is taken over this value too, with or without
+    /// a proof, so two documents under one `id` that differ only in a member
+    /// `P` does not model are an `idConflict`. Under a policy that carries no
+    /// received document the digest is of `doc`'s serialisation, which cannot
+    /// see such a member.
     VerifyReceived(&'a V, &'a Value),
 
     /// Reject documents that carry an in-band proof with
-    /// `malformed_request`. Use this when the consumer has integrity
+    /// `malformedRequest`. Use this when the consumer has integrity
     /// guarantees from another layer (e.g. transport-bound signing) and
     /// is deliberately not verifying in-band proofs — silently dropping
     /// a producer-supplied proof would mislead the producer about the
@@ -205,22 +217,41 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// counterparty). This is the explicit opt-out — the variant name
     /// is deliberately uncomfortable to type.
     AcceptUnverified,
+
+    /// [`RejectIfPresent`](Self::RejectIfPresent), carrying the document as
+    /// it was received — the `&Value` `doc` was parsed from — so the §7.2
+    /// item 11 digest is taken over it rather than over `doc`'s
+    /// serialisation. What [`with_received`](Self::with_received) makes of
+    /// `RejectIfPresent`.
+    RejectIfPresentReceived(&'a Value),
+
+    /// [`AcceptUnverified`](Self::AcceptUnverified), carrying the document as
+    /// it was received for the §7.2 item 11 digest. What
+    /// [`with_received`](Self::with_received) makes of `AcceptUnverified`.
+    AcceptUnverifiedReceived(&'a Value),
 }
 
 impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
     /// Bind this policy to the document as received: [`Verify`](Self::Verify)
-    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`, and
-    /// every other policy is returned unchanged.
+    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`,
+    /// [`RejectIfPresent`](Self::RejectIfPresent) becomes
+    /// [`RejectIfPresentReceived`](Self::RejectIfPresentReceived) and
+    /// [`AcceptUnverified`](Self::AcceptUnverified) becomes
+    /// [`AcceptUnverifiedReceived`](Self::AcceptUnverifiedReceived). A policy
+    /// already bound to a received document is returned unchanged.
     ///
     /// For a pipeline that takes a caller's policy and parses the document
     /// itself — every transport binding's `receive` — so the caller asks for
-    /// verification and gets it over the bytes that were signed.
+    /// verification and gets it over the bytes that were signed, and the
+    /// item-11 record compares those bytes whichever policy was asked for.
     pub fn with_received<'b>(self, received: &'b Value) -> ProofPolicy<'b, V>
     where
         'a: 'b,
     {
         match self {
             ProofPolicy::Verify(v) => ProofPolicy::VerifyReceived(v, received),
+            ProofPolicy::RejectIfPresent => ProofPolicy::RejectIfPresentReceived(received),
+            ProofPolicy::AcceptUnverified => ProofPolicy::AcceptUnverifiedReceived(received),
             other => other,
         }
     }
@@ -231,9 +262,9 @@ impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
 /// The framework does not bundle a JSON Schema implementation, for the same
 /// reason it does not bundle a cryptosuite: the choice of engine, its draft
 /// support, and its resource limits belong to the consumer. Implement this
-/// over whichever validator you already run — or over
-/// [`crate::validate::against_schema`], which the `validate` feature provides
-/// on top of the `jsonschema` crate.
+/// over whichever validator you already run — or, with the `validate`
+/// feature, use `validate::SchemaValidator`, an implementation on the
+/// `jsonschema` crate that compiles each schema once.
 pub trait PayloadValidator {
     /// Check `payload` against `schema_json`.
     ///
@@ -283,8 +314,17 @@ pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
     /// but it is a decision, and this names it.
     ///
     /// This variant carries no validator, so nothing pins `V`. Write it as
+    /// [`PayloadPolicy::accept_unvalidated()`], or spelled out,
     /// `PayloadPolicy::<NoValidator>::AcceptUnvalidated`.
     AcceptUnvalidated,
+}
+
+impl PayloadPolicy<'static, NoValidator> {
+    /// [`AcceptUnvalidated`](Self::AcceptUnvalidated) with the validator type
+    /// pinned to [`NoValidator`], so the call needs no turbofish.
+    pub const fn accept_unvalidated() -> Self {
+        Self::AcceptUnvalidated
+    }
 }
 
 /// Pins the validator type on the [`PayloadPolicy::AcceptUnvalidated`] path.
@@ -297,7 +337,7 @@ pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
 /// consume_inbound(
 ///     transport,
 ///     ProofPolicy::Verify(verifier),
-///     PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+///     PayloadPolicy::<NoValidator>::AcceptUnvalidated, // or PayloadPolicy::accept_unvalidated()
 ///     ConsumeChecks::consequential(&guard),
 ///     doc,
 ///     // …
@@ -328,7 +368,7 @@ pub enum ConsumeOutcome<R> {
     /// already addressed per SPEC.md §8.1 — the caller emits it over
     /// the transport.
     Rejected(ErrorResponse),
-    /// SPEC.md §8.1 routing rule for `identity_mismatch`: the in-band
+    /// SPEC.md §8.1 routing rule for `identityMismatch`: the in-band
     /// `issuer` is by definition the contested identity, and the
     /// transport authenticated no sender, so the consumer **SHOULD NOT**
     /// emit any response (doing so would constitute an oracle).
@@ -371,18 +411,20 @@ pub enum ConsumeOutcome<R> {
     },
 }
 
-/// Run SPEC.md §7.2 item 2 and items 4–8 against `doc`, then either call
-/// `handler` or build the routed error response per §8.1.
+/// Run SPEC.md §7.2 items 2–8, 11 and 13 against `doc`, then either call
+/// `handler` or build the routed error response per §8.1. Which freshness
+/// bound and which duplicate-execution record apply is whatever `checks`
+/// carries.
 ///
-/// `P` is the typed payload. Items 1 and 3 happen upstream, in the caller's
-/// parse and dispatch. Item 2 is *shared*: deserializing into `P` performed
+/// `P` is the typed payload. Item 1 happens upstream, in the caller's parse;
+/// item 3 is checked here, against `P`'s Type URI. Item 2 is *shared*: deserializing into `P` performed
 /// most of it, and `payload_policy` decides whether the residue typify cannot
 /// express is checked here too — see [`PayloadPolicy`], which is worth
 /// reading before choosing.
 ///
 /// `transport` supplies the transport-derived identity for the §4.8.1
 /// cross-check (item 6) and the §8.1 routing exception for
-/// `identity_mismatch`.
+/// `identityMismatch`.
 ///
 /// `policy` selects how the consumer handles the document's `proof`
 /// member (item 7); see [`ProofPolicy`] for the three variants and
@@ -434,6 +476,15 @@ where
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    // §7.2 item 3. Deserializing into `TrustTask<P>` does not look at `type`,
+    // so a document of another specification whose payload happens to fit
+    // `P` would otherwise be consumed under `P`'s policy. Accept `P`'s own
+    // Type URI, or a later version whose declared extension chain reaches it
+    // (SPEC §5.2, as `extension::read_as` reads one); refuse anything else
+    // before the record is written, as the dispatched path does.
+    if let Err(reason) = crate::extension::reading_of::<P>(&doc.type_uri) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
     consume_core(
         transport,
         policy,
@@ -521,14 +572,15 @@ where
         Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
     };
     let facts = dispatcher.facts(&target);
-    let prune = |payload: &mut Value| {
-        if forwarded {
-            if let Some(schema) = facts.schema {
-                crate::extension::prune_payload(payload, schema);
-            }
+    let prune = |payload: &mut Value| -> Result<(), RejectReason> {
+        match facts.schema {
+            Some(schema) if forwarded => crate::extension::prune_forward(payload, schema),
+            _ => Ok(()),
         }
     };
-    prune(&mut doc.payload);
+    if let Err(reason) = prune(&mut doc.payload) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
 
     // The typed path's parse, done here so a payload the handler's `P` cannot
     // hold is refused before the record rather than after it.
@@ -568,7 +620,9 @@ where
             else {
                 return false;
             };
-            prune(&mut parsed.payload);
+            if prune(&mut parsed.payload).is_err() {
+                return false;
+            }
             match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
                 (Ok(a), Ok(b)) => a == b,
                 _ => false,
@@ -671,7 +725,7 @@ where
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
-    // §7.2 item 4, the other half — the freshness bound over `issuedAt`.
+    // §7.2 item 13 — the freshness bound over `issuedAt`.
     // `validate_basic` honours `expiresAt`, which is optional and which a
     // producer sets for its own reasons; on its own it leaves a document
     // stamped years ago, or years hence, indefinitely acceptable. It is also
@@ -694,6 +748,21 @@ where
         }
     };
 
+    // The document as it arrived, where the policy carries it, and whether it
+    // is the one being consumed. The proof is verified over it, and the item-11
+    // digest below is taken over it, because both concern the whole received
+    // document — members `doc`'s type does not model included.
+    let received = match &policy {
+        ProofPolicy::VerifyReceived(_, received)
+        | ProofPolicy::RejectIfPresentReceived(received)
+        | ProofPolicy::AcceptUnverifiedReceived(received) => {
+            Some((*received, is_received_form(received, &doc)))
+        }
+        ProofPolicy::Verify(_) | ProofPolicy::RejectIfPresent | ProofPolicy::AcceptUnverified => {
+            None
+        }
+    };
+
     // §7.2 item 7, clause B — apply the consumer's chosen proof policy.
     match (&policy, doc.proof.as_ref()) {
         (ProofPolicy::Verify(v), Some(_)) => {
@@ -706,8 +775,8 @@ where
                 );
             }
         }
-        (ProofPolicy::VerifyReceived(v, received), Some(_)) => {
-            let verified = if is_received_form(received, &doc) {
+        (ProofPolicy::VerifyReceived(v, _), Some(_)) => {
+            let verified = if let Some((received, true)) = received {
                 v.verify_received(received).await
             } else {
                 Err(VerificationError::Other(
@@ -723,7 +792,7 @@ where
                 );
             }
         }
-        (ProofPolicy::RejectIfPresent, Some(_)) => {
+        (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), Some(_)) => {
             return route_rejection(
                 transport,
                 &doc,
@@ -737,8 +806,8 @@ where
         // RejectIfPresent-with-no-proof — all accept and fall through.
         (ProofPolicy::Verify(_), None)
         | (ProofPolicy::VerifyReceived(..), None)
-        | (ProofPolicy::RejectIfPresent, None)
-        | (ProofPolicy::AcceptUnverified, _) => {}
+        | (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), None)
+        | (ProofPolicy::AcceptUnverified | ProofPolicy::AcceptUnverifiedReceived(_), _) => {}
     }
 
     // §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks, in one place
@@ -760,7 +829,14 @@ where
     // and an attacker could pre-burn an `id` it had merely observed.
     let mut claim: Option<(&dyn ReplayGuard, DocumentDigest)> = None;
     if let ReplayPolicy::Guard(guard) = replay {
-        let digest = match document_digest(&doc) {
+        // Over the document as received when it is in hand: SPEC §7.2 compares
+        // the whole received document, and `doc`'s re-serialisation drops
+        // members its type does not model and re-renders the timestamps.
+        let digest = match received {
+            Some((received, true)) => Ok(received_document_digest(received)),
+            _ => document_digest(&doc),
+        };
+        let digest = match digest {
             Ok(digest) => digest,
             Err(e) => {
                 return route_rejection(
@@ -788,7 +864,16 @@ where
             );
         };
 
-        match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
+        match guard
+            .claim_for(
+                parties.issuer.as_deref(),
+                &doc.id,
+                &digest,
+                Some(retain_until),
+                now,
+            )
+            .await
+        {
             Ok(ReplayVerdict::Fresh) => claim = Some((guard, digest)),
             Ok(ReplayVerdict::Duplicate {
                 prior_response,
@@ -819,39 +904,119 @@ where
     }
 
     // All §7.2 checks passed. Hand to the caller's business handler.
+    //
+    // `claim` is held across this await: if the handler panics, or this
+    // future is dropped before the handler returns, its destructor releases
+    // the claim (see `HeldClaim`). Once the handler has returned, the claim is
+    // settled below exactly once.
     let doc_id = doc.id.clone();
-    match handler(doc, parties).await {
+    let claim = claim.map(|(guard, digest)| HeldClaim {
+        guard,
+        id: doc_id.clone(),
+        digest: Some(digest),
+    });
+    let outcome = handler(doc, parties).await;
+    match outcome {
         Ok(response) => {
-            if let Some((guard, _)) = claim {
-                // Best-effort: the effect has already happened, so a failure
-                // to cache the response cannot un-happen it. The record of the
-                // *claim* is what item 11 needs and it is already written; all
-                // that is lost is the ability to hand the same response back,
-                // and the duplicate is still absorbed. Guards should log their
-                // own failures — there is nowhere to report this from here.
-                let value = serde_json::to_value(&response).ok();
-                let _ = guard.record_response(&doc_id, value.as_ref()).await;
+            if let Some(claim) = claim {
+                // The effect has happened, so from here the claim is never
+                // released: a resend must be absorbed, not executed again.
+                // Best-effort recording: a failure to cache the response cannot
+                // un-happen the effect. The record of the *claim* is what item
+                // 11 needs and it is already written; all that is lost is the
+                // ability to hand the same response back, and the duplicate is
+                // still absorbed. Guards should log their own failures — there
+                // is nowhere to report this from here.
+                let (guard, _) = claim.settle();
+                record_settled(guard, &doc_id, &response).await;
             }
             ConsumeOutcome::Handled(response)
         }
         Err(error_response) => {
-            if let Some((guard, digest)) = claim {
+            if let Some(claim) = claim {
                 if error_response.payload.retryable {
                     // §8.4: the consumer has just told the producer it MAY
                     // re-send this document bit-for-bit. Holding the claim
                     // would make that retry come back as an absorbed duplicate
                     // carrying the same failure forever — the consumer would
                     // have invited a retry it had already decided to refuse.
-                    let _ = guard.release(&doc_id, &digest).await;
+                    //
+                    // `claim` stays armed across the await, so a pipeline
+                    // dropped mid-release still releases through its
+                    // destructor, and is disarmed on the very next statement.
+                    let _ = claim.guard.release(&doc_id, claim.digest()).await;
+                    claim.settle();
                 } else {
                     // A non-retryable refusal is final for this document, so
                     // the record stands and a replay is answered with the same
                     // determination rather than re-evaluated.
-                    let value = serde_json::to_value(&error_response).ok();
-                    let _ = guard.record_response(&doc_id, value.as_ref()).await;
+                    let (guard, _) = claim.settle();
+                    record_settled(guard, &doc_id, &error_response).await;
                 }
             }
             ConsumeOutcome::Rejected(error_response)
+        }
+    }
+}
+
+/// Record `response` against a claim whose handler returned, best-effort.
+///
+/// A `Serialize` impl that panics still settles the claim — with no response
+/// to hand back, so a resend is absorbed rather than left in flight until the
+/// record expires — before the panic continues unchanged.
+async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, response: &T) {
+    let encoded = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        serde_json::to_value(response)
+    }));
+    match encoded {
+        Ok(value) => {
+            let _ = guard.record_response(id, value.ok().as_ref()).await;
+        }
+        Err(panic) => {
+            let _ = guard.record_response(id, None).await;
+            std::panic::resume_unwind(panic);
+        }
+    }
+}
+
+/// The item-11 claim [`consume_core`] holds while the handler runs.
+///
+/// Released from its destructor unless [`settle`](Self::settle) took it first.
+/// That covers the two ways the handler can fail to return: a panic, which
+/// unwinds through the await and drops the claim, and cancellation, where the
+/// future running the pipeline is dropped mid-await (a request timeout, a
+/// client disconnect). Either way nothing says the effect happened, and
+/// holding the claim would answer every resend with an in-flight duplicate
+/// until the record expired. The panic itself continues unchanged.
+struct HeldClaim<'g> {
+    guard: &'g dyn ReplayGuard,
+    id: String,
+    /// `None` once settled.
+    digest: Option<DocumentDigest>,
+}
+
+impl<'g> HeldClaim<'g> {
+    /// The digest the claim was made with.
+    fn digest(&self) -> &DocumentDigest {
+        self.digest.as_ref().expect("an armed claim has a digest")
+    }
+
+    /// The handler returned and the claim is being recorded or has been
+    /// released: disarm the destructor.
+    fn settle(mut self) -> (&'g dyn ReplayGuard, DocumentDigest) {
+        let digest = self.digest.take().expect("a claim is settled once");
+        (self.guard, digest)
+    }
+}
+
+impl Drop for HeldClaim<'_> {
+    fn drop(&mut self) {
+        if let Some(digest) = self.digest.take() {
+            // A destructor that panics while a handler's panic unwinds aborts
+            // the process; a guard that panics here loses only this release.
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                self.guard.release_abandoned(&self.id, &digest);
+            }));
         }
     }
 }
@@ -1014,7 +1179,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
-            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            PayloadPolicy::accept_unvalidated(),
             ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",
@@ -1043,6 +1208,92 @@ mod tests {
             }
             other => panic!("expected Handled, got {other:?}"),
         }
+    }
+
+    /// A document of `type_uri` carrying an `acl/grant/0.2` payload, consumed
+    /// as `acl/grant/0.2` against `guard`.
+    async fn consume_typed_as_grant(
+        type_uri: &str,
+        guard: &dyn ReplayGuard,
+    ) -> ConsumeOutcome<grant::Response> {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-type", grant_payload());
+        doc.type_uri = type_uri.parse().expect("a valid Type URI");
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.issued_at = Some(Utc::now());
+        doc.proof = Some(dummy_proof());
+        consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(guard),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-type".to_string(),
+            |req, _parties| async move {
+                let entry = req.payload.entry.clone();
+                Ok(req.respond_with("resp-type", grant::Response { entry, ext: None }))
+            },
+        )
+        .await
+    }
+
+    /// §7.2 item 3 on the typed path: a payload that fits `P` does not make a
+    /// document of another specification a document of `P`'s.
+    #[tokio::test]
+    async fn typed_consume_refuses_a_document_of_another_type() {
+        let guard = crate::replay::InMemoryReplayGuard::default();
+        let cases = [
+            (
+                "https://trusttasks.org/spec/chat/message/1.0",
+                StandardCode::UnsupportedType,
+            ),
+            // The same slug under another authority is another specification.
+            (
+                "https://other.example/spec/acl/grant/0.2",
+                StandardCode::UnsupportedType,
+            ),
+            // The same specification at a version that does not reach 0.2.
+            (
+                "https://trusttasks.org/spec/acl/grant/9.9",
+                StandardCode::UnsupportedVersion,
+            ),
+            // The response variant is not the request.
+            (
+                "https://trusttasks.org/spec/acl/grant/0.2#response",
+                StandardCode::UnsupportedType,
+            ),
+        ];
+        for (type_uri, code) in cases {
+            match consume_typed_as_grant(type_uri, &guard).await {
+                ConsumeOutcome::Rejected(err) => {
+                    assert_eq!(err.payload.code, code.into(), "for {type_uri}");
+                }
+                other => panic!("{type_uri}: expected Rejected, got {other:?}"),
+            }
+        }
+        // Refused before the record: the document's own type is still served
+        // under the same `id`, and the `#request` spelling is the same type.
+        for type_uri in [
+            "https://trusttasks.org/spec/acl/grant/0.2#request",
+            "https://trusttasks.org/spec/acl/grant/0.2",
+        ] {
+            let guard = crate::replay::InMemoryReplayGuard::default();
+            assert!(
+                matches!(
+                    consume_typed_as_grant(type_uri, &guard).await,
+                    ConsumeOutcome::Handled(_)
+                ),
+                "{type_uri} is the implemented type"
+            );
+        }
+        assert!(matches!(
+            consume_typed_as_grant("https://trusttasks.org/spec/acl/grant/0.2", &guard).await,
+            ConsumeOutcome::Handled(_)
+        ));
     }
 
     /// §7.2 item 2 runs, and runs *before* the handler. A validator that
@@ -1562,7 +1813,7 @@ mod tests {
         assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
     }
 
-    /// SPEC §8.1 — `identity_mismatch` with no transport-authenticated
+    /// SPEC §8.1 — `identityMismatch` with no transport-authenticated
     /// sender produces `ConsumeOutcome::Suppressed`, not a routed error
     /// (an addressed error would itself be an oracle).
     #[tokio::test]

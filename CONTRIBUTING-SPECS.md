@@ -103,7 +103,8 @@ version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
-targetFrameworkVersion: "0.4.0"    # framework version this spec targets. MAJOR.MINOR.PATCH
+targetFrameworkVersion: "0.6.0"    # framework version this spec targets — the latest one;
+                                   # `npm run new-spec` fills it in. MAJOR.MINOR.PATCH
                                    # (preferred, matches the canonical spec repo) or MAJOR.MINOR
 category: access-control           # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]   # optional — see below
@@ -174,7 +175,7 @@ Notes:
     rationale: A 256 KiB chunk, base64url-encoded (~342 KiB), plus envelope and proof headroom.
   ```
 
-  The bound is **two-sided**: a consumer serving the task **MUST NOT** refuse a document within it on grounds of size alone, and **SHOULD** refuse a larger one with `malformedRequest`, before parsing where the transport tells it the `type` first. It is measured over the serialized Trust Task document as received (the JSON text, `proof` included, no transport envelope), because that is what a consumer can count before it parses. Either variant may be declared alone; an absent one does **not** inherit the other's bound. Declare it when your payload can carry bulk content; a small fixed-shape payload need not. The meta-schema caps it at 16 MiB — content larger than that belongs in a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares its own bound. The Rust codegen emits it as `Payload::MAX_DOCUMENT_BYTES` and `schema_index::max_document_bytes_for(type_uri)`, and `check-bindings` holds the two to the front matter; the TypeScript, Go and Dart generators do not emit it yet.
+  The bound is **two-sided**: a consumer serving the task **MUST NOT** refuse a document within it on grounds of size alone, and **SHOULD** refuse a larger one with `malformedRequest`, before parsing where the transport tells it the `type` first. It is measured over the serialized Trust Task document as received (the JSON text, `proof` included, no transport envelope), because that is what a consumer can count before it parses. Either variant may be declared alone; an absent one does **not** inherit the other's bound. Declare it when your payload can carry bulk content; a small fixed-shape payload need not. The meta-schema caps it at 16 MiB — content larger than that belongs in a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares its own bound. The Rust codegen emits it as `Payload::MAX_DOCUMENT_BYTES` and `schema_index::max_document_bytes_for(type_uri)`, the Dart generators as `SpecPolicy.maxDocumentBytes` on `spec` / `responseSpec`, and `check-bindings` holds both to the front matter; the Dart HTTPS server (`trust_tasks_https`) enforces it per type. The TypeScript and Go generators do not emit it yet.
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, and [Security & Privacy](#the--security--privacy-section) (**required**, and linted — see below), plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
@@ -193,7 +194,8 @@ A specification that defines a fire-and-forget task (no success response documen
 
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
-See `specs/acl/grant/0.1/spec.md` for a worked example.
+See the latest version under `specs/acl/grant/` for a worked example — not an
+earlier one, which predates requirements a new specification must meet.
 
 ## Decisions, holds and repeated requests
 

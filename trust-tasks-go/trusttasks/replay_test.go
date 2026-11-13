@@ -50,6 +50,7 @@ func consequential(
 // consequentialDoc carries the issuedAt that ConsequentialChecks requires.
 func consequentialDoc(mutate func(*tt.Document[payload])) *tt.Document[payload] {
 	return doc(func(d *tt.Document[payload]) {
+		d.Type = relaxedSpec.TypeURI
 		d.Recipient = nil
 		d.IssuedAt = ptr("2026-01-01T00:00:00Z")
 		if mutate != nil {
@@ -171,7 +172,7 @@ func TestItem11RefusesADocumentItCannotPlaceInAnyWindow(t *testing.T) {
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        unbounded,
-		Doc:           doc(func(d *tt.Document[payload]) { d.Recipient = nil }),
+		Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Recipient = nil }),
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -235,7 +236,7 @@ func TestItem11KeepsNoRecordWhenTheCallerDeclaresTheTaskNotConsequential(t *test
 			ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 			PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 			Checks:        tt.NotConsequentialChecks(),
-			Doc:           doc(func(d *tt.Document[payload]) { d.Recipient = nil }),
+			Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Recipient = nil }),
 			MyVID:         me,
 			Now:           testNow,
 			NewErrorID:    func() string { return "err-1" },
@@ -259,53 +260,116 @@ func TestItem11KeepsNoRecordWhenTheCallerDeclaresTheTaskNotConsequential(t *test
 
 /* ── InMemoryReplayGuard ─────────────────────────────────────────────────── */
 
-func TestInMemoryGuardEvictsTheLeastRecentlyUsedRecordAtCapacity(t *testing.T) {
-	guard := tt.NewInMemoryReplayGuard(2)
+// A full guard never drops a record inside its retention window to make room:
+// it refuses the new document instead. Dropping one would let that document
+// execute again.
+func TestInMemoryGuardRefusesRatherThanDroppingALiveRecord(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
 	ctx := context.Background()
-	deadline := testNow.Add(time.Hour)
+	deadline := testNow.Add(30 * 24 * time.Hour)
 
-	mustClaim := func(id, digest string) tt.ReplayVerdict {
-		t.Helper()
-		verdict, err := guard.Claim(ctx, id, digest, deadline, testNow)
-		if err != nil {
-			t.Fatalf("claim: %v", err)
-		}
-		return verdict
+	_, _ = guard.Claim(ctx, "a", "d1", deadline, testNow)
+	_, _ = guard.Claim(ctx, "b", "d2", time.Time{}, testNow)
+	if _, err := guard.Claim(ctx, "c", "d3", deadline, testNow); !errors.Is(err, tt.ErrReplayGuardFull) {
+		t.Fatalf("expected ErrReplayGuardFull, got %v", err)
 	}
-
-	mustClaim("a", "d1")
-	mustClaim("b", "d2")
-	mustClaim("a", "d1") // touch a, making b the least recently used
-	mustClaim("c", "d3") // evicts b
-
 	if guard.Size() != 2 {
 		t.Fatalf("expected 2 records, got %d", guard.Size())
 	}
-	// `a` was touched and so survived; assert that before re-claiming `b`, which
-	// would itself evict something.
-	if verdict := mustClaim("a", "d1"); verdict.Kind != tt.VerdictDuplicate {
-		t.Errorf("expected a to have been retained, got %q", verdict.Kind)
+	for id, digest := range map[string]string{"a": "d1", "b": "d2"} {
+		if verdict, err := guard.Claim(ctx, id, digest, deadline, testNow); err != nil || verdict.Kind != tt.VerdictDuplicate {
+			t.Errorf("%s: expected duplicate while full, got %q (%v)", id, verdict.Kind, err)
+		}
 	}
-	if verdict := mustClaim("b", "d2"); verdict.Kind != tt.VerdictFresh {
-		t.Errorf("expected b to have been evicted, got %q", verdict.Kind)
+}
+
+func TestInMemoryGuardReclaimsExpiredRecordsFirst(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
+	ctx := context.Background()
+
+	_, _ = guard.Claim(ctx, "a", "d1", testNow.Add(5*time.Minute), testNow)
+	_, _ = guard.Claim(ctx, "b", "d2", testNow.Add(time.Hour), testNow)
+	afterA := testNow.Add(10 * time.Minute)
+	if verdict, err := guard.Claim(ctx, "c", "d3", testNow.Add(time.Hour), afterA); err != nil || verdict.Kind != tt.VerdictFresh {
+		t.Fatalf("expected fresh once a's window closed, got %q (%v)", verdict.Kind, err)
+	}
+	if verdict, _ := guard.Claim(ctx, "b", "d2", testNow.Add(time.Hour), afterA); verdict.Kind != tt.VerdictDuplicate {
+		t.Errorf("expected b retained, got %q", verdict.Kind)
+	}
+}
+
+// No one issuer may hold more than its share; at its share it alone is refused.
+func TestInMemoryGuardLimitsOneIssuersShare(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(10) // a tenth of 10 is 1
+	ctx := context.Background()
+	month := testNow.Add(30 * 24 * time.Hour)
+	claim := func(issuer, id string, until, now time.Time) (tt.ReplayVerdict, error) {
+		return guard.ClaimFor(ctx, issuer, id, "d", until, now)
+	}
+	if v, err := claim("did:example:a", "a1", month, testNow); err != nil || v.Kind != tt.VerdictFresh {
+		t.Fatalf("first: %q %v", v.Kind, err)
+	}
+	if _, err := claim("did:example:a", "a2", month, testNow); !errors.Is(err, tt.ErrReplayGuardIssuerShare) {
+		t.Fatalf("expected ErrReplayGuardIssuerShare, got %v", err)
+	}
+	if v, _ := claim("did:example:a", "a1", month, testNow); v.Kind != tt.VerdictDuplicate {
+		t.Errorf("own record: %q", v.Kind)
+	}
+	for _, c := range []struct{ issuer, id string }{{"did:example:b", "b1"}, {"", "n1"}} {
+		if v, err := claim(c.issuer, c.id, month, testNow); err != nil || v.Kind != tt.VerdictFresh {
+			t.Errorf("%q: %q %v", c.issuer, v.Kind, err)
+		}
+	}
+	if v, err := claim("did:example:a", "a2", time.Time{}, month.Add(time.Second)); err != nil || v.Kind != tt.VerdictFresh {
+		t.Errorf("after expiry: %q %v", v.Kind, err)
+	}
+	wide := tt.NewInMemoryReplayGuard(10).WithPerIssuerLimit(3)
+	for _, id := range []string{"x1", "x2", "x3"} {
+		_, _ = wide.ClaimFor(ctx, "did:example:a", id, "d", time.Time{}, testNow)
+	}
+	if _, err := wide.ClaimFor(ctx, "did:example:a", "x4", "d", time.Time{}, testNow); err == nil {
+		t.Error("configured share not enforced")
+	}
+}
+
+// Through the pipeline, a full guard's refusal is unavailable (retryable), and
+// the record it kept still absorbs a resend.
+func TestItem11AFullGuardRefusesUnavailable(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(1)
+	executions := 0
+	first := consequentialDoc(nil)
+	if outcome := consequential(t, guard, first, &executions, testNow); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected handled, got %q", outcome.Kind)
+	}
+	second := consequentialDoc(func(d *tt.Document[payload]) { d.ID = "req-2" })
+	outcome := consequential(t, guard, second, &executions, testNow)
+	if outcome.Kind != tt.OutcomeRejected || outcome.Error.Payload.Code != string(tt.CodeUnavailable) ||
+		!outcome.Error.Payload.Retryable {
+		t.Fatalf("expected a retryable unavailable, got %q %+v", outcome.Kind, outcome.Error)
+	}
+	if outcome := consequential(t, guard, consequentialDoc(nil), &executions, testNow); outcome.Kind != tt.OutcomeDuplicate {
+		t.Fatalf("expected the kept record to absorb a resend, got %q", outcome.Kind)
+	}
+	if executions != 1 {
+		t.Fatalf("executions = %d, want 1", executions)
 	}
 }
 
 func TestInMemoryGuardDoesNotLetAConflictDisplaceTheRecordItConflictsWith(t *testing.T) {
-	guard := tt.NewInMemoryReplayGuard(2)
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
 	ctx := context.Background()
 	deadline := testNow.Add(time.Hour)
 
 	_, _ = guard.Claim(ctx, "a", "d1", deadline, testNow)
 	_, _ = guard.Claim(ctx, "b", "d2", deadline, testNow)
-	// A flood of conflicts on `a` must not refresh its recency and evict `b`.
+	// A flood of conflicts on `a` must not displace either record.
 	for i := 0; i < 5; i++ {
 		verdict, _ := guard.Claim(ctx, "a", "other", deadline, testNow)
 		if verdict.Kind != tt.VerdictConflict {
 			t.Fatalf("expected conflict, got %q", verdict.Kind)
 		}
 	}
-	_, _ = guard.Claim(ctx, "c", "d3", deadline, testNow) // evicts the LRU, which is a
+	_, _ = guard.Claim(ctx, "c", "d3", deadline, testNow) // full: refused, nothing dropped
 	if verdict, _ := guard.Claim(ctx, "b", "d2", deadline, testNow); verdict.Kind != tt.VerdictDuplicate {
 		t.Errorf("expected b retained, got %q", verdict.Kind)
 	}
@@ -483,6 +547,52 @@ func TestRecordExpiryPrefersExpiresAtThenIssuedAtPlusWindow(t *testing.T) {
 	}
 }
 
+// A stated expiresAt replaces MaxAge (SPEC §7.2, *Bounding the record*), as in
+// Rust: ten minutes old with an hour left is accepted.
+func TestFreshnessLetsAStatedExpiresAtReplaceMaxAge(t *testing.T) {
+	policy := tt.ConsequentialFreshness()
+	d := freshnessDoc(ptr("2025-12-31T23:50:00Z"), ptr("2026-01-01T01:00:00Z"))
+	if reason := tt.ValidateFreshness(d, testNow, policy); reason != nil {
+		t.Fatalf("expected acceptance, got %q", reason.Message)
+	}
+}
+
+// A distant expiresAt is clamped to the expiry horizon, for acceptance and for
+// the record alike, so a producer cannot pin a record for millennia.
+func TestFreshnessClampsADistantExpiresAtToTheHorizon(t *testing.T) {
+	policy := tt.ConsequentialFreshness()
+	issuedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	d := freshnessDoc(ptr("2026-01-01T00:00:00Z"), ptr("9999-12-31T23:59:59Z"))
+	end := issuedAt.Add(tt.DefaultExpiryHorizon)
+
+	got, bounded := tt.RecordExpiry(d, policy, testNow)
+	if !bounded || !got.Equal(end.Add(policy.Skew)) {
+		t.Errorf("record kept until %v, want %v", got, end.Add(policy.Skew))
+	}
+	// Accepted inside the horizon (plus skew), refused from its end — the
+	// instant the record may be dropped — so never accepted once it could be.
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew-time.Millisecond), policy); reason != nil {
+		t.Errorf("expected acceptance just inside the horizon, got %q", reason.Message)
+	}
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew), policy); reason == nil ||
+		reason.Code != tt.CodeExpired {
+		t.Errorf("expected expired at the horizon's end, got %v", reason)
+	}
+
+	// A zero horizon clamps at issuedAt; only nil means none, as in the other
+	// runtimes.
+	zero := time.Duration(0)
+	immediate := tt.FreshnessPolicy{Skew: tt.DefaultSkew, MaxAge: tt.DefaultMaxAge, ExpiryHorizon: &zero}
+	if got, _ := tt.RecordExpiry(d, immediate, testNow); !got.Equal(issuedAt.Add(tt.DefaultSkew)) {
+		t.Errorf("zero horizon kept the record until %v", got)
+	}
+
+	unbounded := tt.FreshnessPolicy{Skew: tt.DefaultSkew, MaxAge: tt.DefaultMaxAge}
+	if got, _ := tt.RecordExpiry(d, unbounded, testNow); got.Year() != 9999 {
+		t.Errorf("with no horizon the stated expiresAt stands, got %v", got)
+	}
+}
+
 /* ── Canonicalization and digest ─────────────────────────────────────────── */
 
 func TestSHA256MatchesThePublishedVectors(t *testing.T) {
@@ -637,5 +747,24 @@ func TestItem11FailsClosedOnAVerdictItDoesNotKnow(t *testing.T) {
 	}
 	if executions != 0 {
 		t.Error("executed without the guard saying the document was fresh")
+	}
+}
+
+// §7.2 item 3 refuses before the claim: a document of another type does not
+// burn the id, so the right document is still served under it.
+func TestItem3RefusalDoesNotBurnTheID(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(0)
+	executions := 0
+	wrong := consequential(t, guard, consequentialDoc(func(d *tt.Document[payload]) {
+		d.Type = "https://trusttasks.org/spec/chat/message/1.0"
+	}), &executions, testNow)
+	if wrong.Kind != tt.OutcomeRejected || wrong.Error.Payload.Code != string(tt.CodeUnsupportedType) {
+		t.Fatalf("expected unsupportedType, got %q", wrong.Kind)
+	}
+	if right := consequential(t, guard, consequentialDoc(nil), &executions, testNow); right.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected handled, got %q", right.Kind)
+	}
+	if executions != 1 {
+		t.Fatalf("executions = %d, want 1", executions)
 	}
 }

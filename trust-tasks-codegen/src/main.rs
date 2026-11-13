@@ -1,8 +1,11 @@
 //! Generate Rust payload types for `trust-tasks-rs` from the `specs/` registry.
 //!
-//! Walks `<repo>/specs/<slug>/<version>/payload.schema.json`, runs each schema
-//! through `typify`, and writes one Rust module per (slug, version) into
-//! `<repo>/trust-tasks-rs/src/specs/`.
+//! Walks `<repo>/specs/<slug>/<version>/payload.schema.json`, builds each
+//! version's registry bundle, generates its module from the bundle with
+//! `trust_tasks_build::generate_module` (the generator an application's
+//! `build.rs` runs), and writes one Rust module per (slug, version) into
+//! `<repo>/trust-tasks-rs/src/specs/`, with the `mod.rs` tree, the Type URI
+//! indexes, the Cargo feature table and the conformance tests around them.
 //!
 //! Run from anywhere in the workspace, then `cargo fmt` to align the
 //! generated output with rustfmt (prettyplease and rustfmt disagree on
@@ -37,10 +40,11 @@ use trust_tasks_build::publish::{self, compute_lifecycles, Lifecycle};
 /// `trust_tasks_rs::ErrorPayload`, so we never emit a generated version.
 const SKIP_SLUGS: &[&str] = &["trust-task-error"];
 
-/// Cargo feature that turns on every task family at once. `default` is
-/// exactly this one feature, so a consumer who says nothing keeps the
-/// pre-0.14 module tree; `default-features = false` plus a handful of
-/// family features is what buys the compile-time saving.
+/// Cargo feature that turns on every task family at once. It is NOT in
+/// `default` (#1102): every prebuilt module is deprecated (milestone 5 of
+/// docs/design/consumer-side-generation.md) and compiling them all is a
+/// ~17 GB build, so a consumer who says nothing gets the runtime alone and
+/// opts in with `features = ["all-specs"]` or one feature per family.
 const ALL_SPECS_FEATURE: &str = "all-specs";
 
 /// Whether a top-level family is one of the framework-reserved slugs of
@@ -79,7 +83,7 @@ const UNIT_TEST_FAMILIES: &[&str] = &["acl"];
 /// `cargo test` compiles the library twice — once as the library that
 /// integration tests and dependents link, once more with `cfg(test)` as the
 /// unit-test harness — and the generated tree is nearly all of the crate (one
-/// module per specification, ~46 MB). The second copy was the largest single
+/// module per specification version). The second copy was the largest single
 /// cost of a CI run, and its memory peak beside the first is what pushed the
 /// test job past the hosted runner's 16 GB. The unit tests only need
 /// `UNIT_TEST_FAMILIES`; everything that tests the generated tree as a whole
@@ -137,12 +141,24 @@ impl Spec {
         self.slug.split('/').collect()
     }
 
-    /// `["acl", "grant"]` with hyphens converted to underscores so each
-    /// segment is a valid Rust identifier (e.g. `change-role` → `change_role`).
+    /// `["acl", "grant"]` as Rust module names: hyphens converted to
+    /// underscores (`change-role` → `change_role`), a keyword written raw
+    /// (`move` → `r#move`) and `self`/`super`/`crate` suffixed (`self_`) —
+    /// [`trust_tasks_build::module_name`], so this tree and an application's
+    /// generated one name a module alike.
     fn module_segments(&self) -> Vec<String> {
         self.slug_segments()
             .iter()
-            .map(|s| s.replace('-', "_"))
+            .map(|s| trust_tasks_build::module_name(s))
+            .collect()
+    }
+
+    /// [`Spec::module_segments`] as the files and directories that hold them:
+    /// `r#move` lives in `move.rs`.
+    fn file_segments(&self) -> Vec<String> {
+        self.module_segments()
+            .iter()
+            .map(|m| trust_tasks_build::module_file_name(m).to_string())
             .collect()
     }
 
@@ -165,16 +181,6 @@ impl Spec {
     /// This version as the shared bundle builder sees it.
     fn dir(&self) -> publish::SpecDir {
         publish::SpecDir::new(&self.slug, &self.version, self.schema_path.clone())
-    }
-
-    /// The version's policy, read by the shared builder.
-    fn policy(&self) -> Result<publish::SpecPolicyDecl> {
-        let has_response = fs::read_to_string(&self.schema_path)
-            .ok()
-            .and_then(|t| serde_json::from_str::<Value>(&t).ok())
-            .and_then(|v| v.get("$defs").and_then(|d| d.get("Response")).cloned())
-            .is_some();
-        publish::read_spec_policy(&self.dir(), has_response, &publish::Resolver::local())
     }
 
     /// Path to the adjacent `spec.md`.
@@ -468,8 +474,8 @@ fn main() -> Result<()> {
     }
 
     write_mod_tree(&specs, &out_root)?;
-    write_schema_index(&specs, &repo_root)?;
-    write_extends_index(&specs, &repo_root)?;
+    write_schema_index(&specs, &modules, &repo_root)?;
+    write_extends_index(&specs, &modules, &repo_root)?;
     write_cargo_features(&gated, &repo_root)?;
 
     println!(
@@ -494,7 +500,7 @@ fn main() -> Result<()> {
 
 /// Rewrite the generated block of `trust-tasks-rs/Cargo.toml`'s `[features]`
 /// table: one feature per top-level spec family, an `all-specs` umbrella
-/// enabling every one of them, and `default = ["all-specs"]`.
+/// enabling every one of them, and an empty `default`.
 ///
 /// Generated rather than hand-maintained on purpose. `CLAUDE.md` records three
 /// separate incidents of a hand-kept list drifting from the tree; a family
@@ -504,12 +510,15 @@ fn main() -> Result<()> {
 /// re-deriving the family set from `specs/` and asserting the table matches.
 fn write_cargo_features(gated: &[String], repo_root: &Path) -> Result<()> {
     let mut body = String::new();
-    body.push_str("# One feature per top-level spec family. `default` is the umbrella, so an\n");
-    body.push_str("# unconfigured consumer gets every family exactly as before; the saving is\n");
-    body.push_str("# `default-features = false, features = [\"vault\"]` and friends.\n");
-    body.push_str("default = [\"");
+    body.push_str("# One feature per top-level spec family, and the `");
     body.push_str(ALL_SPECS_FEATURE);
-    body.push_str("\"]\n");
+    body.push_str("` umbrella. `default`\n");
+    body.push_str(
+        "# is empty (#1102): every prebuilt module is deprecated, so a plain dependency\n",
+    );
+    body.push_str("# compiles the runtime alone. Opt in with `features = [\"vault\"]` and\n");
+    body.push_str("# friends, or `features = [\"all-specs\"]` for every family.\n");
+    body.push_str("default = []\n");
     body.push_str(ALL_SPECS_FEATURE);
     body.push_str(" = [\n");
     for family in gated {
@@ -687,13 +696,14 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         .transpose()?;
 
     let mut path = out_root.to_path_buf();
-    for seg in spec.module_segments() {
+    for seg in spec.file_segments() {
         path = path.join(seg);
     }
     Ok(GeneratedSpec {
         path: path.join(format!("{}.rs", spec.version_module())),
         contents: formatted,
         conformance,
+        bundle: parsed,
     })
 }
 
@@ -705,6 +715,10 @@ struct GeneratedSpec {
     path: PathBuf,
     contents: String,
     conformance: Option<String>,
+    /// The bundle the module was generated from. The indexes read the
+    /// version's policy, `extends` and response side from it, so they cannot
+    /// disagree with the module they index.
+    bundle: trust_tasks_build::Bundle,
 }
 
 /// Emit one spec's file of the `conformance` integration test, with one test
@@ -906,7 +920,7 @@ struct ModNode {
 /// only validate by hand-writing a match arm per task and remembering to add one
 /// with every new task — which is to say, it would validate whatever somebody
 /// remembered, which is not validation.
-fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
+fn write_schema_index(specs: &[Spec], modules: &[GeneratedSpec], repo_root: &Path) -> Result<()> {
     let mut arms = String::new();
     // Request-side only: the flag-driven rules are about a document a consumer
     // *received*, and a `#response` has no audience-binding or proof
@@ -919,7 +933,7 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
     // wildcard means "no declared bound", and for a Type URI this build does
     // not know that is the same answer — the consumer's own transport bound.
     let mut size_arms = String::new();
-    for spec in specs {
+    for (spec, module) in specs.iter().zip(modules) {
         // The error payload is hand-modelled and has no generated module.
         if spec.slug == "trust-task-error" {
             continue;
@@ -967,7 +981,7 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             path,
             spec.version_module(),
         ));
-        let max_document_bytes = spec.policy()?.max_document_bytes;
+        let max_document_bytes = &module.bundle.policy.max_document_bytes;
         if max_document_bytes.request.is_some() {
             size_arms.push_str(&gate);
             size_arms.push_str(&format!(
@@ -990,15 +1004,9 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
         // type already declares as `TYPE_URI`. Indexing only requests left a
         // consumer able to validate what it received and not what it sent
         // back — and a producer's own output is the half it can actually fix.
-        // `$defs.Response` is what makes the generator emit a `Response`
-        // type; read it from the same file rather than trusting a flag that
-        // is not on this struct.
-        let has_response = fs::read_to_string(&spec.schema_path)
-            .ok()
-            .and_then(|t| serde_json::from_str::<Value>(&t).ok())
-            .and_then(|v| v.get("$defs").and_then(|d| d.get("Response")).cloned())
-            .is_some();
-        if has_response {
+        // A bundle's `responseSchema` is what makes the generator emit a
+        // `Response` type, so it is read from the bundle the module came from.
+        if module.bundle.response_schema.is_some() {
             arms.push_str(&gate);
             arms.push_str(&format!(
                 "        {:?} => <crate::specs::{}::{}::Response as crate::Payload>::PAYLOAD_SCHEMA,\n",
@@ -1157,10 +1165,10 @@ pub use crate::extension::extends_for;
 /// the per-module constants to the front matter; the generator holds this
 /// table to the same reading, since both come from the shared front-matter
 /// reader (`publish::read_spec_policy`).
-fn write_extends_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
+fn write_extends_index(specs: &[Spec], modules: &[GeneratedSpec], repo_root: &Path) -> Result<()> {
     let mut arms = String::new();
-    for spec in specs {
-        if let Some(target) = spec.policy()?.extends {
+    for (spec, module) in specs.iter().zip(modules) {
+        if let Some(target) = &module.bundle.extends {
             arms.push_str(&format!(
                 "        {:?} => Some({:?}),\n",
                 spec.type_uri(),
@@ -1225,7 +1233,7 @@ fn write_conformance_tree(
         };
         let segments = spec.module_segments();
         let mut path = dir.clone();
-        for seg in &segments {
+        for seg in spec.file_segments() {
             path = path.join(seg);
         }
         fs::create_dir_all(&path)?;
@@ -1344,7 +1352,8 @@ fn write_node(
 
     // Only the root level gates: a family's feature covers its whole subtree.
     for (name, child) in &node.children {
-        write_node(child, &dir.join(name), false, &BTreeMap::new())?;
+        let dir = dir.join(trust_tasks_build::module_file_name(name));
+        write_node(child, &dir, false, &BTreeMap::new())?;
     }
     Ok(())
 }
@@ -1369,5 +1378,44 @@ fn replace_between(existing: &str, begin: &str, end: &str, body: &str) -> String
             format!("{before}\n{body}\n{after}")
         }
         _ => format!("{existing}\n{begin}\n{body}\n{end}\n"),
+    }
+}
+
+#[cfg(test)]
+mod keyword_tests {
+    use super::*;
+
+    fn spec(slug: &str) -> Spec {
+        Spec {
+            slug: slug.to_string(),
+            version: "0.1".to_string(),
+            schema_path: PathBuf::from(format!("specs/{slug}/0.1/payload.schema.json")),
+            deprecation: None,
+        }
+    }
+
+    /// A slug segment that is a Rust keyword is declared as a raw module and
+    /// lives in a file named without the prefix; one no raw identifier can
+    /// spell takes a `_` suffix.
+    #[test]
+    fn keyword_segments_are_raw_modules_in_plain_files() {
+        let move_ = spec("keys/move");
+        assert_eq!(move_.module_segments(), ["keys", "r#move"]);
+        assert_eq!(move_.file_segments(), ["keys", "move"]);
+        let self_ = spec("self/type-x");
+        assert_eq!(self_.module_segments(), ["self_", "type_x"]);
+
+        let dir = std::env::temp_dir().join(format!("tt-codegen-keywords-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        write_mod_tree(&[move_, self_], &dir).unwrap();
+        let keys = fs::read_to_string(dir.join("keys/mod.rs")).unwrap();
+        assert!(keys.contains("pub mod r#move;"), "{keys}");
+        let leaf = fs::read_to_string(dir.join("keys/move/mod.rs")).unwrap();
+        assert!(leaf.contains("pub mod v0_1;"), "{leaf}");
+        let root = fs::read_to_string(dir.join("mod.rs")).unwrap();
+        assert!(root.contains("pub mod self_;"), "{root}");
+        assert!(dir.join("self_/type_x/mod.rs").is_file());
+        fs::remove_dir_all(&dir).ok();
     }
 }

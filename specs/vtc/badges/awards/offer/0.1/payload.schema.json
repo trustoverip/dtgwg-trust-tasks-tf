@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/awards/offer/0.1",
+  "title": "VTC Badges — Awards — Offer — payload",
+  "description": "A badge's owner offers a community badge to one or more members, or to every member of a group. Each offer is an award in state `offered` that the member accepts or declines; nothing is admitted or issued until they accept. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+    },
+    "to": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+      },
+      "description": "The members to offer the badge to. Exactly one of `to` and `group` is present."
+    },
+    "group": {
+      "$ref": "../../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId",
+      "description": "Offer the badge to every active member of this group whose member list the signer may see. Exactly one of `to` and `group` is present."
+    },
+    "note": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/AwardNote",
+      "description": "What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "to"
+      ],
+      "not": {
+        "required": [
+          "group"
+        ]
+      }
+    },
+    {
+      "required": [
+        "group"
+      ],
+      "not": {
+        "required": [
+          "to"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Awards — Offer — response payload",
+      "description": "The success response to a vtc/badges/awards/offer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "awards",
+        "skipped"
+      ],
+      "properties": {
+        "awards": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": {
+            "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award"
+          },
+          "description": "The offers recorded, each in state `offered`."
+        },
+        "skipped": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "entryId",
+              "reason"
+            ],
+            "properties": {
+              "entryId": {
+                "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "notActiveMember",
+                  "alreadyOffered",
+                  "alreadyHolder",
+                  "requestPending"
+                ],
+                "description": "`notActiveMember`: not an active member, or not one the signer may see. `alreadyOffered`: an open offer of this badge already names them. `alreadyHolder`: they hold the badge and it is not repeatable. `requestPending`: they have asked for the badge; the owners decide the request instead."
+              }
+            }
+          },
+          "description": "Members the badge was not offered to, and why. Never an error: the rest of the offers stand."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

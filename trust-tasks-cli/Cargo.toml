@@ -3,7 +3,7 @@ name = "trust-tasks-cli"
 # A new crate's first version. From here on release-plz assigns it, as it does
 # for every other crate (RELEASING.md). The first crates.io publish is manual:
 # trusted publishing cannot create a crate that does not exist yet.
-version = "0.1.3"
+version = "0.2.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -33,7 +33,7 @@ trust-tasks-build = { path = "../trust-tasks-build", version = "0.1", features =
 clap = { version = "4", features = ["derive", "env"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sha2 = "0.10"
+sha2 = "0.11"
 # Reads trust-tasks.lock. The lock is written by hand (src/lock.rs), so its
 # layout is exactly the documented one.
 toml = "1"

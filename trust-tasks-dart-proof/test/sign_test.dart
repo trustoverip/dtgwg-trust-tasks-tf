@@ -41,9 +41,83 @@ void main() {
         rust,
         key.signer,
         created: DateTime.parse(rustProof['created'] as String),
+        proofPurpose: rustProof['proofPurpose'] as String,
       );
       expect(dart['proof'], rustProof);
     });
+
+    // The shared @context vector: eddsa-jcs-2022 §3.3.1 step 2 copies the
+    // document's @context into the proof, and every signer reproduces its
+    // proofValue byte for byte (#1113).
+    test('reproduces the shared @context vector byte for byte', () async {
+      final vector = jsonDecode(
+        File('../fixtures/proof/eddsa-jcs-2022-context.json')
+            .readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final proof = vector['proof'] as Map<String, dynamic>;
+      final key = TestIdentity.ed25519(7);
+      final dart = await signTrustTask(
+        vector,
+        key.signer,
+        created: DateTime.parse(proof['created'] as String),
+        proofPurpose: proof['proofPurpose'] as String,
+      );
+      expect(dart['proof'], proof);
+      expect(await verifier.verifyDetailed(dart), ProofVerification.ok);
+    });
+  });
+
+  group('@context', () {
+    Future<Map<String, dynamic>> signedWithContext() async {
+      final id = TestIdentity.ed25519(1);
+      return signTrustTask(
+        {
+          '@context': [
+            'https://www.w3.org/ns/credentials/v2',
+            {'ex': 'https://example.org/#'},
+          ],
+          ...grant(id.did),
+        },
+        id.signer,
+      );
+    }
+
+    test('a document without one gets a proof without one', () async {
+      final id = TestIdentity.ed25519(1);
+      final signed = await signTrustTask(grant(id.did), id.signer);
+      expect(
+          signed['proof'] as Map<String, dynamic>, isNot(contains('@context')));
+    });
+
+    test('a signed document, inline context included, verifies', () async {
+      expect(
+        await verifier.verifyDetailed(await signedWithContext()),
+        ProofVerification.ok,
+      );
+    });
+
+    for (final (name, mutate)
+        in <(String, void Function(Map<String, dynamic>))>[
+      ('removed from the document', (d) => d.remove('@context')),
+      (
+        'reordered in the document',
+        (d) => d['@context'] = (d['@context'] as List).reversed.toList(),
+      ),
+      (
+        'changed in the proof',
+        (d) => (d['proof'] as Map<String, dynamic>)['@context'] = [
+              'https://example.org/other',
+            ],
+      ),
+    ]) {
+      test('$name: malformedProof', () async {
+        final doc = jsonDecode(jsonEncode(await signedWithContext()))
+            as Map<String, dynamic>;
+        mutate(doc);
+        final result = await verifier.verifyDetailed(doc);
+        expect(result.failure, ProofFailureKind.malformedProof);
+      });
+    }
   });
 
   for (final make in [
@@ -109,6 +183,23 @@ void main() {
     await signTrustTask(doc, id.signer);
     expect(jsonEncode(doc), before);
   });
+
+  test('proofPurpose defaults to authentication', () async {
+    final id = TestIdentity.ed25519(1);
+    final signed = await signTrustTask(grant(id.did), id.signer);
+    expect((signed['proof'] as Map)['proofPurpose'], 'authentication');
+    expect(await verifier.verify(signed), isTrue);
+  });
+
+  for (final purpose in ['keyAgreement', 'assertion']) {
+    test('refuses proofPurpose $purpose', () {
+      final id = TestIdentity.ed25519(1);
+      expect(
+        () => signTrustTask(grant(id.did), id.signer, proofPurpose: purpose),
+        throwsArgumentError,
+      );
+    });
+  }
 
   group('refuses a document that could never verify', () {
     final id = TestIdentity.ed25519(1);

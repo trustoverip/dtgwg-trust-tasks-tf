@@ -1,0 +1,39 @@
+[
+  {
+    "note": "No badge: a picture is read off a badge the caller may see, never by digest alone.",
+    "payload": {
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "note": "A badge identifier that is not one: a group identifier does not name a badge, even a badge group's.",
+    "payload": {
+      "badgeId": "grp_Hs7Qm2Lk9Tn4Bv1X"
+    }
+  },
+  {
+    "note": "An uppercase digest.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An answer with the reference but no bytes: the bytes are what the task is for.",
+    "payload": {
+      "image": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "mediaType": "image/webp",
+        "size": 1024
+      }
+    }
+  }
+]

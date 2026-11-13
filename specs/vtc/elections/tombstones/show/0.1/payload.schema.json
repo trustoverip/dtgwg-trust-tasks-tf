@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1",
+  "title": "VTC Elections — Tombstones — Show — payload",
+  "description": "A member reads what the community keeps of an election on a deleted board — its tombstone — to check a receipt against the board heads the community kept. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "electionId"
+  ],
+  "properties": {
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Checkpoint": {
+      "title": "Checkpoint",
+      "description": "A board head the community read from the ballot box and kept, with the ballot box's signed document that carried it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "head",
+        "document"
+      ],
+      "properties": {
+        "head": {
+          "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/BoardHead"
+        },
+        "document": {
+          "type": "object",
+          "description": "The ballot box's signed voting/board/head `#response` document whose payload carries `head`, kept whole and exactly as received — proof included — so anyone can verify it against the ballot box's DID without trusting the community."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Tombstones — Show — response payload",
+      "description": "The success response to a vtc/elections/tombstones/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "ballotBox",
+        "checkpoints",
+        "deletedAt"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of the election's manifest, as registered. Every cast was bound to it."
+        },
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID of the ballot box the election was registered with, whose signature each checkpoint's document carries."
+        },
+        "checkpoints": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Checkpoint"
+          },
+          "description": "The board heads the community kept, oldest first; the last is the final head once voting closed."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the board the election was opened on was deleted."
+        },
+        "removeAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community removes this tombstone. Absent: kept for ever."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -12,7 +12,7 @@
 //! The specimens come from the `keys`, `vta` and `vtc` families (and `rooms`
 //! and `vault` for the details checks), so the file compiles only when those
 //! are enabled, and a single-family build such as
-//! `--no-default-features --features acl` skips it instead of failing.
+//! `--features acl` skips it instead of failing.
 #![cfg(all(feature = "keys", feature = "vta", feature = "vtc"))]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).

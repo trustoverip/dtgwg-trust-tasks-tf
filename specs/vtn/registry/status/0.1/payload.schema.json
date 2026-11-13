@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/registry/status/0.1",
+  "title": "VTN Registry — Status — payload",
+  "description": "An administrator's request for how the network's membership stands in its trust registry. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected", "put", "deleted", "failed"],
+      "properties": {
+        "reconciledAt": { "type": "string", "format": "date-time", "description": "When the reconcile ran." },
+        "expected": { "type": "integer", "minimum": 0, "description": "Records the entries project." },
+        "put": { "type": "array", "items": { "type": "string" }, "description": "Records written, by party." },
+        "deleted": { "type": "array", "items": { "type": "string" }, "description": "Records deleted, as `party action`." },
+        "failed": { "type": "array", "items": { "type": "string" }, "description": "Writes that failed, as `party: why`." },
+        "blocked": { "type": "string", "description": "Why nothing could be written at all, when so." }
+      }
+    },
+    "Row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "result"],
+      "properties": {
+        "did": { "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did" },
+        "projected": { "type": "string", "description": "The action the entries project, if any." },
+        "held": { "type": "string", "description": "The action the registry holds, if any." },
+        "result": { "enum": ["ok", "missing", "stale", "wrong"] }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Registry — Status — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry", "authority", "resource", "actions", "publishes", "writer", "connected", "reachable"],
+      "properties": {
+        "registry": { "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did" },
+        "authority": { "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did" },
+        "resource": { "type": "string", "minLength": 1 },
+        "actions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["member", "listed"],
+          "properties": {
+            "member": { "type": "string", "minLength": 1 },
+            "listed": { "type": "string", "minLength": 1 }
+          }
+        },
+        "publishes": { "enum": ["members", "membersAndListed"] },
+        "writer": { "type": "string", "maxLength": 1024 },
+        "connected": { "type": "boolean" },
+        "lastSync": { "$ref": "#/$defs/Sync" },
+        "reachable": { "type": "boolean" },
+        "records": { "type": "array", "items": { "$ref": "#/$defs/Row" } },
+        "reason": { "type": "string", "maxLength": 1024 },
+        "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

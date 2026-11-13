@@ -7,9 +7,9 @@ path = "fixture-registry/site"
 
 [[task]]
 slug = "acl/grant"
-version = "0.2"
-type_uri = "https://trusttasks.org/spec/acl/grant/0.2"
-digest = "sha256:fa547284ce5f218ac5036f18585c598ad4b3f871ef604da738c228f5da8aab50"
+version = "0.3"
+type_uri = "https://trusttasks.org/spec/acl/grant/0.3"
+digest = "sha256:0b99efcbe3c646a6895c10271f3de13ff0e3c4b56be9eaf7de9104cac9a7b141"
 
 [[task]]
 slug = "keys/list"

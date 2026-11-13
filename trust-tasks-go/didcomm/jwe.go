@@ -177,12 +177,19 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 	if err := json.Unmarshal(protectedJSON, &header); err != nil {
 		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "protected header is not JSON"}
 	}
+	var protectedMembers map[string]json.RawMessage
+	if err := json.Unmarshal(protectedJSON, &protectedMembers); err != nil {
+		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "protected header is not a JSON object"}
+	}
 	if header.Alg != algAuthcrypt || header.Enc != encA256CBC {
 		// anoncrypt (ECDH-ES) or any other profile: no authenticated sender.
 		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("alg %q enc %q is not authcrypt", header.Alg, header.Enc)}
 	}
 	if header.Skid == "" {
 		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "authcrypt envelope carries no skid"}
+	}
+	if err := checkJOSEStructure(wire, protectedJSON, protectedMembers, header); err != nil {
+		return nil, err
 	}
 	if header.Epk.Crv != "X25519" || header.Epk.Kty != "OKP" {
 		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "epk is not an X25519 OKP key"}
@@ -196,6 +203,33 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "epk is not a valid X25519 point"}
 	}
 
+	// apu and apv are KDF inputs, so a value the sender did not intend fails the
+	// unwrap anyway; checking them here also binds what they name. apu is the
+	// sender's kid, and apv commits the protected header to the recipient kids,
+	// which otherwise travel only in the unprotected per-recipient headers
+	// (DIDComm v2, "ECDH-1PU key wrapping and common protected headers").
+	apu, err := b64.DecodeString(header.Apu)
+	if err != nil || header.Apu == "" {
+		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "apu is absent or not base64url"}
+	}
+	if string(apu) != header.Skid {
+		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "apu does not name the skid"}
+	}
+	apv, err := b64.DecodeString(header.Apv)
+	if err != nil || header.Apv == "" {
+		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "apv is absent or not base64url"}
+	}
+	kids := make([]string, 0, len(env.Recipients))
+	for _, r := range env.Recipients {
+		if r.Header.Kid == "" {
+			return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "a recipient entry carries no kid"}
+		}
+		kids = append(kids, r.Header.Kid)
+	}
+	if len(kids) == 0 || subtle.ConstantTimeCompare(apv, computeAPV(kids)) != 1 {
+		return nil, &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "apv does not match the recipient kids"}
+	}
+
 	rec, ok := findRecipient(env.Recipients, recipientKid)
 	if !ok {
 		return nil, &EnvelopeError{Failure: FailNotForThisRecipient, Detail: fmt.Sprintf("no recipient entry for %s", recipientKid)}
@@ -206,6 +240,9 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 	}
 
 	senderPub, err := resolve(header.Skid)
+	if err == nil && senderPub == nil {
+		err = errors.New("resolver returned no key")
+	}
 	if err != nil {
 		return nil, &EnvelopeError{Failure: FailSenderUnresolved, Detail: fmt.Sprintf("cannot resolve sender %s: %v", header.Skid, err), Sender: header.Skid}
 	}
@@ -221,11 +258,8 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 	z := append(append([]byte{}, ze...), zs...)
 
 	// PartyUInfo/PartyVInfo are the raw (base64url-decoded) apu/apv the header
-	// carries, so the KDF input matches the sender's regardless of how it chose
-	// to fill them. The content-encryption tag is fed into the KDF as
+	// carries, checked above. The content-encryption tag is fed into the KDF as
 	// SuppPrivInfo (ECDH-1PU tag-in-KDF), so it must be decoded before the KEK.
-	apu, _ := b64.DecodeString(header.Apu)
-	apv, _ := b64.DecodeString(header.Apv)
 	tag, err := b64.DecodeString(env.Tag)
 	if err != nil {
 		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: "tag is not base64url", Sender: header.Skid}
@@ -251,20 +285,77 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: "content decryption failed", Sender: header.Skid}
 	}
 
-	return &authcrypted{plaintext: plaintext, senderKid: header.Skid, recipientKid: rec.Header.Kid}, nil
+	// The recipient is the key this call opened the envelope with — never a
+	// value read from the envelope.
+	return &authcrypted{plaintext: plaintext, senderKid: header.Skid, recipientKid: recipientKid}, nil
 }
 
+// findRecipient returns the recipient entry whose kid is exactly kid. Every
+// entry carries a kid (checked by the caller); there is no unlabelled entry to
+// fall back on.
 func findRecipient(recipients []recipient, kid string) (recipient, bool) {
 	for _, r := range recipients {
-		if r.Header.Kid == kid {
+		if kid != "" && r.Header.Kid == kid {
 			return r, true
 		}
 	}
-	// A single unlabelled recipient is taken to be ours.
-	if len(recipients) == 1 && recipients[0].Header.Kid == "" {
-		return recipients[0], true
-	}
 	return recipient{}, false
+}
+
+// joseMembersNotUsed are the RFC 7516 §7.2.1 JWE JSON members this profile
+// never produces and does not process. Each would change what the envelope
+// means — a shared unprotected header, the flattened single-recipient form,
+// additional authenticated data — so an envelope carrying one is refused rather
+// than read as if it were absent. Members RFC 7516 does not define are ignored,
+// as it requires.
+var joseMembersNotUsed = []string{"unprotected", "header", "encrypted_key", "aad"}
+
+// checkJOSEStructure refuses a JWE whose structure this profile does not
+// understand: a JOSE member it does not process, a crit or zip header, a typ
+// other than DIDComm's encrypted media type, a per-recipient header repeating a
+// protected header parameter (RFC 7516 §7.2.1 requires them disjoint), or JSON
+// members whose names differ only by case, which encoding/json reads as one.
+func checkJOSEStructure(wire, protectedJSON []byte, protected map[string]json.RawMessage, header protectedHeader) error {
+	if name, dup := caseFoldedDuplicate(wire); dup {
+		return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("JWE member %q differs from another only by case", name)}
+	}
+	if name, dup := caseFoldedDuplicate(protectedJSON); dup {
+		return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("protected header member %q differs from another only by case", name)}
+	}
+	var top struct {
+		Recipients []struct {
+			Header map[string]json.RawMessage `json:"header"`
+		} `json:"recipients"`
+	}
+	var members map[string]json.RawMessage
+	if json.Unmarshal(wire, &members) != nil || json.Unmarshal(wire, &top) != nil {
+		return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: "not a JWE JSON envelope"}
+	}
+	for _, name := range joseMembersNotUsed {
+		if _, present := members[name]; present {
+			return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("JWE member %q is not used by DIDComm authcrypt", name)}
+		}
+	}
+	// RFC 7515 §4.1.11: a crit naming extensions the recipient does not
+	// understand MUST be refused, and this implementation understands none.
+	// DIDComm v2 compresses nothing, so zip is refused too.
+	for _, name := range []string{"crit", "zip"} {
+		if _, present := protected[name]; present {
+			return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("protected header carries %q, which DIDComm authcrypt does not use", name)}
+		}
+	}
+	if _, present := protected["typ"]; present && header.Typ != mediaTypeEncrypted {
+		return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("typ %q is not %s", header.Typ, mediaTypeEncrypted)}
+	}
+	for _, r := range top.Recipients {
+		for name := range r.Header {
+			_, repeated := protected[name]
+			if repeated || name == "crit" || name == "zip" {
+				return &EnvelopeError{Failure: FailNotAuthcrypt, Detail: fmt.Sprintf("recipient header carries %q, which belongs in the protected header", name)}
+			}
+		}
+	}
+	return nil
 }
 
 // encryptA256CBCHS512 is AEAD_AES_256_CBC_HMAC_SHA_512 (RFC 7518 §5.2.5).

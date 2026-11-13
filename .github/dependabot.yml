@@ -1,0 +1,150 @@
+# Weekly dependency updates: one grouped pull request per ecosystem for minor
+# and patch updates, and one pull request per dependency for a major update.
+#
+# Only minor and patch updates are grouped, so one breaking update cannot hold
+# back all the others. A major update comes on its own and usually needs a
+# fix-up commit (a new lint to satisfy, a tsconfig change) before it is merged.
+# Dependabot decides minor or major from the version number alone, so on a 0.x
+# crate or package a minor step (0.2 -> 0.4) is a "minor" update and is
+# grouped, even when it breaks the API. A 0.x dependency that has broken CI that
+# way is ignored below.
+#
+# `ignore` is for a dependency that cannot move without a deliberate migration.
+# Each entry says what breaks. To take the update, make the change by hand in
+# its own PR and remove the entry.
+#
+# github-actions: keeps the commit-SHA pins in .github/workflows current. Each
+# `uses:` is pinned to a full commit SHA with the release it corresponds to in
+# a comment; Dependabot moves both together.
+#
+# The package ecosystems are titled `chore(deps):`, which cliff.toml leaves out
+# of every changelog. The Release PR still sizes a package's bump from its
+# watched paths, so an update inside a package directory (its lockfile, go.mod
+# or pubspec) still gives that package a patch release with no changelog line.
+# When an update changes what a published package requires of its consumers,
+# retitle the PR `fix(<scope>):` before merging so the changelog says so.
+#
+# The Go modules declare a `go` floor (1.22 for the core and the published
+# nested modules) that CI builds and tests on; an update that raises it fails
+# there and needs a decision, not a merge.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      cargo:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # trust-tasks-build and trust-tasks-codegen convert each normalized schema
+      # into a `schemars::schema::RootSchema` and give it to typify. schemars 1.x
+      # makes that module private, and typify 0.8 takes schemars 1.x types, so
+      # the two move together, and moving them changes the code generation that
+      # `trust-tasks-codegen drift`, the bundles and the consumer-generation
+      # checks depend on. The first grouped PR failed every one of those jobs
+      # with `cannot find type RootSchema in schemars::schema`.
+      - dependency-name: schemars
+        update-types: ["version-update:semver-major"]
+      # typify is 0.x, so 0.6 -> 0.7 counts as a minor update and would stay in
+      # the group without this entry.
+      - dependency-name: typify
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /trust-tasks-ts
+      - /trust-tasks-ts-proof
+      - /trust-tasks-ts-tsp
+      - /trust-tasks-ts-capability-client
+      - /trust-tasks-ts-gen
+      - /examples/consumer-app-ts
+    schedule:
+      interval: weekly
+    groups:
+      # The TypeScript generators' own dependencies. A new version, even a
+      # patch, can change the generated text: prettier 3.8.3 -> 3.9.10 reflows
+      # union types, so `build-ts-bindings drift` and `trust-tasks-gen-ts
+      # equivalence` both fail until the output is regenerated. This group
+      # keeps those updates out of the `npm` group, which can then pass on its
+      # own. A PR from it needs `npm run build-ts-bindings` committed, and the
+      # root lockfile's prettier (a transitive dependency of
+      # json-schema-to-typescript) moved to the version trust-tasks-ts-gen
+      # pins, because the equivalence check compares the two generators.
+      # A dependency goes in the first group that matches, so this must come
+      # before `npm`.
+      ts-generator:
+        patterns: ["json-schema-to-typescript", "prettier"]
+        update-types: ["minor", "patch"]
+      npm:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # json-schema-to-typescript 16 names types differently. The generators
+      # then produce counter-suffixed duplicates (DecryptionTarget1,
+      # EncryptedCast1, ...), which scripts/build-ts-bindings.mjs and
+      # trust-tasks-ts-gen both refuse to emit. Adopting it means changing the
+      # generators and regenerating.
+      - dependency-name: json-schema-to-typescript
+        update-types: ["version-update:semver-major"]
+      # 0.x: 0.2 -> 0.4 counts as a minor update. 0.4 removes
+      # `senderEncryptionKey` from `PackKeys`/`UnpackKeys`, so
+      # trust-tasks-ts-tsp does not compile until it is ported.
+      - dependency-name: "@openvtc/vti-tsp-js"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: gomod
+    directories:
+      - /trust-tasks-go
+      - /trust-tasks-go/proof
+      - /trust-tasks-go/didcomm
+      - /trust-tasks-go/capabilityclient
+      - /trust-tasks-go/tsp
+      - /examples/consumer-app-go
+    schedule:
+      interval: weekly
+    groups:
+      gomod:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: pub
+    directories:
+      - /trust-tasks-dart
+      - /trust-tasks-dart-proof
+      - /trust-tasks-dart-https
+      - /trust-tasks-dart-didcomm
+      - /trust-tasks-dart-tsp
+      - /trust-tasks-dart-capability-client
+      - /examples/consumer-app-dart
+    schedule:
+      interval: weekly
+    groups:
+      pub:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: chore
+      include: scope

@@ -25,14 +25,31 @@ on:
       - "trust-tasks-cli/**"
       # The by-digest store script the `cli` job builds its registry with.
       - "scripts/write-by-digest-store.sh"
+      # Read by the jobs below but outside every crate (#1135): the shared
+      # proof and consume vectors (`../fixtures`, trust-tasks-proof and
+      # trust-tasks-rs tests), the ceremony `include_str!`ed by
+      # trust-tasks-ceremony's tests, the script `rs API compatibility` runs,
+      # and the release-plz config `package-workspace` stands in for. A PR
+      # changing only one of them ran none of the jobs that consume it.
+      - "fixtures/**"
+      - "ceremonies/**"
+      - "scripts/check-rs-api-compat.sh"
+      - "release-plz.toml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
+      # The shared cross-runtime vectors (fixtures/consume, fixtures/proof)
+      # are read by trust-tasks-rs's integration tests, so a change to one
+      # must run them.
+      - "fixtures/**"
       # GETTING-STARTED.md's Rust is asserted equal to
       # examples/getting-started/src/main.rs by a test in trust-tasks,
       # so a doc-only edit still has to run cargo test.
       - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
+      # The composite actions the jobs below use (#1141).
+      - ".github/actions/add-swap/**"
+      - ".github/actions/install-libdbus/**"
       # `cargo deny` reads this, so a change to it must run the job it
       # configures. Without it, the file that decides what the supply-chain
       # check bans is the one file that change cannot be tested by — the same
@@ -51,6 +68,10 @@ env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-D warnings"
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   # The test suite runs as three parallel jobs rather than three steps of one.
   # Each compiles trust-tasks-rs — with different features, or as rustdoc — so
@@ -59,9 +80,12 @@ jobs:
   # `DCO`, `EasyCLA` and three non-Rust jobs), so they are free to change.
   test:
     name: cargo test (stable, full workspace)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # trust-tasks-rs generates one module per specification, and its test
       # build under `--features validate` has peaked above a hosted runner's
       # 16 GB beside the TDK crates; the kernel then kills the job (exit 143)
@@ -70,15 +94,13 @@ jobs:
       # (see `unit_test_gate` in trust-tasks-codegen), which roughly halved the
       # peak, so this is now a margin rather than a necessity.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+        uses: ./.github/actions/add-swap
+        with:
+          mode: fixed
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
           # PR read its base branch's cache) but its own saves were ~1 GB
@@ -89,22 +111,21 @@ jobs:
       # build scripts probe for `libdbus-1` via pkg-config. Install the
       # dev headers so libdbus-sys finds the system library.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
-      - name: cargo test (default features)
-        run: cargo test --workspace --all-targets
+        uses: ./.github/actions/install-libdbus
+      # Every family explicitly: `default` is empty (#1102), so without this
+      # the generated conformance tests of all but the families a
+      # dev-dependency names would compile out.
+      - name: cargo test (every spec family)
+        run: cargo test --workspace --all-targets --features trust-tasks/all-specs
 
   test-validate:
     name: cargo test (trust-tasks-rs, --features validate)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # trust-tasks-rs generates one module per specification, and its test
       # build under `--features validate` has peaked above a hosted runner's
       # 16 GB beside the TDK crates; the kernel then kills the job (exit 143)
@@ -113,15 +134,13 @@ jobs:
       # (see `unit_test_gate` in trust-tasks-codegen), which roughly halved the
       # peak, so this is now a margin rather than a necessity.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+        uses: ./.github/actions/add-swap
+        with:
+          mode: fixed
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
           # PR read its base branch's cache) but its own saves were ~1 GB
@@ -129,52 +148,64 @@ jobs:
           # quota and evicted the entries every run actually restores.
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
-      - name: cargo test (--features validate)
-        run: cargo test -p trust-tasks-rs --features validate --all-targets
+        uses: ./.github/actions/install-libdbus
+      - name: cargo test (--features validate,all-specs)
+        run: cargo test -p trust-tasks-rs --features validate,all-specs --all-targets
 
   # Every spec family is a Cargo feature, so a consumer — or a contributor
   # working on one family — can build trust-tasks-rs with only that family:
-  # `cargo test -p trust-tasks-rs --no-default-features --features vault` is a
-  # ~1 GB, seconds-long build where the default one is the whole registry. That
-  # only holds while no test outside a family's own gate names it, which
-  # nothing else checks: every other job builds with all families on. The
-  # three below are the unit-test family (acl) and two that are not it.
+  # `cargo test -p trust-tasks-rs --features vault` is a ~1 GB, seconds-long
+  # build where `all-specs` is the whole registry. That only holds while no
+  # test outside a family's own gate names it, which nothing else checks:
+  # every other test job builds with all families on. The three below are the
+  # unit-test family (acl) and two that are not it. The runtime alone (no
+  # family at all, the default since #1102) is the clippy job's default leg.
   test-single-family:
     name: cargo test (trust-tasks-rs, one family at a time)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - name: cargo test --no-default-features --features <family>
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - name: cargo test --features <family>
         run: |
           for family in acl vault keys; do
             echo "::group::$family"
-            cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
+            cargo test -p trust-tasks-rs --features "$family" --all-targets
             echo "::endgroup::"
           done
+      # Every other job builds trust-tasks-ceremony with its `affinidi` backend
+      # on, so nothing else would notice the no-backend build reading the salt
+      # or comparing digests differently again (#1094). Seconds, so it rides
+      # along here rather than taking a job of its own.
+      - name: cargo test -p trust-tasks-ceremony --no-default-features
+        run: |
+          cargo test -p trust-tasks-ceremony --no-default-features --all-targets
+          cargo clippy -p trust-tasks-ceremony --no-default-features --all-targets -- -D warnings
 
   # An application that generates its tasks at build time: three registry
   # versions and one from a third-party source pinned in
   # examples/consumer-app/trust-tasks.lock, their bundles vendored beside it,
-  # `trust-tasks-rs` with `default-features = false`. Building it runs
+  # `trust-tasks-rs` with its (empty) default features. Building it runs
   # trust-tasks-build (digest check + generation) in a real build.rs, and
   # running it is a round trip through the generated types. The whole job is
   # seconds where a build of the prebuilt modules is minutes — which is the
   # point of milestone 2 (docs/design/consumer-side-generation.md).
   consumer-app:
     name: example application (trust-tasks-build)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
       - name: cargo run -p trust-tasks-example-consumer-app
         run: cargo run -p trust-tasks-example-consumer-app
       - name: cargo test -p trust-tasks-build --all-features
@@ -202,11 +233,16 @@ jobs:
 
   doc:
     name: cargo doc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
           # PR read its base branch's cache) but its own saves were ~1 GB
@@ -214,36 +250,15 @@ jobs:
           # quota and evicted the entries every run actually restores.
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       # Serialising stopped being enough once #1002's thirteen versions grew the
       # generated tree: the Release PR's `cargo doc` was stopped again, exit 143,
       # while checking trust-tasks-rs. Swap, as test/clippy/package use, lets the
       # peak spill instead of the runner being killed.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       - name: cargo doc
         # One job at a time. With the default parallelism, rustc checking
         # trust-tasks-rs (every generated spec module, all features) runs
@@ -262,28 +277,10 @@ jobs:
   # resolver, a `msrv` job picking a lower toolchain will be
   # appropriate again.
 
-  # A released specification is compiled into every library, so an in-place
-  # edit that changes its generated types is a breaking release of the whole
-  # core version group (#858, #758 and #750 each cost a MINOR; #819's mid-enum
-  # insertion made 0.32.0 breaking). Caught here, on the pull request: a released
-  # version may change only additively, and anything else is a new version.
-  published-schemas:
-    name: published schemas change only additively
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          # Full history AND tags: the comparison is against the last
-          # trust-tasks-rs-v* release, and the script refuses to run without it.
-          fetch-depth: 0
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-      - name: Check every released spec changed only additively
-        env:
-          PUBLISHED_BASE_REF: ${{ github.event.pull_request.base.sha }}
-        run: node scripts/check-published-schemas.mjs
+  # `published schemas change only additively` used to be here. It is node-only
+  # and takes seconds, so it moved to the unfiltered checks.yml (#1135), where
+  # it reports on every PR and can be a required check — a path-filtered job
+  # cannot be.
 
   # The crates' counterpart of `go API compatibility` and friends: each
   # published crate against its own last release, failing an incompatible
@@ -295,45 +292,37 @@ jobs:
   api-compat:
     name: rs API compatibility
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # The PR title is read from the API.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # Tags for the baselines, history for the "already breaking" check.
           fetch-depth: 0
       # A changed binding crate pulls in Affinidi's TDK, whose build scripts
-      # probe for libdbus-1. See the `test` job for why `update` may fail.
+      # probe for libdbus-1.
       - name: Install libdbus-1-dev
-        run: |
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@v2
+        uses: ./.github/actions/install-libdbus
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
-          tool: cargo-semver-checks
+          toolchain: stable
+      - uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        with:
+          tool: cargo-semver-checks@0.51.0
       # Only a PR that changes a binding crate needs this: documenting one
       # compiles trust-tasks-rs with every family, ~13 GB resident, measured.
       # A standard runner has 16 GB; swap lets it finish under pressure. On
       # whichever of / and /mnt has more room, up to 16 GB, leaving 8 GB for
       # the builds — the runner image's disk layout is not ours to assume.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       - name: Compare with the last releases
         # The title is read through the API, never interpolated into the
         # script body (see go.yml's api-compat for why it is fetched now rather
@@ -353,45 +342,50 @@ jobs:
 
   fmt:
     name: cargo fmt
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
           components: rustfmt
       - run: cargo fmt --all -- --check
 
-  # Both feature sets, in parallel. Default features catch what is only
-  # reachable without `validate` (an import used solely under a cfg); all
-  # features catch the rest.
+  # Both feature sets, in parallel. Default features — the runtime alone, no
+  # spec family and no `validate`, what a plain dependency gets since #1102 —
+  # catch what is only reachable without a feature (an import used solely
+  # under a cfg); all features catch the rest.
   clippy:
     name: cargo clippy (${{ matrix.features.name }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         features:
-          - { name: default features, flags: "" }
+          - { name: default features, flags: "" }  # no spec family
           - { name: --all-features, flags: --all-features }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # The same margin the `test` job has, for the same reason: checking the
       # whole workspace with every generated module beside the TDK crates has
       # peaked past a hosted runner's 16 GB, and the kernel then kills the job
       # (exit 143, "The runner has received a shutdown signal") rather than
       # failing it.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
-      - uses: dtolnay/rust-toolchain@stable
+        uses: ./.github/actions/add-swap
         with:
+          mode: fixed
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
           components: clippy
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # One cache per feature set: the two builds share almost nothing in
           # `target/` for the workspace crates, and one key would let whichever
@@ -399,14 +393,7 @@ jobs:
           key: ${{ matrix.features.flags || 'default' }}
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.features.flags }} -- -D warnings
 
@@ -460,10 +447,15 @@ jobs:
   # second is what a failed release gets compared against.
   publication-order:
     name: publication order is satisfiable
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
       - name: Derive the publication order from cargo metadata
         run: |
           python3 - <<'PY'
@@ -534,11 +526,16 @@ jobs:
 
   package:
     name: cargo package (trust-tasks-rs)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
           # PR read its base branch's cache) but its own saves were ~1 GB
@@ -554,56 +551,62 @@ jobs:
       # when `validate` is off (no `cfg(not(feature = "validate"))`, no build
       # script), so the default build is a strict subset and a second verify
       # compile of it was ~4 minutes that could only fail when this one did.
+      # `all-specs` is named because `default` is empty (#1102): the generated
+      # tree is what can reference a file the tarball leaves out.
       # Should a `not(feature = "validate")` path ever appear, package the
       # default set again. Every other published
       # crate is packaged by `package-workspace`, on the Release PR only:
       # trust-tasks-rs is the one whose generated tree changes on ordinary
       # PRs, so it is the one worth checking on each of them.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: The validate build is a superset of the default one
         run: |
           if grep -rnE 'not\(\s*feature\s*=\s*"validate"' trust-tasks-rs --include='*.rs'; then
             echo "::error::trust-tasks-rs now has code compiled only without \`validate\`, so packaging with \`validate\` no longer covers the default build. Add back \`cargo package -p trust-tasks-rs\` (default features) to this job."
             exit 1
           fi
-      # Two build jobs were enough until the generated tree passed ~70 MB
+      # Two build jobs were enough until the generated tree grew past what the
+      # runner could verify (the `package` job prints its size)
       # (#1002: the runner was again stopped mid-verify, exit 143, no compile
       # error). Swap, as the semver job adds, lets the verify build finish under
       # pressure rather than be killed.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
-      - name: cargo package trust-tasks-rs (--features validate)
-        # The verify build compiles the packaged crate (~66 MB of generated code)
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
+      - name: cargo package trust-tasks-rs (--features validate,all-specs)
+        # The verify build compiles the packaged crate (mostly generated code)
         # a second time on a 7 GB runner. At full parallelism it is killed with
         # exit 143 on roughly half the runs (#993, #994 on 2026-10-30), with no
         # compile error in the log. Two jobs keep the peak under the limit.
         env:
           CARGO_BUILD_JOBS: 2
-        run: cargo package -p trust-tasks-rs --features validate
+        run: cargo package -p trust-tasks-rs --features validate,all-specs
+      # crates.io refuses an upload over 10 MiB, and nothing else measures it:
+      # `cargo package` does not enforce the limit and release-plz publishes
+      # with `publish_no_verify`, so an oversize crate was first discovered
+      # mid-release, with other packages already out (#1097). The generated tree
+      # grows with every spec version (~7.5 KB compressed each).
+      - name: The .crate fits crates.io's 10 MiB upload limit
+        run: |
+          set -euo pipefail
+          version=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[] | select(.name == "trust-tasks-rs") | .version')
+          crate="target/package/trust-tasks-rs-$version.crate"
+          bytes=$(stat -c %s "$crate")
+          limit=10485760   # 10 MiB, crates.io's default upload limit
+          fail_at=10380902 # 9.9 MiB
+          warn_at=9961472  # 9.5 MiB
+          mib=$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')
+          headroom=$(( (limit - bytes) / 1024 ))
+          echo "$crate: $bytes bytes ($mib MiB); ${headroom} KiB below the 10 MiB limit"
+          if [ "$bytes" -gt "$fail_at" ]; then
+            echo "::error::trust-tasks-rs packages to $mib MiB, within 0.1 MiB of crates.io's 10 MiB upload limit. The release would fail at upload. Exclude more from the package (trust-tasks-rs/Cargo.toml \`exclude\`) or schedule the prebuilt-module removal — see docs/design/consumer-side-generation.md."
+            exit 1
+          elif [ "$bytes" -gt "$warn_at" ]; then
+            echo "::warning::trust-tasks-rs packages to $mib MiB of crates.io's 10 MiB upload limit (${headroom} KiB left, roughly $(( headroom * 1024 / 7680 )) more spec versions)."
+          fi
 
   # The publish-time verify build, moved to the Release PR — release-plz.toml
   # sets `publish_no_verify` and says why. Every publishable crate's tarball is
@@ -617,39 +620,27 @@ jobs:
   package-workspace:
     name: cargo package (every published crate)
     if: github.event_name == 'pull_request' && github.head_ref == 'release'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # No rust-cache: nothing on `main` runs this job, so there is never an
       # entry to restore. It runs beside the rest of the Release PR's checks.
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
       - name: Install libdbus-1-dev
-        run: |
-          # See the `test` job.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
-      # The verify build compiles trust-tasks-rs's packaged tree (~70 MB of
+        uses: ./.github/actions/install-libdbus
+      # The verify build compiles trust-tasks-rs's packaged tree (mostly
       # generated code) like the `package` job, and was stopped the same way
       # (exit 143, no compile error) on the Release PR after #1002. Same remedy:
       # swap, and two build jobs.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       # `publish = false` crates are not uploaded, so they are not checked.
       - name: cargo package --workspace
         env:
@@ -665,11 +656,16 @@ jobs:
   # trust-tasks-rs.
   cli:
     name: cargo test (trust-tasks-cli, against the whole registry)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Build the registry (bundles, index, by-digest store)
@@ -683,10 +679,13 @@ jobs:
 
   deny:
     name: cargo deny
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
         with:
           command: check
           arguments: --all-features

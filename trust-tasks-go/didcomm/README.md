@@ -18,7 +18,9 @@ standard library.
 - **Key-based, like `trust-tasks-go/tsp`.** The binding does no DID resolution:
   the consumer holds the recipient's X25519 private key and takes a
   `ResolveSender(did) → *PeerKey` callback for the sender's public key, looked
-  up in your own store.
+  up in your own store. The callback receives the bare DID of the envelope's
+  `skid` — *claimed*, not yet authenticated: the key you return is what derives
+  the key-encryption key, so a forged `skid` yields one that fails to unwrap.
 
 This is a **separate module** from the core, so the core stays dependency-free.
 
@@ -44,11 +46,29 @@ unpacked, err := didcomm.UnpackTrustTask(wire, bob, func(senderDID string) (*did
 `PackTrustTask` sets the DIDComm `thid` from the document's `threadId` (or its
 `id`) and `pthid` from `parentThreadId` (binding §3.1).
 
+`UnpackTrustTask` opens only the recipient entry whose `kid` is exactly the
+identity's `Kid`, and reports that identity's DID as `Transport.Local` — never a
+value read from the envelope. Before opening, it checks the JWE: `apu` must be
+the base64url `skid`, `apv` the base64url SHA-256 of the sorted recipient kids
+(so the unprotected kids are bound to the protected header), every recipient
+entry must carry a `kid`, `typ` (when present) must be
+`application/didcomm-encrypted+json`, and a `crit` or `zip` header, a shared
+`unprotected` header, `aad`, the flattened `header`/`encrypted_key` form, a
+per-recipient header repeating a protected parameter, or JSON member names that
+differ only by case are refused (`FailNotAuthcrypt`). After decrypting, a
+plaintext `from` that is not the authenticated sender is `FailDecrypt`, and a
+`to` that does not name the recipient is `FailNotForThisRecipient`. An empty
+`"to": []` names no one and is refused the same way; an absent `to` (or `null`)
+is accepted.
+
 ## Consume (§7.2 pipeline)
 
 ```go
 c := didcomm.NewConsumer(bob) // duplicate-execution record + freshness on by default
 r, err := didcomm.Receive(ctx, c, wire, resolveSender, spec, decodePayload, handler)
+if err != nil {
+    return err // r is nil: an *EnvelopeError (nothing can be answered), a caller mistake or your handler's error
+}
 if r.Reply != nil {
     reply, _ := didcomm.PackReply(bob, senderKey, r.Reply) // sealed back to the sender
 }
@@ -73,7 +93,9 @@ Interop is asserted **both directions** against `affinidi-messaging-didcomm` (th
 library the Rust and Dart Trust Tasks DIDComm bindings are built on):
 
 - **affinidi → Go**: `interop_test.go` unpacks a JWE packed by affinidi
-  (`testdata/authcrypt-interop.fixture.json`).
+  (`testdata/authcrypt-interop.fixture.json`), and `interop_multi_test.go` one
+  packed to two recipients (`testdata/authcrypt-interop-multi.fixture.json`),
+  which pins the `apv` check to affinidi's computation.
 - **Go → affinidi**: `trust-tasks-didcomm/tests/interop.rs` unpacks a JWE packed
   by this binding with affinidi.
 

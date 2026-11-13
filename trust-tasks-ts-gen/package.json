@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-gen",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Generate TypeScript modules for exactly the Trust Tasks an application pins in trust-tasks.lock, from the vendored registry bundles. The modules import the runtime from @openvtc/trust-tasks.",
   "type": "module",
   "license": "Apache-2.0",
@@ -16,14 +16,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
@@ -34,10 +35,10 @@
   },
   "dependencies": {
     "json-schema-to-typescript": "15.0.4",
-    "prettier": "3.8.3"
+    "prettier": "3.9.10"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^7.0.2"
   }
 }

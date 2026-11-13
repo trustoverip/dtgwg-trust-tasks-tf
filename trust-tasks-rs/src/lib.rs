@@ -41,6 +41,7 @@
 //! `release-plz.toml`.
 
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(rust_2018_idioms)]
 
 mod async_dispatch;
@@ -51,8 +52,10 @@ mod dispatcher;
 mod document;
 mod error;
 mod extends_index;
+mod guarded;
 mod payload;
 mod proof;
+mod schema_cache;
 mod transport;
 mod type_uri;
 
@@ -93,13 +96,15 @@ pub use error::{
 pub use freshness::{
     FreshnessPolicy, StaleReason, DEFAULT_EXPIRY_HORIZON, DEFAULT_MAX_AGE, DEFAULT_SKEW,
 };
+pub use guarded::{GuardedConsumer, UnanswerableBody};
 pub use payload::{Payload, RequestPayload, SpecPolicy};
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,
 };
+pub use replay::received_document_digest;
 pub use replay::{
     document_digest, DocumentDigest, InMemoryReplayGuard, ReplayGuard, ReplayGuardError,
-    ReplayPolicy, ReplayVerdict,
+    ReplayPolicy, ReplayVerdict, DEFAULT_REPLAY_CAPACITY,
 };
 pub use transport::{ConsistencyError, ResolvedParties, TransportContext, TransportHandler};
 pub use type_uri::{ParseTypeUriError, TypeUri, Variant};

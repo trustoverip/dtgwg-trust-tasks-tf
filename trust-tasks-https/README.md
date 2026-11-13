@@ -1,6 +1,6 @@
 # trust-tasks-https
 
-HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication — enough for demos, mockups, and end-to-end testing without standing up mTLS or DIDComm.
+HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication. Both ends are secure by default (see [Security defaults](#security-defaults)); the one demo-grade part is the static `BearerAuth` token map, which a deployment replaces with its own `Auth`.
 
 ## Binding URI
 
@@ -40,10 +40,13 @@ The binding specification is explicit that [it "does not permit `proof` to be om
 | `Content-Type: application/json` required | A `text/plain` cross-origin simple POST is refused with 415 instead of reaching the pipeline. | — |
 | Request timeout + concurrency limit | Slowloris and flood controls on the router. | `.request_timeout(..)`, `.max_concurrent_requests(..)` |
 | Response binding on the client | `HttpsClient::send` checks the response's `threadId`, `type`, `issuer` and `recipient` against the request before returning it. | — |
+| Client transport limits | `server_url` must be `https` (plain `http` only to a loopback host, or with `.allow_insecure_http(true)` and no bearer token); redirects are not followed; a response body over 256 KiB is refused; error text never quotes the response body. | `.allow_insecure_http(..)`, `.follow_redirects(true)` (same origin only), `.max_response_bytes(..)` |
 
 A guard that cannot be consulted fails **closed**: the server answers `unavailable` (retryable) and does not execute, because a consumer that cannot establish whether a document is a duplicate has not satisfied item 11.
 
-Optionally, `.allowed_did_methods(["key"])` pre-screens `proof.verificationMethod` before the verifier resolves it, and `HttpsClient::builder().with_response_verifier(..)` requires signed responses.
+With a verifier configured, `proof.verificationMethod` is pre-screened before the verifier resolves it: by default only `did:key` passes (`DEFAULT_ALLOWED_DID_METHODS`), since resolving any other method can mean a fetch from a host the sender names. Widen it with `.allowed_did_methods(["key", "web"])`, or lift it with `.allow_any_did_method()` for a verifier whose resolver bounds its own egress.
+
+`HttpsClient::builder().with_response_verifier(..)` requires signed responses. The proof is verified over the body as received, and error responses are held to it too: an error without a valid proof from the configured server comes back as `ClientError::UnverifiedErrorResponse`, not as the server's answer.
 
 ## Quickstart
 
@@ -124,4 +127,4 @@ The crate's name says HTTPS but the server- and client-side examples use plain H
 
 ## Security notes
 
-The bearer-auth model in this crate is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).
+`BearerAuth`, the static token map, is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).

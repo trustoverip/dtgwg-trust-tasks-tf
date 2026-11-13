@@ -2,6 +2,7 @@
 
 pub mod create;
 pub mod delete;
+pub mod facilitators;
 pub mod ideas;
 pub mod list;
 pub mod notes;

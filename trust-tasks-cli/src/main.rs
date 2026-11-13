@@ -36,10 +36,17 @@ to trust instead of the Mozilla roots."
 )]
 struct Cli {
     /// The registry: an https:// site root, a file:// URL or a directory with
-    /// specs/index.json under it. Defaults to the manifest's `registry`, then
+    /// specs/index.json under it (http:// only on loopback, or with
+    /// --allow-http-registry). Defaults to the manifest's `registry`, then
     /// https://trusttasks.org.
     #[arg(long, global = true, env = "TRUST_TASKS_REGISTRY", value_name = "URL")]
     registry: Option<String>,
+
+    /// Accept a plain http:// registry that is not on loopback. Over http,
+    /// anyone on the network path could choose both the digests pinned and
+    /// the bundles they name; use it only on a network you trust.
+    #[arg(long, global = true)]
+    allow_http_registry: bool,
 
     /// The project directory (the one holding trust-tasks.toml). Defaults to
     /// the nearest one at or above the current directory.
@@ -93,7 +100,9 @@ enum Command {
     /// `npx trust-tasks-gen-ts`, `go run …/cmd/trust-tasks-gen` or
     /// `dart run trust_tasks:generate`, from the project directory, with
     /// `--lock` and `--out` filled in. Arguments after `--` go to the
-    /// generator. Rust generates in build.rs instead.
+    /// generator. `--lang rs` runs trust-tasks-build in-process and writes
+    /// <out>/trust_tasks_generated.rs (after `--`: `--index`,
+    /// `--runtime-path <path>`) — the file build.rs generates, for review.
     Generate {
         /// The language.
         #[arg(long, value_enum)]
@@ -144,6 +153,7 @@ fn main() -> ExitCode {
     let ctx = ops::Ctx {
         dir: cli.dir.as_deref(),
         registry: cli.registry.as_deref(),
+        allow_http_registry: cli.allow_http_registry,
     };
     let result = match &cli.command {
         Command::Add { tasks } => ops::add(&ctx, tasks).map(|()| true),

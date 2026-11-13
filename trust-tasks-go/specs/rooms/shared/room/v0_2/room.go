@@ -1779,6 +1779,64 @@ type RecordMetadataV3 struct {
 	Kind *RecordKind `json:"kind,omitempty"`
 }
 
+// RecordPurpose The one purpose for which a caller will use room content a request
+// discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry
+// (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI.
+// Granted only as the caller's authority grants it — `any` grants every purpose but
+// `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read.
+// Distinct from `PermittedUse`, which is what a record's author permits and is a
+// statement, not a grant.
+type RecordPurpose = Purpose
+
+// ListOrder The order in which a listing returns a room's records
+// (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when
+// the member is absent: ascending `version`, the order an incremental sync reads in.
+// `newestFirst`: descending `version`, so a reader that opens a conversation at its
+// newest messages reads the room's head first and pages backwards; `sinceVersion` still
+// bounds the listing from below. A cursor continues the listing in the order it was
+// issued under, and a host refuses it under the other.
+type ListOrder string
+
+// Values ListOrder may take, per this specification's schema.
+const (
+	ListOrderOldestFirst ListOrder = "oldestFirst"
+	ListOrderNewestFirst ListOrder = "newestFirst"
+)
+
+// SignalDelay Whether a room's host waits a randomised interval before sending a
+// `rooms/changed` signal: the room's **signal delay**. `randomised` is the default and
+// what a room without one has: the host waits a few seconds after the change that fires a
+// watch, so that the signal's time does not mark one write exactly (`rooms/changed`,
+// producer item 4). `none` is for a room where members expect to see a write as soon as
+// it is made, such as a conversation: the host sends the signal as soon as the change
+// that fires it is stored, with no wait of its own. **A room's setting, not a member's.**
+// The delay protects the room's writers as much as its watchers. A watcher whose signal
+// is sent at once marks, to anyone who sees both the writer's request reach the host and
+// the signal leave it, the moment of the write and that the two parties share the room.
+// So one watcher cannot opt out for itself without giving away something about everyone
+// who writes, and the setting is the room's: changed by a holder of `admin`
+// (`rooms/signal-delay/set`) and served to every member (`rooms/info`). **What `none`
+// gives up.** Little in a busy room, where writes are frequent enough that their rhythm
+// is visible anyway; most in a quiet one, where a single write and a single signal line
+// up. A surface that offers the setting SHOULD say so. Absent means `randomised`.
+type SignalDelay string
+
+// Values SignalDelay may take, per this specification's schema.
+const (
+	SignalDelayRandomised SignalDelay = "randomised"
+	SignalDelayNone       SignalDelay = "none"
+)
+
+// Purpose What content is used for: a lowerCamelCase name registered in the VTI
+// specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
+// `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
+// purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary
+// (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a
+// consumer MUST NOT treat a purpose it does not recognise as equal to any other, and
+// grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name
+// is never an IRI, because it contains no `:`.
+type Purpose = string
+
 // BlobRef The name of one blob: the digest of its BlobManifest, taken over the manifest's
 // RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented.
 // Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about

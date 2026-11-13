@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Amend the non-role attributes of an existing AclEntry 0.2: its act scope (widening only), approve scope, capability scope, approvable-capability scope, key scope, label, expiry or step-up requirement. Every member REPLACES the stored value; an omitted member leaves it unchanged. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap. `delegatedBy` and the provenance timestamps are maintainer-populated and not settable.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02Payload {
   /**
@@ -66,6 +68,8 @@ export interface ACLUpdate02Payload {
 }
 /**
  * The success response to an acl/update/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/update/0.2#response.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02ResponsePayload {
   /**
@@ -98,15 +102,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/update/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Payload = ACLUpdate02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/update/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Response = ACLUpdate02ResponsePayload;
 
 /**
@@ -117,8 +129,13 @@ export type Response = ACLUpdate02ResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/acl/update/0.2",
   "title": "ACL Update 0.2 — payload",
@@ -639,10 +656,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1078,7 +1095,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

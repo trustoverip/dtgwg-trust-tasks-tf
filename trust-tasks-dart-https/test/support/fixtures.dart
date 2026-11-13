@@ -71,6 +71,9 @@ Map<String, dynamic> echoDoc({
 HttpsServer echoServer({
   ProofVerifier? verifier,
   Set<String>? allowedDidMethods,
+  // The fake verifiers resolve nothing, so the fixtures' `did:web` proofs may
+  // reach them; the `did:key`-only default is pinned in server_test.dart.
+  bool? allowAnyDidMethod,
   bool requireAttribution = true,
   bool replayProtection = true,
   String basePath = '',
@@ -83,6 +86,8 @@ HttpsServer echoServer({
     auth: StaticBearerAuth({aliceToken: alice}),
     proofVerifier: verifier,
     allowedDidMethods: allowedDidMethods,
+    allowAnyDidMethod:
+        allowAnyDidMethod ?? (verifier != null && allowedDidMethods == null),
     requireAttribution: requireAttribution,
     replayProtection: replayProtection,
     basePath: basePath,

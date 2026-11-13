@@ -37,6 +37,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/change-role/0.2#response" => <crate::specs::acl::change_role::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => <crate::specs::acl::change_role::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3#response" => <crate::specs::acl::change_role::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => <crate::specs::acl::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1#response" => <crate::specs::acl::grant::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -44,6 +48,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/grant/0.2" => <crate::specs::acl::grant::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2#response" => <crate::specs::acl::grant::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => <crate::specs::acl::grant::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3#response" => <crate::specs::acl::grant::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => <crate::specs::acl::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
@@ -57,6 +65,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.3#response" => <crate::specs::acl::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => <crate::specs::acl::list::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4#response" => <crate::specs::acl::list::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => <crate::specs::acl::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1#response" => <crate::specs::acl::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -65,6 +77,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.2#response" => <crate::specs::acl::revoke::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => <crate::specs::acl::revoke::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3#response" => <crate::specs::acl::revoke::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => <crate::specs::acl::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1#response" => <crate::specs::acl::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -72,6 +88,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/show/0.2" => <crate::specs::acl::show::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2#response" => <crate::specs::acl::show::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => <crate::specs::acl::show::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3#response" => <crate::specs::acl::show::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => <crate::specs::acl::swap_key::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
@@ -84,6 +104,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/update/0.2" => <crate::specs::acl::update::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2#response" => <crate::specs::acl::update::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => <crate::specs::acl::update::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3#response" => <crate::specs::acl::update::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/audit/list/0.1" => <crate::specs::audit::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -534,6 +558,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/policy/0.2#response" => <crate::specs::auth::step_up::policy::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/requests/show/0.1" => <crate::specs::auth::step_up::requests::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/requests/show/0.1#response" => <crate::specs::auth::step_up::requests::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/start/0.1" => <crate::specs::auth::step_up::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1128,6 +1158,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/get/0.1#response" => <crate::specs::did_management::stats::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => <crate::specs::did_management::stats::set_resolution::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1#response" => <crate::specs::did_management::stats::set_resolution::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => <crate::specs::did_management::stats::timeseries::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2150,16 +2186,103 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/monitor/event/0.2" => <crate::specs::messaging::monitor::event::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.3" => <crate::specs::messaging::monitor::event::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => <crate::specs::messaging::monitor::subscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response" => <crate::specs::messaging::monitor::subscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.2" => <crate::specs::messaging::monitor::subscribe::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.2#response" => <crate::specs::messaging::monitor::subscribe::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1" => <crate::specs::messaging::monitor::unsubscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1#response" => <crate::specs::messaging::monitor::unsubscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => <crate::specs::messaging::mux::ack::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1#response" => <crate::specs::messaging::mux::ack::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => <crate::specs::messaging::mux::admin_list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1#response" => <crate::specs::messaging::mux::admin_list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => <crate::specs::messaging::mux::admin_revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1#response" => <crate::specs::messaging::mux::admin_revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => <crate::specs::messaging::mux::admin_revoke_all::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1#response" => <crate::specs::messaging::mux::admin_revoke_all::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/attach/0.1" => <crate::specs::messaging::mux::attach::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/attach/0.1#response" => <crate::specs::messaging::mux::attach::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/connections/0.1" => <crate::specs::messaging::mux::connections::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/connections/0.1#response" => <crate::specs::messaging::mux::connections::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/detach/0.1" => <crate::specs::messaging::mux::detach::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/detach/0.1#response" => <crate::specs::messaging::mux::detach::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/event/0.1" => <crate::specs::messaging::mux::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/grant/0.1" => <crate::specs::messaging::mux::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/grant/0.1#response" => <crate::specs::messaging::mux::grant::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/list/0.1" => <crate::specs::messaging::mux::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/list/0.1#response" => <crate::specs::messaging::mux::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/notice/0.1" => <crate::specs::messaging::mux::notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke/0.1" => <crate::specs::messaging::mux::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke/0.1#response" => <crate::specs::messaging::mux::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke-all/0.1" => <crate::specs::messaging::mux::revoke_all::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke-all/0.1#response" => <crate::specs::messaging::mux::revoke_all::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/update/0.1" => <crate::specs::messaging::mux::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/update/0.1#response" => <crate::specs::messaging::mux::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/ping/0.1" => <crate::specs::messaging::ping::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2885,6 +3008,9 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/blobs/upload/commit/0.2#response" => <crate::specs::rooms::blobs::upload::commit::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/changed/0.1" => <crate::specs::rooms::changed::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.1" => <crate::specs::rooms::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -2895,6 +3021,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.2#response" => <crate::specs::rooms::create::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => <crate::specs::rooms::create::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3#response" => <crate::specs::rooms::create::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => <crate::specs::rooms::epoch::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2951,6 +3083,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/info/0.3#response" => <crate::specs::rooms::info::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => <crate::specs::rooms::info::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4#response" => <crate::specs::rooms::info::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => <crate::specs::rooms::keys::act::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -2967,6 +3105,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.11#response" => <crate::specs::rooms::keys::act::v0_11::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12" => <crate::specs::rooms::keys::act::v0_12::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12#response" => <crate::specs::rooms::keys::act::v0_12::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.2" => <crate::specs::rooms::keys::act::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3053,6 +3197,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/keys/browse/0.4#response" => <crate::specs::rooms::keys::browse::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.5" => <crate::specs::rooms::keys::browse::v0_5::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.5#response" => <crate::specs::rooms::keys::browse::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => <crate::specs::rooms::keys::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3063,6 +3213,9 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.2#response" => <crate::specs::rooms::keys::chain::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/changed/0.1" => <crate::specs::rooms::keys::changed::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/commit/0.1" => <crate::specs::rooms::keys::commit::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3081,6 +3234,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/file-key/0.2#response" => <crate::specs::rooms::keys::file_key::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/file-key/0.3" => <crate::specs::rooms::keys::file_key::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/file-key/0.3#response" => <crate::specs::rooms::keys::file_key::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/key-package/0.1" => <crate::specs::rooms::keys::key_package::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3113,6 +3272,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/keys/list/0.2#response" => <crate::specs::rooms::keys::list::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/list/0.3" => <crate::specs::rooms::keys::list::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/list/0.3#response" => <crate::specs::rooms::keys::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.1" => <crate::specs::rooms::keys::open::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3123,6 +3288,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.2#response" => <crate::specs::rooms::keys::open::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/open/0.3" => <crate::specs::rooms::keys::open::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/open/0.3#response" => <crate::specs::rooms::keys::open::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/present/0.1" => <crate::specs::rooms::keys::present::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3161,6 +3332,21 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/keys/read/0.2#response" => <crate::specs::rooms::keys::read::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read/0.3" => <crate::specs::rooms::keys::read::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read/0.3#response" => <crate::specs::rooms::keys::read::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/moved/0.1" => <crate::specs::rooms::keys::read_marker::moved::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1" => <crate::specs::rooms::keys::read_marker::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1#response" => <crate::specs::rooms::keys::read_marker::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.1" => <crate::specs::rooms::keys::seal::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3177,6 +3363,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.3#response" => <crate::specs::rooms::keys::seal::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.1" => <crate::specs::rooms::keys::watch::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.1#response" => <crate::specs::rooms::keys::watch::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.2" => <crate::specs::rooms::keys::watch::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.2#response" => <crate::specs::rooms::keys::watch::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/welcome/0.1" => <crate::specs::rooms::keys::welcome::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3275,6 +3473,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response" => <crate::specs::rooms::owner::issue_authority::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.3" => <crate::specs::rooms::owner::issue_authority::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.3#response" => <crate::specs::rooms::owner::issue_authority::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => <crate::specs::rooms::owner::issue_membership::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3291,6 +3495,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/register/0.2#response" => <crate::specs::rooms::owner::register::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => <crate::specs::rooms::owner::register::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3#response" => <crate::specs::rooms::owner::register::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/revoke/0.1" => <crate::specs::rooms::owner::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3329,6 +3539,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/get/0.3#response" => <crate::specs::rooms::records::get::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/get/0.4" => <crate::specs::rooms::records::get::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/get/0.4#response" => <crate::specs::rooms::records::get::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.1" => <crate::specs::rooms::records::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3363,6 +3579,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.6#response" => <crate::specs::rooms::records::list::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.7" => <crate::specs::rooms::records::list::v0_7::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.7#response" => <crate::specs::rooms::records::list::v0_7::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/prune/0.1" => <crate::specs::rooms::records::prune::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3425,10 +3647,28 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/revocations/put/0.1#response" => <crate::specs::rooms::revocations::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => <crate::specs::rooms::signal_delay::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1#response" => <crate::specs::rooms::signal_delay::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/usage/0.1" => <crate::specs::rooms::usage::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/usage/0.1#response" => <crate::specs::rooms::usage::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.1" => <crate::specs::rooms::watch::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.1#response" => <crate::specs::rooms::watch::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.2" => <crate::specs::rooms::watch::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.2#response" => <crate::specs::rooms::watch::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/sync/event/0.1" => <crate::specs::sync::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4050,6 +4290,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/collection/release/0.1#response" => <crate::specs::vta::collection::release::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/set/0.1" => <crate::specs::vta::collection::settings::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/set/0.1#response" => <crate::specs::vta::collection::settings::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/show/0.1" => <crate::specs::vta::collection::settings::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/show/0.1#response" => <crate::specs::vta::collection::settings::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/create/1.0" => <crate::specs::vta::contexts::create::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4326,6 +4578,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/dids/create/1.0#response" => <crate::specs::vta::dids::create::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => <crate::specs::vta::dids::create::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1#response" => <crate::specs::vta::dids::create::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => <crate::specs::vta::dids::keys::add::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4362,10 +4620,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/dids/recover/1.0#response" => <crate::specs::vta::dids::recover::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => <crate::specs::vta::dids::recover::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1#response" => <crate::specs::vta::dids::recover::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => <crate::specs::vta::dids::update::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0#response" => <crate::specs::vta::dids::update::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => <crate::specs::vta::dids::upgrade::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0#response" => <crate::specs::vta::dids::upgrade::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/health/details/0.1" => <crate::specs::vta::health::details::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4386,16 +4656,64 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/memory/delete/0.1#response" => <crate::specs::vta::memory::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.2" => <crate::specs::vta::memory::delete::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.2#response" => <crate::specs::vta::memory::delete::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => <crate::specs::vta::memory::delete::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3#response" => <crate::specs::vta::memory::delete::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.1" => <crate::specs::vta::memory::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.1#response" => <crate::specs::vta::memory::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => <crate::specs::vta::memory::get::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2#response" => <crate::specs::vta::memory::get::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/list/0.1" => <crate::specs::vta::memory::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/list/0.1#response" => <crate::specs::vta::memory::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.2" => <crate::specs::vta::memory::list::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.2#response" => <crate::specs::vta::memory::list::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => <crate::specs::vta::memory::list::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3#response" => <crate::specs::vta::memory::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => <crate::specs::vta::memory::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1#response" => <crate::specs::vta::memory::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.2" => <crate::specs::vta::memory::put::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.2#response" => <crate::specs::vta::memory::put::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => <crate::specs::vta::memory::put::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3#response" => <crate::specs::vta::memory::put::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/metrics/show/0.1" => <crate::specs::vta::metrics::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4782,10 +5100,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/pcs/voter/read/0.6#response" => <crate::specs::vta::pcs::voter::read::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/read/0.7" => <crate::specs::vta::pcs::voter::read::v0_7::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/read/0.7#response" => <crate::specs::vta::pcs::voter::read::v0_7::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/receipt/0.1" => <crate::specs::vta::pcs::voter::receipt::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/receipt/0.1#response" => <crate::specs::vta::pcs::voter::receipt::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1" => <crate::specs::vta::pcs::voter::receipts::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1#response" => <crate::specs::vta::pcs::voter::receipts::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/register/0.1" => <crate::specs::vta::pcs::voter::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4936,6 +5266,48 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/services/update/1.2#response" => <crate::specs::vta::services::update::v1_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => <crate::specs::vta::webs::dids::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1#response" => <crate::specs::vta::webs::dids::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => <crate::specs::vta::webs::dids::create::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2#response" => <crate::specs::vta::webs::dids::create::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => <crate::specs::vta::webs::dids::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1#response" => <crate::specs::vta::webs::dids::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => <crate::specs::vta::webs::dids::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1#response" => <crate::specs::vta::webs::dids::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => <crate::specs::vta::webs::dids::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1#response" => <crate::specs::vta::webs::dids::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => <crate::specs::vta::webs::dids::rotate_keys::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1#response" => <crate::specs::vta::webs::dids::rotate_keys::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => <crate::specs::vta::webs::dids::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1#response" => <crate::specs::vta::webs::dids::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0" => <crate::specs::vta::webvh::agent_name::check::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -5391,6 +5763,186 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/backup/import/0.1#response" => <crate::specs::vtc::backup::import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/list/0.1" => <crate::specs::vtc::badges::awards::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/list/0.1#response" => <crate::specs::vtc::badges::awards::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/offer/0.1" => <crate::specs::vtc::badges::awards::offer::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response" => <crate::specs::vtc::badges::awards::offer::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/revoke/0.1" => <crate::specs::vtc::badges::awards::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/revoke/0.1#response" => <crate::specs::vtc::badges::awards::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/share/0.1" => <crate::specs::vtc::badges::awards::share::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/share/0.1#response" => <crate::specs::vtc::badges::awards::share::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1" => <crate::specs::vtc::badges::awards::unshare::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1#response" => <crate::specs::vtc::badges::awards::unshare::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1" => <crate::specs::vtc::badges::awards::withdraw::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1#response" => <crate::specs::vtc::badges::awards::withdraw::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/create/0.1" => <crate::specs::vtc::badges::claims::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/create/0.1#response" => <crate::specs::vtc::badges::claims::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/list/0.1" => <crate::specs::vtc::badges::claims::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/list/0.1#response" => <crate::specs::vtc::badges::claims::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/redeem/0.1" => <crate::specs::vtc::badges::claims::redeem::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/redeem/0.1#response" => <crate::specs::vtc::badges::claims::redeem::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1" => <crate::specs::vtc::badges::claims::withdraw::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1#response" => <crate::specs::vtc::badges::claims::withdraw::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/create/0.1" => <crate::specs::vtc::badges::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/create/0.1#response" => <crate::specs::vtc::badges::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/holders/list/0.1" => <crate::specs::vtc::badges::holders::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/holders/list/0.1#response" => <crate::specs::vtc::badges::holders::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/get/0.1" => <crate::specs::vtc::badges::images::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/get/0.1#response" => <crate::specs::vtc::badges::images::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/upload/0.1" => <crate::specs::vtc::badges::images::upload::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/upload/0.1#response" => <crate::specs::vtc::badges::images::upload::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/give/0.1" => <crate::specs::vtc::badges::kudos::give::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/give/0.1#response" => <crate::specs::vtc::badges::kudos::give::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/list/0.1" => <crate::specs::vtc::badges::kudos::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/list/0.1#response" => <crate::specs::vtc::badges::kudos::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/list/0.1" => <crate::specs::vtc::badges::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/list/0.1#response" => <crate::specs::vtc::badges::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/accept/0.1" => <crate::specs::vtc::badges::mine::accept::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/accept/0.1#response" => <crate::specs::vtc::badges::mine::accept::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1" => <crate::specs::vtc::badges::mine::arrange::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1#response" => <crate::specs::vtc::badges::mine::arrange::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/decline/0.1" => <crate::specs::vtc::badges::mine::decline::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/decline/0.1#response" => <crate::specs::vtc::badges::mine::decline::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/hide/0.1" => <crate::specs::vtc::badges::mine::hide::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/hide/0.1#response" => <crate::specs::vtc::badges::mine::hide::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/list/0.1" => <crate::specs::vtc::badges::mine::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/list/0.1#response" => <crate::specs::vtc::badges::mine::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/show/0.1" => <crate::specs::vtc::badges::mine::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/show/0.1#response" => <crate::specs::vtc::badges::mine::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/promote/0.1" => <crate::specs::vtc::badges::promote::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/promote/0.1#response" => <crate::specs::vtc::badges::promote::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/retire/0.1" => <crate::specs::vtc::badges::retire::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/retire/0.1#response" => <crate::specs::vtc::badges::retire::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/show/0.1" => <crate::specs::vtc::badges::settings::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/show/0.1#response" => <crate::specs::vtc::badges::settings::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/update/0.1" => <crate::specs::vtc::badges::settings::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/update/0.1#response" => <crate::specs::vtc::badges::settings::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/show/0.1" => <crate::specs::vtc::badges::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/show/0.1#response" => <crate::specs::vtc::badges::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/update/0.1" => <crate::specs::vtc::badges::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/update/0.1#response" => <crate::specs::vtc::badges::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/wall/show/0.1" => <crate::specs::vtc::badges::wall::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/wall/show/0.1#response" => <crate::specs::vtc::badges::wall::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/create/0.1" => <crate::specs::vtc::boards::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -5401,6 +5953,24 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/delete/0.1#response" => <crate::specs::vtc::boards::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/add/0.1" => <crate::specs::vtc::boards::facilitators::add::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/add/0.1#response" => <crate::specs::vtc::boards::facilitators::add::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1" => <crate::specs::vtc::boards::facilitators::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1#response" => <crate::specs::vtc::boards::facilitators::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/remove/0.1" => <crate::specs::vtc::boards::facilitators::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/remove/0.1#response" => <crate::specs::vtc::boards::facilitators::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/ideas/decide/0.1" => <crate::specs::vtc::boards::ideas::decide::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -5848,6 +6418,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.3#response" => <crate::specs::vtc::elections::tickets::issue::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1" => <crate::specs::vtc::elections::tombstones::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1#response" => <crate::specs::vtc::elections::tombstones::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/endorsement-types/delete/0.1" => <crate::specs::vtc::endorsement_types::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -6454,6 +7030,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/networks/notice/0.1" => <crate::specs::vtc::networks::notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/preview/0.1" => <crate::specs::vtc::networks::preview::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/preview/0.1#response" => <crate::specs::vtc::networks::preview::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/networks/repudiate/0.1" => <crate::specs::vtc::networks::repudiate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -7482,6 +8064,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtn/outbox/retry/0.1#response" => <crate::specs::vtn::outbox::retry::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => <crate::specs::vtn::registry::check::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1#response" => <crate::specs::vtn::registry::check::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => <crate::specs::vtn::registry::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1#response" => <crate::specs::vtn::registry::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => <crate::specs::vtn::relay::deliver::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
@@ -7620,12 +8214,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::change_role::v0_2::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::change_role::v0_3::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::grant::v0_1::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::grant::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::grant::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => Some(crate::SpecPolicy::of::<
@@ -7640,6 +8242,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::list::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::list::v0_4::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::revoke::v0_1::Payload,
         >()),
@@ -7648,12 +8254,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::revoke::v0_2::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::revoke::v0_3::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::show::v0_1::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::show::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::show::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => Some(crate::SpecPolicy::of::<
@@ -7666,6 +8280,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::update::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::update::v0_3::Payload,
         >()),
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
@@ -8139,6 +8757,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/auth/step-up/policy/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::step_up::policy::v0_2::Payload,
         >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/requests/show/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::step_up::requests::show::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/start/0.1" => Some(crate::SpecPolicy::of::<
@@ -8774,6 +9399,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/did-management/stats/get/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::stats::get::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::stats::set_resolution::v0_1::Payload,
             >())
         }
         #[cfg(feature = "did-management")]
@@ -9744,9 +10376,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::monitor::event::v0_3::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::messaging::monitor::subscribe::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::monitor::subscribe::v0_2::Payload,
             >())
         }
         #[cfg(feature = "messaging")]
@@ -9756,6 +10400,86 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::messaging::monitor::unsubscribe::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::ack::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_revoke_all::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/attach/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::attach::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/connections/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::connections::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/detach/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::detach::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/event/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::event::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/grant/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::grant::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/notice/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::notice::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::revoke::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke-all/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::revoke_all::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/update/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::update::v0_1::Payload,
+        >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/ping/0.1" => Some(crate::SpecPolicy::of::<
@@ -10429,6 +11153,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/changed/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::changed::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::create::v0_1::Payload,
         >()),
@@ -10436,6 +11165,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::create::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::create::v0_3::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10484,6 +11218,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::info::v0_4::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::act::v0_1::Payload,
         >()),
@@ -10496,6 +11235,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.11" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::act::v0_11::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::act::v0_12::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10569,6 +11313,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.5" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::browse::v0_5::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::chain::v0_1::Payload,
         >()),
@@ -10576,6 +11325,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::chain::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/changed/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::changed::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10591,6 +11345,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/file-key/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::file_key::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/file-key/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::file_key::v0_3::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10619,6 +11378,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/list/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::list::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::open::v0_1::Payload,
         >()),
@@ -10626,6 +11390,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::open::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/open/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::open::v0_3::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10661,6 +11430,25 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::read::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/moved/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::keys::read_marker::moved::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::keys::read_marker::set::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::seal::v0_1::Payload,
         >()),
@@ -10673,6 +11461,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.3" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::seal::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::watch::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::watch::v0_2::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10770,6 +11568,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.3" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::owner::issue_authority::v0_3::Payload,
+            >())
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::rooms::owner::issue_membership::v0_1::Payload,
@@ -10784,6 +11589,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/register/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::owner::register::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::owner::register::v0_3::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10817,6 +11627,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/get/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::get::v0_4::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::list::v0_1::Payload,
         >()),
@@ -10844,6 +11659,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.6" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::list::v0_6::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.7" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::list::v0_7::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -10899,8 +11719,23 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::signal_delay::set::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/usage/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::usage::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::watch::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::watch::v0_2::Payload,
         >()),
         #[cfg(feature = "sync")]
         #[cfg(not(test))]
@@ -11495,6 +12330,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/set/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::collection::settings::set::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/show/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::collection::settings::show::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/create/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::contexts::create::v1_0::Payload,
         >()),
@@ -11767,6 +12616,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::create::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::dids::keys::add::v1_0::Payload,
         >()),
@@ -11797,8 +12651,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::recover::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::dids::update::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::upgrade::v1_0::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -11819,13 +12683,53 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::delete::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::delete::v0_3::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::get::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::memory::list::v0_1::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::list::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::list::v0_3::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::memory::put::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::put::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::put::v0_3::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12167,9 +13071,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/read/0.7" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::voter::read::v0_7::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/receipt/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::pcs::voter::receipt::v0_1::Payload,
         >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::pcs::voter::receipts::list::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/register/0.1" => Some(crate::SpecPolicy::of::<
@@ -12296,6 +13212,43 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/services/update/1.2" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::services::update::v1_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::create::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::delete::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webs::dids::rotate_keys::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::update::v0_1::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12761,6 +13714,174 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::awards::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/offer/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::awards::offer::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::awards::revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/share/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::awards::share::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::awards::unshare::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::awards::withdraw::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/create/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::claims::create::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::claims::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/redeem/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::claims::redeem::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::claims::withdraw::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/holders/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::holders::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::images::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/upload/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::images::upload::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/give/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::kudos::give::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::kudos::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/accept/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::accept::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::arrange::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/decline/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::decline::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/hide/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::hide::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::mine::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/promote/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::promote::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/retire/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::retire::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/show/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::settings::show::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/update/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::badges::settings::update::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/update/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::update::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/wall/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::badges::wall::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/create/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::boards::create::v0_1::Payload,
         >()),
@@ -12769,6 +13890,27 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/boards/delete/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::boards::delete::v0_1::Payload,
         >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/add/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::boards::facilitators::add::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::boards::facilitators::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/remove/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::boards::facilitators::remove::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/ideas/decide/0.1" => Some(crate::SpecPolicy::of::<
@@ -13218,6 +14360,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.3" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::elections::tickets::issue::v0_3::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::elections::tombstones::show::v0_1::Payload,
             >())
         }
         #[cfg(feature = "vtc")]
@@ -13839,6 +14988,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/networks/notice/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::networks::notice::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/preview/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::preview::v0_1::Payload,
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -14902,6 +16056,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::registry::check::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::registry::status::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtn::relay::deliver::v0_1::Payload,
         >()),
@@ -15024,12 +16188,20 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::change_role::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => {
+            Some(crate::specs::acl::change_role::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => {
             Some(crate::specs::acl::grant::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2" => {
             Some(crate::specs::acl::grant::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => {
+            Some(crate::specs::acl::grant::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => {
@@ -15044,6 +16216,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::list::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => {
+            Some(crate::specs::acl::list::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => {
             Some(crate::specs::acl::revoke::v0_1::ERROR_CODES)
         }
@@ -15052,12 +16228,20 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::revoke::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => {
+            Some(crate::specs::acl::revoke::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => {
             Some(crate::specs::acl::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2" => {
             Some(crate::specs::acl::show::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => {
+            Some(crate::specs::acl::show::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => {
@@ -15070,6 +16254,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2" => {
             Some(crate::specs::acl::update::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => {
+            Some(crate::specs::acl::update::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
@@ -15460,6 +16648,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/policy/0.2" => {
             Some(crate::specs::auth::step_up::policy::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/requests/show/0.1" => {
+            Some(crate::specs::auth::step_up::requests::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
@@ -15975,6 +17168,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/get/0.1" => {
             Some(crate::specs::did_management::stats::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => {
+            Some(crate::specs::did_management::stats::set_resolution::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
@@ -16838,13 +18036,93 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.3" => {
+            Some(crate::specs::messaging::monitor::event::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => {
             Some(crate::specs::messaging::monitor::subscribe::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.2" => {
+            Some(crate::specs::messaging::monitor::subscribe::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1" => {
             Some(crate::specs::messaging::monitor::unsubscribe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => {
+            Some(crate::specs::messaging::mux::ack::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => {
+            Some(crate::specs::messaging::mux::admin_list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => {
+            Some(crate::specs::messaging::mux::admin_revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => {
+            Some(crate::specs::messaging::mux::admin_revoke_all::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/attach/0.1" => {
+            Some(crate::specs::messaging::mux::attach::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/connections/0.1" => {
+            Some(crate::specs::messaging::mux::connections::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/detach/0.1" => {
+            Some(crate::specs::messaging::mux::detach::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/event/0.1" => {
+            Some(crate::specs::messaging::mux::event::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/grant/0.1" => {
+            Some(crate::specs::messaging::mux::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/list/0.1" => {
+            Some(crate::specs::messaging::mux::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/notice/0.1" => {
+            Some(crate::specs::messaging::mux::notice::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke/0.1" => {
+            Some(crate::specs::messaging::mux::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/revoke-all/0.1" => {
+            Some(crate::specs::messaging::mux::revoke_all::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/update/0.1" => {
+            Some(crate::specs::messaging::mux::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
@@ -17453,6 +18731,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/changed/0.1" => {
+            Some(crate::specs::rooms::changed::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.1" => {
             Some(crate::specs::rooms::create::v0_1::ERROR_CODES)
         }
@@ -17460,6 +18743,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/create/0.2" => {
             Some(crate::specs::rooms::create::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => {
+            Some(crate::specs::rooms::create::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17508,6 +18796,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => {
+            Some(crate::specs::rooms::info::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => {
             Some(crate::specs::rooms::keys::act::v0_1::ERROR_CODES)
         }
@@ -17520,6 +18813,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.11" => {
             Some(crate::specs::rooms::keys::act::v0_11::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12" => {
+            Some(crate::specs::rooms::keys::act::v0_12::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17593,6 +18891,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.5" => {
+            Some(crate::specs::rooms::keys::browse::v0_5::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => {
             Some(crate::specs::rooms::keys::chain::v0_1::ERROR_CODES)
         }
@@ -17600,6 +18903,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.2" => {
             Some(crate::specs::rooms::keys::chain::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/changed/0.1" => {
+            Some(crate::specs::rooms::keys::changed::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17615,6 +18923,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/file-key/0.2" => {
             Some(crate::specs::rooms::keys::file_key::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/file-key/0.3" => {
+            Some(crate::specs::rooms::keys::file_key::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17643,6 +18956,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/list/0.3" => {
+            Some(crate::specs::rooms::keys::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.1" => {
             Some(crate::specs::rooms::keys::open::v0_1::ERROR_CODES)
         }
@@ -17650,6 +18968,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/open/0.2" => {
             Some(crate::specs::rooms::keys::open::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/open/0.3" => {
+            Some(crate::specs::rooms::keys::open::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17683,6 +19006,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read/0.3" => {
+            Some(crate::specs::rooms::keys::read::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/moved/0.1" => {
+            Some(crate::specs::rooms::keys::read_marker::moved::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1" => {
+            Some(crate::specs::rooms::keys::read_marker::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.1" => {
             Some(crate::specs::rooms::keys::seal::v0_1::ERROR_CODES)
         }
@@ -17695,6 +19033,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/seal/0.3" => {
             Some(crate::specs::rooms::keys::seal::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.1" => {
+            Some(crate::specs::rooms::keys::watch::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/watch/0.2" => {
+            Some(crate::specs::rooms::keys::watch::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17778,6 +19126,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.3" => {
+            Some(crate::specs::rooms::owner::issue_authority::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => {
             Some(crate::specs::rooms::owner::issue_membership::v0_1::ERROR_CODES)
         }
@@ -17790,6 +19143,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/register/0.2" => {
             Some(crate::specs::rooms::owner::register::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => {
+            Some(crate::specs::rooms::owner::register::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17823,6 +19181,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/get/0.4" => {
+            Some(crate::specs::rooms::records::get::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.1" => {
             Some(crate::specs::rooms::records::list::v0_1::ERROR_CODES)
         }
@@ -17850,6 +19213,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.6" => {
             Some(crate::specs::rooms::records::list::v0_6::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.7" => {
+            Some(crate::specs::rooms::records::list::v0_7::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -17903,8 +19271,23 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => {
+            Some(crate::specs::rooms::signal_delay::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/usage/0.1" => {
             Some(crate::specs::rooms::usage::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.1" => {
+            Some(crate::specs::rooms::watch::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/watch/0.2" => {
+            Some(crate::specs::rooms::watch::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "sync")]
         #[cfg(not(test))]
@@ -18447,6 +19830,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/set/0.1" => {
+            Some(crate::specs::vta::collection::settings::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/collection/settings/show/0.1" => {
+            Some(crate::specs::vta::collection::settings::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/create/1.0" => {
             Some(crate::specs::vta::contexts::create::v1_0::ERROR_CODES)
         }
@@ -18677,6 +20070,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => {
+            Some(crate::specs::vta::dids::create::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => {
             Some(crate::specs::vta::dids::keys::add::v1_0::ERROR_CODES)
         }
@@ -18707,8 +20105,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => {
+            Some(crate::specs::vta::dids::recover::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => {
             Some(crate::specs::vta::dids::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => {
+            Some(crate::specs::vta::dids::upgrade::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -18727,13 +20135,53 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.2" => {
+            Some(crate::specs::vta::memory::delete::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => {
+            Some(crate::specs::vta::memory::delete::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.1" => {
+            Some(crate::specs::vta::memory::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => {
+            Some(crate::specs::vta::memory::get::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/list/0.1" => {
             Some(crate::specs::vta::memory::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.2" => {
+            Some(crate::specs::vta::memory::list::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => {
+            Some(crate::specs::vta::memory::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => {
             Some(crate::specs::vta::memory::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.2" => {
+            Some(crate::specs::vta::memory::put::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => {
+            Some(crate::specs::vta::memory::put::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -19057,8 +20505,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/read/0.7" => {
+            Some(crate::specs::vta::pcs::voter::read::v0_7::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/pcs/voter/receipt/0.1" => {
             Some(crate::specs::vta::pcs::voter::receipt::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1" => {
+            Some(crate::specs::vta::pcs::voter::receipts::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -19184,6 +20642,41 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/services/update/1.2" => {
             Some(crate::specs::vta::services::update::v1_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => {
+            Some(crate::specs::vta::webs::dids::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => {
+            Some(crate::specs::vta::webs::dids::create::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => {
+            Some(crate::specs::vta::webs::dids::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => {
+            Some(crate::specs::vta::webs::dids::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => {
+            Some(crate::specs::vta::webs::dids::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => {
+            Some(crate::specs::vta::webs::dids::rotate_keys::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => {
+            Some(crate::specs::vta::webs::dids::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -19577,6 +21070,156 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/list/0.1" => {
+            Some(crate::specs::vtc::badges::awards::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/offer/0.1" => {
+            Some(crate::specs::vtc::badges::awards::offer::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/revoke/0.1" => {
+            Some(crate::specs::vtc::badges::awards::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/share/0.1" => {
+            Some(crate::specs::vtc::badges::awards::share::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1" => {
+            Some(crate::specs::vtc::badges::awards::unshare::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1" => {
+            Some(crate::specs::vtc::badges::awards::withdraw::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/create/0.1" => {
+            Some(crate::specs::vtc::badges::claims::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/list/0.1" => {
+            Some(crate::specs::vtc::badges::claims::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/redeem/0.1" => {
+            Some(crate::specs::vtc::badges::claims::redeem::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1" => {
+            Some(crate::specs::vtc::badges::claims::withdraw::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/create/0.1" => {
+            Some(crate::specs::vtc::badges::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/holders/list/0.1" => {
+            Some(crate::specs::vtc::badges::holders::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/get/0.1" => {
+            Some(crate::specs::vtc::badges::images::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/upload/0.1" => {
+            Some(crate::specs::vtc::badges::images::upload::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/give/0.1" => {
+            Some(crate::specs::vtc::badges::kudos::give::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/kudos/list/0.1" => {
+            Some(crate::specs::vtc::badges::kudos::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/list/0.1" => {
+            Some(crate::specs::vtc::badges::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/accept/0.1" => {
+            Some(crate::specs::vtc::badges::mine::accept::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1" => {
+            Some(crate::specs::vtc::badges::mine::arrange::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/decline/0.1" => {
+            Some(crate::specs::vtc::badges::mine::decline::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/hide/0.1" => {
+            Some(crate::specs::vtc::badges::mine::hide::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/list/0.1" => {
+            Some(crate::specs::vtc::badges::mine::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/mine/show/0.1" => {
+            Some(crate::specs::vtc::badges::mine::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/promote/0.1" => {
+            Some(crate::specs::vtc::badges::promote::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/retire/0.1" => {
+            Some(crate::specs::vtc::badges::retire::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/show/0.1" => {
+            Some(crate::specs::vtc::badges::settings::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/settings/update/0.1" => {
+            Some(crate::specs::vtc::badges::settings::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/show/0.1" => {
+            Some(crate::specs::vtc::badges::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/update/0.1" => {
+            Some(crate::specs::vtc::badges::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/wall/show/0.1" => {
+            Some(crate::specs::vtc::badges::wall::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/create/0.1" => {
             Some(crate::specs::vtc::boards::create::v0_1::ERROR_CODES)
         }
@@ -19584,6 +21227,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/boards/delete/0.1" => {
             Some(crate::specs::vtc::boards::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/add/0.1" => {
+            Some(crate::specs::vtc::boards::facilitators::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1" => {
+            Some(crate::specs::vtc::boards::facilitators::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/boards/facilitators/remove/0.1" => {
+            Some(crate::specs::vtc::boards::facilitators::remove::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -19959,6 +21617,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.3" => {
             Some(crate::specs::vtc::elections::tickets::issue::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/elections/tombstones/show/0.1" => {
+            Some(crate::specs::vtc::elections::tombstones::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -20479,6 +22142,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/networks/notice/0.1" => {
             Some(crate::specs::vtc::networks::notice::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/preview/0.1" => {
+            Some(crate::specs::vtc::networks::preview::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -21342,6 +23010,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => {
+            Some(crate::specs::vtn::registry::check::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => {
+            Some(crate::specs::vtn::registry::status::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => {
             Some(crate::specs::vtn::relay::deliver::v0_1::ERROR_CODES)
         }
@@ -21474,6 +23152,21 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-jws/0.1#response" => <crate::specs::keys::sign_jws::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1#response" => <crate::specs::messaging::mux::admin_list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/attach/0.1" => <crate::specs::messaging::mux::attach::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/connections/0.1#response" => <crate::specs::messaging::mux::connections::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/event/0.1" => <crate::specs::messaging::mux::event::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/grant/0.1" => <crate::specs::messaging::mux::grant::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "notifications")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/notifications/notify/0.1" => <crate::specs::notifications::notify::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
@@ -21525,6 +23218,12 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.11#response" => <crate::specs::rooms::keys::act::v0_11::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12" => <crate::specs::rooms::keys::act::v0_12::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.12#response" => <crate::specs::rooms::keys::act::v0_12::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.2" => <crate::specs::rooms::keys::act::v0_2::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
@@ -21579,6 +23278,12 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/notifications/deposit/0.1#response" => <crate::specs::vta::notifications::deposit::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/get/0.1#response" => <crate::specs::vtc::badges::images::get::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/badges/images/upload/0.1" => <crate::specs::vtc::badges::images::upload::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/community/theme/update/0.1" => <crate::specs::vtc::community::theme::update::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,

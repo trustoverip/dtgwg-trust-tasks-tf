@@ -13,6 +13,8 @@ export type Revocation = RevokeEntry | NarrowAct;
 
 /**
  * Remove a subject's AclEntry 0.2, or narrow its act scope. What is revoked is stated explicitly in `revocation` — there is no form in which the absence of a member selects full removal. Narrowing of other axes (capabilities, approvable capabilities, approve scope, keys) is carried by acl/update/0.2 as a privilege reduction. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by acl/revoke/0.3
  */
 export interface ACLRevoke02Payload {
   /**
@@ -47,6 +49,8 @@ export interface NarrowAct {
 }
 /**
  * The success response to an acl/revoke/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.2#response.
+ *
+ * @deprecated superseded by acl/revoke/0.3
  */
 export interface ACLRevoke02ResponsePayload {
   /**
@@ -79,15 +83,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/revoke/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/revoke/0.3
+ */
 export type Payload = ACLRevoke02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/revoke/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/revoke/0.3
+ */
 export type Response = ACLRevoke02ResponsePayload;
 
 /**
@@ -98,8 +110,13 @@ export type Response = ACLRevoke02ResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/acl/revoke/0.2",
   "title": "ACL Revoke 0.2 — payload",
@@ -615,10 +632,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1106,7 +1123,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

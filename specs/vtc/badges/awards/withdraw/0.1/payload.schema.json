@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1",
+  "title": "VTC Badges — Awards — Withdraw — payload",
+  "description": "Withdraw an open offer of a badge before its recipient decides. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "awardId",
+    "reason"
+  ],
+  "properties": {
+    "awardId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/AwardId",
+      "description": "The offer to withdraw. It must be `offered`."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change for the badge's owners and administrators. Not shown to the recipient."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Awards — Withdraw — response payload",
+      "description": "The success response to a vtc/badges/awards/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award",
+          "description": "The award as it now stands: `state` `withdrawn`, `decidedAt` set."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -564,6 +564,31 @@ function newEmitter(sourceRel) {
 }
 
 /**
+ * The identifiers `emitTail` declares in a request package. They are taken
+ * before any schema-derived name, so a `$defs.Spec`, an inline object at
+ * `Response.spec` or an enum constant `TypeURI` (`$defs.Type` with the value
+ * `URI`) is suffixed like any other collision instead of redeclaring the
+ * tail's own. All eight are reserved whether or not this package emits them,
+ * so a type's name does not depend on whether the spec declares a response.
+ * The TypeScript generator refuses this case; this one, like the Dart
+ * generators, renames.
+ */
+const TAIL_IDENTIFIERS = [
+  "TypeURI",
+  "Extends",
+  "Deprecation",
+  "ResponseTypeURI",
+  "PayloadSchemaJSON",
+  "ResponsePayloadSchemaJSON",
+  "Spec",
+  "ResponseSpec",
+];
+
+function reserveTailIdentifiers(em) {
+  for (const name of TAIL_IDENTIFIERS) em.names.set(name, true);
+}
+
+/**
  * Reserve `preferred` as a type name, returning the name actually taken.
  *
  * Names are derived from the JSON pointer path, so they are unique by
@@ -680,8 +705,12 @@ function declareEnum(em, node, hint) {
   const seen = new Set();
   for (const value of node.enum) {
     let constName = `${name}${goIdent(value)}`;
-    while (seen.has(constName)) constName += "_";
+    // A constant shares the package scope with every type and with the tail,
+    // so it is checked against all of them (`em.names`), and taken there so a
+    // type declared later steers round it.
+    while (seen.has(constName) || em.names.has(constName)) constName += "_";
     seen.add(constName);
+    em.names.set(constName, true);
     lines.push(`\t${constName} ${name} = ${goString(value)}`);
   }
   lines.push(")");
@@ -1057,6 +1086,7 @@ function generateOne(schemaPath, lifecycle) {
   // else. Declaring a `Payload` for it would invent a type the spec does not
   // define.
   const rootHint = out.slugInfo ? "Payload" : null;
+  if (out.slugInfo) reserveTailIdentifiers(em);
   const { defNames, rootName } = emitDeclarations(em, requestSchema, rootHint);
 
   const deprecation = out.slugInfo
@@ -1229,7 +1259,13 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run only as a script: scripts/test-checks/go-bindings-names.test.mjs imports
+// the emitter below without generating the tree.
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+export { newEmitter, reserveTailIdentifiers, emitDeclarations, TAIL_IDENTIFIERS };

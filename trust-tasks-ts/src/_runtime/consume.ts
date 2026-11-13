@@ -1,7 +1,7 @@
 /**
- * Inbound-document orchestration for SPEC.md §7.2 item 2, items 4–8, and the
- * two stateful checks — the freshness bound of item 4 and the
- * duplicate-execution record of item 11.
+ * Inbound-document orchestration for SPEC.md §7.2 items 2–8 and the two
+ * stateful checks — the duplicate-execution record of item 11 and the
+ * freshness bound of item 13.
  *
  * Hand-written. Mirrors `consume.rs` in trust-tasks-rs, deliberately closely:
  * a TypeScript consumer and a Rust one must reach the same verdict on the same
@@ -10,15 +10,16 @@
  * ```ts
  * import {
  *   consequentialChecks, consumeInbound, InMemoryReplayGuard,
- *   StaticTransport, AclGrant_v0_2,
- * } from "@openvtc/trust-tasks";
+ *   respondWith, StaticTransport,
+ * } from "@openvtc/trust-tasks/runtime";
+ * import { AclGrant_v0_3 } from "./trust-tasks/index.js"; // trust-tasks-gen-ts
  *
  * // One guard per consumer, not one per document: it *is* the record.
  * const guard = new InMemoryReplayGuard();
  *
  * const outcome = await consumeInbound({
  *   transport,
- *   spec: AclGrant_v0_2.SPEC,
+ *   spec: AclGrant_v0_3.SPEC,
  *   proofPolicy: { kind: "verify", verify: myVerifier },
  *   // ajv, or whatever validator you already run — see PayloadPolicy.
  *   payloadPolicy: { kind: "validate", validate: myValidator },
@@ -45,19 +46,20 @@
  * }
  * ```
  *
- * Items 1 (framework schema) and 3 (unknown `type`) are *not* attempted here —
- * they belong to the caller's parse and dispatch.
+ * Item 1 (framework schema) is checked only as far as every later step relies
+ * on it: the envelope members' types and a nesting bound (`validateEnvelope`),
+ * refused `malformedRequest` before anything else reads the document. Formats
+ * are left to the steps that read them. Item 3 is checked here: a document
+ * whose `type` is neither `spec.typeUri` nor a later version whose `extends`
+ * chain reaches it is refused `unsupportedVersion` (same specification) or
+ * `unsupportedType` (another), before the item-11 record is written.
  *
- * Item 2 (payload schema) used to be on that list, on the same reasoning: "by
- * the time you hold a typed document it has already succeeded." That was never
- * true in TypeScript. `TrustTaskDocument<P>` is a compile-time type and erases
- * to nothing; a `JSON.parse` result cast to it has been checked by no one. The
- * package also shipped no schema a caller could have validated against even if
- * they had wanted to, so the step was delegated to a caller who had no way to
- * perform it — and every REQUIRED payload member was optional in practice.
- *
- * The schema now travels on the generated `SPEC` / `RESPONSE_SPEC`, and
- * `payloadPolicy` decides what to do with it. See {@link PayloadPolicy}.
+ * Item 2 (payload schema) is checked here too, as `payloadPolicy` directs.
+ * `TrustTaskDocument<P>` is a compile-time type and erases to nothing — a
+ * `JSON.parse` result cast to it has been checked by no one — so holding a
+ * typed document establishes nothing about its payload. The schema travels on
+ * the generated `SPEC` / `RESPONSE_SPEC` as `payloadSchema`. See
+ * {@link PayloadPolicy}.
  */
 
 import {
@@ -78,7 +80,7 @@ import {
   validateFreshness,
   type FreshnessPolicy,
 } from "./freshness.js";
-import { receivedDocumentOf } from "./extends.js";
+import { readingSpecOf, receivedDocumentOf, typeRefusalFor } from "./extends.js";
 import {
   documentDigest,
   type ReplayGuard,
@@ -91,6 +93,7 @@ import {
   type ResolvedParties,
   type TransportHandler,
 } from "./transport.js";
+import { envelopeForRefusal, validateEnvelope } from "./envelope.js";
 
 /**
  * The two stateful §7.2 checks: the freshness bound over `issuedAt` /
@@ -387,6 +390,45 @@ export async function consumeInbound<P, R>(
   // meaning (item 2, the handler) gets `doc`.
   const received = receivedDocumentOf(doc) ?? doc;
 
+  // §7.2 item 1, as far as every later step depends on it: the envelope
+  // members are the types the framework gives them, and the document is
+  // shallow enough for the walks below (the proof's canonical form, the
+  // item-11 digest) to finish. Nothing here has checked either — a cast from
+  // `JSON.parse` is not a check — and an array `id` would otherwise reach the
+  // item-11 record as a key no resend ever equals. The refusal is addressed
+  // from the string-valued members only.
+  const malformedEnvelope =
+    validateEnvelope(received) ?? (received === doc ? null : validateEnvelope(doc));
+  if (malformedEnvelope !== null) {
+    const addressable = envelopeForRefusal(received);
+    // With neither a string `id` nor a string `type` there is nothing the
+    // response could say it is about (§8.2), so nothing is emitted.
+    if (addressable.id === undefined && addressable.type === undefined) {
+      return { kind: "suppressed", reason: malformedEnvelope };
+    }
+    const error = reject(transport, addressable, newErrorId(), malformedEnvelope, clock);
+    if (error === undefined) return { kind: "suppressed", reason: malformedEnvelope };
+    // `inResponseTo.typeUri` is required where `inResponseTo` is present; with
+    // no string `type` to name, leave `inResponseTo` out rather than send it
+    // without one.
+    if (addressable.type === undefined) delete error.payload.inResponseTo;
+    return { kind: "rejected", error };
+  }
+
+  // §7.2 item 3 — the document's `type` is the one `spec` describes. Nothing
+  // upstream of this function compares them: a document of another
+  // specification whose payload satisfies `spec` would otherwise run under
+  // `spec`'s policy and handler. A `readForSpec` re-reading made for this same
+  // `spec` has already been routed (with whatever `extends` index the caller
+  // gave it); anything else — including a re-reading made for another spec — is
+  // checked here, against the generated index plus `declareExtends` (this
+  // function takes no index of its own), after the envelope members' types are checked
+  // and before the item-11 claim, so a refused document never burns its `id`.
+  if (readingSpecOf(doc) !== spec.typeUri) {
+    const refusal = typeRefusalFor((doc as { type?: unknown } | null)?.type, spec);
+    if (refusal !== null) return route(refusal);
+  }
+
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
   // before anything that reasons about what the payload means: a payload that
   // is not the shape the specification declares should be refused as malformed
@@ -496,7 +538,10 @@ export async function consumeInbound<P, R>(
 
     let verdict;
     try {
-      verdict = await guard.claim(doc.id, digest, retainUntil, now);
+      verdict =
+        guard.claimFor === undefined
+          ? await guard.claim(doc.id, digest, retainUntil, now)
+          : await guard.claimFor(resolved.parties.issuer, doc.id, digest, retainUntil, now);
     } catch {
       // Fail closed. A consumer that cannot consult its record has not
       // satisfied item 11, and executing anyway is exactly the double

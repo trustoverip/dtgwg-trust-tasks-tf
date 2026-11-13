@@ -7,7 +7,7 @@
 //! - In-band `issuer` / `recipient` values are authoritative when present.
 //! - Transport-derived identity fills in absent members.
 //! - When both are present, they MUST be consistent — a mismatch is a
-//!   validation failure (the standard error code is `identity_mismatch`,
+//!   validation failure (the standard error code is `identityMismatch`,
 //!   §8.3).
 //!
 //! A handler implementation supplies the *transport-derived* values it
@@ -49,7 +49,7 @@ pub struct TransportContext {
 }
 
 /// Errors raised when in-band and transport-derived identity disagree
-/// (SPEC.md §7.2 item 6; standard code `identity_mismatch`, §8.3).
+/// (SPEC.md §7.2 item 6; standard code `identityMismatch`, §8.3).
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum ConsistencyError {
     /// The in-band `issuer` does not match the transport-authenticated sender.
@@ -112,7 +112,7 @@ pub trait TransportHandler {
     /// Returns [`ConsistencyError`] when an in-band member is present and
     /// disagrees with the transport-derived value for the same party. The
     /// caller is responsible for translating the error into an
-    /// `identity_mismatch` error response (SPEC.md §8.3).
+    /// `identityMismatch` error response (SPEC.md §8.3).
     fn resolve_parties<P>(&self, doc: &TrustTask<P>) -> Result<ResolvedParties, ConsistencyError> {
         let ctx = self.derive_parties();
 
@@ -150,7 +150,7 @@ pub trait TransportHandler {
     /// in-band issuer.
     ///
     /// Returns `Some(ErrorResponse)` when a routable recipient exists, and
-    /// `None` when the rejection is `identity_mismatch` and the transport
+    /// `None` when the rejection is `identityMismatch` and the transport
     /// has no authenticated sender for the inbound document — per §8.1, the
     /// consumer SHOULD NOT emit a response in that case.
     fn reject<P>(

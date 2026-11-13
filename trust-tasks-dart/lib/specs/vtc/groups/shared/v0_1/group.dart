@@ -92,18 +92,28 @@ extension type const RuleConditionFact(String value) {
   static const RuleConditionFact field = RuleConditionFact('field');
   static const RuleConditionFact personhood = RuleConditionFact('personhood');
   static const RuleConditionFact joinedAt = RuleConditionFact('joinedAt');
+  static const RuleConditionFact kudosReceived =
+      RuleConditionFact('kudosReceived');
+  static const RuleConditionFact ideasSelected =
+      RuleConditionFact('ideasSelected');
+  static const RuleConditionFact electionTickets =
+      RuleConditionFact('electionTickets');
 
   /// Every value this specification's schema permits.
   static const List<RuleConditionFact> values = <RuleConditionFact>[
     role,
     field,
     personhood,
-    joinedAt
+    joinedAt,
+    kudosReceived,
+    ideasSelected,
+    electionTickets
   ];
 }
 
 /// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs
-/// neither; `before` and `after` compare a date fact with `value`.
+/// neither; `before` and `after` compare a date fact with `value`; `atLeast` compares
+/// a count fact with `count`.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -114,6 +124,7 @@ extension type const RuleConditionOp(String value) {
   static const RuleConditionOp exists = RuleConditionOp('exists');
   static const RuleConditionOp before = RuleConditionOp('before');
   static const RuleConditionOp after = RuleConditionOp('after');
+  static const RuleConditionOp atLeast = RuleConditionOp('atLeast');
 
   /// Every value this specification's schema permits.
   static const List<RuleConditionOp> values = <RuleConditionOp>[
@@ -121,7 +132,8 @@ extension type const RuleConditionOp(String value) {
     oneOf,
     exists,
     before,
-    after
+    after,
+    atLeast
   ];
 }
 
@@ -130,7 +142,11 @@ extension type const RuleConditionOp(String value) {
 /// field named by `field`; `fact: personhood` tests whether a personhood assertion is
 /// on file; `fact: joinedAt` tests when they joined. A rule never reads a
 /// self-asserted (`member`-sourced) field: a member must not be able to join a group
-/// by editing their card.
+/// by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are
+/// counts the community keeps of its own records (kudos the member accepted, ideas of
+/// theirs a board selected, elections it issued them a ticket in), compared with
+/// `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group
+/// refuses them with `ruleInvalid`.
 class RuleCondition {
   const RuleCondition({
     required this.fact,
@@ -138,6 +154,7 @@ class RuleCondition {
     required this.op,
     this.value,
     this.values,
+    this.count,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -151,6 +168,7 @@ class RuleCondition {
             : (json['values'] as List<dynamic>)
                 .map((e) => e as String)
                 .toList(),
+        count: json['count'] as int?,
       );
 
   final RuleConditionFact fact;
@@ -159,10 +177,15 @@ class RuleCondition {
   final FieldKey? field;
 
   /// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs
-  /// neither; `before` and `after` compare a date fact with `value`.
+  /// neither; `before` and `after` compare a date fact with `value`; `atLeast` compares
+  /// a count fact with `count`.
   final RuleConditionOp op;
   final Object? value;
   final List<String>? values;
+
+  /// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
+  /// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+  final int? count;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -171,6 +194,7 @@ class RuleCondition {
         'op': op.value,
         if (value != null) 'value': value!,
         if (values != null) 'values': values!,
+        if (count != null) 'count': count!,
       };
 }
 
@@ -197,6 +221,10 @@ class DynamicRule {
         'all': all.map((e) => e.toJson()).toList(),
       };
 }
+
+/// Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters.
+/// Random, community-scoped, never reused (VTI-BDG-001).
+typedef BadgeId = String;
 
 /// Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url
 /// characters. Random, scoped to one community, and stable for the life of the
@@ -226,6 +254,7 @@ class Group {
     required this.showMembers,
     required this.issuesCredentials,
     required this.carriesAuthority,
+    this.badgeId,
     this.memberCount,
     this.managers,
     this.credentialAuthorityValidUntil,
@@ -252,6 +281,7 @@ class Group {
         showMembers: GroupAudience(json['showMembers'] as String),
         issuesCredentials: json['issuesCredentials'] as bool,
         carriesAuthority: json['carriesAuthority'] as bool,
+        badgeId: json['badgeId'] as String?,
         memberCount: json['memberCount'] as int?,
         managers: json['managers'] == null
             ? null
@@ -296,6 +326,14 @@ class Group {
   /// and `closed` for as long as it does.
   final bool carriesAuthority;
 
+  /// Present exactly when the group backs a community badge (vtc/badges/*): its managers
+  /// are the badge's owners, its members the badge's holders, and its DID issues the
+  /// badge credential in place of a membership credential. A badge group never carries
+  /// authority, is not counted among the groups two members share, and is listed among
+  /// the community's groups only to a caller who asks for badge groups (VTI-BDG-010 –
+  /// VTI-BDG-012).
+  final BadgeId? badgeId;
+
   /// Active members. Only to callers who may see the member list.
   final int? memberCount;
 
@@ -330,6 +368,7 @@ class Group {
         'showMembers': showMembers.value,
         'issuesCredentials': issuesCredentials,
         'carriesAuthority': carriesAuthority,
+        if (badgeId != null) 'badgeId': badgeId!,
         if (memberCount != null) 'memberCount': memberCount!,
         if (managers != null) 'managers': managers!,
         if (credentialAuthorityValidUntil != null)

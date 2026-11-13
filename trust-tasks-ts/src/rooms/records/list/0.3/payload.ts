@@ -6,7 +6,7 @@
 import type { AuthorityPresentation, BlobRef, DataCommitment, DigestMultibase, Ext, HeadVersion, RecordCount, RecordMetadataV2, RecordPrune_RoomsV0_1 as RecordPrune } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/records/list/0.6 */
+/** @deprecated superseded by rooms/records/list/0.7 */
 export interface RoomsRecordsListPayload {
   /**
    * The room's identifier.
@@ -40,7 +40,7 @@ export interface RoomsRecordsListPayload {
 /**
  * Success response to rooms/records/list. Type https://trusttasks.org/spec/rooms/records/list/0.3#response.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export interface RoomsRecordsListResponsePayload {
   records: RecordMetadataV2[];
@@ -87,12 +87,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/records/list/0.6";
+export const DEPRECATION: string | null = "superseded by rooms/records/list/0.7";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export type Payload = RoomsRecordsListPayload;
 
@@ -102,7 +102,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/list
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export type Response = RoomsRecordsListResponsePayload;
 
@@ -114,8 +114,13 @@ export type Response = RoomsRecordsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/records/list/0.3",
   "title": "Rooms Records List — payload",
@@ -375,10 +380,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -596,7 +601,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

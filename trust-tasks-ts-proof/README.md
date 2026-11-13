@@ -15,10 +15,15 @@ and the Dart `trust_tasks_proof` package: for the same Ed25519 key, document and
 npm install @openvtc/trust-tasks @openvtc/trust-tasks-proof
 ```
 
+Requires **Node.js 20.19 or later** (`engines`; the floor `@noble/curves` and
+`@noble/hashes` 2 set), or a browser or React Native runtime. The package is
+ESM; its `exports` carry a `default` condition, so `require()` also works on a
+Node.js that can load ESM synchronously (20.19+, 22.12+).
+
 ## Verifying
 
 ```ts
-import { consumeInbound } from "@openvtc/trust-tasks";
+import { consumeInbound } from "@openvtc/trust-tasks/runtime";
 import { DataIntegrityProofVerifier } from "@openvtc/trust-tasks-proof";
 
 const outcome = await consumeInbound({
@@ -37,15 +42,30 @@ taxonomy as the Rust and Dart libraries.
 
 1. The proof is a `DataIntegrityProof` with a non-empty `cryptosuite`,
    `verificationMethod`, `proofPurpose` and `proofValue`.
-2. The cryptosuite is one this verifier accepts.
-3. `created`, when present, is a `dateTimeStamp` (ending in `Z` or an explicit
+2. `proofPurpose` names a signing relationship (`SIGNING_PURPOSES`:
+   `authentication`, `assertionMethod`, `capabilityInvocation`,
+   `capabilityDelegation`), all of which a `did:key` authorises. `keyAgreement`
+   and any other value are refused (SPEC §4.7.3).
+3. The cryptosuite is one this verifier accepts.
+4. `created`, when present, is a `dateTimeStamp` (ending in `Z` or an explicit
    offset) and no more than `clockSkewMs` (60s default) in the future. An
-   offset-less timestamp is refused rather than read as local time.
-4. **The proof is bound to the document's `issuer`.** The DID part of
+   offset-less timestamp is refused rather than read as local time. `expires`,
+   when present, is a `dateTimeStamp` that has not passed, with every field in
+   range (no February 30, hour 24, leap second, or offset beyond ±14:00).
+5. **The proof is bound to the document's `issuer`.** The DID part of
    `verificationMethod` must equal `issuer` exactly, with no normalization (SPEC
    §4.8), or the document is `issuerMismatch`. A valid signature proves only
    that *some* key signed.
-5. The signature verifies over the document minus its `proof`.
+6. A proof that carries `@context` carries the document's `@context`, exactly,
+   or it is `malformedProof`. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4
+   checks only that the document's starts with the proof's; this verifier
+   returns no document, so it does not accept `@context` entries the signature
+   does not cover.
+7. The signature verifies over the proof configuration (the proof minus
+   `proofValue`, as received) and the document minus its `proof`. Ed25519 is
+   checked as the Go, Rust and Dart libraries check it: RFC 8032 point
+   decoding (not ZIP-215's wider rules), a small-order public key refused, and
+   the cofactorless equation, so an `R` with a small-order component fails.
 
 Keys travel in the `did:key` verification method — no resolver, no network.
 
@@ -59,8 +79,13 @@ const signed = signTrustTask(doc, signer);
 ```
 
 `signTrustTask` refuses to sign a document with no `issuer`, or one whose
-`issuer` is not the signer's `did:key` — such a document could never verify. It
-replaces any existing `proof`.
+`issuer` is not the signer's `did:key` — such a document could never verify —
+or a `proofPurpose` outside `SIGNING_PURPOSES`. It replaces any existing `proof`,
+and copies a document's `@context` into the proof, as the cryptosuites' Create
+Proof algorithm requires.
+`proofPurpose` defaults to `authentication`, the purpose SPEC §4.7.3 recommends
+for a Trust Task document; pass `assertionMethod` only where a specification
+defines the proof as an attestation.
 
 ## Cryptosuites
 
@@ -68,7 +93,7 @@ replaces any existing `proof`.
 |---|---|
 | `eddsa-jcs-2022` | ✓ Ed25519 |
 | `ecdsa-jcs-2019` | ✓ P-256, P-384 |
-| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document has no JSON-LD `@context` for RDF canonicalization to expand |
+| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document is JSON whether or not it carries `@context` (SPEC §4.7.1), so it is never expanded for RDF canonicalization |
 
 ML-DSA (post-quantum) suites will follow; the `@noble` foundation is chosen so
 they can be added without a JSON-LD toolchain.

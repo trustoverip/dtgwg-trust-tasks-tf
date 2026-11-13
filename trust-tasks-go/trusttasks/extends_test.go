@@ -15,8 +15,10 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
@@ -260,6 +262,7 @@ func consumeWidget(t *testing.T, doc *tt.Document[widgetPayload], received json.
 		Checks:        tt.NotConsequentialChecks(),
 		Doc:           doc,
 		Received:      received,
+		Extends:       widgetChain,
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -342,5 +345,97 @@ func TestReceivedMustBeTheDocumentBeingConsumed(t *testing.T) {
 	if outcome := consumeWidget(t, &direct, exact); outcome.Kind != tt.OutcomeHandled ||
 		outcome.Response.Type != widgetBase+"0.1#response" {
 		t.Fatalf("exact version: %s %+v", outcome.Kind, outcome.Error)
+	}
+}
+
+// Only a strictly earlier MINOR of the same MAJOR is an extension link (SPEC
+// §5.2), as Rust and TypeScript read it: a caller-supplied lookup declaring an
+// upward or cross-MAJOR link does not route.
+func TestExtendsChainIgnoresLinksThatAreNotStrictlyEarlierMinors(t *testing.T) {
+	for name, c := range map[string]struct {
+		received, implemented, declared string
+	}{
+		"upward":      {"0.2", "0.3", "0.3"},
+		"cross-MAJOR": {"2.1", "1.0", "1.0"},
+		"self":        {"0.2", "0.1", "0.2"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			lookup := func(typeURI string) string {
+				if typeURI == widgetBase+c.received {
+					return c.declared
+				}
+				return ""
+			}
+			if tt.ExtendsChainReaches(widgetBase+c.received, widgetBase+c.implemented, lookup) {
+				t.Fatalf("%s -> %s routed along a link declaring %s", c.received, c.implemented, c.declared)
+			}
+			_, refusal, err := tt.ReadForSpecWith(json.RawMessage(widget03(c.received)),
+				tt.SpecPolicy{TypeURI: widgetBase + c.implemented}, lookup)
+			if err != nil || refusal == nil || refusal.Code != tt.CodeUnsupportedVersion {
+				t.Fatalf("expected unsupportedVersion, got %+v %v", refusal, err)
+			}
+		})
+	}
+}
+
+// fanOutSchema names the recursive member `next` from both `properties` and an
+// `allOf` branch, so each level prunes its subtree twice: 2^depth steps.
+const fanOutSchema = `{
+  "$ref": "#/$defs/Node",
+  "$defs": {
+    "Node": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"next": {"$ref": "#/$defs/Node"}, "v": {"type": "integer"}},
+      "allOf": [{"properties": {"next": {"$ref": "#/$defs/Node"}}}]
+    }
+  }
+}`
+
+// chainDocument is a widget/0.3 document whose payload nests depth levels of
+// `next`, each with a member 0.1 does not know.
+func chainDocument(depth int) json.RawMessage {
+	payload := `{"v":0,"added":true}`
+	for i := 1; i <= depth; i++ {
+		payload = `{"next":` + payload + `,"v":` + strconv.Itoa(i) + `,"added":true}`
+	}
+	return json.RawMessage(`{"id":"req-1","type":"` + widgetBase + `0.3","issuer":"` + peer +
+		`","recipient":"` + me + `","payload":` + payload + `}`)
+}
+
+func TestReadForSpecPrunesWithinTheWorkLimit(t *testing.T) {
+	spec := tt.SpecPolicy{TypeURI: widgetBase + "0.1", PayloadSchema: fanOutSchema}
+	reading, refusal, err := tt.ReadForSpecWith(chainDocument(3), spec, widgetChain)
+	if err != nil || refusal != nil {
+		t.Fatalf("refused: %v %+v", err, refusal)
+	}
+	var got struct {
+		Payload any `json:"payload"`
+	}
+	if err := json.Unmarshal(reading, &got); err != nil {
+		t.Fatal(err)
+	}
+	var want any
+	_ = json.Unmarshal([]byte(`{"next":{"next":{"next":{"v":0},"v":1},"v":2},"v":3}`), &want)
+	if !reflect.DeepEqual(got.Payload, want) {
+		t.Fatalf("payload pruned to %v", got.Payload)
+	}
+}
+
+func TestReadForSpecRefusesAPayloadBeyondTheWorkLimit(t *testing.T) {
+	spec := tt.SpecPolicy{TypeURI: widgetBase + "0.1", PayloadSchema: fanOutSchema}
+	started := time.Now()
+	reading, refusal, err := tt.ReadForSpecWith(chainDocument(40), spec, widgetChain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refusal == nil {
+		t.Fatalf("accepted: %s", reading)
+	}
+	if refusal.Code != tt.CodeMalformedRequest || refusal.Message != tt.PruneLimitWireMessage {
+		t.Fatalf("refusal = %+v", refusal)
+	}
+	if elapsed := time.Since(started); elapsed > 5*time.Second {
+		t.Fatalf("the limit took %v to stop the walk", elapsed)
 	}
 }

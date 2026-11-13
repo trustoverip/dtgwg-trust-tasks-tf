@@ -1085,14 +1085,19 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
       ` * at runtime: without a schema a consumer has nothing to validate, and`,
       ` * every REQUIRED payload member is optional in practice. Cross-file`,
       ` * \`$ref\`s are already inlined, so it needs no resolver.`,
+      ` *`,
+      ` * Typed as a plain JSON object rather than \`as const\`: a literal type would`,
+      ` * carry the whole schema a second time in the declaration file, and nothing`,
+      ` * reads it at the type level. (An index signature, not \`Readonly<Record<…>>\`:`,
+      ` * a schema may itself define a type named \`Record\`.)`,
       ` */`,
-      `export const PAYLOAD_SCHEMA = ${JSON.stringify(schemas.request, null, 2)} as const;`,
+      `export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(schemas.request, null, 2)};`,
       "",
     );
     if (schemas.response) {
       lines.push(
         `/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */`,
-        `export const RESPONSE_PAYLOAD_SCHEMA = ${JSON.stringify(schemas.response, null, 2)} as const;`,
+        `export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(schemas.response, null, 2)};`,
         "",
       );
     }
@@ -1412,8 +1417,15 @@ function verifyComponentNames(ts, expected) {
         `${missing.length > 8 ? ", …" : ""}`,
     );
   }
+  // A component with a `type` beside an `anyOf` compiles to an intersection of
+  // numbered parts (`X = X1 & X2`), which are its own, not a duplicate. Only a
+  // bare name shows it; acl's `Purpose` is qualified here, so nothing does yet.
+  const parts = new Set();
+  for (const m of ts.matchAll(/^export type ([A-Za-z0-9_$]+) = ([A-Za-z0-9_$]+(?: & [A-Za-z0-9_$]+)+);$/gm)) {
+    for (const part of m[2].split(" & ")) if (part.replace(/\d+$/, "") === m[1]) parts.add(part);
+  }
   const numbered = [...declared].filter(
-    (n) => /\d$/.test(n) && !expected.includes(n) && declared.has(n.replace(/\d+$/, "")),
+    (n) => /\d$/.test(n) && !expected.includes(n) && !parts.has(n) && declared.has(n.replace(/\d+$/, "")),
   );
   if (numbered.length) {
     throw new Error(

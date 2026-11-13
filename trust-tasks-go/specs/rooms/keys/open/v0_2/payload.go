@@ -13,6 +13,8 @@ import (
 
 // Response Success response to rooms/keys/open. Type
 // https://trusttasks.org/spec/rooms/keys/open/0.2#response.
+//
+// Deprecated: superseded by rooms/keys/open/0.3
 type Response struct {
 	// The opened record, base64url. The only thing that crosses back — never the key.
 	Plaintext string `json:"plaintext"`
@@ -39,6 +41,8 @@ type PayloadSealed struct {
 // Payload An agent asks the party holding its principal's room keys to open one sealed
 // record. The key never crosses to the agent: this is a decryption oracle, not a
 // key-release call.
+//
+// Deprecated: superseded by rooms/keys/open/0.3
 type Payload struct {
 	// The room the record belongs to. Part of the record's associated data, so a caller
 	// naming the wrong room gets an authentication failure rather than someone else's
@@ -74,7 +78,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/keys/open/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/open/0.2#response"

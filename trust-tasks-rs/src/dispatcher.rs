@@ -152,7 +152,7 @@ impl<R> Dispatcher<R> {
         match forward_target(&doc.type_uri, &self.handlers) {
             Some(target) => {
                 if let Some(schema) = self.schemas.get(&target).copied().flatten() {
-                    crate::extension::prune_payload(&mut doc.payload, schema);
+                    crate::extension::prune_forward(&mut doc.payload, schema)?;
                 }
                 self.handlers[&target](doc)
             }
@@ -161,7 +161,7 @@ impl<R> Dispatcher<R> {
     }
 
     /// The Type URIs this dispatcher currently routes for, in canonical
-    /// form and sorted for stable output. Handy for `unsupported_type`
+    /// form and sorted for stable output. Handy for `unsupportedType`
     /// error responses that list what the consumer *does* implement.
     pub fn registered_uris(&self) -> Vec<&str> {
         let mut v: Vec<&str> = self.handlers.keys().map(String::as_str).collect();
@@ -186,7 +186,7 @@ impl<R> Dispatcher<R> {
     /// handler registered for this Type URI) and
     /// [`RejectReason::MalformedRequest`] (payload failed to deserialize
     /// into the registered `P`). Both are routed to the original producer
-    /// per SPEC.md §8.1 — neither carries the `identity_mismatch`
+    /// per SPEC.md §8.1 — neither carries the `identityMismatch`
     /// transport-routing exception, so the safe default in
     /// [`TrustTask::reject_with`] applies.
     ///
@@ -456,7 +456,7 @@ mod tests {
 
     #[test]
     fn dispatch_or_reject_unsupported_type_routes_back_to_original_issuer() {
-        // Dispatcher has no handler at all; any inbound doc → unsupported_type.
+        // Dispatcher has no handler at all; any inbound doc → unsupportedType.
         let dispatcher: Dispatcher<()> = Dispatcher::new();
         let mut doc = TrustTask::for_payload("req-9", payload());
         doc.issuer = Some("did:web:org.example".into());

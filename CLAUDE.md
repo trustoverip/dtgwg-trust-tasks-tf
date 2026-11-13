@@ -75,17 +75,11 @@ the reserved namespace. Publishing a new one (`trust-task-control`,
    repository (`SPEC.md` here is generated from it), so the slug is documented.
 2. `specs/spec.meta.schema.json` — the `enum`, so the build accepts it.
 
-Forget the second and `npm run build` fails with:
-
-```
-- trust-task-control/0.1/spec.md: /slug must NOT be valid
-- trust-task-control/0.1/spec.md: /slug must be equal to one of the allowed values
-```
-
-which is the schema saying "your slug hit the reservation and is not on the
-allowlist" in the least helpful way available. The build does catch it — unlike
-the `data.js` trap below, nothing ships broken — but the message points at the
-spec rather than at the list you actually need to edit.
+Forget the second and `npm run build` fails with `/slug 'trust-task-control' is
+in the framework-reserved namespace … and is not on the allowlist`, naming the
+enum to edit. (The schema's own wording — `/slug must NOT be valid`, `must be
+equal to one of the allowed values` — is replaced by the build for this case.)
+The build does catch it — unlike the `data.js` trap below, nothing ships broken.
 
 ## ⚠️ Adding a transport binding — register it in `bindings.js` too
 
@@ -121,18 +115,25 @@ defects three times.
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
+| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; every JSX file and `index.html`'s inline script compiles under the pinned `@babel/standalone`, and (after `npm run build`) the app renders a set of routes through React's server renderer against the real registry (`BABEL_JS`, `REACT_JS`, `REACT_DOM_SERVER_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+| `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout (for TS, the newest on npm while the checkout's is unpublished — the Release PR — with a warning) | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
 | `npm run check-dart-packages` | the five files naming the Dart packages (`publish.yml`'s `tag-dart` matrix, `release-pr.sh`'s `DART_PACKAGES`, `publish-dart.yml`, `release-bump-dart.sh`, `dart.yml`) name the same packages with the same dirs and tag prefixes | whether a package's first manual publish and trusted-publishing setup happened |
+| `npm run check-release-lists` (in `Dart package lists agree`) | the same for npm (`publish.yml` matrix ↔ `TS_PACKAGES` ↔ `release-bump-ts.sh` arms ↔ a `ts.yml` job per sibling), Go (matrix ↔ `GO_MODULES` ↔ `release-bump-go.sh` arms, `go.mod` module paths, every nested module in both core `:(exclude)` lists and in a `go.yml` job) and crates (published library crates ↔ `check-rs-api-compat.sh` `CRATES`, `trust-tasks-rs` dependents ↔ release-plz's `core` group ↔ `CORE_SCOPES`, every member in `rust.yml`'s path filter); and commit-lint's `!` scope list equals the scopes the bump scripts, `check-rs-api-compat.sh` and the published crates recognise | whether a package's first manual publish and trusted-publishing setup happened |
+| `versions change only in the Release PR` (`checks.yml`, `scripts/check-version-edits.mjs`) | a PR not from this repository's `release` branch changes no package version declaration (`[package] version` of a workspace member, `trust-tasks-ts*/package.json` `"version"`, a Go `const Version`, a pubspec `version:`, Dart `packageVersion`), compared as parsed values; a file the PR adds is not a change | a version moved by a commit pushed straight to `main` |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
 | the member/value casing lint (`scripts/lib/member-casing.mjs`) | every schema's member names and enumerated values are lowerCamelCase (SPEC §4.10), or named in `member-casing-allowlist.json` — `external` with the vocabulary that owns it, or `frozen` for its own family's pre-lint deviations | whether an `external` entry's attribution is true |
 | the wire-conventions lint (`scripts/lib/wire-conventions.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — spells instants as RFC 3339 and names them `<event>At` (only a bound such as `since` or `validUntil` keeps a preposition; never a bare `timestamp` or `at`), pages with `cursor` + `limit` → `nextCursor` (never `null`, no `truncated`/`pageSize`/`offset`), uses `since` only as a time filter, never a boolean `created`, and names every integer duration's unit (`…Seconds`, not `…Secs` or a bare `ttl`); deliberate look-alikes are in `wire-conventions-allowlist.json` with a reason | a convention the lint has no rule for, or an instant whose name and description give no hint it is one |
 | the stale-references check (`scripts/lib/stale-references.mjs`) | no current spec names another spec at a superseded version — in a schema, a description, a prose link or mention, or an example — unless it is history (a `Changes from` section), a version run ending at the latest, or listed in `stale-references-allowlist.json` with a reason; `npm run fix-stale-references` rewrites the text references and lists the wire pins, normative values and examples a person must move | whether the newer version is the one the referencing spec should follow, or a version named in prose the heuristics read as history |
-| `published schemas change only additively` (`scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no `proofRequirement` change or dropped error code | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
+| the spec-examples lint (`scripts/lib/spec-examples.mjs`) | the latest version of every non-retired spec has a fenced JSON example whose `type` is its own Type URI — and a `#response` one when the schema has `$defs.Response` — wherever it sits in `spec.md`, and each example's `payload` validates against the spec's own schema (`$defs.Response` for a response); offenders when it landed are in `spec-examples-allowlist.json`, keyed by version, which only shrinks (a stale entry fails too) | the envelope around the payload (`checkExampleDocuments` checks that); whether the Rust conformance tests round-trip the example — `extract_examples` still harvests only the `## Request` / `## Response` sections |
+| `published schemas change only additively` (`checks.yml`, unfiltered; `scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed, deleted or renamed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no dropped error code, no deleted or renamed schema or `spec.md`, and no change to the per-variant policy the front matter derives (`proofRequirement` and `issuedAtRequirement` in either form, `parties[].requirement`, `bearer` — parsed as YAML) | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
 | the API compatibility jobs — `rs API compatibility`, `ts API compatibility`, `go API compatibility`, `Dart API compatibility` | the published crates' (`trust-tasks-rs` over the runtime and the `acl` family only; a binding crate only when the PR changes it) and the core npm, Go and Dart packages' public API is compatible with their last published release, or the PR title declares the break with a `!` scoped to that package (or one merged since the release already did); an appended string-union value is compatible by policy | a behavioural break that changes no signature (a spec that starts requiring a proof), and the hand-written sibling packages, which are not checked yet |
-| commit-lint's `!` rule | a `!` title scopes it only to packages (`rs`, `ts`, `go`, `dart`, `codegen`, the binding crates, `ts-…`/`go-…`/`dart-…`) | whether the package API really broke |
+| commit-lint's `!` rule | a `!` title scopes it only to an explicit list of package scopes (`pkg=` in `commit-lint.yml`, held equal to the release scripts' by `check-release-lists`) | whether the package API really broke |
+| commit-lint's `breaking-trailer` job | no commit message in the PR, and not its description, has a line starting `BREAKING CHANGE`/`BREAKING-CHANGE` — which release-plz and every bump script read as an unscoped break of every package | a break declared by editing the squash message in the merge dialog |
 | `check-bundles` (in `deploy.yml`, after `build-bundles`) | every registry bundle's digest, canonical form and index entry; that its schemas, and their `$defs` order, equal the TypeScript module's; and that each `defOrigins` entry names a shared schema in `specs/` defining it | whether a consumer's generator reads the bundle the way the in-repo generators read the specs |
 | the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
+| the runtime-defaults check in `check-bindings-conformance.mjs` | the four runtimes export the same default clock skew, consequential max age, expiry horizon and replay-guard capacity | the differences `docs/runtime-parity.md` marks *needs decision* (prune depth, `extends` chain bound, capacity 0) |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
 #308 moved `targetFrameworkVersion` to `0.5` in five bindings and updated none of
@@ -183,7 +184,7 @@ cannot be a required check.
 
 **Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
 What you owe the release instead is a conventional-commit PR title: `feat(<slug>):`
-when you ADD a spec family (additive API surface in both libraries), `spec(<slug>):`
+when you ADD a spec family (additive API surface in every library), `spec(<slug>):`
 for an edit inside one. **A `!` is only for a package's public API, scoped to the
 package (`feat(rs)!:`, `fix(codegen)!:`) — never for a spec change.** One `!` makes
 every crate, and the npm, Go and Dart packages, a breaking release; commit-lint
@@ -260,21 +261,28 @@ even though no schema moved. Judge the bump by what a consumer observes, not by
 whether a `.json` file changed.
 
 **Bumping the leading component is a workspace event, not a one-line edit.**
-`trust-tasks-https`, `-didcomm`, `-proof`, `-tsp`, `-capability-client` and
-`-didcomm-v1` — **six** crates — each declare
-`trust-tasks-rs = { path = "…", version = "<leading>" }`. Moving the leading
-component means updating all six requirements and releasing those crates too,
-and release-plz will release those crates too. `cargo check` fails immediately
-if you miss one, so the trap is discovering it mid-review rather than planning
-for it. (`trust-tasks-ceremony` does not depend on `trust-tasks-rs` and is not
-part of the set.) Don't hard-code the current numbers here — read them from the
-manifests; this note has already been stale once, claiming five crates at
-`"0.2"` when the workspace was at `0.6`.
+Every other crate in release-plz's `core` version group — the facade
+`trust-tasks`, the transport bindings, `-proof` and `-capability-client` —
+declares `trust-tasks-rs = { path = "…", version = "<leading>" }`. Moving the
+leading component means updating every one of those requirements, and
+release-plz releases those crates too. `cargo check` fails immediately if you
+miss one, so the trap is discovering it mid-review rather than planning for it.
+(`trust-tasks-ceremony`, `-build` and `-cli` do not depend on `trust-tasks-rs`
+and are not part of the set.) **Do not count them from this note** — it has been
+stale twice, once claiming five crates at `"0.2"` when the workspace was at
+`0.6`, then six when the facade made seven. List them:
+
+```sh
+cargo metadata --no-deps --format-version 1 | jq -r '.packages[]
+  | select(.publish != [])
+  | select(any(.dependencies[]; .name == "trust-tasks-rs" and .kind == null))
+  | .name'
+```
 
 The last such bump was `0.6.5` → `0.7.0` (#223), which is worth reading as a
 worked example: it also carried `@openvtc/trust-tasks` to `0.7.0`, because the
 same change widened a TypeScript union and broke exhaustive switches on that
-side too. A break in `trust-tasks-rs` is usually a break in both libraries.
+side too. A break in `trust-tasks-rs` is usually a break in the other libraries too.
 
 **`StandardCode` is `#[non_exhaustive]` as of 0.7.0.** Adding a framework
 standard error code (SPEC §8.3) is therefore no longer breaking for downstream
@@ -283,9 +291,12 @@ standard error code (SPEC §8.3) is therefore no longer breaking for downstream
 here; TypeScript's is a closed union and is the one side where adding a code is a
 **breaking** change. It still requires a new `trust-task-error` spec version —
 the code enum lives in that payload schema, so a document carrying a code the
-declared version doesn't list will not validate — and both SDKs must be pointed
-at the new version (`TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-rs`'s `document.rs`,
-`TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-ts`). Note that `trust-task-error`
+declared version doesn't list will not validate — and all four libraries must be
+pointed at the new version (`TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-rs`'s
+`document.rs`, `TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-ts`,
+`TrustTaskErrorTypeURI` in `trust-tasks-go`, `trustTaskErrorTypeUri` in
+`trust-tasks-dart`; the error-URI check in `check-bindings-conformance.mjs`
+fails until they agree). Note that `trust-task-error`
 is in the codegen's `SKIP_SLUGS`: the Rust side is hand-modelled in `error.rs`,
 so regenerating will not pick a new code up for you.
 
@@ -329,8 +340,8 @@ door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 ### ⚠️ `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with
-`cfg(test)` as its unit-test harness — and the generated tree is ~66 MB of the
-crate. So the generator keeps that second build small:
+`cfg(test)` as its unit-test harness — and the generated tree is most of the
+crate (`du -sh trust-tasks-rs/src/specs`; over 90 MB at the time of writing). So the generator keeps that second build small:
 
 - **Every gated family except those in `UNIT_TEST_FAMILIES`** (in
   `trust-tasks-codegen`, currently `["acl"]`) carries `#[cfg(not(test))]` in
@@ -346,7 +357,7 @@ crate. So the generator keeps that second build small:
 Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 
 **A single family builds and tests on its own** —
-`cargo test -p trust-tasks-rs --no-default-features --features vault` is about
+`cargo test -p trust-tasks-rs --features vault` is about
 13 s and 1 GB cold, against minutes and ~6 GB for the whole workspace — and the
 `test-single-family` job in `rust.yml` keeps it that way for `acl`, `vault` and
 `keys`. So a test naming a family must sit behind that family's feature: the
@@ -437,7 +448,16 @@ the module body is also what the consumer-side generators emit:
 Consequences: hand-written Rust in this repo that uses a prebuilt module on
 purpose — the `acl`-specimen test modules, the integration tests, the examples —
 carries `#[allow(deprecated)]` (CI denies warnings); new runtime code must not
-depend on a non-framework family at all. The TS, Go and Dart equivalence tests
+depend on a non-framework family at all.
+
+**No family is on by default (#1102).** `trust-tasks-rs` and the `trust-tasks`
+facade both have `default = []` — the generator writes it, and
+`tests/spec_feature_manifest.rs` asserts it — so a plain dependency is the
+runtime alone. A dev-dependency names the families its tests use
+(`features = ["acl"]`), and a CI job that needs every family says so:
+`cargo test --workspace --features trust-tasks/all-specs`,
+`-p trust-tasks-rs --features validate,all-specs`. `--no-default-features` is
+no longer needed anywhere to get the runtime alone. The TS, Go and Dart equivalence tests
 mask exactly the mark and nothing else, so change its wording in the generator
 and the test together.
 
@@ -508,6 +528,27 @@ needs the type-erased half of every binding:
   runtime's `reject` and packs it, since nothing executes. That is the
   documented difference, not a gap to close by porting the dispatcher.
 
+Every known cross-runtime difference — this one, Rust-only `ERROR_CODES`, TS's
+closed `StandardCode`, and the open gaps — is tabled as yes / deliberately no /
+todo in **`docs/runtime-parity.md`**; update it when you change a row.
+
+## The Rust message bindings share one consumer — `GuardedConsumer`
+
+`DidcommConsumer`, `TspConsumer` and `DidcommV1Consumer` are thin wrappers
+that dereference to `trust_tasks_rs::GuardedConsumer` (#1096): the item-11
+record, the freshness bound, and `consume_body` / `consume_body_dispatched`,
+which parse the body a binding opened. A binding keeps only its unpack (an
+`open` that stops short of parsing) and its envelope check (DIDComm's thread
+headers), passed as a closure. Do not give a binding its own copy back.
+
+An authenticated body that does not parse, or that the envelope check
+refuses, is **answered** — `ConsumeOutcome::Rejected(malformedRequest)`,
+addressed to the transport-authenticated sender, never the unchecked in-band
+`issuer`, and refused before the item-11 record is written — as the Go and
+Dart bindings do. Only a body with no string `id` / Trust Task `type` to name
+in `inResponseTo`, or a transport with no authenticated sender, is an
+`Err` (`UnanswerableBody`, mapped to the binding's own error).
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
@@ -530,6 +571,21 @@ derive a census of declared-vs-emitted codes rather than hand-keep one.
 - **TypeScript, Go and Dart do not emit them yet.** When they do, add them to the
   same comparison so the four agree with each other, not only with the front
   matter.
+
+## `maxDocumentBytes` is generated — Rust and Dart only, so far
+
+A spec's `maxDocumentBytes` front matter (per variant; an absent `response`
+never inherits the request's bound) reaches Rust as
+`Payload::MAX_DOCUMENT_BYTES` and Dart as `SpecPolicy.maxDocumentBytes` on
+`spec` / `responseSpec` — emitted by **both** Dart generators
+(`build-dart-bindings.mjs` from front matter, `lib/src/generator/emit.dart`
+from the bundle's `policy.maxDocumentBytes`), independently. `check-bindings`
+compares Rust and Dart against the front matter. The Dart HTTPS server enforces
+it: its pre-parse body limit is the largest registered bound with a 256 KiB
+floor, then each document is held to its route's bound (`malformedRequest`).
+The Rust server still has a flat 256 KiB cap (#1121's Rust half rides with
+#1089); TypeScript and Go emit nothing yet — add them to the same comparison
+when they do.
 
 ## ⚠️ The Go module — four things that bite
 
@@ -563,8 +619,8 @@ the same reason). TypeScript hoists because structural typing makes it free.
    do instead — it is a human migration, not a version number.
 
 And the one that has no undo: **a Go release cannot be retracted.**
-`proxy.golang.org` caches a tag permanently and by design. `publish-go` builds,
-vets and tests *before* tagging for that reason. crates.io and npm both have a
+`proxy.golang.org` caches a tag permanently and by design. `verify-go` builds,
+vets and tests *before* `publish-go` tags for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
 ### The `trust-tasks-go/tsp` nested module
@@ -626,8 +682,8 @@ written in the module. Its only requirement is the core module whose
   as the core's does), a matrix leg in `publish-go`, and a `GO_MODULES` entry in
   `scripts/release-pr.sh` (`release-bump-go.sh trust-tasks-go/proof`). The core's release WATCH **excludes**
   the nested modules, so a change under `trust-tasks-go/proof` releases proof, not
-  the core. Like every Go tag it is irreversible, so `publish-go` builds/vets/tests
-  the module before tagging.
+  the core. Like every Go tag it is irreversible, so `verify-go` builds/vets/tests
+  the module before `publish-go` tags it.
 
 ### The `trust-tasks-go/didcomm` nested module
 
@@ -798,15 +854,22 @@ are not obvious:
 
 - **`pubspec_overrides.yaml` is committed** and points `trust_tasks` at
   `../trust-tasks-dart`, the Dart form of a Rust `path =` dependency. pub never
-  publishes it. `tag-dart` deletes it before verifying a release, so the release
+  publishes it. `verify-dart` deletes it before verifying a release, so the release
   is checked against the *published* core.
 - **A sibling's `trust_tasks` constraint must admit the current core.** pub
   reads `^0.1.0` as `<0.2.0`, so until #895 every sibling declared a range that
   excluded the core it was developed against: consumers got core 0.1.19, and an
   app on core 0.9 could not add a sibling at all. `tag-dart` cannot see this —
   it verifies against the newest core the constraint admits — so when the core
-  crosses a `0.x` minor, raise the siblings' floor in the same release cycle;
-  `npm run check-sibling-core-ranges` fails until you do.
+  crosses a `0.x` minor, the floors must move in the same release.
+  `release-pr.sh` does it: it passes the core's new version to each sibling's
+  `release-bump-dart.sh`, which raises a floor that no longer admits it
+  (`scripts/raise-dart-core-floor.mjs`) and releases the sibling for it even
+  with no other change, and it raises the unreleased `-tsp` floor too.
+  `npm run check-sibling-core-ranges` fails if one is missed. (Unlike npm this
+  works inside the Release PR, because the siblings build against the in-tree
+  core; on merge their `verify-dart` legs wait for the core to reach pub.dev —
+  re-run them.)
 - **`ssi: ">=3.9.6 <5.0.0"` spans two majors on purpose.** `package:didcomm`
   pins ssi 3, so requiring ssi 4 would make this package impossible to use
   beside a DIDComm transport. The `packages` job in `dart.yml` tests with ssi
@@ -916,7 +979,7 @@ npm run check-bundles             # verify them independently of the Rust genera
 ```
 
 The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push to
-`main`. Generated website outputs (`website/assets/tasks.generated.js`,
+`main`. Generated website outputs (`website/assets/tasks.generated.js`, `website/robots.txt`, `website/sitemap.xml`,
 `website/specs/` including its `bundle.json`s and `index.json`,
 `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.

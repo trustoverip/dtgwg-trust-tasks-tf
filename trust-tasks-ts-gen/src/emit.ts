@@ -185,14 +185,19 @@ function emitTail(ts: string, rootType: string, responseType: string | null, whe
     ` * at runtime: without a schema a consumer has nothing to validate, and`,
     ` * every REQUIRED payload member is optional in practice. Cross-file`,
     ` * \`$ref\`s are already inlined, so it needs no resolver.`,
+    ` *`,
+    ` * Typed as a plain JSON object rather than \`as const\`: a literal type would`,
+    ` * carry the whole schema a second time in the declaration file, and nothing`,
+    ` * reads it at the type level. (An index signature, not \`Readonly<Record<…>>\`:`,
+    ` * a schema may itself define a type named \`Record\`.)`,
     ` */`,
-    `export const PAYLOAD_SCHEMA = ${JSON.stringify(schemas.request, null, 2)} as const;`,
+    `export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(schemas.request, null, 2)};`,
     "",
   );
   if (schemas.response) {
     lines.push(
       `/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */`,
-      `export const RESPONSE_PAYLOAD_SCHEMA = ${JSON.stringify(schemas.response, null, 2)} as const;`,
+      `export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(schemas.response, null, 2)};`,
       "",
     );
   }

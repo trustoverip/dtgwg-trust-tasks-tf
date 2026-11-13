@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`code` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A code shorter than 128 bits is no code the community issued (VTI-BDG-025).",
+    "payload": {
+      "code": "short"
+    }
+  },
+  {
+    "note": "A redemption names the code alone: the badge is the code's, never the signer's to pick.",
+    "payload": {
+      "code": "Qm7xV2kR9pLw4Nt8Hs3Fz6Bd1Yc5Je0Ua",
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "code": "Qm7xV2kR9pLw4Nt8Hs3Fz6Bd1Yc5Je0Ua",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

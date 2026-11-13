@@ -1,0 +1,3 @@
+[
+  { "note": "A create-only precondition on a delete can never be useful, so expectedVersion on a delete is positive only.", "payload": { "contextId": "finance", "key": "contact/billing", "expectedVersion": 0 } }
+]

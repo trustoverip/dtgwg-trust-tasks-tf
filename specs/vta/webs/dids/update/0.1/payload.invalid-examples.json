@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Missing the subject. Without `did` there is nothing to update.",
+    "payload": { "alsoKnownAs": [] }
+  },
+  {
+    "note": "A partial service set. `services` replaces the whole set, so both `mediator` and `tsp` must be stated; a set that leaves one out would silently withdraw a transport the caller never mentioned.",
+    "payload": { "did": "did:webs:example.com:EAbc", "services": { "tsp": true } }
+  },
+  {
+    "note": "The precondition in the webvh form. A did:webs version is `<sequence number>:<SAID>`; `3-Qm…` is a did:webvh versionId, and accepting it would compare against nothing.",
+    "payload": { "did": "did:webs:example.com:EAbc", "rotateKeyAgreementKey": true, "expectedVersionId": "3-QmPriorEntryHashExample" }
+  },
+  {
+    "note": "A caller-chosen key agreement key. The VTA derives it; the closed schema refuses a key the caller supplies.",
+    "payload": { "did": "did:webs:example.com:EAbc", "keyAgreementKey": "CBwO9bU8Qk3n2YQm0xTNu0R1tq2Hk7f1pWx0aJc3Kd5e" }
+  },
+  {
+    "note": "A signing-key change smuggled into an update. Keys change only through rotate-keys, and an unknown member is refused rather than ignored.",
+    "payload": { "did": "did:webs:example.com:EAbc", "rotateSigningKey": true }
+  },
+  {
+    "note": "The DID is not a did:webs DID. This family manages no other method.",
+    "payload": { "did": "did:webvh:QmSCIDExample:example.com:acme", "alsoKnownAs": [] }
+  }
+]

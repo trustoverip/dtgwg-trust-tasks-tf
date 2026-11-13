@@ -1,0 +1,70 @@
+name: Advisories
+# Weekly check of every lockfile against the published advisory databases, so
+# an advisory against a dependency we already ship shows up without waiting for
+# a pull request to touch that ecosystem. The per-PR `cargo deny` job in
+# rust.yml checks Cargo on every Rust change; this adds the schedule, and npm.
+#
+# Nothing here installs or runs a dependency: `npm audit` reads the lockfile,
+# and cargo-deny reads Cargo.lock.
+#
+# Go and Dart have no advisory check here. Their dependency updates come from
+# Dependabot (.github/dependabot.yml).
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo:
+    name: cargo deny advisories
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check advisories
+          arguments: --all-features
+
+  npm:
+    name: npm audit (${{ matrix.dir }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Published: what a consumer installs must have no known advisory.
+          - { dir: trust-tasks-ts, published: true }
+          - { dir: trust-tasks-ts-proof, published: true }
+          - { dir: trust-tasks-ts-tsp, published: true }
+          - { dir: trust-tasks-ts-capability-client, published: true }
+          - { dir: trust-tasks-ts-gen, published: true }
+          # Not published: the repository's build tooling and the example app.
+          - { dir: ., published: false }
+          - { dir: examples/consumer-app-ts, published: false }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      # Any advisory, at any severity, in what a published package's consumers
+      # install.
+      - name: Runtime dependencies
+        if: matrix.published
+        working-directory: ${{ matrix.dir }}
+        run: npm audit --omit=dev
+      # Build and test tooling runs only here and in CI, so it fails on high
+      # and critical; lower severities are in the log.
+      - name: All dependencies (high and critical)
+        if: ${{ !cancelled() }}
+        working-directory: ${{ matrix.dir }}
+        run: npm audit --audit-level=high

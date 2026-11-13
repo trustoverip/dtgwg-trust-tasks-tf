@@ -3,8 +3,10 @@ package proof
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"os"
 	"reflect"
 	"testing"
@@ -138,7 +140,7 @@ func TestInteropReproducesRustSignatureByteForByte(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, err := signer.Sign(loadFixture(t), SignOptions{Created: created})
+	signed, err := signer.Sign(loadFixture(t), SignOptions{Created: created, ProofPurpose: rustProof["proofPurpose"].(string)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,6 +150,101 @@ func TestInteropReproducesRustSignatureByteForByte(t *testing.T) {
 	}
 	if !reflect.DeepEqual(out["proof"], rustProof) {
 		t.Errorf("reproduced proof does not match the Rust fixture\n got: %#v\nwant: %#v", out["proof"], rustProof)
+	}
+}
+
+// The shared @context vector: eddsa-jcs-2022 §3.3.1 step 2 copies the
+// document's @context into the proof, and every signer reproduces its
+// proofValue byte for byte.
+func TestReproducesSharedContextVectorByteForByte(t *testing.T) {
+	b, err := os.ReadFile("../../fixtures/proof/eddsa-jcs-2022-context.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := SignerFromPrivateKey(Ed25519, bytes.Repeat([]byte{7}, 32))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var vector map[string]any
+	if err := json.Unmarshal(b, &vector); err != nil {
+		t.Fatal(err)
+	}
+	want := vector["proof"].(map[string]any)
+	created, err := time.Parse(time.RFC3339, want["created"].(string))
+	if err != nil {
+		t.Fatal(err)
+	}
+	signed, err := signer.Sign(b, SignOptions{Created: created, ProofPurpose: want["proofPurpose"].(string)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out map[string]any
+	if err := json.Unmarshal(signed, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(out["proof"], want) {
+		t.Errorf("reproduced proof does not match the shared vector\n got: %#v\nwant: %#v", out["proof"], want)
+	}
+}
+
+func TestDocumentWithoutContextGetsProofWithoutContext(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out map[string]any
+	if err := json.Unmarshal(signed, &out); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := out["proof"].(map[string]any)["@context"]; ok {
+		t.Error("proof carries @context for a document without one")
+	}
+}
+
+func TestProofContextMustEqualDocumentContext(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	var doc map[string]any
+	if err := json.Unmarshal(grant(t, signer.DID, "admin"), &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc["@context"] = []any{"https://www.w3.org/ns/credentials/v2", map[string]any{"ex": "https://example.org/#"}}
+	raw, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signed, err := signer.Sign(raw, SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := v.Verify(context.Background(), signed); err != nil {
+		t.Fatalf("verify signed @context document: %v", err)
+	}
+	for name, mutate := range map[string]func(map[string]any){
+		"removed from the document": func(d map[string]any) { delete(d, "@context") },
+		"reordered in the document": func(d map[string]any) {
+			c := d["@context"].([]any)
+			d["@context"] = []any{c[1], c[0]}
+		},
+		"changed in the proof": func(d map[string]any) {
+			d["proof"].(map[string]any)["@context"] = []any{"https://example.org/other"}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var d map[string]any
+			if err := json.Unmarshal(signed, &d); err != nil {
+				t.Fatal(err)
+			}
+			mutate(d)
+			b, err := json.Marshal(d)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := kindOf(t, v.Verify(context.Background(), b)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
 	}
 }
 
@@ -325,6 +422,9 @@ func TestSharedProofVectors(t *testing.T) {
 			File        string `json:"file"`
 			Cryptosuite string `json:"cryptosuite"`
 			Expect      string `json:"expect"`
+			Exceptions  map[string]struct {
+				Expect string `json:"expect"`
+			} `json:"exceptions"`
 		} `json:"entries"`
 	}
 	if err := json.Unmarshal(b, &manifest); err != nil {
@@ -344,7 +444,11 @@ func TestSharedProofVectors(t *testing.T) {
 				t.Fatal(err)
 			}
 			err = v.Verify(context.Background(), doc)
-			switch e.Expect {
+			expect := e.Expect
+			if x, ok := e.Exceptions["go"]; ok {
+				expect = x.Expect
+			}
+			switch expect {
 			case "valid":
 				if err != nil {
 					t.Errorf("expected valid, got %v", err)
@@ -357,5 +461,300 @@ func TestSharedProofVectors(t *testing.T) {
 				t.Fatalf("unknown expect %q", e.Expect)
 			}
 		})
+	}
+}
+
+// A signed document carrying a member that differs from a framework member only
+// by case is refused: encoding/json reads "Issuer" as issuer, so a Go consumer
+// would decode a different issuer from the one the proof is bound to.
+func TestCaseVariantMembersAreRefused(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 2)
+	other := seededSigner(t, Ed25519, 3)
+	for name, add := range map[string]func(doc map[string]any){
+		"envelope": func(doc map[string]any) { doc["Issuer"] = other.DID },
+		"envelope, folded rune": func(doc map[string]any) {
+			doc["iſſuer"] = other.DID
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var doc map[string]any
+			_ = json.Unmarshal(grant(t, signer.DID, "admin"), &doc)
+			add(doc)
+			unsigned, _ := json.Marshal(doc)
+			signed, err := signer.Sign(unsigned, SignOptions{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := kindOf(t, v.Verify(context.Background(), signed)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+
+	t.Run("proof", func(t *testing.T) {
+		signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var doc map[string]any
+		_ = json.Unmarshal(signed, &doc)
+		doc["proof"].(map[string]any)["VerificationMethod"] = other.DID + "#k"
+		b, _ := json.Marshal(doc)
+		if got := kindOf(t, v.Verify(context.Background(), b)); got != MalformedProof {
+			t.Errorf("kind = %s, want malformedProof", got)
+		}
+	})
+
+	t.Run("an unrelated member still verifies", func(t *testing.T) {
+		var doc map[string]any
+		_ = json.Unmarshal(grant(t, signer.DID, "admin"), &doc)
+		doc["issuerNote"] = "kept"
+		unsigned, _ := json.Marshal(doc)
+		signed, err := signer.Sign(unsigned, SignOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := v.Verify(context.Background(), signed); err != nil {
+			t.Fatalf("verify: %v", err)
+		}
+	})
+}
+
+// signWithConfig signs doc over exactly the proof configuration given, so a
+// test can produce a correctly signed proof carrying members Sign never writes
+// (expires) or values it refuses (a non-signing proofPurpose).
+func signWithConfig(t *testing.T, signer *Signer, doc json.RawMessage, config map[string]any) json.RawMessage {
+	t.Helper()
+	var body map[string]any
+	if err := json.Unmarshal(doc, &body); err != nil {
+		t.Fatal(err)
+	}
+	config["type"] = "DataIntegrityProof"
+	config["cryptosuite"] = string(suiteForCurve(signer.curve))
+	config["verificationMethod"] = signer.VerificationMethod
+	hashData, err := hashDataFor(signer.curve, config, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signature, err := signer.sign(hashData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config["proofValue"] = toMultibase(signature)
+	body["proof"] = config
+	out, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func TestProofPurposeMustNameASigningRelationship(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	for _, purpose := range SigningPurposes {
+		t.Run(purpose, func(t *testing.T) {
+			signed := signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+				"created": "2026-01-01T00:00:00Z", "proofPurpose": purpose,
+			})
+			if err := v.Verify(context.Background(), signed); err != nil {
+				t.Errorf("verify: %v", err)
+			}
+		})
+	}
+	for _, purpose := range []string{"keyAgreement", "assertion", "AUTHENTICATION", "authentication "} {
+		t.Run(purpose, func(t *testing.T) {
+			signed := signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+				"created": "2026-01-01T00:00:00Z", "proofPurpose": purpose,
+			})
+			if got := kindOf(t, v.Verify(context.Background(), signed)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
+func TestSignDefaultsToAuthenticationAndRefusesNonSigningPurposes(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	_ = json.Unmarshal(signed, &doc)
+	if got := doc["proof"].(map[string]any)["proofPurpose"]; got != "authentication" {
+		t.Errorf("default proofPurpose = %v, want authentication", got)
+	}
+	for _, purpose := range []string{"keyAgreement", "assertion"} {
+		if _, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{ProofPurpose: purpose}); err == nil {
+			t.Errorf("signing with proofPurpose %q should fail", purpose)
+		}
+	}
+}
+
+func TestExpires(t *testing.T) {
+	now := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)
+	v := NewVerifier(WithClock(func() time.Time { return now }))
+	signer := seededSigner(t, Ed25519, 1)
+	sign := func(expires any) json.RawMessage {
+		return signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+			"created": "2026-06-01T11:00:00Z", "proofPurpose": "authentication", "expires": expires,
+		})
+	}
+
+	if err := v.Verify(context.Background(), sign("2026-06-01T12:00:01Z")); err != nil {
+		t.Errorf("an unexpired proof: %v", err)
+	}
+	if err := v.Verify(context.Background(), sign("2026-06-01T12:00:00Z")); err != nil {
+		t.Errorf("a proof at its expires instant: %v", err)
+	}
+	for _, ok := range []string{"2028-02-29T00:00:00Z", "2027-01-01T00:00:00+14:00", "2027-01-01T00:00:00-12:59", "2027-01-01T23:59:59.999999999Z"} {
+		if err := v.Verify(context.Background(), sign(ok)); err != nil {
+			t.Errorf("expires %s: %v", ok, err)
+		}
+	}
+	for name, expires := range map[string]any{
+		"passed":                       "2026-06-01T11:59:59Z",
+		"passed, offset":               "2026-06-01T13:59:59+02:00",
+		"no zone":                      "2027-01-01T00:00:00",
+		"not a string":                 float64(1767225600),
+		"not a date":                   "tomorrow",
+		"date only":                    "2027-01-01",
+		"impossible month":             "2027-13-01T00:00:00Z",
+		"February 30":                  "2027-02-30T00:00:00Z",
+		"February 29, not a leap year": "2027-02-29T00:00:00Z",
+		"hour 24":                      "2027-01-01T24:00:00Z",
+		"minute 60":                    "2027-01-01T00:60:00Z",
+		"leap second":                  "2027-01-01T00:00:60Z",
+		"offset +24:00":                "2027-01-01T00:00:00+24:00",
+		"offset +23:60":                "2027-01-01T00:00:00+23:60",
+		"offset +14:01":                "2027-01-01T00:00:00+14:01",
+		"offset -99:00":                "2027-01-01T00:00:00-99:00",
+		"empty":                        "",
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := kindOf(t, v.Verify(context.Background(), sign(expires))); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
+// A signed document whose bytes are changed in a way encoding/json would undo
+// while decoding must not verify: the proof covers the canonical form, and the
+// changed bytes would reach the handler as something else.
+func TestVerifierRefusesInputThatDecodesLossily(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin�"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := v.Verify(context.Background(), signed); err != nil {
+		t.Fatalf("unchanged document: %v", err)
+	}
+	replacement := []byte("admin\xef\xbf\xbd")
+	if !bytes.Contains(signed, replacement) {
+		t.Fatalf("signed document does not carry a literal U+FFFD: %s", signed)
+	}
+	changes := map[string][]byte{
+		"lone surrogate escape": bytes.Replace(signed, replacement, []byte(`admin\ud800`), 1),
+		"invalid UTF-8":         bytes.Replace(signed, replacement, []byte("admin\xff"), 1),
+		"duplicate member": bytes.Replace(signed, []byte(`"role":"admin`),
+			[]byte(`"role":"owner","role":"admin`), 1),
+	}
+	for name, doc := range changes {
+		t.Run(name, func(t *testing.T) {
+			if bytes.Equal(doc, signed) {
+				t.Fatal("the change did not apply")
+			}
+			if got := kindOf(t, v.Verify(context.Background(), doc)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
+func TestSignRefusesDuplicateMembers(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	doc := bytes.Replace(grant(t, signer.DID, "admin"), []byte(`"role":"admin"`),
+		[]byte(`"role":"owner","role":"admin"`), 1)
+	if _, err := signer.Sign(doc, SignOptions{}); err == nil {
+		t.Error("Sign accepted a document with a duplicate member")
+	}
+}
+
+// An ECDSA private key must be a scalar of the curve's exact byte length in
+// [1, n-1].
+func TestSignerFromPrivateKeyRefusesInvalidEcdsaScalars(t *testing.T) {
+	orders := map[Curve]string{
+		P256: "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+		P384: "ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
+	}
+	for curve, orderHex := range orders {
+		t.Run(string(curve), func(t *testing.T) {
+			order, ok := new(big.Int).SetString(orderHex, 16)
+			if !ok {
+				t.Fatal("bad order")
+			}
+			size := len(orderHex) / 2
+			fixed := func(n *big.Int) []byte { return n.FillBytes(make([]byte, size)) }
+			refused := map[string][]byte{
+				"empty":           {},
+				"too short":       {1, 2, 3, 4, 5},
+				"one byte short":  bytes.Repeat([]byte{1}, size-1),
+				"one byte long":   bytes.Repeat([]byte{1}, size+1),
+				"zero":            make([]byte, size),
+				"group order":     fixed(order),
+				"group order + 1": fixed(new(big.Int).Add(order, big.NewInt(1))),
+				"all ones":        bytes.Repeat([]byte{0xff}, size),
+			}
+			for name, key := range refused {
+				if s, err := SignerFromPrivateKey(curve, key); err == nil {
+					t.Errorf("%s: SignerFromPrivateKey = %s, want an error", name, s.DID)
+				}
+			}
+			v := NewVerifier(WithClock(laterClock()))
+			accepted := map[string][]byte{
+				"one":               fixed(big.NewInt(1)),
+				"group order - 1":   fixed(new(big.Int).Sub(order, big.NewInt(1))),
+				"leading zero byte": append([]byte{0}, bytes.Repeat([]byte{7}, size-1)...),
+			}
+			for name, key := range accepted {
+				s, err := SignerFromPrivateKey(curve, key)
+				if err != nil {
+					t.Errorf("%s: %v", name, err)
+					continue
+				}
+				signed, err := s.Sign(grant(t, s.DID, "admin"), SignOptions{})
+				if err != nil {
+					t.Errorf("%s: sign: %v", name, err)
+					continue
+				}
+				if err := v.Verify(context.Background(), signed); err != nil {
+					t.Errorf("%s: verify: %v", name, err)
+				}
+			}
+		})
+	}
+}
+
+// Deriving the public key through crypto/ecdh must give the same did:key as
+// the scalar multiplication it replaced.
+func TestSignerFromPrivateKeyPublicKeyMatchesScalarBaseMult(t *testing.T) {
+	for _, curve := range []Curve{P256, P384} {
+		s := seededSigner(t, curve, 9)
+		size := 32
+		if curve == P384 {
+			size = 48
+		}
+		key := bytes.Repeat([]byte{9}, size)
+		key[0] = 1
+		x, y := curveParams(curve).ScalarBaseMult(key) // the reference derivation
+		want := didKeyFromEcdsa(&ecdsa.PublicKey{Curve: curveParams(curve), X: x, Y: y}, curve)
+		if s.VerificationMethod != want {
+			t.Errorf("%s: VerificationMethod = %s, want %s", curve, s.VerificationMethod, want)
+		}
 	}
 }

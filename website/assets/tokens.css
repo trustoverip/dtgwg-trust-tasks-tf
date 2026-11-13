@@ -14,6 +14,18 @@
   --tt-coral:   #fb7185;   /* initiator entity / human warmth */
   --tt-sky:     #06b6d4;   /* variety / openness */
 
+  /* -- Palette as TEXT -------------------------------------- */
+  /* The bright tokens above are for dots, borders and fills. As small text on
+     the cream canvas they fail WCAG AA (amber 2.0:1, sky 2.3:1, coral 2.5:1,
+     teal 3.5:1, violet 4.0:1), so text uses these darker variants: each is at
+     least 4.5:1 on cream, white and --tt-surface-alt, and white on each is too. */
+  --tt-navy-text:   var(--tt-navy);
+  --tt-teal-text:   #0f766e;   /* 5.1:1 on cream */
+  --tt-violet-text: #7c3aed;   /* 5.3:1 on cream; white on it 5.7:1 */
+  --tt-amber-text:  #92400e;   /* 6.6:1 on cream */
+  --tt-coral-text:  #be123c;   /* 5.9:1 on cream */
+  --tt-sky-text:    #0e7490;   /* 5.0:1 on cream */
+
   /* -- Neutrals --------------------------------------------- */
   --tt-cream:       #faf7f2;   /* page canvas */
   --tt-paper:       #ffffff;   /* card surface */

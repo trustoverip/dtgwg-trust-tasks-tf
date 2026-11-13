@@ -1,8 +1,18 @@
 # Consumer-side generation — compile only what you use
 
-Status: **proposed** (2026-10-26); milestone 1 **implemented** — see
-[Milestone 1 — implemented](#milestone-1--implemented). Supersedes generating
-every specification into every library.
+Status: **accepted** — proposed 2026-10-26; milestones 1–4 shipped, milestone 5
+half done (deprecated, removal not yet scheduled). Supersedes generating every
+specification into every library.
+
+| Milestone | Status | Where |
+|---|---|---|
+| 1. Registry bundles + index | shipped | [Milestone 1](#milestone-1--implemented) |
+| 2. Rust end to end (`trust-tasks-build`, the CLI) | shipped | [build side](#milestone-2--rust-build-side-implemented), [the CLI](#milestone-2--the-cli) |
+| 3. TypeScript, Go, Dart generation from bundles | shipped in the 2026-10-26 releases | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) records the versions |
+| 4. Hand-written packages depend on the runtime only | shipped | [Milestone 4](#milestone-4--the-hand-written-packages) |
+| 5. Deprecate, then remove the prebuilt modules | deprecated; removal batch not chosen | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
+
+Measurements below are dated where they were taken; they are not kept current.
 
 ## The problem
 

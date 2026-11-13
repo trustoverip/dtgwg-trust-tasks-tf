@@ -171,7 +171,7 @@ export type ReadForSpecResult<P> =
   | { kind: "refused"; reason: RejectReason };
 
 /** The pruned copy → the document it was read from. Written only by {@link readForSpec}. */
-const RECEIVED = new WeakMap<object, TrustTaskDocument<unknown>>();
+const RECEIVED = new WeakMap<object, { received: TrustTaskDocument<unknown>; readFor: string }>();
 
 /**
  * The document as received, when `doc` is a re-reading of it produced by
@@ -188,7 +188,16 @@ const RECEIVED = new WeakMap<object, TrustTaskDocument<unknown>>();
  * over the pruned payload and fails — closed, not open.
  */
 export function receivedDocumentOf<P>(doc: TrustTaskDocument<P>): TrustTaskDocument<unknown> | undefined {
-  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc) : undefined;
+  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc)?.received : undefined;
+}
+
+/**
+ * The `spec.typeUri` a {@link readForSpec} re-reading was made for, or
+ * `undefined` when `doc` is not one. `consumeInbound` skips its own §7.2 item 3
+ * check only when this is the spec it is consuming under.
+ */
+export function readingSpecOf<P>(doc: TrustTaskDocument<P>): string | undefined {
+  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc)?.readFor : undefined;
 }
 
 /**
@@ -207,6 +216,10 @@ export function receivedDocumentOf<P>(doc: TrustTaskDocument<P>): TrustTaskDocum
  *   same slug under another authority is another specification (SPEC §6.1),
  *   so a third-party `x/0.3` never routes to a registry `x/0.1`, or back.
  * - Not a Trust Task document at all — refused `malformedRequest`.
+ * - A later version whose payload cannot be pruned within the step limit
+ *   {@link prunePayload} describes — refused `malformedRequest`, with a message
+ *   saying so. This runs before any proof is checked, so the work it does on
+ *   an unauthenticated document is bounded by the payload's size.
  *
  * Proofs are not this function's business, and it neither reads nor alters
  * `proof`: it does not mutate `received`, and it records the pairing so that
@@ -240,12 +253,65 @@ export function readForSpec<P>(
     );
   }
 
-  const pruned: TrustTaskDocument<P> = {
-    ...doc,
-    payload: (spec.payloadSchema === undefined ? doc.payload : prunePayload(doc.payload, spec.payloadSchema)) as P,
-  };
-  RECEIVED.set(pruned, doc);
+  let payload: unknown = doc.payload;
+  if (spec.payloadSchema !== undefined) {
+    const r = pruneWithinLimit(doc.payload, spec.payloadSchema);
+    if (!r.ok) {
+      return refused(
+        "malformedRequest",
+        `the ${gotVersion} payload is too complex to re-read as version ${wantVersion} of ${got.slug}: ` +
+          `pruning it against that version's schema takes more than ${r.limit} steps`,
+      );
+    }
+    payload = r.value;
+  }
+  const pruned: TrustTaskDocument<P> = { ...doc, payload: payload as P };
+  RECEIVED.set(pruned, { received: doc, readFor: spec.typeUri });
   return { kind: "accepted", doc: pruned, received: doc, extended: true };
+}
+
+/**
+ * Whether a document whose `type` is `typeUri` may be consumed under `spec`
+ * (SPEC §7.2 item 3): `null` when it may, otherwise the reason to refuse it.
+ *
+ * It may when `typeUri` is `spec.typeUri` — `#request` and no fragment are one
+ * variant (§4.4.1) — or a later version of the same specification and variant
+ * whose `extends` chain reaches `spec`'s version (§5.2). Otherwise
+ * `unsupportedVersion` for the same specification and variant, and
+ * `unsupportedType` for anything else: another slug, the same slug under
+ * another authority or form (§6.1), another variant, or a `type` that is not a
+ * Type URI. `consumeInbound` runs this before any other check.
+ */
+export function typeRefusalFor(
+  typeUri: unknown,
+  spec: SpecPolicy,
+  options: { index?: ExtendsLookup } = {},
+): RejectReason | null {
+  if (typeof typeUri === "string" && typeUri === spec.typeUri) return null;
+  const shown = JSON.stringify(typeof typeUri === "string" ? typeUri : String(typeUri));
+  const got = typeof typeUri === "string" ? tryParseTypeUri(typeUri) : null;
+  const want = tryParseTypeUri(spec.typeUri);
+  if (
+    got === null ||
+    want === null ||
+    !sameSpecification(got, want) ||
+    (got.variant ?? "request") !== (want.variant ?? "request")
+  ) {
+    return {
+      code: "unsupportedType",
+      message: `unsupported Trust Task type ${shown}; this consumer implements ${spec.typeUri}`,
+      retryable: false,
+    };
+  }
+  const gotVersion = versionOf(got);
+  const wantVersion = versionOf(want);
+  if (gotVersion === wantVersion) return null;
+  if (extendsChain(typeUri as string, options.index ?? defaultLookup).includes(wantVersion)) return null;
+  return {
+    code: "unsupportedVersion",
+    message: `version ${gotVersion} of ${got.slug} is not supported; this consumer implements ${wantVersion}`,
+    retryable: false,
+  };
 }
 
 function refused(code: RejectReason["code"], message: string): ReadForSpecResult<never> {
@@ -257,6 +323,54 @@ function refused(code: RejectReason["code"], message: string): ReadForSpecResult
 type Obj = Record<string, unknown>;
 
 const MAX_DEPTH = 64;
+
+/**
+ * The work one prune may do, in schema steps (a value visited against a
+ * subschema, or a branch test): a fixed allowance plus a share for every
+ * value in the payload. Ordinary payloads use a small fraction of it. A schema
+ * whose `$ref`s, `allOf`s or `oneOf`/`anyOf` branches revisit the same values
+ * many times over could otherwise make the walk grow exponentially with the
+ * payload's nesting depth, and {@link readForSpec} runs before any proof is
+ * checked.
+ */
+const PRUNE_BASE_STEPS = 100_000;
+/** See {@link PRUNE_BASE_STEPS}. */
+const PRUNE_STEPS_PER_VALUE = 64;
+
+class PruneLimitReached extends Error {}
+
+/** State shared by one prune: the schema root, the remaining budget and the memo tables. */
+interface PruneContext {
+  readonly root: Obj;
+  steps: number;
+  /** value → `oneOf`/`anyOf` list → the branch chosen for it. */
+  readonly choices: WeakMap<object, Map<unknown[], Obj | null>>;
+  /** value → schema → {@link conforms}'s answer. */
+  readonly conformed: WeakMap<object, Map<object, boolean>>;
+  readonly patterns: Map<string, RegExp | null>;
+}
+
+function spend(ctx: PruneContext): void {
+  if (--ctx.steps < 0) throw new PruneLimitReached();
+}
+
+/** The number of JSON values in `v` (itself, members and elements, recursively). */
+function countValues(v: unknown): number {
+  let n = 0;
+  const stack: unknown[] = [v];
+  while (stack.length > 0) {
+    const x = stack.pop();
+    n++;
+    if (Array.isArray(x)) for (const e of x) stack.push(e);
+    else if (isPlainObject(x)) for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k)) stack.push(x[k]);
+  }
+  return n;
+}
+
+/** The step budget for pruning `payload`. */
+function pruneStepLimit(payload: unknown): number {
+  return PRUNE_BASE_STEPS + PRUNE_STEPS_PER_VALUE * countValues(payload);
+}
 
 function isPlainObject(v: unknown): v is Obj {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -287,15 +401,44 @@ function isPlainObject(v: unknown): v is Obj {
  *   Otherwise it is LEFT UNTOUCHED: guessing a branch could drop members the
  *   actual branch knows. A value of a branch the implemented version does not
  *   have (an appended `oneOf` branch) therefore survives intact and fails
- *   item-2 validation, which is the right answer.
+ *   item-2 validation, which is the right answer. The branch chosen for a
+ *   value, and the matcher's answers, are remembered for the rest of the walk,
+ *   so nested `oneOf`s are not re-decided once per enclosing branch.
+ *
+ * The walk takes at most 100,000 steps plus 64 per value in the payload (a
+ * step is a value visited against a subschema, or a branch test). A payload
+ * and schema that need more are returned untouched, as an undecidable branch
+ * is; {@link readForSpec} refuses such a document instead.
  *
  * Not followed: `if`/`then`/`else`, `dependentSchemas`, `not`, `$anchor` /
  * `$dynamicRef` refs, and refs outside the document — a value under one of
  * these is left as it is.
  */
 export function prunePayload(payload: unknown, schema: unknown): unknown {
-  if (!isPlainObject(schema)) return payload;
-  return pruneAt(payload, schema, schema, 0);
+  const r = pruneWithinLimit(payload, schema);
+  return r.ok ? r.value : payload;
+}
+
+/** {@link prunePayload}, reporting when the step limit was reached. */
+function pruneWithinLimit(
+  payload: unknown,
+  schema: unknown,
+): { ok: true; value: unknown } | { ok: false; limit: number } {
+  if (!isPlainObject(schema)) return { ok: true, value: payload };
+  const limit = pruneStepLimit(payload);
+  const ctx: PruneContext = {
+    root: schema,
+    steps: limit,
+    choices: new WeakMap(),
+    conformed: new WeakMap(),
+    patterns: new Map(),
+  };
+  try {
+    return { ok: true, value: pruneAt(payload, schema, ctx, 0) };
+  } catch (e) {
+    if (e instanceof PruneLimitReached) return { ok: false, limit };
+    throw e;
+  }
 }
 
 function resolveRef(ref: string, root: Obj): unknown {
@@ -320,14 +463,19 @@ function applicable(schema: unknown, root: Obj, depth: number, out: Obj[] = []):
   return out;
 }
 
-function matchesPattern(key: string, patterns: unknown): unknown {
+function matchesPattern(key: string, patterns: unknown, ctx: PruneContext): unknown {
   if (!isPlainObject(patterns)) return undefined;
   for (const [pat, sub] of Object.entries(patterns)) {
-    try {
-      if (new RegExp(pat, "u").test(key)) return sub;
-    } catch {
-      /* an unusable pattern names nothing */
+    let re = ctx.patterns.get(pat);
+    if (re === undefined) {
+      try {
+        re = new RegExp(pat, "u");
+      } catch {
+        re = null; // an unusable pattern names nothing
+      }
+      ctx.patterns.set(pat, re);
     }
+    if (re !== null && re.test(key)) return sub;
   }
   return undefined;
 }
@@ -336,8 +484,10 @@ function ownProps(part: Obj): Obj {
   return isPlainObject(part.properties) ? part.properties : {};
 }
 
-function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown {
+function pruneAt(value: unknown, schema: Obj, ctx: PruneContext, depth: number): unknown {
   if (depth > MAX_DEPTH) return value;
+  spend(ctx);
+  const root = ctx.root;
   const parts = applicable(schema, root, depth);
 
   // Branch choices are made on the value as it stands, before this level
@@ -348,7 +498,7 @@ function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown
     for (const key of ["oneOf", "anyOf"] as const) {
       const list = part[key];
       if (!Array.isArray(list)) continue;
-      const chosen = chooseBranch(value, list, root, depth);
+      const chosen = chooseBranch(value, list, ctx, depth);
       if (chosen === null) branchesResolved = false;
       else branches.push(chosen);
     }
@@ -361,7 +511,7 @@ function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown
       if (part.additionalProperties !== false) continue;
       const props = ownProps(part);
       for (const k of Object.keys(obj)) {
-        if (!Object.prototype.hasOwnProperty.call(props, k) && matchesPattern(k, part.patternProperties) === undefined) {
+        if (!Object.prototype.hasOwnProperty.call(props, k) && matchesPattern(k, part.patternProperties, ctx) === undefined) {
           delete obj[k];
         }
       }
@@ -370,7 +520,8 @@ function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown
       const evaluated = [...parts, ...branches.flatMap((b) => applicable(b, root, depth + 1))];
       for (const k of Object.keys(obj)) {
         const known = evaluated.some(
-          (p) => Object.prototype.hasOwnProperty.call(ownProps(p), k) || matchesPattern(k, p.patternProperties) !== undefined,
+          (p) =>
+            Object.prototype.hasOwnProperty.call(ownProps(p), k) || matchesPattern(k, p.patternProperties, ctx) !== undefined,
         );
         if (!known) delete obj[k];
       }
@@ -380,8 +531,8 @@ function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown
         const props = ownProps(part);
         let sub: unknown;
         if (Object.prototype.hasOwnProperty.call(props, k)) sub = props[k];
-        else sub = matchesPattern(k, part.patternProperties) ?? part.additionalProperties;
-        if (isPlainObject(sub)) obj[k] = pruneAt(obj[k], sub, root, depth + 1);
+        else sub = matchesPattern(k, part.patternProperties, ctx) ?? part.additionalProperties;
+        if (isPlainObject(sub)) obj[k] = pruneAt(obj[k], sub, ctx, depth + 1);
       }
     }
     out = obj;
@@ -391,28 +542,40 @@ function pruneAt(value: unknown, schema: Obj, root: Obj, depth: number): unknown
       const prefix = Array.isArray(part.prefixItems) ? part.prefixItems : [];
       for (let i = 0; i < arr.length; i++) {
         const sub = i < prefix.length ? prefix[i] : part.items;
-        if (isPlainObject(sub)) arr[i] = pruneAt(arr[i], sub, root, depth + 1);
+        if (isPlainObject(sub)) arr[i] = pruneAt(arr[i], sub, ctx, depth + 1);
       }
     }
     out = arr;
   }
 
-  for (const branch of branches) out = pruneAt(out, branch, root, depth + 1);
+  for (const branch of branches) out = pruneAt(out, branch, ctx, depth + 1);
   return out;
 }
 
 /** The single branch `value` belongs to, or `null` when that cannot be told. */
-function chooseBranch(value: unknown, list: unknown[], root: Obj, depth: number): Obj | null {
+function chooseBranch(value: unknown, list: unknown[], ctx: PruneContext, depth: number): Obj | null {
+  // The choice depends only on the value and the list, so it is made once per
+  // value: without this, a value under k nested oneOfs was re-decided once for
+  // every branch of every enclosing oneOf.
+  const memo = typeof value === "object" && value !== null ? ctx.choices : undefined;
+  const known = memo?.get(value as object)?.get(list);
+  if (known !== undefined) return known;
   const hits: { branch: Obj; pruned: string }[] = [];
   for (const branch of list) {
     if (!isPlainObject(branch)) continue;
-    const pruned = pruneAt(value, branch, root, depth + 1);
-    if (conforms(pruned, branch, root, depth + 1)) hits.push({ branch, pruned: canonicalJson(pruned) });
+    spend(ctx);
+    const pruned = pruneAt(value, branch, ctx, depth + 1);
+    if (conforms(pruned, branch, ctx, depth + 1)) hits.push({ branch, pruned: canonicalJson(pruned) });
   }
-  if (hits.length === 0) return null;
   // Several branches accept it (the matcher is lenient, so this happens for
   // `oneOf` too). Harmless only if they all prune it the same way.
-  return hits.every((h) => h.pruned === hits[0]!.pruned) ? hits[0]!.branch : null;
+  const chosen = hits.length > 0 && hits.every((h) => h.pruned === hits[0]!.pruned) ? hits[0]!.branch : null;
+  if (memo !== undefined) {
+    let byList = memo.get(value as object);
+    if (byList === undefined) memo.set(value as object, (byList = new Map()));
+    byList.set(list, chosen);
+  }
+  return chosen;
 }
 
 function typeOk(value: unknown, t: unknown): boolean {
@@ -438,12 +601,30 @@ function same(a: unknown, b: unknown): boolean {
 
 /**
  * A conservative structural match — enough to tell `oneOf` branches apart by
- * their discriminators, not a validator. Unrecognised keywords pass.
+ * their discriminators, not a validator. Unrecognised keywords pass. Answers
+ * for an object or array value are remembered for the rest of the walk.
  */
-function conforms(value: unknown, schema: unknown, root: Obj, depth: number): boolean {
+function conforms(value: unknown, schema: unknown, ctx: PruneContext, depth: number): boolean {
   if (typeof schema === "boolean") return schema;
   if (depth > MAX_DEPTH) return true;
-  for (const part of applicable(schema, root, depth)) {
+  const memo =
+    typeof value === "object" && value !== null && typeof schema === "object" && schema !== null
+      ? ctx.conformed
+      : undefined;
+  const known = memo?.get(value as object)?.get(schema as object);
+  if (known !== undefined) return known;
+  spend(ctx);
+  const answer = conformsUncached(value, schema, ctx, depth);
+  if (memo !== undefined) {
+    let bySchema = memo.get(value as object);
+    if (bySchema === undefined) memo.set(value as object, (bySchema = new Map()));
+    bySchema.set(schema as object, answer);
+  }
+  return answer;
+}
+
+function conformsUncached(value: unknown, schema: unknown, ctx: PruneContext, depth: number): boolean {
+  for (const part of applicable(schema, ctx.root, depth)) {
     if (part.type !== undefined) {
       const types = Array.isArray(part.type) ? part.type : [part.type];
       if (!types.some((t) => typeOk(value, t))) return false;
@@ -455,20 +636,20 @@ function conforms(value: unknown, schema: unknown, root: Obj, depth: number): bo
       const props = ownProps(part);
       for (const [k, v] of Object.entries(value)) {
         if (Object.prototype.hasOwnProperty.call(props, k)) {
-          if (!conforms(v, props[k], root, depth + 1)) return false;
-        } else if (matchesPattern(k, part.patternProperties) === undefined && part.additionalProperties === false) {
+          if (!conforms(v, props[k], ctx, depth + 1)) return false;
+        } else if (matchesPattern(k, part.patternProperties, ctx) === undefined && part.additionalProperties === false) {
           return false;
         }
       }
     }
     if (Array.isArray(value) && isPlainObject(part.items)) {
-      if (!value.every((v) => conforms(v, part.items, root, depth + 1))) return false;
+      if (!value.every((v) => conforms(v, part.items, ctx, depth + 1))) return false;
     }
     // Lenient: at least one branch, for `oneOf` as for `anyOf` — this matcher
     // ignores too many keywords to count exclusivity.
     for (const key of ["oneOf", "anyOf"] as const) {
       const list = part[key];
-      if (Array.isArray(list) && !list.some((b) => conforms(value, b, root, depth + 1))) return false;
+      if (Array.isArray(list) && !list.some((b) => conforms(value, b, ctx, depth + 1))) return false;
     }
   }
   return true;

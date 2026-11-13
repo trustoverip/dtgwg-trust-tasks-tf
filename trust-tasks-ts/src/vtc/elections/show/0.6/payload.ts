@@ -25,7 +25,7 @@ export type RegistrarState =
 export interface VTCElectionsShowPayload {
   electionId: ElectionId;
   /**
-   * Only where the reader means to read an election whose `credential` roll (voting/_shared/0.4 `RollRule`) names a member party — a party other than the community and its groups — and the community's records do not otherwise admit them: the reader's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-015, checked as VTI-VOT-025 requires). The community verifies it before, and without reference to, the election the request names, answering `indeterminate` whatever the election where a status list, a trust registry or the issuer's DID document cannot be obtained; it uses the outcome only for such an election, and discards the presentation once it has decided. Without one that passes, such an election is answered `electionUnknown`.
+   * Only where the reader means to read an election whose `credential` roll (voting/_shared/0.4 `RollRule`) names a member party — a party other than the community and its groups that is itself a member of the community, never a group the community has since deleted (VTI-VOT-029) — and the community's records do not otherwise admit them: the reader's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-015, checked as VTI-VOT-025 requires). The community verifies it before, and without reference to, the election the request names, answering `indeterminate` whatever the election where a status list, a trust registry or the issuer's DID document cannot be obtained; it uses the outcome only for such an election, and discards the presentation once it has decided. Without one that passes, such an election is answered `electionUnknown`.
    */
   presentation?: {} | string;
   ext?: Ext;
@@ -130,8 +130,13 @@ export type Response = VTCElectionsShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/elections/show/0.6",
   "title": "VTC Elections — Show — payload",
@@ -146,7 +151,7 @@ export const PAYLOAD_SCHEMA = {
       "$ref": "#/$defs/ElectionId"
     },
     "presentation": {
-      "description": "Only where the reader means to read an election whose `credential` roll (voting/_shared/0.4 `RollRule`) names a member party — a party other than the community and its groups — and the community's records do not otherwise admit them: the reader's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-015, checked as VTI-VOT-025 requires). The community verifies it before, and without reference to, the election the request names, answering `indeterminate` whatever the election where a status list, a trust registry or the issuer's DID document cannot be obtained; it uses the outcome only for such an election, and discards the presentation once it has decided. Without one that passes, such an election is answered `electionUnknown`.",
+      "description": "Only where the reader means to read an election whose `credential` roll (voting/_shared/0.4 `RollRule`) names a member party — a party other than the community and its groups that is itself a member of the community, never a group the community has since deleted (VTI-VOT-029) — and the community's records do not otherwise admit them: the reader's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-015, checked as VTI-VOT-025 requires). The community verifies it before, and without reference to, the election the request names, answering `indeterminate` whatever the election where a status list, a trust registry or the issuer's DID document cannot be obtained; it uses the outcome only for such an election, and discards the presentation once it has decided. Without one that passes, such an election is answered `electionUnknown`.",
       "anyOf": [
         {
           "type": "object",
@@ -1088,10 +1093,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -2018,7 +2023,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

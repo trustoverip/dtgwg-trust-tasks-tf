@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/promote/0.1",
+  "title": "VTC Badges — Promote — payload",
+  "description": "Turn a kudos badge into a community badge: its badge group is created and its owners named, and every current holder is offered the badge so that each accepts before anything is issued or recorded. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId",
+    "reason"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeId",
+      "description": "A kudos badge."
+    },
+    "requestable": {
+      "type": "boolean",
+      "description": "Whether members may ask for it (a request to join the badge group). Absent: false."
+    },
+    "shareableOutside": {
+      "type": "boolean",
+      "description": "Whether holders may show it outside the community, which fixes the credential's regime for the badge's life. Absent: false."
+    },
+    "holdersVisibleTo": {
+      "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupAudience",
+      "description": "Who may see the badge's holders: the badge group's `showMembers`. Absent: `members`."
+    },
+    "owners": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+      },
+      "description": "Members to appoint as the badge's owners — the badge group's managers — as vtc/groups/managers/add appoints them, bounded by the signer's own holding. The badge's maker is an owner only if named here."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Promote — response payload",
+      "description": "The success response to a vtc/badges/promote/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/promote/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge",
+        "group"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Badge",
+          "description": "The badge, now `kind` `community` with its `groupId`. `holderCount` is 0 until a holder accepts."
+        },
+        "group": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/Group",
+          "description": "The badge group, as vtc/groups/create answers it."
+        },
+        "holdersOffered": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many current holders were offered the badge — one offer each, who they are never said here."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

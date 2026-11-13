@@ -14,7 +14,7 @@ import (
 // Response Success response to rooms/keys/file-key. Type
 // https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.
 //
-// Deprecated: superseded by rooms/keys/file-key/0.2
+// Deprecated: superseded by rooms/keys/file-key/0.3
 type Response struct {
 	// The 32-byte file key, base64url without padding. Opens exactly one file. The caller
 	// holds it in memory for as long as the file is being sealed or opened and then discards
@@ -46,7 +46,7 @@ const (
 // file in a room: derived from the room's storage key for an epoch, bound to the room,
 // the epoch and the file's identifier, and opening that file and nothing else.
 //
-// Deprecated: superseded by rooms/keys/file-key/0.2
+// Deprecated: superseded by rooms/keys/file-key/0.3
 type Payload struct {
 	// The room the file belongs to. Bound into the derivation, so a key released for one room
 	// cannot open a blob relocated from another.
@@ -88,7 +88,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/keys/file-key/0.2"
+const Deprecation = "superseded by rooms/keys/file-key/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/file-key/0.1#response"

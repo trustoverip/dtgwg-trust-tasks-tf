@@ -1,0 +1,96 @@
+{
+  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second` (at the case's `secondAt` when it has one, otherwise at `now`), under the same `id` against one replay guard, under the consequential checks (5 min maximum age, 30-day expiry horizon, 60 s skew), with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second: `duplicate`, or the refusal's error code.",
+  "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
+  "consumer": "did:web:consumer.example",
+  "now": "2026-11-01T00:00:30Z",
+  "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+  "cases": [
+    {
+      "name": "byte-identical resend",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "expect": "duplicate",
+      "why": "SPEC §8.4: a retry is the same document re-sent; item 11 absorbs it."
+    },
+    {
+      "name": "same members, different order and whitespace",
+      "second": "{\n  \"payload\": { \"subject\": \"did:web:alice.example\" },\n  \"issuedAt\": \"2026-11-01T00:00:00Z\",\n  \"recipient\": \"did:web:consumer.example\",\n  \"issuer\": \"did:web:producer.example\",\n  \"type\": \"https://trusttasks.org/spec/conformance/widget/0.1\",\n  \"id\": \"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\"\n}",
+      "expect": "duplicate",
+      "why": "Two serializations identical under RFC 8785 canonicalization are the same document (SPEC §7.2, Keying and comparison)."
+    },
+    {
+      "name": "extra payload member the consumer's type does not model",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"note\":\"added\"}}",
+      "expect": "idConflict",
+      "why": "The comparison is over the whole received document, not the consumer's typed reading of it, which drops `note`."
+    },
+    {
+      "name": "extra top-level member",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"},\"trace\":\"abc\"}",
+      "expect": "idConflict",
+      "why": "An unrecognised top-level member is part of the document (SPEC §7.2 preserves it)."
+    },
+    {
+      "name": "issuedAt spelled with fractional seconds",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00.000Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "expect": "idConflict",
+      "why": "The same instant written differently is a different serialization; a typed reading that normalises the timestamp cannot see it."
+    },
+    {
+      "name": "modelled payload member changed",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:bob.example\"}}",
+      "expect": "idConflict",
+      "why": "Control case: a difference every reading sees."
+    },
+    {
+      "name": "integral number written with a fraction",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1.0}}",
+      "expect": "duplicate",
+      "why": "RFC 8785 reads every number as an IEEE 754 double: 1 and 1.0 are one number, written 1."
+    },
+    {
+      "name": "number written with an exponent",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":100}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1e2}}",
+      "expect": "duplicate",
+      "why": "1e2 and 100 are one double, written 100."
+    },
+    {
+      "name": "different number",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1.5}}",
+      "expect": "idConflict",
+      "why": "Control case for the two above."
+    },
+    {
+      "name": "byte-identical resend one millisecond before the window closes",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-11-01T00:05:59.999Z",
+      "expect": "duplicate",
+      "why": "Inside the acceptance window (issuedAt + 5 min maximum age + 60 s skew), so the record is still held and the resend is absorbed."
+    },
+    {
+      "name": "byte-identical resend at the instant the window closes",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-11-01T00:06:00Z",
+      "expect": "expired",
+      "why": "SPEC §7.2 (Bounding the record): retention and willingness to execute are the same bound. The window is half-open, so at its end the record may be dropped and the document is refused, never executed a second time."
+    },
+    {
+      "name": "distant expiresAt, resend one millisecond before the clamped window closes",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-12-01T00:00:59.999Z",
+      "expect": "duplicate",
+      "why": "An expiresAt a year out is clamped to the 30-day expiry horizon: the window ends at issuedAt + 30 days + 60 s skew. Just inside it the record is still held and the resend is absorbed."
+    },
+    {
+      "name": "distant expiresAt, resend at the instant the clamped window closes",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-12-01T00:01:00Z",
+      "expect": "expired",
+      "why": "The clamped window is half-open like the others: at issuedAt + 30 days + 60 s the record may be dropped, so the document is refused rather than executed a second time."
+    }
+  ]
+}

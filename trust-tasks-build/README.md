@@ -14,13 +14,9 @@ for the model.
 
 ## Use
 
-```toml
-# Cargo.toml
-[dependencies]
-trust-tasks-rs = { version = "0.35", default-features = false } # the runtime, no prebuilt modules
-
-[build-dependencies]
-trust-tasks-build = "0.1"
+```sh
+cargo add trust-tasks-rs                         # the runtime; no prebuilt module is on by default
+cargo add --build trust-tasks-build
 ```
 
 ```rust

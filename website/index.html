@@ -17,23 +17,46 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
 
-  <script src="/assets/data.js"></script>
-  <script src="/assets/tasks.generated.js"></script>
-  <script src="/assets/ecosystem.js"></script>
-  <script src="/assets/bindings.js"></script>
-  <script src="/assets/libraries.js"></script>
-  <script src="/assets/ceremonies.js"></script>
+  <!-- The site's own data scripts are deferred, so the page (and the static
+       message in #root) paints while the large generated registry downloads.
+       Deferred scripts still run in document order, and all of them run before
+       DOMContentLoaded — which is when Babel compiles and runs the JSX below. -->
+  <script defer src="/assets/markdown.js"></script>
+  <script defer src="/assets/routes.js"></script>
+  <script defer src="/assets/data.js"></script>
+  <script defer src="/assets/tasks.generated.js"></script>
+  <script defer src="/assets/ecosystem.js"></script>
+  <script defer src="/assets/bindings.js"></script>
+  <script defer src="/assets/libraries.js"></script>
+  <script defer src="/assets/ceremonies.js"></script>
 </head>
 <body data-bg="paper" data-density="default" data-type="editorial">
-  <div id="root"></div>
+  <a class="tt-skip-link" href="#main" onclick="var m=document.getElementById('main');if(m){event.preventDefault();m.focus();m.scrollIntoView();}">Skip to content</a>
+  <div id="root">
+    <!-- Replaced when the app renders. Left in place if a script fails to load
+         or compile, so the page says so instead of staying blank (#1153). -->
+    <div class="tt-boot">
+      <p><b>Trust Tasks</b> — the registry of Trust Task specifications.</p>
+      <p>Loading the registry… If this message stays, the page's scripts could not load or run.
+        The site needs JavaScript and access to unpkg.com.</p>
+      <p>Every specification is also on GitHub:
+        <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/specs">trustoverip/dtgwg-trust-tasks-tf/specs</a>,
+        and the framework specification at
+        <a href="/SPEC.md">/SPEC.md</a>.</p>
+    </div>
+  </div>
 
-  <script type="text/babel" src="/assets/tweaks-panel.jsx"></script>
   <script type="text/babel" src="/assets/components.jsx"></script>
   <script type="text/babel" src="/assets/pages.jsx"></script>
   <script type="text/babel" data-presets="react">
-    const { useState: useStateApp, useEffect: useEffectApp } = React;
+    const { useState: useStateApp, useEffect: useEffectApp, useRef: useRefApp } = React;
+
+    /* Names of the pages that take no path segments after their own. */
+    const SINGLE_PAGES = new Set([
+      "specification", "categories", "ecosystem", "about", "contributing", "glossary", "schemas",
+    ]);
 
     /* parse pathname: /, /registry, /registry/identity, /spec/<slug...>/<version>,
        /binding/<slug>/<version>, etc. Slugs may be hierarchical (e.g.
@@ -44,7 +67,10 @@
        what bindingURI fields advertise. We also accept legacy plural /bindings/
        so old in-app history entries continue to resolve. The bindings *index*
        page (no slug) is reached via /bindings (plural) — keeping that distinct
-       from a binding URI with no version. */
+       from a binding URI with no version.
+
+       Anything else is { name: "notfound" } — it used to fall through to the
+       home page, so a mistyped URL showed no sign of an error (#1150). */
     function parsePath() {
       const path = location.pathname.replace(/^\/+|\/+$/g, "");
       if (!path) return { name: "home" };
@@ -89,92 +115,198 @@
         if (rest.length === 0) return { name: "implementations" };
         return { name: "implementation", id: rest[0] };
       }
-      if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
-      return { name };
+      if (name === "registry") {
+        // Filters live in the query string (#1154): /registry/<cat>?q=&kw=&status=
+        if (rest.length > 1) return { name: "notfound" };
+        const params = new URLSearchParams(location.search);
+        return {
+          name: "registry",
+          cat: rest[0] || undefined,
+          q: params.get("q") || undefined,
+          kw: params.get("kw") || undefined,
+          status: params.get("status") || undefined,
+        };
+      }
+      if (SINGLE_PAGES.has(name) && rest.length === 0) return { name };
+      return { name: "notfound" };
     }
 
-    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-      "heroLayout": "editorial",
-      "type": "technical",
-      "background": "paper",
-      "density": "compact",
-      "accent": "violet"
-    }/*EDITMODE-END*/;
+    /* The path (and query) a route object lives at. */
+    function routePath(r) {
+      if (r.name === "spec") {
+        const v = r.version || (window.ttRoutes.latestOf(window.TT_TASKS, r.slug || r.id) || {}).version || "";
+        return `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
+      }
+      if (r.name === "schema") return `/schema/${r.slug}`;
+      if (r.name === "schemas") return "/schema";
+      if (r.name === "ceremonies") return "/ceremonies";
+      // Singular /ceremony/ per SPEC §6.7; matches the definitionURI a step
+      // carries in its ceremony.definition member.
+      if (r.name === "ceremony") return `/ceremony/${r.slug}${r.version ? "/" + r.version : ""}`;
+      if (r.name === "binding") {
+        // A versionless /binding/<slug> resolves to the latest registered
+        // version. Singular /binding/ per SPEC §9.3; matches the canonical
+        // bindingURI shown on each binding's spec page.
+        const v = r.version || (window.ttRoutes.latestOf(window.TT_BINDINGS || [], r.slug) || {}).version || "";
+        return `/binding/${r.slug}${v ? "/" + v : ""}`;
+      }
+      if (r.name === "implementation") return `/implementations/${r.id}`;
+      if (r.name === "registry") {
+        const params = new URLSearchParams();
+        if (r.q) params.set("q", r.q);
+        if (r.kw) params.set("kw", r.kw);
+        if (r.status) params.set("status", r.status);
+        const qs = params.toString();
+        return `/registry${r.cat ? "/" + r.cat : ""}${qs ? "?" + qs : ""}`;
+      }
+      if (r.name === "home") return "/";
+      return `/${r.name}`;
+    }
+
+    /* Title and description for a route (#1151): every tab, history entry and
+       bookmark used to read the same site title. */
+    const SITE_TITLE = "Trust Tasks — Reference registry of trust task specifications";
+    const SITE_DESCRIPTION = document.querySelector('meta[name="description"]').getAttribute("content");
+    function routeMeta(r) {
+      const t = (s) => `${s} · Trust Tasks`;
+      const label = (id) => ((window.TT_NAV_GROUPS || []).flatMap(g => g.links).find(l => l.id === id) || {}).label;
+      switch (r.name) {
+        case "home": return { title: SITE_TITLE, description: SITE_DESCRIPTION };
+        case "spec": {
+          const all = window.TT_TASKS || [];
+          const task = r.version ? all.find(x => x.slug === r.slug && x.version === r.version) : window.ttRoutes.latestOf(all, r.slug);
+          return task
+            ? { title: t(`${task.title} (${task.slug} v${task.version})`), description: task.summary }
+            : { title: t("Specification not found") };
+        }
+        case "binding": {
+          const b = (window.TT_BINDINGS || []).find(x => x.slug === r.slug && (!r.version || x.version === r.version));
+          return b ? { title: t(`${b.title} binding v${b.version}`), description: b.summary } : { title: t("Binding not found") };
+        }
+        case "ceremony": {
+          const c = (window.TT_CEREMONIES || []).find(x => x.slug === r.slug && (!r.version || x.version === r.version));
+          return c ? { title: t(`${c.title} ceremony v${c.version}`), description: c.summary } : { title: t("Ceremony not found") };
+        }
+        case "schema": return { title: t(`${r.slug} — shared schema`) };
+        case "implementation": {
+          const lib = (window.TT_LIBRARIES || []).find(l => l.id === r.id);
+          return { title: t(lib ? `${lib.name} (${lib.language})` : "Implementations"), description: lib ? lib.tagline : undefined };
+        }
+        case "registry": {
+          const cat = r.cat && (window.TT_CATEGORIES || []).find(c => c.id === r.cat);
+          return { title: t(cat ? `${cat.name} — Registry` : "Registry") };
+        }
+        case "notfound": return { title: t("Page not found") };
+        default: return { title: t(label(r.name) || r.name) };
+      }
+    }
+
+    /* Remounts the page — and clears a caught render error — whenever the page
+       changes, but not when only the registry's filters do. */
+    function routeKey(r) {
+      if (r.name === "registry") return "registry";
+      return [r.name, r.slug, r.version, r.id].join("|");
+    }
+
+    // The site's presentation settings: hero layout, type pairing, background,
+    // density and accent colour.
+    const SITE_THEME = {
+      heroLayout: "editorial",
+      type: "technical",
+      background: "paper",
+      density: "compact",
+      accent: "violet"
+    };
 
     function App() {
       const [route, setRouteRaw] = useStateApp(parsePath());
-      const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      // Bumped on every navigation that moves to a new page (not a filter
+      // change), so focus can follow it.
+      const [navSeq, setNavSeq] = useStateApp(0);
+      const tweaks = SITE_THEME;
 
-      const setRoute = (r) => {
+      /* Navigate to a route object. `{ replace: true }` rewrites the current
+         history entry instead of adding one, and leaves scroll and focus alone
+         — the registry's filters use it. */
+      const setRoute = (r, opts) => {
+        const replace = !!(opts && opts.replace);
         setRouteRaw(r);
-        let path;
-        if (r.name === "spec") {
-          const v = r.version || (window.TT_TASKS.find(t => t.slug === r.slug || t.id === r.id) || {}).version || "";
-          path = `/spec/${r.slug || r.id}${v ? "/" + v : ""}`;
-        } else if (r.name === "schema") {
-          path = `/schema/${r.slug}`;
-        } else if (r.name === "schemas") {
-          path = "/schema";
-        } else if (r.name === "ceremonies") {
-          path = "/ceremonies";
-        } else if (r.name === "ceremony") {
-          // Singular /ceremony/ per SPEC §6.7; matches the definitionURI a step
-          // carries in its ceremony.definition member.
-          path = `/ceremony/${r.slug}${r.version ? "/" + r.version : ""}`;
-        } else if (r.name === "binding") {
-          // A versionless /binding/<slug> resolves to the latest registered
-          // version — `find` would have picked whichever entry was listed first.
-          const v = r.version || ((window.TT_BINDINGS || [])
-            .filter(b => b.slug === r.slug)
-            .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); })[0] || {}).version || "";
-          // Singular /binding/ per SPEC §9.3; matches the canonical bindingURI
-          // shown on each binding's spec page.
-          path = `/binding/${r.slug}${v ? "/" + v : ""}`;
-        } else if (r.name === "implementation") {
-          path = `/implementations/${r.id}`;
-        } else if (r.name === "registry" && r.cat) {
-          path = `/registry/${r.cat}`;
-        } else if (r.name === "home") {
-          path = "/";
-        } else {
-          path = `/${r.name}`;
-        }
+        const path = routePath(r);
         const wantHash = r.hash ? `#${r.hash}` : "";
         const url = path + wantHash;
-        if (location.pathname !== path || location.hash !== wantHash) {
-          history.pushState(null, "", url);
+        if (location.pathname + location.search + location.hash !== url) {
+          if (replace) history.replaceState(null, "", url);
+          else history.pushState(null, "", url);
         }
+        if (replace) return;
+        setNavSeq(n => n + 1);
         // When navigating with a hash, let the destination page's effect
         // scroll to the anchor once the prose has rendered — top-of-page
         // scrolling here would just be visual noise.
         if (!r.hash) window.scrollTo(0, 0);
       };
 
+      // Navigate to a same-origin URL — for links inside rendered prose, which
+      // are plain hrefs rather than route objects (pages.jsx onProseClick).
       useEffectApp(() => {
-        const onPop = () => setRouteRaw(parsePath());
+        window.ttNavigate = (url) => {
+          history.pushState(null, "", url);
+          setRouteRaw(parsePath());
+          setNavSeq(n => n + 1);
+          if (!new URL(url, location.origin).hash) window.scrollTo(0, 0);
+        };
+        return () => { delete window.ttNavigate; };
+      }, []);
+
+      useEffectApp(() => {
+        const onPop = () => { setRouteRaw(parsePath()); setNavSeq(n => n + 1); };
         window.addEventListener("popstate", onPop);
         return () => window.removeEventListener("popstate", onPop);
       }, []);
 
-      // sync body data attrs from tweaks
+      // Title and description follow the route.
+      useEffectApp(() => {
+        const meta = routeMeta(route);
+        document.title = meta.title || SITE_TITLE;
+        document.querySelector('meta[name="description"]').setAttribute("content", meta.description || SITE_DESCRIPTION);
+      }, [route]);
+
+      // Move focus to the new page's heading, so a keyboard or screen-reader
+      // user lands on the page they asked for rather than on the link they
+      // clicked (#1156). Not on first load: the browser handles that.
+      const firstNav = useRefApp(true);
+      useEffectApp(() => {
+        if (firstNav.current) { firstNav.current = false; return; }
+        requestAnimationFrame(() => {
+          const main = document.getElementById("main");
+          if (!main) return;
+          const h1 = main.querySelector("h1");
+          const target = h1 || main;
+          if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+        });
+      }, [navSeq]);
+
+      // apply the theme to the body data attrs
       useEffectApp(() => {
         document.body.dataset.bg = tweaks.background;
         document.body.dataset.density = tweaks.density;
         document.body.dataset.type = tweaks.type;
-        // accent override
+        // accent override — the `-text` variants, because the accent fills the
+        // primary button behind white text (white on bright violet is 4.2:1).
         const accentMap = {
           navy: "var(--tt-navy)",
-          teal: "var(--tt-teal)",
-          coral: "var(--tt-coral)",
-          violet: "var(--tt-violet)"
+          teal: "var(--tt-teal-text)",
+          coral: "var(--tt-coral-text)",
+          violet: "var(--tt-violet-text)"
         };
         document.documentElement.style.setProperty("--tt-accent", accentMap[tweaks.accent] || accentMap.navy);
-        document.documentElement.style.setProperty("--tt-link-hover", accentMap[tweaks.accent] === accentMap.teal ? "var(--tt-amber)" : "var(--tt-teal)");
-      }, [tweaks]);
+        document.documentElement.style.setProperty("--tt-link-hover", tweaks.accent === "teal" ? "var(--tt-amber-text)" : "var(--tt-teal-text)");
+      }, []);
 
       let view;
       switch (route.name) {
-        case "registry":      view = <RegistryPage initial={{ cat: route.cat, q: route.q, kw: route.kw }} setRoute={setRoute} />; break;
+        case "registry":      view = <RegistryPage route={route} setRoute={setRoute} />; break;
         case "spec":          view = <SpecPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "schema":        view = <SchemaPage slug={route.slug} setRoute={setRoute} />; break;
         case "schemas":       view = <SchemasIndexPage setRoute={setRoute} />; break;
@@ -197,38 +329,17 @@
         case "about":         view = <AboutPage />; break;
         case "contributing":  view = <ContributingPage />; break;
         case "glossary":      view = <GlossaryPage />; break;
-        case "home":
-        default:              view = <HomePage tweaks={tweaks} setRoute={setRoute} />; break;
+        case "home":          view = <HomePage tweaks={tweaks} setRoute={setRoute} />; break;
+        default:              view = <NotFoundPage setRoute={setRoute} />; break;
       }
 
       return (
         <React.Fragment>
           <TTNav route={route} setRoute={setRoute} />
-          <main>{view}</main>
+          <main id="main" tabIndex={-1}>
+            <TTErrorBoundary key={routeKey(route)}>{view}</TTErrorBoundary>
+          </main>
           <TTFooter setRoute={setRoute} />
-
-          <TweaksPanel title="Tweaks">
-            <TweakSection title="Hero">
-              <TweakRadio label="Layout" value={tweaks.heroLayout} onChange={(v) => setTweak("heroLayout", v)}
-                options={[{ value: "split", label: "Split" }, { value: "editorial", label: "Editorial" }]} />
-            </TweakSection>
-            <TweakSection title="Typography">
-              <TweakRadio label="Pairing" value={tweaks.type} onChange={(v) => setTweak("type", v)}
-                options={[{ value: "editorial", label: "Editorial" }, { value: "technical", label: "Technical" }, { value: "hybrid", label: "Hybrid" }]} />
-            </TweakSection>
-            <TweakSection title="Layout">
-              <TweakRadio label="Density" value={tweaks.density} onChange={(v) => setTweak("density", v)}
-                options={[{ value: "compact", label: "Compact" }, { value: "default", label: "Default" }, { value: "airy", label: "Airy" }]} />
-            </TweakSection>
-            <TweakSection title="Background">
-              <TweakRadio label="Treatment" value={tweaks.background} onChange={(v) => setTweak("background", v)}
-                options={[{ value: "paper", label: "Paper" }, { value: "grid", label: "Grid" }, { value: "dots", label: "Dots" }, { value: "plain", label: "Plain" }]} />
-            </TweakSection>
-            <TweakSection title="Accent">
-              <TweakRadio label="Color" value={tweaks.accent} onChange={(v) => setTweak("accent", v)}
-                options={[{ value: "navy", label: "Navy" }, { value: "teal", label: "Teal" }, { value: "coral", label: "Coral" }, { value: "violet", label: "Violet" }]} />
-            </TweakSection>
-          </TweaksPanel>
         </React.Fragment>
       );
     }

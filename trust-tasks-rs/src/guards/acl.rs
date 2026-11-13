@@ -3,14 +3,24 @@
 //! Pure functions a maintainer calls from inside an `acl/*` handler to
 //! enforce policy checks the spec names but does not implement. Each
 //! returns an `Option<&'static str>` where `Some(error_code)` is the
-//! extended error code the maintainer should respond with — slot it
-//! straight into [`RejectReason::TaskFailed`](crate::RejectReason::TaskFailed)
-//! or directly into the error payload's `code`.
+//! extended error code the specification declares for the refusal — the
+//! `code` of the error payload to answer with (see
+//! [`reject_last_authority`] for building one).
+
+/// `acl/revoke:lastAuthorityProtected` — the extended error code every
+/// version of `acl/revoke` declares for a revocation that would leave no
+/// holder of a protected role, and what [`reject_last_authority`] returns.
+///
+/// With the `acl` feature, the generated `error_codes::LAST_AUTHORITY_PROTECTED`
+/// of `crate::specs::acl::revoke::v0_3` is the same code, and also carries
+/// its declared `retryable` and `detailsSchema`; prefer it where the
+/// generated module is in scope.
+pub const LAST_AUTHORITY_PROTECTED: &str = "acl/revoke:lastAuthorityProtected";
 
 /// Detect whether revoking `subject` from the entries iterator would
 /// empty the maintainer's privileged-role set, per the
-/// `acl/revoke:last_authority_protected` error code declared by
-/// [`acl/revoke/0.1`](https://trusttasks.org/spec/acl/revoke/0.1).
+/// `acl/revoke:lastAuthorityProtected` error code declared by
+/// [`acl/revoke`](https://trusttasks.org/spec/acl/revoke/0.3).
 ///
 /// `entries` yields the maintainer's current ACL entries (or any
 /// ecosystem-flavoured subtype that exposes role + subject identity via
@@ -19,15 +29,25 @@
 /// (typically `admin`, `owner`, …). `is_target_subject` returns `true`
 /// for the entry being revoked.
 ///
-/// Returns `Some("acl/revoke:last_authority_protected")` when the
-/// revocation would leave zero protected entries; otherwise `None`.
+/// Returns `Some(`[`LAST_AUTHORITY_PROTECTED`]`)` when the revocation would
+/// leave zero protected entries; otherwise `None`.
+///
+/// The returned code is the error payload's `code`. Parse it into a
+/// [`TrustTaskCode`](crate::TrustTaskCode) and build the payload with
+/// [`ErrorPayload::new`](crate::ErrorPayload::new) — or, with the `acl`
+/// feature, build it from the generated declaration with
+/// `ErrorPayload::from(acl::revoke::v0_3::error_codes::LAST_AUTHORITY_PROTECTED)`,
+/// which also sets the declared `retryable`. The code names `acl/revoke`, so
+/// it is the one to answer an `acl/revoke` request with; a handler for
+/// another task mints its own (SPEC §8.5 rule 2).
 ///
 /// The function is generic in the entry type so consumers that carry
 /// ecosystem extension fields (webvh's `AclEntry.ext.vnd.affinidi.webvh.*`,
 /// etc.) pass their own type without conversion.
 ///
 /// ```rust
-/// use trust_tasks_rs::guards::acl::reject_last_authority;
+/// use trust_tasks_rs::guards::acl::{reject_last_authority, LAST_AUTHORITY_PROTECTED};
+/// use trust_tasks_rs::{ErrorPayload, TrustTaskCode};
 ///
 /// struct LocalEntry { subject: &'static str, role: &'static str }
 ///
@@ -37,14 +57,17 @@
 /// ];
 ///
 /// // Revoking the only admin trips the guard.
-/// assert_eq!(
-///     reject_last_authority(
-///         entries.iter(),
-///         |e: &&LocalEntry| e.role == "admin",
-///         |e: &&LocalEntry| e.subject == "did:web:alice.example",
-///     ),
-///     Some("acl/revoke:last_authority_protected"),
+/// let code = reject_last_authority(
+///     entries.iter(),
+///     |e: &&LocalEntry| e.role == "admin",
+///     |e: &&LocalEntry| e.subject == "did:web:alice.example",
 /// );
+/// assert_eq!(code, Some(LAST_AUTHORITY_PROTECTED));
+///
+/// // The error payload to answer with.
+/// let code: TrustTaskCode = code.unwrap().parse().unwrap();
+/// let payload = ErrorPayload::new(code).with_retryable(false);
+/// assert_eq!(payload.code.to_string(), "acl/revoke:lastAuthorityProtected");
 ///
 /// // Revoking a non-admin does not trip the guard.
 /// assert_eq!(
@@ -77,7 +100,7 @@ where
         }
     }
     if target_is_protected && other_protected == 0 {
-        Some("acl/revoke:last_authority_protected")
+        Some(LAST_AUTHORITY_PROTECTED)
     } else {
         None
     }
@@ -117,7 +140,7 @@ mod tests {
         ];
         assert_eq!(
             reject_last_authority(entries.iter(), is_admin, target_alice),
-            Some("acl/revoke:last_authority_protected")
+            Some(LAST_AUTHORITY_PROTECTED)
         );
     }
 
@@ -183,6 +206,23 @@ mod tests {
         );
     }
 
+    /// The guard's code is the one every version of `acl/revoke` declares —
+    /// the generated `DeclaredErrorCode`, not a hand-spelled variant of it.
+    #[test]
+    #[cfg(feature = "acl")]
+    fn the_code_is_the_declared_one() {
+        use crate::specs::acl::revoke::{v0_1, v0_2, v0_3};
+        for declared in [
+            v0_1::error_codes::LAST_AUTHORITY_PROTECTED,
+            v0_2::error_codes::LAST_AUTHORITY_PROTECTED,
+            v0_3::error_codes::LAST_AUTHORITY_PROTECTED,
+        ] {
+            assert_eq!(declared.code, LAST_AUTHORITY_PROTECTED);
+            let parsed: crate::TrustTaskCode = LAST_AUTHORITY_PROTECTED.parse().unwrap();
+            assert!(declared.matches(&parsed));
+        }
+    }
+
     /// Worked example mirroring webvh's likely usage: AclEntry carries an
     /// ecosystem `ext` field, and the protected predicate checks the
     /// generated AclEntry's `role` directly.
@@ -212,7 +252,7 @@ mod tests {
                 |e: &&grant::AclEntry| e.role.as_str() == "admin",
                 |e: &&grant::AclEntry| e.subject.as_str() == "did:web:alice.example",
             ),
-            Some("acl/revoke:last_authority_protected")
+            Some(LAST_AUTHORITY_PROTECTED)
         );
     }
 }

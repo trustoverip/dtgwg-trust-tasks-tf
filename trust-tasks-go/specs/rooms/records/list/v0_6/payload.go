@@ -13,6 +13,8 @@ import (
 
 // Response Success response to rooms/records/list. Type
 // https://trusttasks.org/spec/rooms/records/list/0.6#response.
+//
+// Deprecated: superseded by rooms/records/list/0.7
 type Response struct {
 	Records []RecordMetadataV3 `json:"records"`
 
@@ -378,6 +380,8 @@ type AuthorityPresentation struct {
 }
 
 // Payload Rooms Records List — payload
+//
+// Deprecated: superseded by rooms/records/list/0.7
 type Payload struct {
 	// The room's identifier.
 	RoomID string `json:"roomId"`
@@ -422,7 +426,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/records/list/0.7"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/records/list/0.6#response"

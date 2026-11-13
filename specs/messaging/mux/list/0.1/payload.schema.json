@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/mux/list/0.1",
+  "title": "Messaging — Mux List — payload",
+  "description": "List the delegations a requester holds as a principal, or those on a member DID it controls, a page at a time. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "as"
+  ],
+  "properties": {
+    "as": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxRole",
+      "description": "`principal`: the grants delegated to the requester, and the session attaches on this connection. `member`: the grants on a member DID, and its current epoch."
+    },
+    "did": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+      "description": "As `principal`: only grants from this member DID. As `member`: the member DID to list; absent means the requester itself."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the requester and the other request members; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "The most grants to return, at most 500; the responder chooses a default (100) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Mux List — response payload",
+      "description": "The success response to a messaging/mux/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "as",
+        "grants"
+      ],
+      "properties": {
+        "as": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxRole",
+          "description": "The view answered, echoing the request."
+        },
+        "grants": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../../_shared/0.1/mux.schema.json#/$defs/GrantView"
+          },
+          "description": "Grants in every state, ordered by member DID then grant identifier as principal, and by principal DID then grant identifier as member."
+        },
+        "attachments": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "../../_shared/0.1/mux.schema.json#/$defs/AttachView"
+          },
+          "description": "Principal view, first page only: the session attaches on the connection that carried the request. Absent when the request did not arrive on a mux connection."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Member view only: the member DID's current epoch, which a new grant must carry."
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

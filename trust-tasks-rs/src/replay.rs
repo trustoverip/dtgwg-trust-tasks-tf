@@ -131,6 +131,17 @@ pub fn document_digest<P: Serialize>(
     )))
 }
 
+/// [`document_digest`] over a document as it arrived, rather than over a
+/// typed reading of it: members the reading's type does not model, and the
+/// exact spelling of every timestamp, are part of the digest.
+///
+/// For a pipeline that holds the received JSON, as every transport binding
+/// does. The two digests agree whenever the typed reading re-serialises to the
+/// received document.
+pub fn received_document_digest(received: &Value) -> DocumentDigest {
+    DocumentDigest(sha256_hex(canonical_json(received).as_bytes()))
+}
+
 /// What a [`ReplayGuard`] says about a document offered for execution.
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
@@ -220,6 +231,25 @@ pub trait ReplayGuard: Send + Sync {
         now: DateTime<Utc>,
     ) -> Result<ReplayVerdict, ReplayGuardError>;
 
+    /// [`claim`](Self::claim), told which party the document is attributed
+    /// to: the issuer SPEC §4.8.1 resolved for it, `None` when there is none.
+    ///
+    /// The pipeline calls this rather than `claim`, so a guard can share its
+    /// capacity out between parties — [`InMemoryReplayGuard`] does, so that
+    /// one party cannot hold every slot. The default ignores `issuer` and calls
+    /// `claim`, which is what every guard did before this method existed.
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        let _ = issuer;
+        self.claim(id, digest, retain_until, now).await
+    }
+
     /// Attach the response a completed execution produced, so a later
     /// duplicate can be answered with it per SPEC §7.2 (*Disposition of a
     /// duplicate*) rather than merely absorbed in silence.
@@ -249,6 +279,32 @@ pub trait ReplayGuard: Send + Sync {
         let _ = (id, digest);
         Ok(())
     }
+
+    /// Release a claim whose handler never returned — it panicked, or the
+    /// future running [`consume_inbound`](crate::consume_inbound) was dropped
+    /// (a request timeout, a client disconnect) while the handler, or the
+    /// release of a refused document's claim, was awaited.
+    ///
+    /// Nothing says the effect happened, and holding the claim would answer
+    /// every resend with an in-flight duplicate until `retain_until`. This is
+    /// called from a destructor, possibly while a panic unwinds, at most once
+    /// per claim, so it cannot `.await`. It **MUST NOT** block, **MUST NOT**
+    /// require a runtime context (it may run on a thread with no async runtime
+    /// current, or while one shuts down), and **MUST NOT** panic.
+    ///
+    /// The default polls [`release`](Self::release) once with a no-op waker
+    /// and drops it. That completes for a guard whose `release` does not
+    /// suspend ([`InMemoryReplayGuard`] among them). For one whose `release`
+    /// suspends — a network store — the release is abandoned and the record
+    /// stays until `retain_until`: no worse than without this hook, and still
+    /// safe for item 11. Such a guard should override this to hand the release
+    /// to something that outlives the call, such as a channel to a task the
+    /// guard owns, without assuming a runtime is current.
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        let mut release = self.release(id, digest);
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let _ = release.as_mut().poll(&mut cx);
+    }
 }
 
 #[async_trait::async_trait]
@@ -263,6 +319,19 @@ impl<T: ReplayGuard + ?Sized> ReplayGuard for &T {
         (**self).claim(id, digest, retain_until, now).await
     }
 
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        (**self)
+            .claim_for(issuer, id, digest, retain_until, now)
+            .await
+    }
+
     async fn record_response(
         &self,
         id: &str,
@@ -273,6 +342,10 @@ impl<T: ReplayGuard + ?Sized> ReplayGuard for &T {
 
     async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
         (**self).release(id, digest).await
+    }
+
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        (**self).release_abandoned(id, digest)
     }
 }
 
@@ -298,7 +371,7 @@ pub enum ReplayPolicy<'a> {
     NotConsequential,
 }
 
-/// A bounded, in-process [`ReplayGuard`]: an LRU map from `id` to the digest
+/// A bounded, in-process [`ReplayGuard`]: a map from `id` to the digest
 /// accepted under it, its retention deadline, and the response it produced.
 ///
 /// # Suitable when
@@ -317,34 +390,81 @@ pub enum ReplayPolicy<'a> {
 /// [`ReplayGuard`] with a store shared by every replica, which is why the seam
 /// is a trait.
 ///
-/// Eviction is by capacity as well as by `retain_until`: a burst of distinct
-/// documents can push an older record out before its retention deadline, and a
-/// replay arriving after that would be accepted. Size the capacity above the
-/// number of distinct documents the widest acceptance window can hold.
+/// # When it is full
+///
+/// A record is dropped only once its `retain_until` has passed — never to make
+/// room. When a new `id` arrives and every one of the `capacity` slots holds a
+/// record still inside its retention window, the claim fails with a
+/// [`ReplayGuardError`], which the pipeline answers `unavailable` (retryable):
+/// the guard refuses to execute a document it could not then remember, rather
+/// than forgetting one it promised to. Records whose window has closed are
+/// reclaimed first, so the guard is only ever full of live records.
+///
+/// The capacity is therefore a ceiling on distinct documents *per retention
+/// window*, not a cache size. A record lives until the document's `expiresAt`
+/// where it has one (capped by the freshness policy's expiry horizon, 30 days
+/// by default), and until `issuedAt` + the maximum age otherwise. Size it above
+/// the number of distinct documents your consumers will accept inside that
+/// window; [`InMemoryReplayGuard::default`] is sized for a short window, and a
+/// deployment admitting long-lived documents should either raise it, lower
+/// the expiry horizon ([`FreshnessPolicy`]), or back
+/// [`ReplayGuard`] with a store that can hold the window.
+///
+/// A document carrying an `expiresAt` but no `issuedAt` is not bounded by the
+/// horizon (it runs from `issuedAt`): under a policy that does not require
+/// `issuedAt`, its record lives until its `expiresAt`. The consequential
+/// policy requires `issuedAt`.
+///
+/// # One party's share
+///
+/// So that one party cannot fill the guard and hold every slot for the length
+/// of the expiry horizon — refusing every other party in the meantime — no
+/// issuer may hold more than a share of the capacity: a tenth by default
+/// ([`with_per_issuer_limit`](Self::with_per_issuer_limit) changes it). A party
+/// at its share is refused `unavailable` for its *own* new documents; other
+/// parties are unaffected. The issuer is the one the pipeline resolved
+/// (SPEC §4.8.1) and passes to [`claim_for`](ReplayGuard::claim_for); documents
+/// with no resolved issuer share one allowance, and [`claim`](ReplayGuard::claim)
+/// called directly counts against that same allowance. The share is per
+/// *identifier*: on a transport where anyone can mint identifiers, a party
+/// using many of them is limited only by the overall capacity.
+///
+/// # Memory
+///
+/// The guard holds at most `capacity` records, each its `id`, a digest and the
+/// response cached for duplicates, so its worst case is roughly `capacity` ×
+/// (the largest `id` + the largest response) the transport admits.
 pub struct InMemoryReplayGuard {
     capacity: usize,
+    per_issuer: usize,
     inner: Mutex<Inner>,
 }
 
 #[derive(Default)]
 struct Inner {
     entries: HashMap<String, Entry>,
-    /// Recency index: tick → id. Lets eviction find the least-recently-used
-    /// key without scanning, and keeps `InMemoryReplayGuard` dependency-free.
-    recency: BTreeMap<u64, String>,
-    tick: u64,
+    /// Expiry index: (retain_until, sequence) → id, for every record with a
+    /// retention deadline. Lets a full guard reclaim the records whose window
+    /// has closed without scanning, and keeps `InMemoryReplayGuard`
+    /// dependency-free.
+    expiry: BTreeMap<(DateTime<Utc>, u64), String>,
+    /// Live records per issuer (`None`: no resolved issuer).
+    per_issuer: HashMap<Option<String>, usize>,
+    seq: u64,
 }
 
 struct Entry {
+    issuer: Option<String>,
     digest: DocumentDigest,
     retain_until: Option<DateTime<Utc>>,
     response: Option<Value>,
     completed: bool,
-    tick: u64,
+    seq: u64,
 }
 
 impl InMemoryReplayGuard {
-    /// A guard retaining at most `capacity` records.
+    /// A guard retaining at most `capacity` live records; see
+    /// [*When it is full*](InMemoryReplayGuard#when-it-is-full).
     ///
     /// # Panics
     ///
@@ -359,8 +479,18 @@ impl InMemoryReplayGuard {
         );
         Self {
             capacity,
+            per_issuer: capacity.div_ceil(10),
             inner: Mutex::new(Inner::default()),
         }
+    }
+
+    /// Builder: let one issuer hold at most `limit` live records (default: a
+    /// tenth of the capacity, rounded up). Clamped to `1..=capacity`; see
+    /// [*One party's share*](InMemoryReplayGuard#one-partys-share).
+    #[must_use]
+    pub fn with_per_issuer_limit(mut self, limit: usize) -> Self {
+        self.per_issuer = limit.clamp(1, self.capacity);
+        self
     }
 
     /// Number of records currently retained. Exposed for tests and metrics.
@@ -376,29 +506,34 @@ impl InMemoryReplayGuard {
     /// Drop every record whose `retain_until` has passed.
     ///
     /// [`claim`](ReplayGuard::claim) already treats an individual expired
-    /// record as absent, so calling this is an optimisation (it reclaims
-    /// memory) rather than a correctness requirement.
+    /// record as absent, and reclaims expired records itself when the guard is
+    /// full, so calling this is an optimisation (it reclaims memory sooner)
+    /// rather than a correctness requirement.
     pub fn purge_expired(&self, now: DateTime<Utc>) {
-        let mut inner = self.inner.lock().expect("replay guard mutex");
-        let expired: Vec<String> = inner
-            .entries
-            .iter()
-            .filter(|(_, e)| e.is_expired_at(now))
-            .map(|(id, _)| id.clone())
-            .collect();
-        for id in expired {
-            inner.remove(&id);
-        }
+        self.inner
+            .lock()
+            .expect("replay guard mutex")
+            .purge_expired(now);
     }
 }
 
 impl Default for InMemoryReplayGuard {
-    /// 10 000 records — a few megabytes at typical document sizes, and enough
-    /// to cover a five-minute acceptance window at ~33 documents per second.
+    /// [`DEFAULT_REPLAY_CAPACITY`] records.
     fn default() -> Self {
-        Self::new(10_000)
+        Self::new(DEFAULT_REPLAY_CAPACITY)
     }
 }
+
+/// The capacity of [`InMemoryReplayGuard::default`]: 100 000 live records.
+///
+/// Enough for the consequential policy's five-minute acceptance window at
+/// ~330 distinct documents per second. Each record holds the `id`, a digest
+/// and the cached response, so the memory it bounds is roughly 100 000 × the
+/// size of a typical response. Documents carrying an `expiresAt` hold their
+/// record until then (up to the expiry horizon), so a consumer accepting them
+/// should size for that window instead — when the guard is full of live
+/// records it refuses new documents `unavailable` rather than forgetting one.
+pub const DEFAULT_REPLAY_CAPACITY: usize = 100_000;
 
 impl Entry {
     fn is_expired_at(&self, now: DateTime<Utc>) -> bool {
@@ -407,28 +542,54 @@ impl Entry {
 }
 
 impl Inner {
+    /// Drop `id`'s record if it is an unfinished claim made by `digest`. Only
+    /// the claim this digest made: a concurrent arrival that legitimately
+    /// holds the key must not have it taken away by a different document's
+    /// cleanup.
+    fn release(&mut self, id: &str, digest: &DocumentDigest) {
+        if self
+            .entries
+            .get(id)
+            .is_some_and(|entry| &entry.digest == digest && !entry.completed)
+        {
+            self.remove(id);
+        }
+    }
+
     fn remove(&mut self, id: &str) {
         if let Some(entry) = self.entries.remove(id) {
-            self.recency.remove(&entry.tick);
+            if let Some(until) = entry.retain_until {
+                self.expiry.remove(&(until, entry.seq));
+            }
+            self.forget_issuer(&entry.issuer);
         }
     }
 
-    fn touch(&mut self, id: &str) {
-        self.tick += 1;
-        let tick = self.tick;
-        if let Some(entry) = self.entries.get_mut(id) {
-            self.recency.remove(&entry.tick);
-            entry.tick = tick;
-            self.recency.insert(tick, id.to_string());
+    fn forget_issuer(&mut self, issuer: &Option<String>) {
+        if let Some(count) = self.per_issuer.get_mut(issuer) {
+            *count -= 1;
+            if *count == 0 {
+                self.per_issuer.remove(issuer);
+            }
         }
     }
 
-    fn evict_to_capacity(&mut self, capacity: usize) {
-        while self.entries.len() > capacity {
-            let Some((_, victim)) = self.recency.iter().next().map(|(k, v)| (*k, v.clone())) else {
+    fn held_by(&self, issuer: &Option<String>) -> usize {
+        self.per_issuer.get(issuer).copied().unwrap_or(0)
+    }
+
+    /// Drop every record whose retention deadline is at or before `now`.
+    fn purge_expired(&mut self, now: DateTime<Utc>) {
+        while let Some((&(until, _), _)) = self.expiry.first_key_value() {
+            if until > now {
+                break;
+            }
+            let Some((_, id)) = self.expiry.pop_first() else {
                 break;
             };
-            self.remove(&victim);
+            if let Some(entry) = self.entries.remove(&id) {
+                self.forget_issuer(&entry.issuer);
+            }
         }
     }
 }
@@ -442,6 +603,18 @@ impl ReplayGuard for InMemoryReplayGuard {
         retain_until: Option<DateTime<Utc>>,
         now: DateTime<Utc>,
     ) -> Result<ReplayVerdict, ReplayGuardError> {
+        self.claim_for(None, id, digest, retain_until, now).await
+    }
+
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        let issuer = issuer.map(str::to_string);
         let mut inner = self.inner.lock().expect("replay guard mutex");
 
         // An expired record is treated as absent, per the trait contract: the
@@ -465,30 +638,47 @@ impl ReplayGuard for InMemoryReplayGuard {
             } else {
                 ReplayVerdict::Conflict
             };
-            // A conflicting document is not a use of the record, so it does
-            // not refresh the record's recency — otherwise a flood of
-            // conflicts could pin an entry and evict live ones.
-            if matches!(verdict, ReplayVerdict::Duplicate { .. }) {
-                inner.touch(id);
-            }
             return Ok(verdict);
         }
 
-        inner.tick += 1;
-        let tick = inner.tick;
+        // Full: reclaim the records whose window has closed, and if every
+        // slot still holds a live record, refuse rather than drop one. A
+        // record dropped inside its window is a replay accepted later.
+        // Likewise for one issuer's share, so that one party cannot hold
+        // every slot and refuse everyone else.
+        if inner.entries.len() >= self.capacity || inner.held_by(&issuer) >= self.per_issuer {
+            inner.purge_expired(now);
+            if inner.entries.len() >= self.capacity {
+                return Err(ReplayGuardError(format!(
+                    "in-memory replay guard is full: {} records are inside their retention window",
+                    inner.entries.len()
+                )));
+            }
+            if inner.held_by(&issuer) >= self.per_issuer {
+                return Err(ReplayGuardError(format!(
+                    "in-memory replay guard: this issuer holds its share of {} records",
+                    self.per_issuer
+                )));
+            }
+        }
+
+        inner.seq += 1;
+        let seq = inner.seq;
         inner.entries.insert(
             id.to_string(),
             Entry {
+                issuer: issuer.clone(),
                 digest: digest.clone(),
                 retain_until,
                 response: None,
                 completed: false,
-                tick,
+                seq,
             },
         );
-        inner.recency.insert(tick, id.to_string());
-        let capacity = self.capacity;
-        inner.evict_to_capacity(capacity);
+        if let Some(until) = retain_until {
+            inner.expiry.insert((until, seq), id.to_string());
+        }
+        *inner.per_issuer.entry(issuer).or_insert(0) += 1;
         Ok(ReplayVerdict::Fresh)
     }
 
@@ -507,17 +697,19 @@ impl ReplayGuard for InMemoryReplayGuard {
 
     async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
         let mut inner = self.inner.lock().expect("replay guard mutex");
-        // Only release the claim this digest made. A concurrent arrival that
-        // legitimately holds the key must not have it taken away by a
-        // different document's cleanup.
-        if inner
-            .entries
-            .get(id)
-            .is_some_and(|entry| &entry.digest == digest && !entry.completed)
-        {
-            inner.remove(id);
-        }
+        inner.release(id, digest);
         Ok(())
+    }
+
+    /// Synchronous already, so it releases directly. Called from a destructor,
+    /// possibly while a handler's panic unwinds, so a poisoned lock is
+    /// recovered rather than turned into a second panic.
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        let mut inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        inner.release(id, digest);
     }
 }
 
@@ -704,27 +896,128 @@ mod tests {
         assert_eq!(guard.len(), 0);
     }
 
+    /// A full guard never drops a record inside its retention window to make
+    /// room: it refuses the new document instead, which the pipeline answers
+    /// `unavailable`. Dropping one would let that document execute again.
     #[tokio::test]
-    async fn capacity_evicts_the_least_recently_used_record() {
-        let guard = InMemoryReplayGuard::new(2);
+    async fn a_full_guard_refuses_rather_than_dropping_a_live_record() {
+        let guard = InMemoryReplayGuard::new(2).with_per_issuer_limit(2);
         let now = t("2026-08-26T12:00:00Z");
+        let later = t("2026-09-20T12:00:00Z");
         let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
 
-        guard.claim("a", &d("a"), None, now).await.unwrap();
+        guard.claim("a", &d("a"), Some(later), now).await.unwrap();
         guard.claim("b", &d("b"), None, now).await.unwrap();
-        // Touch `a` so `b` becomes the least recently used.
-        guard.claim("a", &d("a"), None, now).await.unwrap();
-        guard.claim("c", &d("c"), None, now).await.unwrap();
-
-        assert_eq!(guard.len(), 2);
-        assert!(matches!(
-            guard.claim("a", &d("a"), None, now).await.unwrap(),
-            ReplayVerdict::Duplicate { .. }
-        ));
+        let refused = guard.claim("c", &d("c"), Some(later), now).await;
+        assert!(refused.is_err(), "expected a refusal, got {refused:?}");
         assert_eq!(
-            guard.claim("b", &d("b"), None, now).await.unwrap(),
+            RejectReason::from(refused.unwrap_err()).code(),
+            crate::StandardCode::Unavailable
+        );
+
+        // Both records survive, and duplicates are still recognised while full.
+        assert_eq!(guard.len(), 2);
+        for id in ["a", "b"] {
+            assert!(matches!(
+                guard.claim(id, &d(id), Some(later), now).await.unwrap(),
+                ReplayVerdict::Duplicate { .. }
+            ));
+        }
+    }
+
+    /// Records whose window has closed are reclaimed when the guard is full,
+    /// so a full guard holds only live records.
+    #[tokio::test]
+    async fn a_full_guard_reclaims_expired_records_first() {
+        let guard = InMemoryReplayGuard::new(2).with_per_issuer_limit(2);
+        let now = t("2026-08-26T12:00:00Z");
+        let soon = t("2026-08-26T12:05:00Z");
+        let later = t("2026-08-26T13:00:00Z");
+        let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
+
+        guard.claim("a", &d("a"), Some(soon), now).await.unwrap();
+        guard.claim("b", &d("b"), Some(later), now).await.unwrap();
+        let after_a = t("2026-08-26T12:10:00Z");
+        assert_eq!(
+            guard
+                .claim("c", &d("c"), Some(later), after_a)
+                .await
+                .unwrap(),
             ReplayVerdict::Fresh
         );
+        assert_eq!(guard.len(), 2);
+        assert!(matches!(
+            guard
+                .claim("b", &d("b"), Some(later), after_a)
+                .await
+                .unwrap(),
+            ReplayVerdict::Duplicate { .. }
+        ));
+    }
+
+    /// One issuer at its share is refused for its own new documents only;
+    /// every other party keeps its access, and the share frees as records
+    /// expire.
+    #[tokio::test]
+    async fn one_issuer_cannot_hold_every_slot() {
+        let guard = InMemoryReplayGuard::new(10);
+        let now = t("2026-08-26T12:00:00Z");
+        let month = t("2026-09-25T12:00:00Z");
+        let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
+
+        // A tenth of 10 is 1.
+        assert_eq!(
+            guard
+                .claim_for(Some("did:example:a"), "a1", &d("a1"), Some(month), now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Fresh
+        );
+        let refused = guard
+            .claim_for(Some("did:example:a"), "a2", &d("a2"), Some(month), now)
+            .await;
+        assert_eq!(
+            RejectReason::from(refused.unwrap_err()).code(),
+            crate::StandardCode::Unavailable
+        );
+        // Its own record is still recognised.
+        assert!(matches!(
+            guard
+                .claim_for(Some("did:example:a"), "a1", &d("a1"), Some(month), now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Duplicate { .. }
+        ));
+        // Another party, and the no-issuer allowance, are unaffected.
+        for (issuer, id) in [(Some("did:example:b"), "b1"), (None, "n1")] {
+            assert_eq!(
+                guard
+                    .claim_for(issuer, id, &d(id), Some(month), now)
+                    .await
+                    .unwrap(),
+                ReplayVerdict::Fresh
+            );
+        }
+        // Once its record expires the share frees.
+        let later = t("2026-09-26T12:00:00Z");
+        assert_eq!(
+            guard
+                .claim_for(Some("did:example:a"), "a2", &d("a2"), None, later)
+                .await
+                .unwrap(),
+            ReplayVerdict::Fresh
+        );
+        // And the limit is configurable.
+        let wide = InMemoryReplayGuard::new(10).with_per_issuer_limit(3);
+        for id in ["x1", "x2", "x3"] {
+            wide.claim_for(Some("did:example:a"), id, &d(id), None, now)
+                .await
+                .unwrap();
+        }
+        assert!(wide
+            .claim_for(Some("did:example:a"), "x4", &d("x4"), None, now)
+            .await
+            .is_err());
     }
 
     #[tokio::test]
@@ -749,6 +1042,120 @@ mod tests {
             ),
             "a completed execution's record must survive a stray release"
         );
+    }
+
+    /// `release_abandoned` releases synchronously — directly for the in-memory
+    /// guard, and through the default for a guard that only implements the
+    /// async `release` — and, like `release`, never frees a completed record.
+    #[tokio::test]
+    async fn release_abandoned_frees_an_unfinished_claim_without_awaiting() {
+        /// Implements only the async methods, so it takes the default.
+        struct Delegating(InMemoryReplayGuard);
+
+        #[async_trait::async_trait]
+        impl ReplayGuard for Delegating {
+            async fn claim(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+                retain_until: Option<DateTime<Utc>>,
+                now: DateTime<Utc>,
+            ) -> Result<ReplayVerdict, ReplayGuardError> {
+                self.0.claim(id, digest, retain_until, now).await
+            }
+            async fn record_response(
+                &self,
+                id: &str,
+                response: Option<&Value>,
+            ) -> Result<(), ReplayGuardError> {
+                self.0.record_response(id, response).await
+            }
+            async fn release(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+            ) -> Result<(), ReplayGuardError> {
+                self.0.release(id, digest).await
+            }
+        }
+
+        let now = t("2026-08-26T12:00:00Z");
+        let digest = document_digest(&doc("req-1", json!({}))).unwrap();
+        let guards: [&dyn ReplayGuard; 2] = [
+            &InMemoryReplayGuard::new(8),
+            &Delegating(InMemoryReplayGuard::new(8)),
+        ];
+        for guard in guards {
+            guard.claim("req-1", &digest, None, now).await.unwrap();
+            guard.release_abandoned("req-1", &digest);
+            assert_eq!(
+                guard.claim("req-1", &digest, None, now).await.unwrap(),
+                ReplayVerdict::Fresh
+            );
+
+            guard.record_response("req-1", None).await.unwrap();
+            guard.release_abandoned("req-1", &digest);
+            assert!(matches!(
+                guard.claim("req-1", &digest, None, now).await.unwrap(),
+                ReplayVerdict::Duplicate { .. }
+            ));
+        }
+    }
+
+    /// The documented degradation of the default `release_abandoned`: a guard
+    /// whose `release` suspends (as a network round trip does) is polled once,
+    /// returns `Pending`, and is dropped. The call returns without blocking and
+    /// without a runtime, and the claim stays until its retention deadline.
+    #[test]
+    fn the_default_release_abandoned_gives_up_on_a_release_that_suspends() {
+        use std::future::Future;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        struct SuspendingGuard {
+            inner: InMemoryReplayGuard,
+            polls: AtomicUsize,
+        }
+
+        #[async_trait::async_trait]
+        impl ReplayGuard for SuspendingGuard {
+            async fn claim(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+                retain_until: Option<DateTime<Utc>>,
+                now: DateTime<Utc>,
+            ) -> Result<ReplayVerdict, ReplayGuardError> {
+                self.inner.claim(id, digest, retain_until, now).await
+            }
+            async fn release(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+            ) -> Result<(), ReplayGuardError> {
+                self.polls.fetch_add(1, Ordering::SeqCst);
+                // A store round trip that never completes within one poll.
+                std::future::pending::<()>().await;
+                self.inner.release(id, digest).await
+            }
+        }
+
+        let guard = SuspendingGuard {
+            inner: InMemoryReplayGuard::new(8),
+            polls: AtomicUsize::new(0),
+        };
+        let now = t("2026-08-26T12:00:00Z");
+        let digest = document_digest(&doc("req-1", json!({}))).unwrap();
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let claimed = std::pin::pin!(guard.claim("req-1", &digest, None, now)).poll(&mut cx);
+        assert!(matches!(
+            claimed,
+            std::task::Poll::Ready(Ok(ReplayVerdict::Fresh))
+        ));
+
+        // No runtime is current here; the call must still return at once.
+        guard.release_abandoned("req-1", &digest);
+        assert_eq!(guard.polls.load(Ordering::SeqCst), 1, "polled exactly once");
+        assert_eq!(guard.inner.len(), 1, "the record stays until retain_until");
     }
 
     /// The seam has to be usable as a trait object, or a deployment cannot

@@ -9,7 +9,7 @@ import type { Ext } from "../../../../_shared/components.js";
 /**
  * A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by rooms/keys/act/0.11
+ * @deprecated superseded by rooms/keys/act/0.12
  */
 export interface RoomsKeysActPayload {
   document: UnsignedRoomRequest;
@@ -50,7 +50,7 @@ export interface UnsignedRoomRequest {
 /**
  * Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.10#response. The request, completed as the member, for the caller to send to its recipient unaltered.
  *
- * @deprecated superseded by rooms/keys/act/0.11
+ * @deprecated superseded by rooms/keys/act/0.12
  */
 export interface RoomsKeysActResponsePayload {
   /**
@@ -88,12 +88,12 @@ export const EXTENDS: string | null = "0.9";
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/act/0.11";
+export const DEPRECATION: string | null = "superseded by rooms/keys/act/0.12";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/act/0.11
+ * @deprecated superseded by rooms/keys/act/0.12
  */
 export type Payload = RoomsKeysActPayload;
 
@@ -103,7 +103,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/act/0.1
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/act/0.11
+ * @deprecated superseded by rooms/keys/act/0.12
  */
 export type Response = RoomsKeysActResponsePayload;
 
@@ -115,8 +115,13 @@ export type Response = RoomsKeysActResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/act/0.10",
   "title": "Rooms Keys Act — payload",
@@ -253,10 +258,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -376,7 +381,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

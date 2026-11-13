@@ -292,8 +292,25 @@ function readSpecPolicy(schemaPath) {
           response: (ir.response ?? ir.request) === "REQUIRED",
         };
 
+  // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit appropriate
+  // to the Trust Task specification's payload"), per variant. An absent
+  // variant declares no bound — it does NOT inherit the other's, unlike the
+  // proof and issuedAt requirements above. Re-derived here rather than shared
+  // with the Rust generator, for the reason the rest of this function is.
+  const size = meta.maxDocumentBytes || {};
+  const bound = (variant) => {
+    const n = size[variant];
+    if (n === undefined || n === null) return null;
+    if (!Number.isSafeInteger(n) || n < 0) {
+      throw new Error(`front matter maxDocumentBytes.${variant} must be a non-negative integer, got ${JSON.stringify(n)}`);
+    }
+    return n;
+  };
+
   return {
     isBearer: meta.bearer === true,
+    maxDocumentBytes: bound("request"),
+    responseMaxDocumentBytes: bound("response"),
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
     isIssuedAtRequired: issuedAtRequired.request,
@@ -447,15 +464,20 @@ function dartClassName(name) {
   return /^[0-9]/.test(ident) ? `N${ident}` : ident;
 }
 
-/** `lowerCamelCase`, for a field, parameter or top-level constant. */
-function dartFieldName(name) {
+/**
+ * `lowerCamelCase`, for a field, parameter or top-level constant.
+ *
+ * `taken` names the identifiers the enclosing declaration already gives a
+ * meaning to — see [CLASS_MEMBER_TAKEN] and [EXTENSION_MEMBER_TAKEN].
+ */
+function dartFieldName(name, taken = new Set()) {
   const parts = segments(name);
   if (parts.length === 0) return "value";
   let ident = parts[0] + parts.slice(1).map((s) => s[0].toUpperCase() + s.slice(1)).join("");
   if (/^[0-9]/.test(ident)) ident = `n${ident}`;
   // A reserved word cannot be an identifier. Suffixing keeps the derivation
   // obvious and the wire name is carried separately anyway.
-  return DART_RESERVED.has(ident) ? `${ident}Value` : ident;
+  return DART_RESERVED.has(ident) || taken.has(ident) ? `${ident}Value` : ident;
 }
 
 /** `lower_snake_case`, for a file or directory name (Dart's `file_names` lint). */
@@ -474,6 +496,42 @@ const DART_RESERVED = new Set([
   "in", "is", "new", "null", "rethrow", "return", "super", "switch", "this",
   "throw", "true", "try", "var", "void", "while", "with",
 ]);
+
+/**
+ * Field names a generated class cannot use although Dart reserves none of them.
+ *
+ * The lowercase core types are legal identifiers, but a field shadows the type
+ * through the whole class body, so `final String? dynamic;` breaks the
+ * `Map<String, dynamic>` its own `fromJson` and `toJson` are written in (and
+ * `int`, `double`, `num`, `bool` the members of those types). `toJson` is the
+ * class's own method; the four `Object` members cannot be overridden by a
+ * field of another type.
+ */
+const CLASS_MEMBER_TAKEN = new Set([
+  "dynamic", "int", "double", "num", "bool",
+  "toJson", "hashCode", "runtimeType", "toString", "noSuchMethod",
+]);
+
+/**
+ * Constant names a generated extension type cannot use: its representation
+ * field is `value` and it declares `values`. Nothing else — `GroupKind.dynamic`
+ * is a legal, published constant, so this set is deliberately narrower than
+ * [CLASS_MEMBER_TAKEN].
+ */
+const EXTENSION_MEMBER_TAKEN = new Set(["value", "values"]);
+
+/**
+ * Type names a generated library cannot declare. `Function` is a built-in
+ * identifier, refused as a type name. The rest are names the generated code
+ * itself refers to — the `dart:core` types its fields and conversions are
+ * written in, and `SpecPolicy` (from the unprefixed runtime import) and
+ * `Deprecated` in the tail — which a declaration of the same name would
+ * shadow. Seeded into every emitter, so [reserve] suffixes such a name the way
+ * it suffixes any other collision (`$defs.String` becomes `String2`).
+ */
+const DART_TAKEN_TYPE_NAMES = [
+  "Function", "Object", "String", "List", "Map", "MapEntry", "SpecPolicy", "Deprecated",
+];
 
 /**
  * Quote `s` as a Dart single-quoted string literal.
@@ -559,7 +617,12 @@ function typeOf(node) {
 }
 
 function newEmitter(sourceRel) {
-  return { sourceRel, decls: [], names: new Map(), needsRuntime: false };
+  return {
+    sourceRel,
+    decls: [],
+    names: new Map(DART_TAKEN_TYPE_NAMES.map((n) => [n, true])),
+    needsRuntime: false,
+  };
 }
 
 /** Reserve `preferred` as a type name, returning the name actually taken. */
@@ -711,7 +774,7 @@ function declareExtensionType(em, node, hint) {
   const seen = new Set();
   const constNames = [];
   for (const value of node.enum) {
-    let constName = dartFieldName(value);
+    let constName = dartFieldName(value, EXTENSION_MEMBER_TAKEN);
     while (seen.has(constName)) constName += "_";
     seen.add(constName);
     constNames.push(constName);
@@ -746,7 +809,7 @@ function declareClass(em, node, hint, defNames) {
   const fieldNames = new Set();
 
   for (const [wireName, member] of Object.entries(node.properties)) {
-    let fieldName = dartFieldName(wireName);
+    let fieldName = dartFieldName(wireName, CLASS_MEMBER_TAKEN);
     while (fieldNames.has(fieldName)) fieldName += "_";
     fieldNames.add(fieldName);
 
@@ -1074,7 +1137,9 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVe
   }
 
   if (policy) {
-    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst) =>
+    // `maxDocumentBytes` only where the variant declares one, as Rust emits
+    // MAX_DOCUMENT_BYTES only then: the constructor's default is null.
+    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst, maxBytes) =>
       [
         `  typeUri: ${uriConst},`,
         `  isBearer: ${policy.isBearer},`,
@@ -1082,6 +1147,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVe
         `  isRecipientRequired: ${recipientRequired},`,
         `  isIssuedAtRequired: ${issuedAtRequired},`,
         `  payloadSchema: ${schemaConst},`,
+        ...(maxBytes === null ? [] : [`  maxDocumentBytes: ${maxBytes},`]),
       ].join("\n");
 
     out.push(
@@ -1099,6 +1165,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVe
           policy.isRecipientRequired,
           policy.isIssuedAtRequired,
           schemas.request ? "payloadSchemaJson" : "null",
+          policy.maxDocumentBytes,
         ),
         ");",
       ].join("\n"),
@@ -1118,6 +1185,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVe
             policy.responseIsRecipientRequired,
             policy.responseIsIssuedAtRequired,
             schemas.response ? "responsePayloadSchemaJson" : "null",
+            policy.responseMaxDocumentBytes,
           ),
           ");",
         ].join("\n"),

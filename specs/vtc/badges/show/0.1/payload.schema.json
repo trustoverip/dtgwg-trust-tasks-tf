@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/show/0.1",
+  "title": "VTC Badges — Show — payload",
+  "description": "Read one badge the caller may see: the badge, how many of it the caller holds and where they stand with it, its owners or its maker, and the credential regime it carries. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "MyState": {
+      "title": "MyState",
+      "description": "Where the caller stands with the badge, as vtc/badges/list states it. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.",
+      "type": "string",
+      "enum": [
+        "holder",
+        "offered",
+        "requested",
+        "none"
+      ]
+    },
+    "CredentialRegime": {
+      "title": "CredentialRegime",
+      "description": "What a holder of the badge is issued, derived from its kind and `shareableOutside`. `none`: a kudos badge, no credential (VTI-BDG-041). `inside`: a community badge shown only within the community — short-lived, renewed, no status (VTI-BDG-061). `outside`: a community badge its holders may show outside — long-lived, with a status in the community's own status set (VTI-BDG-062).",
+      "type": "string",
+      "enum": [
+        "none",
+        "inside",
+        "outside"
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Show — response payload",
+      "description": "The success response to a vtc/badges/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge",
+        "myCount",
+        "myState",
+        "credentialRegime"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Badge",
+          "description": "The badge as the caller sees it; `holderCount` only where the caller may see the holders."
+        },
+        "myCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Accepted awards of this badge the caller holds; 0 where none."
+        },
+        "myState": {
+          "$ref": "#/$defs/MyState"
+        },
+        "myAwards": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Award"
+          },
+          "description": "The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award."
+        },
+        "owners": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+          },
+          "description": "Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge."
+        },
+        "maker": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "Kudos badges only: the member who made it."
+        },
+        "credentialRegime": {
+          "$ref": "#/$defs/CredentialRegime"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

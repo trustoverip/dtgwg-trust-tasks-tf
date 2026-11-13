@@ -1,11 +1,12 @@
 [package]
 name = "trust-tasks-didcomm-v1"
-version = "0.37.2"
+version = "0.38.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "DIDComm v1 transport binding for the Trust Tasks framework, built on affinidi-messaging-didcomm-v1. Carries Trust Task documents to Aries-lineage agents, which speak v1 only, and maps the connection's theirDid into the framework's §4.8.1 precedence."
+readme = "README.md"
 keywords = ["trust-tasks", "didcomm", "aries", "did", "transport"]
 categories = ["network-programming", "cryptography"]
 publish = true
@@ -30,7 +31,7 @@ legacy-basic-message = []
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.38", default-features = false }
 affinidi-messaging-didcomm-v1 = "0.2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 log = "0.4"

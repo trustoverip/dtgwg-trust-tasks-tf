@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/collection/_shared/0.1/collection",
   "title": "VTA Collection — shared definitions",
-  "description": "Shared shapes for the collection of messages for a principal's identifiers. A VTA collects, from the mediator each identifier's DID document advertises, the messages queued for every identifier whose messaging keys it holds in one of the principal's trust contexts — its personas — unless a client of the principal holds a collection claim for it: a lease, granted by vta/collection/claim and ended by vta/collection/release or at its end, under which that client is the identifier's one collector. The mediator permits one connection per identifier, so at most one party collects for an identifier at a time (VTI-NTF-080 – VTI-NTF-092).",
+  "description": "Shared shapes for the collection of messages for a principal's identifiers. A VTA collects, from the mediator each identifier's DID document advertises, the messages queued for every identifier whose messaging keys it holds in one of the principal's trust contexts — its personas — unless a client of the principal holds a collection claim for it: a lease, granted by vta/collection/claim and ended by vta/collection/release or at its end, under which that client is the identifier's one collector. The mediator permits one connection per identifier, so at most one party collects for an identifier at a time (VTI-NTF-080 – VTI-NTF-092). Whether the VTA collects by default for the unclaimed identifiers of a trust context is that context's own setting, enabled unless a context administrator disables it with vta/collection/settings/set (VTI-NTF-094 – VTI-NTF-098).",
   "$defs": {
     "ContextId": {
       "title": "ContextId",
@@ -57,7 +57,7 @@
     },
     "NotCollectedReason": {
       "title": "NotCollectedReason",
-      "description": "Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.",
+      "description": "Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, collection by default is disabled for the identifier's trust context — by the context's own setting, or because the VTA's operator has suspended it for every context — so the VTA collects for no identifier there that a client has not claimed (VTI-NTF-097, VTI-NTF-098); vta/collection/settings/show says which.",
       "type": "string",
       "enum": [
         "limit",
@@ -136,6 +136,52 @@
                 "notCollectedReason"
               ]
             }
+          ]
+        }
+      }
+    },
+    "CollectionSetting": {
+      "title": "CollectionSetting",
+      "description": "Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "collectByDefault",
+        "suspendedByOperator"
+      ],
+      "properties": {
+        "contextId": {
+          "$ref": "#/$defs/ContextId",
+          "description": "The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094)."
+        },
+        "collectByDefault": {
+          "type": "boolean",
+          "description": "The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts."
+        },
+        "suspendedByOperator": {
+          "type": "boolean",
+          "description": "Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension."
+        },
+        "changedBy": {
+          "$ref": "#/$defs/Did",
+          "description": "The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096)."
+        },
+        "changedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When `collectByDefault` was last changed."
+        }
+      },
+      "dependentSchemas": {
+        "changedBy": {
+          "required": [
+            "changedAt"
+          ]
+        },
+        "changedAt": {
+          "required": [
+            "changedBy"
           ]
         }
       }

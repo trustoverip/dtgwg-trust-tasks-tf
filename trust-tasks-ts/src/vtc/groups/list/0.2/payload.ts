@@ -3,7 +3,7 @@
  * Source: specs/vtc/groups/list/0.2/payload.schema.json
  */
 
-import type { DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition } from "../../../../_shared/components.js";
+import type { BadgeId, DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition } from "../../../../_shared/components.js";
 
 
 /**
@@ -50,7 +50,7 @@ export interface VTCGroupsListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition };
+export type { BadgeId, DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/groups/list/0.2" as const;
@@ -88,8 +88,13 @@ export type Response = VTCGroupsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/groups/list/0.2",
   "title": "VTC Groups — List — payload",
@@ -239,6 +244,10 @@ export const PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
         },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId",
+          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
+        },
         "memberCount": {
           "type": "integer",
           "minimum": 0,
@@ -317,7 +326,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "RuleCondition": {
       "title": "RuleCondition",
-      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -331,7 +340,10 @@ export const PAYLOAD_SCHEMA = {
             "role",
             "field",
             "personhood",
-            "joinedAt"
+            "joinedAt",
+            "kudosReceived",
+            "ideasSelected",
+            "electionTickets"
           ]
         },
         "field": {
@@ -345,9 +357,10 @@ export const PAYLOAD_SCHEMA = {
             "oneOf",
             "exists",
             "before",
-            "after"
+            "after",
+            "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`."
         },
         "value": {
           "anyOf": [
@@ -368,6 +381,12 @@ export const PAYLOAD_SCHEMA = {
             "type": "string",
             "maxLength": 256
           }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`."
         }
       }
     },
@@ -413,12 +432,18 @@ export const PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -539,6 +564,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
         },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId",
+          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
+        },
         "memberCount": {
           "type": "integer",
           "minimum": 0,
@@ -617,7 +646,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "RuleCondition": {
       "title": "RuleCondition",
-      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -631,7 +660,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "role",
             "field",
             "personhood",
-            "joinedAt"
+            "joinedAt",
+            "kudosReceived",
+            "ideasSelected",
+            "electionTickets"
           ]
         },
         "field": {
@@ -645,9 +677,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "oneOf",
             "exists",
             "before",
-            "after"
+            "after",
+            "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`."
         },
         "value": {
           "anyOf": [
@@ -668,6 +701,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "type": "string",
             "maxLength": 256
           }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`."
         }
       }
     },
@@ -713,9 +752,15 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

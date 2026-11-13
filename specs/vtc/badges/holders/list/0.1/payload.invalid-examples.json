@@ -1,0 +1,58 @@
+[
+  {
+    "note": "No badge: holders are listed behind one badge, never across the community.",
+    "payload": {
+      "limit": 50
+    }
+  },
+  {
+    "note": "A badge identifier that is not one: the badge group's identifier does not name the badge; a community badge's holders are listed by its badgeId.",
+    "payload": {
+      "badgeId": "grp_Hs7Qm2Lk9Tn4Bv1X"
+    }
+  },
+  {
+    "note": "There is no `includeHidden`: a hidden holder is left out for every member, and owners see them through vtc/badges/awards/list.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "includeHidden": true
+    }
+  },
+  {
+    "note": "A limit of zero.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "limit": 0
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A holder named by DID: members are projected by entry and fields, never by identifier (VTI-BDG-033).",
+    "payload": {
+      "total": 1,
+      "items": [
+        {
+          "entryId": "dir_BenOkafor0000000",
+          "did": "did:example:ben",
+          "count": 1,
+          "since": "2026-03-14T19:30:00Z",
+          "latestAt": "2026-03-14T19:30:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `total`: the count over the holders shown is what a badge's count is, and a page without it leaves a reader to count pages.",
+    "payload": {
+      "items": []
+    }
+  }
+]

@@ -350,6 +350,19 @@ function rustMaxDocumentBytes(src, ident) {
   return m ? Number(m[1].replace(/_/g, "")) : null;
 }
 
+/**
+ * The `maxDocumentBytes` argument of a generated Dart
+ * `const SpecPolicy <name> = SpecPolicy( … );`: a number, `null` when the
+ * policy omits it (the constructor's default), or `undefined` when there is
+ * no such policy.
+ */
+function dartMaxDocumentBytes(src, name) {
+  const block = new RegExp(`const SpecPolicy ${name} = SpecPolicy\\(([\\s\\S]*?)\\n\\);`, "m").exec(src);
+  if (!block) return undefined;
+  const m = /maxDocumentBytes:\s*([0-9_]+),/.exec(block[1]);
+  return m ? Number(m[1].replace(/_/g, "")) : null;
+}
+
 /** The fields inside `var <name> = trusttasks.SpecPolicy{ … }`. */
 function goPolicy(src, name) {
   const block = new RegExp(`var ${name} = trusttasks\\.SpecPolicy\\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
@@ -510,16 +523,18 @@ function collectExternalRefs(node, out = []) {
 }
 
 /**
- * Parse `export const <name> = { … } as const;` out of a generated TS module.
+ * Parse `export const <name>: <type> = { … };` (or the older
+ * `export const <name> = { … } as const;`) out of a generated TS module.
  *
  * Brace-counting rather than a regex: the schema is a large nested literal and
  * a lazy match stops at the first `}`. String literals are skipped so a brace
  * inside a `pattern` or a description does not throw the count off.
  */
 function tsSchemaConst(src, name) {
-  const start = src.indexOf(`export const ${name} = {`);
+  const m = new RegExp(`^export const ${name}(?::[^=\\n]+)? = \\{`, "m").exec(src);
+  const start = m ? m.index : -1;
   if (start < 0) return null;
-  const open = src.indexOf("{", start);
+  const open = start + m[0].length - 1;
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -586,6 +601,7 @@ const seenDart = new Set();
 let rustErrorCodesChecked = 0;
 let rustDetailsSchemasChecked = 0;
 let rustSizeBoundsChecked = 0;
+let dartSizeBoundsChecked = 0;
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -775,6 +791,30 @@ for (const spec of specs) {
       }
       comparePolicy(where, "response", expected.response, dartResp, "Dart");
     }
+
+    // Front matter `maxDocumentBytes`, as for Rust below and re-derived the
+    // same way: an absent `response` bound is absent, never the request's.
+    // The Dart HTTPS server enforces this per type, so a wrong value is a
+    // document wrongly refused (or wrongly admitted) for its size.
+    const declaredDartSize = meta.maxDocumentBytes || {};
+    for (const [variant, name, want] of [
+      ["request", "spec", declaredDartSize.request ?? null],
+      ["response", "responseSpec", declaredDartSize.response ?? null],
+    ]) {
+      if (variant === "response" && !hasResponse) continue;
+      const got = dartMaxDocumentBytes(dart.src, name);
+      if (got === undefined) continue; // a missing policy is reported above
+      if (got !== want) {
+        fail(
+          where,
+          `Dart ${name}.maxDocumentBytes is ${got === null ? "absent" : got}, but the front matter ` +
+            `declares ${want === null ? "no bound" : want} for the ${variant} (maxDocumentBytes). ` +
+            `The Dart HTTPS server enforcing the bound per type would enforce the wrong one.`,
+        );
+      } else if (want !== null) {
+        dartSizeBoundsChecked += 1;
+      }
+    }
   }
 
   /* — Rust — */
@@ -881,7 +921,7 @@ for (const spec of specs) {
     }
 
     // Front matter `maxDocumentBytes`: the per-type document size bound a
-    // dispatcher enforces. Rust-only so far, like ERROR_CODES above, and
+    // dispatcher enforces. Rust and Dart (checked above) so far, and
     // re-derived here rather than imported from the generator. An absent
     // `response` bound is absent — it does not inherit the request's.
     const declaredSize = meta.maxDocumentBytes || {};
@@ -1218,6 +1258,126 @@ for (const [uri, mod] of dartByUri) {
   }
 }
 
+/* ── Runtime default constants (#1130) ──────────────────────────────────── */
+
+// The four runtimes each export the same acceptance-window and replay-guard
+// defaults — clock skew, the consequential maximum age over `issuedAt`, the
+// expiry horizon up to which a stated `expiresAt` is honoured, and the
+// in-memory replay guard's capacity. Nothing ties them together, so one moving
+// alone would make two conforming libraries accept different documents with
+// nobody noticing. Each value is read from the source and evaluated here, in a
+// small per-language reader, rather than taken from any generator or shared
+// helper — the same independence the policy comparison above keeps.
+//
+// Only defaults that already agree are compared. The differences
+// docs/runtime-parity.md records as "todo: needs decision" (prune depth,
+// `extends` chain bound, capacity-0 behaviour) are deliberately not here.
+{
+  const RT = {
+    rs: { name: "trust-tasks-rs", files: ["trust-tasks-rs/src/freshness.rs", "trust-tasks-rs/src/replay.rs"] },
+    ts: { name: "@openvtc/trust-tasks", files: ["trust-tasks-ts/src/_runtime/freshness.ts", "trust-tasks-ts/src/_runtime/replay.ts"] },
+    go: { name: "trust-tasks-go", files: ["trust-tasks-go/trusttasks/freshness.go", "trust-tasks-go/trusttasks/replay.go"] },
+    dart: { name: "trust_tasks", files: ["trust-tasks-dart/lib/src/runtime/freshness.dart", "trust-tasks-dart/lib/src/runtime/replay.dart"] },
+  };
+  for (const rt of Object.values(RT)) {
+    rt.src = rt.files.map((f) => fs.readFileSync(path.join(ROOT, f), "utf8")).join("\n");
+  }
+  const int = (lit) => Number(lit.replace(/_/g, ""));
+  // A product of integer literals and unit names, e.g. `30 * 24 * time.Hour`.
+  const product = (expr, units) => {
+    let value = 1;
+    for (const factor of expr.split("*").map((f) => f.trim())) {
+      if (/^\d[\d_]*$/.test(factor)) value *= int(factor);
+      else if (factor in units) value *= units[factor];
+      else return null;
+    }
+    return value;
+  };
+  const SECONDS = { seconds: 1, minutes: 60, hours: 3600, days: 86400 };
+  const readers = {
+    // `pub const DEFAULT_SKEW: TimeDelta = TimeDelta::seconds(60);`
+    rs: (src, name, kind) => {
+      if (kind === "count") {
+        const m = new RegExp(`pub const ${name}: usize = ([\\d_]+);`).exec(src);
+        return m ? int(m[1]) : null;
+      }
+      const m = new RegExp(`pub const ${name}: TimeDelta = TimeDelta::(seconds|minutes|hours|days)\\(([\\d_]+)\\);`).exec(src);
+      return m ? SECONDS[m[1]] * int(m[2]) : null;
+    },
+    // `export const DEFAULT_SKEW_MS = 60_000;` — milliseconds.
+    ts: (src, name, kind) => {
+      const m = new RegExp(`export const ${name} = ([^;]+);`).exec(src);
+      if (!m) return null;
+      const v = product(m[1], {});
+      return v === null ? null : kind === "count" ? v : v / 1000;
+    },
+    // `const DefaultSkew = 60 * time.Second`
+    go: (src, name, kind) => {
+      const m = new RegExp(`^const ${name} = (.+)$`, "m").exec(src);
+      if (!m) return null;
+      const units = { "time.Second": 1, "time.Minute": 60, "time.Hour": 3600 };
+      const v = product(m[1].trim(), kind === "count" ? {} : units);
+      return v;
+    },
+    // `const Duration defaultSkew = Duration(seconds: 60);`
+    dart: (src, name, kind) => {
+      if (kind === "count") {
+        const m = new RegExp(`const int ${name} = ([\\d_]+);`).exec(src);
+        return m ? int(m[1]) : null;
+      }
+      const m = new RegExp(`const Duration ${name} = Duration\\((seconds|minutes|hours|days): ([\\d_]+)\\);`).exec(src);
+      return m ? SECONDS[m[1]] * int(m[2]) : null;
+    },
+  };
+  const DEFAULTS = [
+    { what: "clock skew (seconds)", kind: "duration", rs: "DEFAULT_SKEW", ts: "DEFAULT_SKEW_MS", go: "DefaultSkew", dart: "defaultSkew" },
+    { what: "consequential max age (seconds)", kind: "duration", rs: "DEFAULT_MAX_AGE", ts: "DEFAULT_MAX_AGE_MS", go: "DefaultMaxAge", dart: "defaultMaxAge" },
+    {
+      what: "expiry horizon (seconds)",
+      kind: "duration",
+      rs: "DEFAULT_EXPIRY_HORIZON",
+      ts: "DEFAULT_EXPIRY_HORIZON_MS",
+      go: "DefaultExpiryHorizon",
+      dart: "defaultExpiryHorizon",
+    },
+    {
+      what: "in-memory replay guard capacity",
+      kind: "count",
+      rs: "DEFAULT_REPLAY_CAPACITY",
+      ts: "DEFAULT_REPLAY_CAPACITY",
+      go: "DefaultReplayCapacity",
+      dart: "defaultReplayCapacity",
+    },
+  ];
+  const agreed = [];
+  for (const d of DEFAULTS) {
+    const values = [];
+    for (const [lang, rt] of Object.entries(RT)) {
+      const v = readers[lang](rt.src, d[lang], d.kind);
+      if (v === null || !Number.isFinite(v)) {
+        fail(
+          rt.files.join(" / "),
+          `no readable ${d[lang]} (${d.what}) — the runtime-defaults comparison reads it; if it moved or was renamed, ` +
+            `update scripts/check-bindings-conformance.mjs and docs/runtime-parity.md together`,
+        );
+        continue;
+      }
+      values.push([rt.name, d[lang], v]);
+    }
+    if (new Set(values.map(([, , v]) => v)).size > 1) {
+      fail(
+        "trust-tasks-rs / trust-tasks-ts / trust-tasks-go / trust_tasks",
+        `the runtimes disagree on the default ${d.what}: ` +
+          values.map(([name, ident, v]) => `${name} ${ident} = ${v}`).join("; ") +
+          `. Move all four together, or record the difference as deliberate in docs/runtime-parity.md and drop it from this check.`,
+      );
+    } else if (values.length === 4) {
+      agreed.push(`${d.what} ${values[0][2]}`);
+    }
+  }
+  if (agreed.length) console.log(`  runtime defaults agree across the four libraries: ${agreed.join(", ")}`);
+}
+
 /* ── The Dart package's two version declarations ────────────────────────── */
 
 // `version:` in pubspec.yaml is what pub.dev publishes under; `packageVersion`
@@ -1269,6 +1429,6 @@ console.log(
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
     `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes (${rustDetailsSchemasChecked} with a detailsSchema) ` +
     `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
-    `MAX_DOCUMENT_BYTES. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +
+    `MAX_DOCUMENT_BYTES and ${dartSizeBoundsChecked} match Dart maxDocumentBytes. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +
     `deprecation note in all four; ${lifecycleSummary.withdrawn} withdrawn version(s) are generated in none.`,
 );

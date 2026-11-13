@@ -2,9 +2,16 @@
 //!
 //! Implements [SPEC.md §9](../../../SPEC.md#9-transport-bindings) over HTTP/1.1
 //! using axum on the server side and reqwest on the client side. The binding
-//! authenticates parties via an `Authorization: Bearer <token>` header that
-//! maps to a Verifiable Identifier — sufficient for demos, mockups, and
-//! end-to-end testing without standing up an mTLS or DIDComm stack.
+//! authenticates parties via an `Authorization: Bearer <token>` header that an
+//! [`Auth`] implementation maps to a Verifiable Identifier.
+//!
+//! The server and client are secure by default — attribution required, the
+//! §7.2 item 11 duplicate-execution record and the consequential freshness
+//! bound on, response binding checked by the client — and those defaults are
+//! what a production deployment runs. What is demo-grade is one
+//! implementation of [`Auth`]: [`BearerAuth`], a static token map. A
+//! deployment plugs in its own [`Auth`] (or `JwtBearerAuth`, behind the `jwt`
+//! feature) and terminates TLS in front of the server.
 //!
 //! ## Binding URI
 //!
@@ -54,6 +61,7 @@
 //! `release-plz.toml`.
 
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(rust_2018_idioms)]
 
 mod auth;
@@ -80,11 +88,12 @@ pub use status::status_for_code;
 
 #[cfg(feature = "client")]
 pub use client::{
-    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT,
+    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT,
+    DEFAULT_MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT,
 };
 
 #[cfg(feature = "server")]
 pub use server::{
-    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_MAX_CONCURRENT_REQUESTS,
-    DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
+    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_ALLOWED_DID_METHODS,
+    DEFAULT_MAX_CONCURRENT_REQUESTS, DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
 };

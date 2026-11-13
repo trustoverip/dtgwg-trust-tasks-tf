@@ -2,7 +2,7 @@
 //! [`unpack_trust_task`](crate::unpack_trust_task).
 
 use thiserror::Error;
-use trust_tasks_rs::RejectReason;
+use trust_tasks_rs::{RejectReason, UnanswerableBody};
 
 /// Failure modes the DIDComm binding can produce. Most variants map
 /// cleanly onto a SPEC.md §8.3 [`StandardCode`](trust_tasks_rs::StandardCode)
@@ -123,7 +123,7 @@ impl DidcommError {
     /// [`TransportHandler::reject`](trust_tasks_rs::TransportHandler::reject).
     ///
     /// The mapping is intentionally conservative: all envelope-level
-    /// failures collapse to `malformed_request`, since from the
+    /// failures collapse to `malformedRequest`, since from the
     /// framework's perspective the bytes simply did not yield a
     /// well-formed Trust Task document.
     ///
@@ -168,6 +168,21 @@ impl DidcommError {
             _ => RejectReason::MalformedRequest {
                 reason: ENVELOPE_MALFORMED.to_string(),
             },
+        }
+    }
+}
+
+/// What [`DidcommConsumer`](crate::DidcommConsumer) reports for a body it
+/// could not answer: one that is not a document at all is
+/// [`InvalidBody`](DidcommError::InvalidBody), as from
+/// [`unpack_trust_task`](crate::unpack_trust_task). A handler with no
+/// authenticated sender is never produced by this crate's unpack, which
+/// refuses such an envelope first.
+impl From<UnanswerableBody> for DidcommError {
+    fn from(unanswerable: UnanswerableBody) -> Self {
+        match unanswerable {
+            UnanswerableBody::Unparsable(e) => DidcommError::InvalidBody(e),
+            _ => DidcommError::UnauthenticatedSender,
         }
     }
 }

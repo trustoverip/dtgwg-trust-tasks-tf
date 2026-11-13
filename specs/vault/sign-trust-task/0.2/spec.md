@@ -80,7 +80,7 @@ This task complements `vault/proxy-login/0.2`: proxy-login mints a *session cred
 
 ### Motivating use case
 
-A consumer logs in to a relying party via `vault/proxy-login/0.2`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.2` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proofInvalid`: "proof verificationMethod DID does not match the authenticated caller."
+A consumer logs in to a relying party via `vault/proxy-login/0.2`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.3` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proofInvalid`: "proof verificationMethod DID does not match the authenticated caller."
 
 `vault/sign-trust-task/0.1` closes that gap: the consumer hands the unsigned task to the maintainer, the maintainer signs as `principalDid`, the resulting envelope is acceptable to the RP.
 
@@ -140,7 +140,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
     "entryId": "vault_01HZX2_did_self_issued",
     "unsignedEnvelope": {
       "id": "urn:uuid:b11a487f-e98c-4929-9ab9-c5dd210499d6",
-      "type": "https://trusttasks.org/spec/acl/grant/0.2",
+      "type": "https://trusttasks.org/spec/acl/grant/0.3",
       "issuer": "did:webvh:QmTenant…:host.example:work-persona",
       "recipient": "did:webvh:QmRp…:host.example",
       "issuedAt": "2026-05-27T08:48:11.163Z",
@@ -171,7 +171,7 @@ The `unsignedEnvelope.issuer` (`did:webvh:…:work-persona`) matches the princip
   "payload": {
     "signedEnvelope": {
       "id": "urn:uuid:b11a487f-e98c-4929-9ab9-c5dd210499d6",
-      "type": "https://trusttasks.org/spec/acl/grant/0.2",
+      "type": "https://trusttasks.org/spec/acl/grant/0.3",
       "issuer": "did:webvh:QmTenant…:host.example:work-persona",
       "recipient": "did:webvh:QmRp…:host.example",
       "issuedAt": "2026-05-27T08:48:11.163Z",

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/update/0.1",
+  "title": "VTC Badges — Update — payload",
+  "description": "Change a badge's name, description, criteria, picture, listing and, for a community badge, whether members may ask for it and who sees its holders. Its kind and credential regime are fixed at creation. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId",
+    "reason"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+    },
+    "name": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeName"
+    },
+    "description": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeDescription"
+    },
+    "criteria": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeCriteria"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The digest vtc/badges/images/upload answered to this signer."
+        }
+      },
+      "description": "A new picture, as the signer uploaded it with vtc/badges/images/upload. Re-issues no credential: the credential names its Achievement by a stable identifier."
+    },
+    "listed": {
+      "type": "boolean",
+      "description": "Whether members who do not hold it see it in the badge list."
+    },
+    "requestable": {
+      "type": "boolean",
+      "description": "Community badges only. Whether members may ask for it: true sets the badge group's `joinPolicy` to `request`, false to `closed`. Refused while the community's `membersMayRequest` is off, and on an automatic badge."
+    },
+    "holdersVisibleTo": {
+      "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupAudience",
+      "description": "Community badges only. Who may see the badge's holders: sets the badge group's `showMembers`."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Update — response payload",
+      "description": "The success response to a vtc/badges/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Badge",
+          "description": "The badge as it now is, as the signer sees it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

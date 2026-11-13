@@ -70,6 +70,14 @@ void main() {
     expect(next.threadId, 'urn:thread:1'); // an explicit threadId is preserved
   });
 
+  test('issuedAt is stamped in whole seconds, UTC (#1114)', () {
+    // CLAUDE.md "Instants the libraries write": never full precision.
+    final wholeSeconds = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$');
+    final built = buildListDocument('did:me', 'did:vtc');
+    expect(built.issuedAt, matches(wholeSeconds));
+    expect(newAttempt(built).issuedAt, matches(wholeSeconds));
+  });
+
   test('typeUri slug and response variant', () {
     expect(slugOf(gitTrustGrantType), 'git-trust/grant');
     expect(isResponseVariant(gitTrustGrantType), isFalse);

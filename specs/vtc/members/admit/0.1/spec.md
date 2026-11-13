@@ -75,7 +75,7 @@ A former member — a removed member record and no access-control entry — is r
 
 An access-control entry that already exists with no member record — the community's bootstrap administrator is the case — is not admitted here; [`vtc/members/make-membership`](../../make-membership/0.1/spec.md) gives it a membership at the role it already holds.
 
-**Why a task of its own.** No existing task fits. [`acl/grant`](../../../../acl/grant/0.2/spec.md) writes an access-control entry and nothing else, and carrying "and admit them" in its `ext` would make a membership — credentials, a revocation slot, a policy decision — ride on a member an older community is free to ignore. [`vtc/members/update`](../../update/0.1/spec.md) edits a membership that exists, and the join tasks are an applicant's.
+**Why a task of its own.** No existing task fits. [`acl/grant`](../../../../acl/grant/0.3/spec.md) writes an access-control entry and nothing else, and carrying "and admit them" in its `ext` would make a membership — credentials, a revocation slot, a policy decision — ride on a member an older community is free to ignore. [`vtc/members/update`](../../update/0.1/spec.md) edits a membership that exists, and the join tasks are an applicant's.
 
 ## Status of this Document
 

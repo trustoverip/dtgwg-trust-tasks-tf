@@ -1,0 +1,48 @@
+[
+  {
+    "note": "`all` takes a `badgeId`: an administrator lists every giving of one badge, never of the whole community at once.",
+    "payload": {
+      "all": true
+    }
+  },
+  {
+    "note": "`all` is sent only as `true`; a member's own list is the default, not `all: false`.",
+    "payload": {
+      "all": false,
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r"
+    }
+  },
+  {
+    "note": "`direction` is `received` or `given`; there is no third party's view.",
+    "payload": {
+      "direction": "theirs"
+    }
+  },
+  {
+    "note": "There is no `entryId`: a member lists only their own kudos, never another member's.",
+    "payload": {
+      "direction": "received",
+      "entryId": "dir_Pr1yaN4t7Rj2Qw8K"
+    }
+  },
+  {
+    "note": "`limit` is at most 200.",
+    "payload": {
+      "limit": 201
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: `nextCursor` is `null`. On the last page it is absent, never `null`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]

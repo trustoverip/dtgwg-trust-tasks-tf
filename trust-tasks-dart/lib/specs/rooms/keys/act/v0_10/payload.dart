@@ -95,7 +95,7 @@ class UnsignedRoomRequest {
 /// Success response to rooms/keys/act. Type
 /// https://trusttasks.org/spec/rooms/keys/act/0.10#response. The request, completed as
 /// the member, for the caller to send to its recipient unaltered.
-@Deprecated('superseded by rooms/keys/act/0.11')
+@Deprecated('superseded by rooms/keys/act/0.12')
 class Response {
   const Response({
     required this.principal,
@@ -139,7 +139,7 @@ class Response {
 /// of admission to a room — as the member: the member's own authority narrowed to the
 /// one action the request's type needs, the member as issuer, and the member's
 /// signature. The outer document members are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by rooms/keys/act/0.11')
+@Deprecated('superseded by rooms/keys/act/0.12')
 class Payload {
   const Payload({
     required this.document,
@@ -174,7 +174,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/act/0.11';
+const String? deprecation = 'superseded by rooms/keys/act/0.12';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/act/0.10';
@@ -221,6 +221,7 @@ const SpecPolicy spec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: payloadSchemaJson,
+  maxDocumentBytes: 327680,
 );
 
 /// The SPEC §7.2 policy for the success-response variant.
@@ -234,4 +235,5 @@ const SpecPolicy responseSpec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: responsePayloadSchemaJson,
+  maxDocumentBytes: 393216,
 );

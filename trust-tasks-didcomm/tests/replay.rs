@@ -415,3 +415,40 @@ async fn the_record_is_on_by_default() {
             .is_some()
     );
 }
+
+/// `doc` with a payload member `GrantPayload` does not model. Deserialising
+/// drops it, so only the document as received can tell it apart.
+fn with_unmodelled_member(doc: &TrustTask<GrantPayload>) -> TrustTask<Value> {
+    let mut value = serde_json::to_value(doc).expect("serialise");
+    value["payload"]["note"] = Value::from("added");
+    serde_json::from_value(value).expect("a Trust Task")
+}
+
+/// SPEC §7.2 item 11 compares the whole document as received. A payload member
+/// the handler's type does not model still makes a different document, even
+/// under a proof policy that verifies nothing.
+#[tokio::test]
+async fn a_member_the_payload_type_does_not_model_is_an_id_conflict() {
+    let p = setup_agents();
+    let inbound = DidcommConsumer::new();
+    let dispatches = Dispatches::default();
+
+    let first = grant_doc(&p.alice_did, &p.bob_did, "moderator");
+    let extended = with_unmodelled_member(&first);
+    let first_wire =
+        pack_trust_task(&first, &p.alice_agent, &p.alice_did, &p.bob_did).expect("pack");
+    let extended_wire =
+        pack_trust_task(&extended, &p.alice_agent, &p.alice_did, &p.bob_did).expect("pack");
+
+    assert!(matches!(
+        deliver(&inbound, &p, &first_wire, &dispatches).await,
+        ConsumeOutcome::Handled(_)
+    ));
+    match deliver(&inbound, &p, &extended_wire, &dispatches).await {
+        ConsumeOutcome::Rejected(err) => {
+            assert_eq!(err.payload.code, StandardCode::IdConflict.into());
+        }
+        other => panic!("expected idConflict, got {other:?}"),
+    }
+    assert_eq!(dispatches.count(), 1);
+}

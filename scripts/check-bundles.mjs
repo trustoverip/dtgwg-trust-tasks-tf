@@ -79,14 +79,16 @@ function canonical(value) {
 }
 
 /**
- * Parse `export const <name> = { … } as const;` out of a generated TS module.
+ * Parse `export const <name>: <type> = { … };` (or the older
+ * `export const <name> = { … } as const;`) out of a generated TS module.
  * Brace-counting with string literals skipped, so a brace inside a `pattern`
  * or a description does not throw the count off.
  */
 function tsConst(src, name) {
-  const start = src.indexOf(`export const ${name} = {`);
+  const m = new RegExp(`^export const ${name}(?::[^=\\n]+)? = \\{`, "m").exec(src);
+  const start = m ? m.index : -1;
   if (start < 0) return undefined;
-  const open = src.indexOf("{", start);
+  const open = start + m[0].length - 1;
   let depth = 0;
   let inString = false;
   let escaped = false;

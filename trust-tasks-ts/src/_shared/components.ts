@@ -419,12 +419,48 @@ export type AuthModel =
  * An explicit authority scope — used for both the act scope and the approve scope of an entry. Exactly one of three shapes, discriminated by `scope`: `all`, `none`, or `contexts` with a NON-EMPTY list. The empty list is not a fourth shape: it is invalid, so a serializer that drops or empties the list produces a document that fails validation rather than one that silently means something else.
  */
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
+/**
+ * Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.
+ */
+export type AwardId = string;
+/**
+ * What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).
+ */
+export type AwardNote = string;
+/**
+ * `offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).
+ */
+export type AwardState = "offered" | "accepted" | "declined" | "withdrawn" | "expired" | "revoked";
 export type AwsArn = string;
 export type AwsRegion = string;
 /**
  * The ARN of an AWS IAM role, in any AWS partition (`arn:aws:`, `arn:aws-cn:`, `arn:aws-us-gov:`). Validated here because the community passes it to STS AssumeRole and derives the partition of the session policy's resources from it; it must never carry anything but a role ARN.
  */
 export type AwsRoleArn = string;
+/**
+ * How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.
+ */
+export type BadgeCriteria = string;
+/**
+ * What the badge is for. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type BadgeDescription = string;
+/**
+ * Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).
+ */
+export type BadgeId = string;
+/**
+ * `community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).
+ */
+export type BadgeKind = "community" | "kudos";
+/**
+ * The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type BadgeName = string;
+/**
+ * `active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).
+ */
+export type BadgeState = "active" | "retired";
 export type BindingId = string;
 export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
 /**
@@ -599,6 +635,14 @@ export type ChunkIndex = number;
  */
 export type ChunkSize = number;
 /**
+ * Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64 base64url characters. Random; never the code itself, which the community keeps only as a digest (VTI-BDG-025).
+ */
+export type ClaimId = string;
+/**
+ * A claim code itself: at least 128 random bits the community generated, base64url (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by a member, never stored or answered again (VTI-BDG-025).
+ */
+export type ClaimSecret = string;
+/**
  * The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.
  *
  * The token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.
@@ -706,6 +750,23 @@ export type DeliveryStatus = "delivered" | "duplicate" | "refused" | "queued" | 
  */
 export type Description = string;
 /**
+ * Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants and its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked, or its access-control capabilities no longer cover the member's scope; the member leaves rather than being narrowed. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later. `connectionFull`: the grant is valid and stays stored, but this connection already carries `maxDidsPerConnection` members, so it was not attached here; it attaches on a connection with room, including this one's successor once the principal makes room and reconnects.
+ */
+export type DetachReason =
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed"
+  | "connectionFull";
+/**
  * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
  */
 export type DeviceAttestation_DeviceV0_1 =
@@ -737,11 +798,7 @@ export type DidMethodName = string;
  * A DID Core verification relationship.
  */
 export type DidVerificationRelationship =
-  | "authentication"
-  | "assertionMethod"
-  | "keyAgreement"
-  | "capabilityInvocation"
-  | "capabilityDelegation";
+  "authentication" | "assertionMethod" | "keyAgreement" | "capabilityInvocation" | "capabilityDelegation";
 /**
  * A DID, compared by exact string equality.
  */
@@ -783,12 +840,7 @@ export type DisjunctiveProof = [SigmaProof, ...SigmaProof[]];
  * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
  */
 export type DriftType =
-  | "roleAdded"
-  | "roleRemoved"
-  | "roleChanged"
-  | "requiredCheckMissing"
-  | "protectionWeakened"
-  | "bootstrapMissing";
+  "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
 /**
  * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
  */
@@ -982,6 +1034,14 @@ export type ForgeId_GitNsV0_1 = string;
  */
 export type ForgeId_GitNsV0_6 = string;
 /**
+ * A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record.
+ */
+export type GrantId = string;
+/**
+ * A stored grant's state. `active`: valid; the member is attached whenever the principal is connected. `suspended`: the member DID proved control with a key that signed none of its active grants (the unknown-key rule); terminal — the grant cannot be resumed and must be recreated by a fresh member signature. `staleKey`: the key that signed the grant is no longer in the member DID's current authentication relationship; terminal — it does not become active again if the key reappears. `expired`: an active grant past its effective expiry; computed when read, never stored. `epochRevoked`: the member DID advanced its epoch with messaging/mux/revoke-all. A grant revoked with messaging/mux/revoke has no state: it is deleted. A dead grant (every state but `active`) stays listable for the mediator's retention window after its effective expiry, then is pruned.
+ */
+export type GrantState = "active" | "suspended" | "staleKey" | "expired" | "epochRevoked";
+/**
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
 export type GrantValiditySeconds = number;
@@ -1087,6 +1147,10 @@ export type JoinRequestId = string;
  */
 export type JoinRequestMessage = string;
 /**
+ * A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member.
+ */
+export type KeyAssuranceLevel = 1 | 2 | 3;
+/**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
  */
 export type KeyChangeKind = "planned" | "compromise" | "addition" | "recovery";
@@ -1098,13 +1162,7 @@ export type KeyChangeOutcome = "preview" | "applied" | "pendingApproval" | "awai
  * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
  */
 export type KeyChangeState =
-  | "pendingApproval"
-  | "awaitingRecoveryProof"
-  | "staged"
-  | "overlapping"
-  | "completed"
-  | "aborted"
-  | "expired";
+  "pendingApproval" | "awaitingRecoveryProof" | "staged" | "overlapping" | "completed" | "aborted" | "expired";
 /**
  * Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
  */
@@ -1197,6 +1255,10 @@ export type ListName = string;
  */
 export type ListOrder = number;
 /**
+ * The order in which a listing returns a room's records (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent: ascending `version`, the order an incremental sync reads in. `newestFirst`: descending `version`, so a reader that opens a conversation at its newest messages reads the room's head first and pages backwards; `sinceVersion` still bounds the listing from below. A cursor continues the listing in the order it was issued under, and a host refuses it under the other.
+ */
+export type ListOrder_RoomsV0_2 = "oldestFirst" | "newestFirst";
+/**
  * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
  */
 export type Listing = "listed" | "findable" | "hidden";
@@ -1216,6 +1278,27 @@ export type MemberAction = "read" | "write" | "curate";
  */
 export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [MemberAction, MemberAction, MemberAction];
 /**
+ * The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins.
+ */
+export type MemberChangeReason =
+  | "connect"
+  | "grant"
+  | "attach"
+  | "reactivated"
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed"
+  | "connectionFull";
+/**
  * Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
  */
 export type MemberState = "offered" | "admitted" | "removed";
@@ -1228,9 +1311,33 @@ export type MemberStateV2 = "offered" | "admitted" | "suspended" | "removed";
  */
 export type MembersOnly = boolean;
 /**
+ * What happened to a member DID's place on a mux connection, as messaging/mux/event reports it to the connection's principal. `attached`: the member joined the connection, or its scope or expiry there changed. `detached`: the member left the connection, or a stored grant of it was not attached on connect.
+ */
+export type MembershipChange = "attached" | "detached";
+/**
  * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
+/**
+ * Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.
+ */
+export type MemoryExpectedVersion = number;
+/**
+ * Agent-chosen identifier for an item within a context. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `vta/memory/list` is a byte-prefix comparison over the UTF-8 encoding. Agents SHOULD use `/`-delimited hierarchical keys (`contact/billing`, `preference/timezone`) so that `prefix` can address a family of items, but the delimiter is a convention between an agent and itself. A key is content as well as an address: a key naming a person, a condition or a dispute discloses something to anyone who can list the context, even without its value.
+ */
+export type MemoryKey = string;
+/**
+ * The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).
+ */
+export type MemoryPurpose = Purpose_AclV0_3;
+/**
+ * The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).
+ */
+export type MemoryValue = string;
+/**
+ * A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
+ */
+export type MemoryVersion = number;
 /**
  * An RFC 9162 audit or consistency path: the node hashes, in the order §2.1.3 / §2.1.4 define.
  *
@@ -1262,6 +1369,170 @@ export type Multibase_VotingV0_1 = string;
  */
 export type Multibase_VtaV0_4 = string;
 /**
+ * A DID, carried verbatim and compared by exact string equality. Unlike the messaging family's `Vid`, never a hash: the mediator resolves it to verify a statement signed by it. For a member DID reached over TSP, the TSP VID is the DID itself.
+ */
+export type MuxDid = string;
+/**
+ * 32 random bytes, base64url without padding, that belong to exactly one connection and are never reused. Attach statements sign over it, which is what makes an attach statement unusable on any other connection.
+ */
+export type MuxNonce = string;
+/**
+ * The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated.
+ */
+export type MuxRole = "principal" | "member";
+/**
+ * A set of capabilities: a non-empty JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses into one. Never empty: an empty scope is refused, never read as "all". There is no default scope anywhere — every attach and every grant names its scope explicitly. A scope is always bounded by the member DID's own access-control capabilities at the mediator.
+ *
+ * @minItems 1
+ * @maxItems 16
+ */
+export type MuxScope =
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
+/**
+ * One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket.
+ */
+export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
+/**
+ * How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection.
+ */
+export type MuxSource = "grant" | "attach";
+/**
+ * The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`.
+ */
+export type MuxWire = "didcomm" | "tsp";
+/**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
@@ -1274,7 +1545,7 @@ export type NamespaceId = string;
  */
 export type NodeKind = "network" | "community";
 /**
- * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+ * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, collection by default is disabled for the identifier's trust context — by the context's own setting, or because the VTA's operator has suspended it for every context — so the VTA collects for no identifier there that a client has not claimed (VTI-NTF-097, VTI-NTF-098); vta/collection/settings/show says which.
  */
 export type NotCollectedReason = "limit" | "conflict" | "disabled";
 /**
@@ -1483,7 +1754,7 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
- * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.
+ * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).
  */
 export type PreviewWarning =
   | "singleKeyRole"
@@ -1493,7 +1764,8 @@ export type PreviewWarning =
   | "selfPublish"
   | "noWitnesses"
   | "protectionBelowPolicy"
-  | "recoveryKeyRevealed";
+  | "recoveryKeyRevealed"
+  | "roleKeysInBackups";
 /**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
@@ -1626,6 +1898,18 @@ export type ProviderObjectPrefix = string;
  */
 export type Purpose = "login";
 /**
+ * An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.
+ */
+export type PurposeScope = PurposeScopeAny | PurposeScopeListed;
+/**
+ * What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.
+ */
+export type Purpose_AclV0_3 = Purpose_AclV0_31 & Purpose_AclV0_32;
+export type Purpose_AclV0_31 = {
+  [k: string]: unknown | undefined;
+};
+export type Purpose_AclV0_32 = string;
+/**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
 export type PushRegistration = Apns | Fcm | WebPush;
@@ -1711,6 +1995,10 @@ export type RecordId_VtcNotificationsV0_1 = string;
  */
 export type RecordKind = string;
 /**
+ * The one purpose for which a caller will use room content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. Granted only as the caller's authority grants it — `any` grants every purpose but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read. Distinct from `PermittedUse`, which is what a record's author permits and is a statement, not a grant.
+ */
+export type RecordPurpose = Purpose_AclV0_3;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -1752,6 +2040,14 @@ export type RecordValidUntil = string;
  * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
  */
 export type RecordWrittenAt = string;
+/**
+ * A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7).
+ */
+export type RecoveryCommitmentOrThreshold = RecoveryCommitment | ThresholdRecoveryCommitment;
+/**
+ * The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.
+ */
+export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -1907,16 +2203,12 @@ export type Scope_VtaV0_1 = Builtin_VtaV0_1 | Global_VtaV0_1 | Context_VtaV0_1;
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_1 =
-  | DidcommAuthcryptEnvelope_VaultV0_1
-  | HpkeArmoredEnvelope_VaultV0_1
-  | TspMessageEnvelope_VaultV0_1;
+  DidcommAuthcryptEnvelope_VaultV0_1 | HpkeArmoredEnvelope_VaultV0_1 | TspMessageEnvelope_VaultV0_1;
 /**
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_2 =
-  | DidcommAuthcryptEnvelope_VaultV0_2
-  | HpkeArmoredEnvelope_VaultV0_2
-  | TspMessageEnvelope_VaultV0_2;
+  DidcommAuthcryptEnvelope_VaultV0_2 | HpkeArmoredEnvelope_VaultV0_2 | TspMessageEnvelope_VaultV0_2;
 /**
  * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
  */
@@ -1990,14 +2282,7 @@ export type SecretFingerprint = string;
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_1 =
-  | "password"
-  | "passkey"
-  | "oauth-tokens"
-  | "did-self-issued"
-  | "didcomm-peer"
-  | "bearer-token"
-  | "ssh-key"
-  | "custom";
+  "password" | "passkey" | "oauth-tokens" | "did-self-issued" | "didcomm-peer" | "bearer-token" | "ssh-key" | "custom";
 /**
  * Discriminator for the secret type stored in the entry. Definitions:
  * - `password` — username + password (+ optional TOTP seed).
@@ -2010,14 +2295,7 @@ export type SecretKind_VaultV0_1 =
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_2 =
-  | "password"
-  | "passkey"
-  | "oauthTokens"
-  | "didSelfIssued"
-  | "didcommPeer"
-  | "bearerToken"
-  | "sshKey"
-  | "custom";
+  "password" | "passkey" | "oauthTokens" | "didSelfIssued" | "didcommPeer" | "bearerToken" | "sshKey" | "custom";
 /**
  * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
  */
@@ -2043,9 +2321,25 @@ export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
  */
 export type SessionId = string;
 /**
+ * The mediator's identifier for one authenticated connection, as announced in that connection's `ready` event.
+ */
+export type SessionId_MessagingMuxV0_1 = string;
+/**
  * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
  */
 export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
+/**
+ * Whether a room's host waits a randomised interval before sending a `rooms/changed` signal: the room's **signal delay**.
+ *
+ * `randomised` is the default and what a room without one has: the host waits a few seconds after the change that fires a watch, so that the signal's time does not mark one write exactly (`rooms/changed`, producer item 4). `none` is for a room where members expect to see a write as soon as it is made, such as a conversation: the host sends the signal as soon as the change that fires it is stored, with no wait of its own.
+ *
+ * **A room's setting, not a member's.** The delay protects the room's writers as much as its watchers. A watcher whose signal is sent at once marks, to anyone who sees both the writer's request reach the host and the signal leave it, the moment of the write and that the two parties share the room. So one watcher cannot opt out for itself without giving away something about everyone who writes, and the setting is the room's: changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every member (`rooms/info`).
+ *
+ * **What `none` gives up.** Little in a busy room, where writes are frequent enough that their rhythm is visible anyway; most in a quiet one, where a single write and a single signal line up. A surface that offers the setting SHOULD say so.
+ *
+ * Absent means `randomised`.
+ */
+export type SignalDelay = "randomised" | "none";
 /**
  * The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.
  */
@@ -2093,6 +2387,146 @@ export type Slot = string;
  * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
  */
 export type State = "active" | "dismissed";
+/**
+ * The scope a member DID signs into a statement: a JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses. It MUST NOT be empty; an empty signed scope is refused with the task's `emptyScope` code, never read as "all". Unlike MuxScope, emptiness is not a schema failure here, so that the refusal is reported per statement rather than failing the whole batch.
+ *
+ * @maxItems 16
+ */
+export type StatementScope =
+  | []
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
 /**
  * Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).
  */
@@ -2162,15 +2596,9 @@ export type StorageSettings = LocalSettings | S3Settings | GcsSettings | WalrusS
  */
 export type SweepMinutes = number;
 export type SyncEvent_SyncV0_1 =
-  | VaultUpsertedEvent_SyncV0_1
-  | VaultDeletedEvent_SyncV0_1
-  | AclChangedEvent_SyncV0_1
-  | PolicyChangedEvent_SyncV0_1;
+  VaultUpsertedEvent_SyncV0_1 | VaultDeletedEvent_SyncV0_1 | AclChangedEvent_SyncV0_1 | PolicyChangedEvent_SyncV0_1;
 export type SyncEvent_SyncV0_2 =
-  | VaultUpsertedEvent_SyncV0_2
-  | VaultDeletedEvent_SyncV0_2
-  | AclChangedEvent_SyncV0_2
-  | PolicyChangedEvent_SyncV0_2;
+  VaultUpsertedEvent_SyncV0_2 | VaultDeletedEvent_SyncV0_2 | AclChangedEvent_SyncV0_2 | PolicyChangedEvent_SyncV0_2;
 /**
  * Free-text tags the directory searches.
  *
@@ -2189,23 +2617,12 @@ export type TickLength = string;
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_1 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_2 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config"
-  | "rooms";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config" | "rooms";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
@@ -2249,14 +2666,7 @@ export type TrafficDirection = "inbound" | "outbound" | "internal";
  * What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.
  */
 export type TrafficStage =
-  | "received"
-  | "stored"
-  | "delivered"
-  | "forwarded"
-  | "refused"
-  | "deleted"
-  | "expired"
-  | "purged";
+  "received" | "stored" | "delivered" | "forwarded" | "refused" | "deleted" | "expired" | "purged";
 /**
  * Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.
  */
@@ -2490,9 +2900,7 @@ export type VetterDisplayName = string;
  * @maxItems 3
  */
 export type VetterMethods =
-  | [VettingMethod]
-  | [VettingMethod, VettingMethod]
-  | [VettingMethod, VettingMethod, VettingMethod];
+  [VettingMethod] | [VettingMethod, VettingMethod] | [VettingMethod, VettingMethod, VettingMethod];
 /**
  * A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
  */
@@ -2513,6 +2921,18 @@ export type Vid = string;
  * How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
  */
 export type Visibility = "open" | "attributed" | "private";
+/**
+ * Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.
+ */
+export type WallVisibility = "members" | "nobody";
+/**
+ * The DID class the DID belongs to (VTI specification, DID classes, VTI-KEY-190 – 193), stated when it is created and fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context, and nothing else. `persona`: a person's own identity. `service`: the durable identity of a node or a service — the VTA itself, a VTC, a VTN, a trust registry, a host service, a mediator, or an integration the VTA provisions — at key assurance level 1. A DID belongs to one class only (VTI-KEY-193): a persona or relationship DID is never adopted as a node's identity, and a service DID is never used as a person's. A service did:webs is alpha: see CONVENTIONS.md §1.
+ */
+export type WebsDidClass = "relationship" | "persona" | "service";
+/**
+ * The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.
+ */
+export type WebsSlotPath = string;
 /**
  * A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.
  */
@@ -4908,6 +5328,84 @@ export interface AclEntry_AclV0_2 {
   ext?: Ext;
 }
 /**
+ * One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).
+ *
+ * The act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer "may this subject do X"; `approve` + `approveCapabilities` answer "may this subject ratify someone else doing X". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.
+ */
+export interface AclEntry_AclV0_3 {
+  /**
+   * VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
+   */
+  subject: string;
+  /**
+   * Opaque role identifier interpreted by the ACL maintainer. A role is a CEILING, never a grant: it bounds the capabilities the entry may hold and never adds to them. A consumer that does not recognise the role MUST treat the entry as conferring no authority and MUST NOT fall back to a default role. Act scope and role are independent members; a consumer MUST NOT compute either from the other.
+   */
+  role: string;
+  /**
+   * REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{"scope": "all"}` (unrestricted — every context the maintainer has), `{"scope": "none"}` (may act nowhere), or `{"scope": "contexts", "contexts": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`.
+   */
+  act: AuthorityScope;
+  /**
+   * OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
+   */
+  approve?: AuthorityScope;
+  /**
+   * REQUIRED explicit capability scope: which capabilities this entry holds. Exactly one of `{"scope": "ceiling"}` (the role's full ceiling, unnarrowed), `{"scope": "none"}` (no capabilities), or `{"scope": "listed", "grants": [...]}` with at least one CapabilityGrant. For `listed`, the EFFECTIVE set is (the role's ceiling ∩ the non-additive grants) ∪ the additive grants; it can only narrow the ceiling, except through an explicit additive grant, which only an unrestricted granter may make. There is no implicit form: an entry without `capabilities`, or with an empty `grants` list, is malformed and MUST be refused. A non-additive grant outside the role's ceiling is refused when written, never accepted with the capability silently dropped; a capability the consumer does not recognise is never treated as granted. Producers SHOULD NOT list the same (capability, resource) pair twice; a consumer MAY refuse a list that does.
+   */
+  capabilities: CapabilityScope;
+  /**
+   * OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{"scope": "ceiling"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{"scope": "none"}`, or `{"scope": "listed", "grants": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{"scope": "none"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve.
+   */
+  approveCapabilities?: ApproveCapabilityScope;
+  /**
+   * VID of the granter whose authority this entry was delegated from and is bounded by. The entry MUST NOT hold authority the granter did not hold when it was written, and MUST NOT retain authority the granter has since lost, so a maintainer re-evaluates it when the granter's own entry narrows or is removed. Distinct from `createdBy`, which records who wrote the entry: the two differ where an entry is written on a granter's behalf (for example after an N-of-M approval, or by an offline operator). Set by the maintainer from the granter it authorized; absent on an entry that derives from no granter's authority (the first administrator, an operator-written recovery entry).
+   */
+  delegatedBy?: string;
+  /**
+   * REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
+   */
+  keys: KeyScope;
+  /**
+   * REQUIRED explicit purpose scope: what this subject may use content it reads for — the purpose a request for a purpose-bound operation (a read of content held for the principal, or a refusal that carries such content) names, and the maintainer records in that operation's audit record. Exactly one of `{"scope": "any"}` (any purpose EXCEPT `modelTraining`) or `{"scope": "listed", "purposes": [...]}` with at least one Purpose. There is no implicit form: an entry without `purposes`, or with an empty list, is malformed and MUST be refused, never read as `any`. A maintainer that adopts this version writes `any` on every entry that predates it before serving a purpose-bound operation under it (VTI-ACL-101). Delegated purposes are a subset of the granter's: a granter stating `any` MAY delegate a list; a granter stating a list MUST NOT delegate `any`, and no granter delegates `modelTraining` unless its own entry names it (acl/grant `purposeOutsideDelegator`). A maintainer MAY refuse by policy to grant a purpose, naming it, when the entry is written (acl/grant `purposeRefused`), never by writing the entry without it. A purpose is a declaration, not a proof: the maintainer cannot see what the subject does with content, and holds it to what it declared.
+   */
+  purposes: PurposeScope;
+  /**
+   * Optional human-readable label. Confers nothing.
+   */
+  label?: string;
+  createdAt?: string;
+  /**
+   * VID of the party that originally wrote this entry.
+   */
+  createdBy?: string;
+  updatedAt?: string;
+  /**
+   * VID of the party that last modified this entry.
+   */
+  updatedBy?: string;
+  /**
+   * Optional time after which the entry confers no authority. Evaluated at every authorization decision, not only when a session is established.
+   */
+  expiresAt?: string;
+  /**
+   * Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry). Carried forward from 0.1 unchanged.
+   */
+  stepUp?: {
+    /**
+     * VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
+     */
+    approver?: string;
+    /**
+     * Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+     */
+    require?: "self" | "delegated";
+  };
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
+   */
+  ext?: Ext;
+}
+/**
  * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
  */
 export interface Action_VtcAdminActionsV0_1 {
@@ -4948,13 +5446,7 @@ export interface Action_VtcAdminActionsV0_1 {
    * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused.
    */
   closedReason?:
-    | "thresholdMet"
-    | "declined"
-    | "expired"
-    | "cancelledByRequester"
-    | "invalidated"
-    | "failedRecheck"
-    | "acknowledged";
+    "thresholdMet" | "declined" | "expired" | "cancelledByRequester" | "invalidated" | "failedRecheck" | "acknowledged";
   /**
    * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).
    */
@@ -5565,6 +6057,57 @@ export interface ApproverBinding {
    */
   routeHint?: string;
 }
+/**
+ * A member DID's statement that the named principal may carry its traffic on one connection — the one whose `sessionId` and `muxNonce` it names — until `exp`, within `scope`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface AttachStatement {
+  /**
+   * Always `muxAttach`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxAttach";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The principal DID the connection is authenticated as. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  sessionId: SessionId_MessagingMuxV0_1;
+  muxNonce: MuxNonce;
+  scope: StatementScope;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * One session attach on a connection.
+ */
+export interface AttachView {
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  scope: MuxScope;
+  /**
+   * When the attach lapses: its signed `exp`.
+   */
+  expiresAt: string;
+  /**
+   * False while live traffic for the member goes elsewhere — to the member DID's own direct connection, which takes precedence over a mux connection.
+   */
+  deliveryActive: boolean;
+}
 export interface AttachmentRef_VaultV0_1 {
   /**
    * Opaque maintainer-assigned id for this attachment; used to fetch the blob via a separate mechanism.
@@ -5946,6 +6489,46 @@ export interface AutoGrantSweep {
   errors: number;
 }
 /**
+ * One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).
+ */
+export interface Award {
+  awardId: AwardId;
+  badgeId: BadgeId;
+  /**
+   * The recipient.
+   */
+  entryId: EntryId;
+  givenBy?: EntryId;
+  note?: AwardNote;
+  state: AwardState;
+  offeredAt: string;
+  /**
+   * When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.
+   */
+  decidedAt?: string;
+  /**
+   * When an unanswered offer lapses, where the community expires offers.
+   */
+  expiresAt?: string;
+  credentialId?: GroupCredentialId;
+  shared?: AwardShare;
+  ext?: Ext;
+}
+/**
+ * Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).
+ */
+export interface AwardShare {
+  /**
+   * The public location that answers the credential and a verification of it.
+   */
+  verificationUrl: string;
+  /**
+   * The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.
+   */
+  bakedImageUrl?: string;
+  since: string;
+}
+/**
  * Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.
  */
 export interface BackupEnvelope {
@@ -5979,6 +6562,108 @@ export interface BackupEnvelope {
    * base64url(AEAD(JSON(payload))).
    */
   ciphertext: string;
+}
+/**
+ * A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.
+ */
+export interface Badge {
+  badgeId: BadgeId;
+  kind: BadgeKind;
+  name: BadgeName;
+  description: BadgeDescription;
+  criteria?: BadgeCriteria;
+  /**
+   * The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.
+   */
+  image: CardBlobRef;
+  /**
+   * Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.
+   */
+  repeatable: boolean;
+  /**
+   * Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.
+   */
+  requestable?: boolean;
+  /**
+   * Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.
+   */
+  listed: boolean;
+  /**
+   * Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.
+   */
+  shareableOutside?: boolean;
+  /**
+   * The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.
+   */
+  groupId?: GroupId;
+  state: BadgeState;
+  /**
+   * Holders who show the badge. Only to callers who may see the holders.
+   */
+  holderCount?: number;
+  createdAt: string;
+  createdBy?: EntryId;
+  updatedAt?: string;
+  retiredAt?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.
+   */
+  ext?: Ext;
+}
+/**
+ * The community's bounds (VTI-BDG-032, VTI-BDG-040). Each has a default a community that states none applies.
+ */
+export interface BadgeLimits {
+  /**
+   * Kudos one member may give in a day. Default 10.
+   */
+  kudosPerGiverPerDay?: number;
+  /**
+   * How often the same member may give a kudos badge to the same member: at most once a day, once a week, or without bound. Default `day`.
+   */
+  sameGiverSameMember?: "day" | "week" | "unbounded";
+  /**
+   * Days of membership before a member may give kudos or make a kudos badge. Default 7.
+   */
+  minTenureDays?: number;
+  /**
+   * Kudos badges one member may make in a calendar month. Default 5.
+   */
+  kudosBadgesPerMakerPerMonth?: number;
+  /**
+   * Badges a member may pin beside their name. Default 2.
+   */
+  maxPinned?: number;
+  /**
+   * Days an unanswered offer stands before it expires. Absent: offers do not expire.
+   */
+  offerExpiresAfterDays?: number;
+}
+/**
+ * The community's badge settings (VTI-BDG-004). `enabled` false hides every badge surface and keeps every record; nothing is given or issued while it is false.
+ */
+export interface BadgeSettings {
+  enabled: boolean;
+  kudosMakers: KudosMakers;
+  limits?: BadgeLimits;
+  /**
+   * Whether a member's kudos total is shown on their card (VTI-BDG-043).
+   */
+  showKudosTotals: boolean;
+  /**
+   * Whether dynamic badge groups are computed (VTI-BDG-013). False: a community badge may not be created on a dynamic group, and existing ones are not recomputed.
+   */
+  automaticBadges: boolean;
+  /**
+   * Whether any community badge may be marked `requestable`. False: every badge group is closed.
+   */
+  membersMayRequest: boolean;
+  /**
+   * Validity of a badge credential its holders may show outside (VTI-BDG-062). Default 730.
+   */
+  credentialValidDays?: number;
+  updatedAt?: string;
+  ext?: Ext;
 }
 /**
  * An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.
@@ -6737,6 +7422,38 @@ export interface Claim {
   renewable: boolean;
 }
 /**
+ * A claim code's record, as the badge's owners and administrators see it: never the code (VTI-BDG-027).
+ */
+export interface ClaimCode {
+  claimId: ClaimId;
+  badgeId: BadgeId;
+  /**
+   * What the code is for — the event, say — shown to the badge's owners. Never shown to whoever redeems it.
+   */
+  label: string;
+  /**
+   * After this the code admits no one.
+   */
+  validUntil: string;
+  /**
+   * How many claims the code admits.
+   */
+  limit: number;
+  /**
+   * How many members have redeemed it.
+   */
+  claims: number;
+  /**
+   * `withdrawn` once its issuer withdrew it or the badge was retired. A code past `validUntil` or out of claims stays `active` and admits no one.
+   */
+  state: "active" | "withdrawn";
+  createdAt: string;
+  /**
+   * The issuer's entry, where they have one; the giver of every award the code admits.
+   */
+  createdBy?: EntryId;
+}
+/**
  * Which claim a `claim` field accepts, from which credentials and issuers.
  */
 export interface ClaimSelector {
@@ -6763,6 +7480,31 @@ export interface CollectionEntry {
   collector: Collector;
   claim?: Claim;
   notCollectedReason?: NotCollectedReason;
+}
+/**
+ * Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.
+ */
+export interface CollectionSetting {
+  /**
+   * The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094).
+   */
+  contextId: ContextId_VtaCollectionV0_1;
+  /**
+   * The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts.
+   */
+  collectByDefault: boolean;
+  /**
+   * Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension.
+   */
+  suspendedByOperator: boolean;
+  /**
+   * The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096).
+   */
+  changedBy?: Did_NotificationsV0_1;
+  /**
+   * When `collectByDefault` was last changed.
+   */
+  changedAt?: string;
 }
 /**
  * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
@@ -7503,6 +8245,42 @@ export interface DeferredPresentation {
    * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
    */
   expiresAt: string;
+}
+/**
+ * A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.
+ */
+export interface DesignatedService {
+  /**
+   * The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused.
+   */
+  id: string;
+  /**
+   * The service type, matched by peers on its value, never on `id`.
+   */
+  type: string | [string, ...string[]];
+  /**
+   * A URI, a map, or a set of either, as the DID document data model allows.
+   */
+  serviceEndpoint:
+    | string
+    | {
+        [k: string]: unknown | undefined;
+      }
+    | [
+        (
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        ),
+        ...(
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        )[]
+      ];
+  [k: string]: unknown | undefined;
 }
 export interface WebAuthnAttestation_DeviceV0_1 {
   kind: "webauthn";
@@ -8526,12 +9304,7 @@ export interface DriftItem_GitNsV0_1 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_1;
   /**
    * Whose role differs, for the three role types.
@@ -8554,12 +9327,7 @@ export interface DriftItem_GitNsV0_6 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_6;
   /**
    * Whose role differs, for the three role types.
@@ -9768,6 +10536,82 @@ export interface GitNamespace_GitNsV0_6 {
   state: "pending" | "bound";
 }
 /**
+ * Identifies one stored grant and the two parties to it.
+ */
+export interface GrantRef {
+  grantId: GrantId;
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  /**
+   * The principal DID the grant delegates to.
+   */
+  principal: MuxDid;
+}
+/**
+ * A member DID's standing statement that the named principal may carry its traffic at this mediator, on any connection, until `exp`, within `scope`, under the member's current `epoch`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`, and stored verbatim by the mediator as the only evidence of the delegation.
+ */
+export interface GrantStatement {
+  /**
+   * Always `muxGrant`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxGrant";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  grantId: GrantId;
+  /**
+   * The principal DID that may carry the member's traffic. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  scope: StatementScope;
+  /**
+   * The member DID's current epoch at the mediator. Only messaging/mux/revoke-all advances it.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * The mediator's view of one stored grant, as messaging/mux/list and messaging/mux/update return it: the grant statement verbatim, with the state and the effective scope and expiry beside it.
+ */
+export interface GrantView {
+  /**
+   * The grant statement exactly as the member signed it and the mediator stored it, proof included, so either party can re-verify it.
+   */
+  statement: GrantStatement;
+  state: GrantState;
+  /**
+   * The effective scope: the signed scope, or the narrower one messaging/mux/update set.
+   */
+  scope: MuxScope;
+  /**
+   * The effective expiry: the signed `exp` rendered as RFC 3339, or the earlier one messaging/mux/update set.
+   */
+  expiresAt: string;
+  /**
+   * True when messaging/mux/update narrowed the effective scope or expiry below what the statement signs.
+   */
+  narrowed?: boolean;
+  /**
+   * Principal view only: whether the member is attached through this grant to the connection that carried the list request.
+   */
+  attachedNow?: boolean;
+}
+/**
  * A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.
  */
 export interface GrantsBindingSpec {
@@ -9827,6 +10671,10 @@ export interface Group {
    * `true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.
    */
   carriesAuthority: boolean;
+  /**
+   * Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012).
+   */
+  badgeId?: BadgeId;
   /**
    * Active members. Only to callers who may see the member list.
    */
@@ -10177,7 +11025,7 @@ export interface IdeaOpening {
 }
 export interface IdentityChange {
   /**
-   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level.
    */
   op:
     | "addKey"
@@ -10186,13 +11034,18 @@ export interface IdentityChange {
     | "rotateUpdateKey"
     | "commitUpdateKey"
     | "replaceRecoveryCommitment"
-    | "useRecoveryKey";
+    | "useRecoveryKey"
+    | "declareAssuranceLevel";
   role: IdentityKeyRole;
   verificationMethod?: string;
   keyType?: KeyType;
   publicKeyMultibase?: string;
   commitment?: string;
   relationships?: DidVerificationRelationship[];
+  /**
+   * `declareAssuranceLevel` only: the level declared.
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
@@ -10222,6 +11075,10 @@ export interface IdentityChangePreview {
    */
   updateKeyRotates: boolean;
   recoverySigning?: RecoverySigningRequest;
+  /**
+   * The key assurance level the resulting document declares (CONVENTIONS.md §3.4).
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
@@ -10233,7 +11090,7 @@ export interface IdentityKeyCustody {
   keyId?: string;
   origin?: KeyOrigin;
   /**
-   * Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+   * Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
    */
   exportable: boolean;
   /**
@@ -10241,7 +11098,7 @@ export interface IdentityKeyCustody {
    */
   neverExportable: boolean;
   /**
-   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5).
    */
   inBackups: boolean;
   protection: ProtectionClass;
@@ -10253,6 +11110,10 @@ export interface IdentityKeyCustody {
    * True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
    */
   destroyed?: boolean;
+  /**
+   * The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published.
+   */
+  custodian?: RecoveryCustodian;
 }
 /**
  * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
@@ -10814,7 +11675,7 @@ export interface KeyRoleSummary {
    */
   keys: IdentityRoleKey[];
   /**
-   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides.
+   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where `false` is a defect the VTA reports rather than hides; always `false` at level 2.
    */
   recoveryCommitted?: boolean;
   /**
@@ -10845,6 +11706,24 @@ export interface KeyScopeListed {
  */
 export interface KeyScopeNone {
   scope: "none";
+}
+/**
+ * Who may make a kudos badge (VTI-BDG-004). `nobody`: no kudos badges. `roles`: holders of any of `roles`, or members of any of `groups`. `members`: every active member.
+ */
+export interface KudosMakers {
+  policy: "nobody" | "roles" | "members";
+  /**
+   * Community role names. Read exactly when `policy` is `roles`.
+   *
+   * @maxItems 32
+   */
+  roles?: string[];
+  /**
+   * Read exactly when `policy` is `roles`.
+   *
+   * @maxItems 32
+   */
+  groups?: GroupId[];
 }
 /**
  * Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.
@@ -11177,6 +12056,68 @@ export interface MemberResponse {
  */
 export interface Membership {}
 /**
+ * Opts a monitor subscription in to mux membership events and selects which. Its presence is the opt-in: a subscription without one receives no membership events. Every member present narrows the selection (members are ANDed; values within one member are ORed); an empty object selects every membership event the requester is entitled to see.
+ */
+export interface MembershipFilter {
+  /**
+   * Only events whose `principal` or `member` is one of these accounts.
+   *
+   * @minItems 1
+   * @maxItems 100
+   */
+  dids?: [Vid, ...Vid[]];
+  /**
+   * @minItems 1
+   */
+  changes?: [MembershipChange, ...MembershipChange[]];
+  /**
+   * @minItems 1
+   */
+  wires?: [MuxWire, ...MuxWire[]];
+  /**
+   * @minItems 1
+   */
+  sources?: [MuxSource, ...MuxSource[]];
+}
+/**
+ * A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
+ */
+export interface MemoryRecord {
+  /**
+   * The VTA context the item is scoped to; the isolation boundary.
+   */
+  contextId: string;
+  key: MemoryKey;
+  /**
+   * The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
+   */
+  version: MemoryVersion;
+  /**
+   * The remembered text. Absent when this is a tombstone or a metadata-only view.
+   */
+  value?: MemoryValue;
+  /**
+   * Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
+   */
+  valueBytes?: number;
+  /**
+   * True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`.
+   */
+  deleted: boolean;
+  /**
+   * When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions.
+   */
+  createdAt?: string;
+  /**
+   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
+   */
+  updatedAt: string;
+  /**
+   * When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
+   */
+  deletedAt?: string;
+}
+/**
  * Metadata of one stored message. Never carries the message body.
  */
 export interface MessageMeta {
@@ -11501,6 +12442,83 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
+}
+/**
+ * One change to the membership of one mux connection at the mediator: a member DID attached to or detached from a principal's connection. Not a step in the life of a message, so it is not a MonitorEvent and carries none of its members. Carries metadata only — never a message, a signed statement, a nonce or key material.
+ */
+export interface MonitorMembershipEvent {
+  /**
+   * When the change took effect, with sub-second precision where the mediator has it.
+   */
+  occurredAt: string;
+  change: MembershipChange;
+  /**
+   * The DID the connection is authenticated as, in the same form the mediator uses for accounts.
+   */
+  principal: Vid;
+  /**
+   * The member DID that attached or detached, in the same form the mediator uses for accounts.
+   */
+  member: Vid;
+  wire: MuxWire;
+  /**
+   * Whether the member rides, or rode, the connection through a stored grant or a session attach.
+   */
+  source: MuxSource;
+  /**
+   * Why, exactly as the messaging/mux/event entry for the change reports it: an AttachReason value when `change` is `attached`, a DetachReason value when it is `detached`.
+   */
+  reason: MemberChangeReason;
+  /**
+   * The connection's identifier, as its `ready` event announced it and messaging/mux/connections lists it. Absent when the mediator does not report it.
+   */
+  sessionId?: SessionId_MessagingMuxV0_1;
+}
+/**
+ * The W3C Data Integrity proof embedded in a mux statement, made by the member DID: the format and verifier Trust Tasks already use for document proofs (SPEC §4.7). The proof covers the whole statement except `proof` itself, as the cryptosuite defines. Closed: a member Data Integrity defines but this list omits is refused.
+ */
+export interface MuxDataIntegrityProof {
+  type: "DataIntegrityProof";
+  /**
+   * The W3C Data Integrity EdDSA cryptosuite used.
+   */
+  cryptosuite: "eddsa-jcs-2022" | "eddsa-rdfc-2022";
+  /**
+   * The DID URL of the verification method that signed. MUST be controlled by the statement's `issuer` and listed in that DID's current `authentication` relationship.
+   */
+  verificationMethod: string;
+  /**
+   * MUST be `authentication`. Any other value is refused with `messaging/mux:proofPurposeInvalid` — a proof made for another relationship (an `assertionMethod` credential signature, say) is never accepted as control of the DID.
+   */
+  proofPurpose: string;
+  /**
+   * OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
+   */
+  created?: string;
+  /**
+   * The multibase (base58btc) signature.
+   */
+  proofValue: string;
+}
+/**
+ * A badge as its holder sees it in their own list: the wall entry plus what only the holder knows — whether they hid it, their position for it, and the credential that evidences it.
+ */
+export interface MyBadge {
+  badge: Badge;
+  count: number;
+  since: string;
+  latestAt?: string;
+  pinned: boolean;
+  /**
+   * The holder hid it: off their wall, out of the badge's holder list for members, out of its count; the awards, the membership and the credential stand (VTI-BDG-030).
+   */
+  hidden: boolean;
+  /**
+   * The holder's order on their wall, lowest first.
+   */
+  position?: number;
+  credentialId?: GroupCredentialId;
+  credentialValidUntil?: string;
 }
 export interface NetworkMembership {
   /**
@@ -12420,6 +13438,25 @@ export interface PurgeProgress {
    */
   lastError?: string;
 }
+/**
+ * Any purpose except `modelTraining` (training, fine-tuning or evaluating a machine-learning model on the content), which `any` never grants (VTI-ACL-105).
+ */
+export interface PurposeScopeAny {
+  scope: "any";
+}
+/**
+ * Exactly the listed purposes. A request naming any other purpose is refused.
+ */
+export interface PurposeScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty set of purposes. An empty array is invalid (it is not `any`).
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  purposes: [Purpose_AclV0_3, ...Purpose_AclV0_3[]];
+}
 export interface Apns {
   platform: "apns";
   /**
@@ -12613,6 +13650,19 @@ export interface QueueSummary {
   accountType?: AccountType;
   receive: QueueDepth;
   send: QueueDepth;
+}
+/**
+ * Where a member has seen one room's conversation up to: the room version they have seen it to, and the host's `createdAt` of the newest message they have seen. A reader that keeps a copy of the room counts as unread a message first stored after `version`; a reader that keeps no copy counts one whose `createdAt` (else `updatedAt`) is after `createdAt` (rooms/changed, What a reader does with a signal, step 4). Markers are ordered by `version`, then by `createdAt` (an absent `createdAt` before any present one): the greater is further on. Carries nothing about which messages, who wrote them, or when the member read them.
+ */
+export interface ReadMarker {
+  /**
+   * The highest room version the member has seen the conversation to: every message the room held at or below this version has been shown to them. `0` means none: the member has seen nothing in the room, which is what marking a whole room unread sets. A room version as rooms/records/list returns it, never a count of messages.
+   */
+  version: number;
+  /**
+   * The host's `createdAt` of the newest message the member has seen, the member's own included — else its `updatedAt` where the host kept no `createdAt` for it — exactly as the host returned it. For a reader that keeps no copy of the room. Absent when the member has seen no message in the room. Never the author's `writtenAt`, which a writer chooses, and never when the member read it.
+   */
+  createdAt?: string;
 }
 /**
  * What the agent checked on the member's behalf, and what it found.
@@ -13005,7 +14055,7 @@ export interface RecordedApproval {
   recordedAt?: string;
 }
 /**
- * A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).
+ * A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).
  */
 export interface RecoveryCommitment {
   keyType: KeyType;
@@ -13021,6 +14071,27 @@ export interface RecoveryCommitment {
    * Operator-facing name of the custodian. Custody projection only; never published.
    */
   label?: string;
+  custodian?: RecoveryCustodian;
+}
+/**
+ * What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).
+ */
+export interface RecoveryCustodian {
+  kind: RecoveryCustodianKind;
+  /**
+   * `vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band.
+   */
+  did?: string;
+  /**
+   * `thresholdGroup` only, in custody records: the members' VTA DIDs where members are VTAs. n is at least three, because 2 ≤ t < n (VTI-KEY-210).
+   *
+   * @minItems 3
+   */
+  participants?: [string, string, string, ...string[]];
+  /**
+   * `thresholdGroup` only: t, the number of members that must authorize. MUST be less than the number of members.
+   */
+  threshold?: number;
 }
 /**
  * What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.
@@ -13523,6 +14594,36 @@ export interface RevocationReceipt {
    * When the revocation was recorded.
    */
   revokedAt: string;
+}
+/**
+ * A member DID's statement, proving current control of it, that every grant on it signed under `epoch` or earlier is void. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface RevokeAllStatement {
+  /**
+   * Always `muxRevokeAll`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxRevokeAll";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The epoch being voided: the member DID's current one.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
 }
 /**
  * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.
@@ -14182,6 +15283,65 @@ export interface RoomProfile {
   ext?: Ext;
 }
 /**
+ * The room's profile as a record carries it: the `roomProfile` member of a `SealedRecordBody`, signed by its author like every record body, with the evidence a reader needs to decide whether the author was entitled to say it.
+ *
+ * **Where it is: one record per epoch, at a key only members can compute.** On an `attributed` or `private` room the profile written under epoch `E` is stored at the record key
+ *
+ *     profile_key(E) = base64url-nopad(HKDF-SHA256(ikm = storage_key(E), salt = "", info = "openvtc/room/profile/v1" || roomId || u64be(E), L = 16))
+ *
+ * where `storage_key(E)` is the room's storage key for epoch `E` — the one records sealed under `E` are sealed with, as for a file key (`blobs.schema.json`) — `roomId` is its UTF-8 bytes exactly as on the wire, `u64be` is as `blobs.schema.json` defines it, and `salt` is the empty string. The result is 22 characters, the shape of any random record key, so to the host it is one more opaque record and the family's rule that a sealed room's keys are opaque (`RecordMetadata.key`) holds for it as for any other. A member finds it knowing nothing but the room and the epoch, which is all a member who has just joined has. Since `storage_key(E)` never leaves a member's key holder, it is the key holder that computes it (`rooms/keys/profile/read`, `rooms/keys/profile/write`).
+ *
+ * On an `open` room, which has no storage key and hides nothing from its host, the profile is the record at the fixed key `room-profile`, and its `cleartext.body` is the UTF-8 JSON of the signed `SealedRecordBody` — the object the sealed tiers seal — so that a reader verifies one thing on every tier. A writer SHOULD also set `cleartext.title` to the profile's `name`.
+ *
+ * The record is written with `rooms/records/put` like any other, so a host enforces only `write` on it and cannot tell it from any other record. Whether its author could say what the room is called is therefore decided by readers, from what the statement carries.
+ *
+ * **Who may write it.** The author's `authority` must confer `curate` or `admin` at the room's scope: `admin` because naming the room is part of governing it, `curate` because it is the standing to judge what the room's shared knowledge is, and a room's name and purpose are the first thing a member reads of it. `write` alone never suffices: every member able to add a record could otherwise rename the room for everyone.
+ *
+ * **Accepting one.** A reader resolving a room's profile MUST apply to the record at the profile's location the `SealedRecordBody` reading rules (1)–(4) — on an `open` room to the body parsed from `cleartext.body`, with rule (4) against the author the host recorded — and MUST also refuse it unless:
+ *   1. it carries `roomProfile` and none of `title`, `description`, `body`, `tags` and `file`;
+ *   2. on a sealed tier, the epoch it was sealed under is `E`, the epoch whose key located it;
+ *   3. `authority` verifies as a host verifies a chain (`AuthorityPresentation`): at most 8 links, leaf first; every link's `proof` made with a key its own `issuer` lists for `assertionMethod`; the last link issued by `roomId`; no link widening what its parent conferred, in actions, scope or validity; the whole conferring `curate` or `admin` at this room's scope; the leaf's subject equal to the body's `author`, which stands in for a host's presenter binding; and every link valid at `issuedAt` rather than at the moment of reading. The reader MUST NOT dereference a link it was not given;
+ *   4. `issuedAt` is no later than five minutes after, and no earlier than one hour before, the `updatedAt` the host reports for the record;
+ *   5. where the reader holds a `RevocationList` for the room, verified as a host verifies one, no link of `authority` is revoked by an entry whose `revokedAt` is at or before `issuedAt`.
+ * A reader MUST ignore a profile that fails any of these, as though it were absent — and, unlike an ordinary record, SHOULD say that it did, naming the author where the tier discloses one: a profile written by somebody without the standing to write it is somebody trying to rename the room.
+ *
+ * **Revocation is not retroactive.** A profile written while its author held the standing to write it stays valid after that author is removed, their grant lapses, or a `room` entry resets every credential. The statement was made with authority; withdrawing the authority withdraws what the author may do next, not what they already did, and the alternative — every member's view of the room's name going blank when whoever named it is removed — is something nobody asked for. It is not a back door. A removed party cannot write afterwards, because a host refuses every presentation a list it holds revokes; a statement back-dated into a grant its author no longer holds fails item 4 unless the host colludes; and removal advances the room's epoch, after which the owner's key holder re-writes the profile under the new epoch as the owner (`rooms/keys/profile/write`), so on the ordinary path the removed author's statement is superseded by the same act that removes them.
+ *
+ * **Choosing among several.** There is at most one profile per epoch, because there is one record per key. A reader at epoch `C` takes the profile at `profile_key(C)`; if there is none, or it fails the checks above, it tries `C - 1`, and so on down to the earliest epoch it can derive a storage key for, and takes the first one it accepts — the newest. It MUST NOT prefer an older profile to a newer one it accepts. A record at a profile location that is `retracted` is a profile deliberately cleared — retraction is `rooms/records/curate`, for which a host requires `curate` — and the walk stops there: the room has no profile. A profile accepted below `C` is **stale**: written before the room's latest epoch advance and not re-written since. A member of a `fromJoin` room cannot walk back at all, which is why the profile is re-written at every advance.
+ *
+ * **Size.** A writer SHOULD set `padding` so that the UTF-8 JSON of the signed body is a multiple of 1024 bytes, so that a host comparing ciphertext lengths learns nothing about how long the name or the description is. A reader ignores `padding`.
+ */
+export interface RoomProfileStatement {
+  profile: RoomProfile;
+  /**
+   * When the author made this statement: signed with it, the instant `authority` is evaluated at, and bounded against the host's `updatedAt` for the record so that it cannot be back-dated into a grant the author no longer holds.
+   */
+  issuedAt: string;
+  /**
+   * The author's authority chain, LEAF FIRST, ending with a credential the room issued, conferring `curate` or `admin` on `author` at this room's scope. The credentials themselves, never a zero-knowledge presentation: a reader is a member, who already sees `author`. Carried in the statement because readers, not the host, decide whether its author could say it, and a reader fetches no link it was not given. Capped at 8, as a presentation is.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  authority:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * Ignored by readers; see **Size**. A writer SHOULD use spaces.
+   */
+  padding?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
+}
+/**
  * Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.
  */
 export interface RoomRevocation {
@@ -14284,24 +15444,28 @@ export interface RotationRecord {
   cacheHorizonAt?: string;
 }
 /**
- * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.
+ * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.
  */
 export interface RuleCondition {
-  fact: "role" | "field" | "personhood" | "joinedAt";
+  fact: "role" | "field" | "personhood" | "joinedAt" | "kudosReceived" | "ideasSelected" | "electionTickets";
   /**
    * Present exactly when `fact` is `field`.
    */
   field?: FieldKey;
   /**
-   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.
+   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`.
    */
-  op: "equals" | "oneOf" | "exists" | "before" | "after";
+  op: "equals" | "oneOf" | "exists" | "before" | "after" | "atLeast";
   value?: string | boolean;
   /**
    * @minItems 1
    * @maxItems 64
    */
   values?: [string, ...string[]];
+  /**
+   * With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+   */
+  count?: number;
 }
 export interface S3Settings {
   kind: "s3";
@@ -14420,6 +15584,119 @@ export interface SealedRecord {
    * A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.
    */
   version?: number;
+}
+/**
+ * The plaintext inside `SealedRecord.ciphertext` on an `attributed` or `private` room, as JSON, signed by its author. Client to client: no host task carries it, because a host receives only ciphertext. Defined so that every member's client writes and reads the same thing.
+ *
+ * **Producing.** A writer builds the object without `proof`, signs it with a W3C Data Integrity proof whose `verificationMethod` is a key of `author` and whose `proofPurpose` is `assertionMethod`, and seals the result (its UTF-8 JSON bytes) under the AEAD that binds the same `roomId`, `key`, `version` and epoch. A writer MUST support `eddsa-jcs-2022`; `ecdsa-jcs-2019` MAY be used for a hardware-backed signer.
+ *
+ * **Reading.** After opening a record a reader MUST, before showing any member of it or trusting its `file`: (1) parse it as this object and refuse an unknown member; (2) verify `proof` against `author`'s DID document, for `assertionMethod`, as that document stood when the host stored this version's body (*Which DID document*); (3) check that `roomId`, `key` and `version` equal the location the record was sealed at — the record's `roomId` and `key`, and `sealed.version` where present, else the record's `version` (`SealedRecord`); (4) on an `attributed` room, check that `author` equals the `author` the host recorded for the record. A reader MUST refuse a record that fails any of these, and MUST NOT show it with a warning instead; the exceptions, *Which DID document* and *An author whose DID does not resolve*, show a placeholder and none of the record.
+ *
+ * **Which DID document.** Rule (2) verifies the proof of the version the reader reads against `author`'s DID document **as it stood at the host's `bodyStoredAt`** for that version (`RecordMetadataV3`) — when the host stored the body that version carries, which an edit moves and a curation does not. Not at the proof's own `created`, which the author chose, and not only against the document as it is now. A key the author rotated away after `bodyStoredAt` still verifies the version; a key rotated away before it does not. Where the author's DID method keeps its history — `did:webvh`, resolved with `versionTime` — a reader resolves the document as of `bodyStoredAt`, and a proof that fails against it is refused like any other. Where the method keeps no history, a reader can only use the current document, and a proof that fails against it may be a forgery or may be a key rotated away since the version was written, which the reader cannot tell apart: it MUST show such a record as the placeholder below — its author cannot be verified, nothing of it shown — and MUST NOT drop it silently. Where the reader has no `bodyStoredAt` — a host that predates it, or a read that does not carry it — it uses the current document, and treats a proof that fails there the same way.
+ *
+ * **A record curated before `sealed.version` existed.** A host that predates `SealedRecord.version` moved such a record's version without recording the one it was sealed at, so it opens at neither. Where a record carries no `sealed.version` and does not open at its own `version`, a reader MAY try each earlier version in turn, newest first, and use the first at which it opens; rule (3) then checks the body against that version. It MUST NOT try a version greater than the record's own. The AEAD makes a wrong guess fail rather than mislead, and the author's signature over the location makes the version that opened the one the author wrote — so the search recovers the record without trusting the host for the answer.
+ *
+ * **Why the location is signed as well as sealed.** The AEAD stops the host relocating ciphertext, but every member can open and re-seal a record. Without `roomId`, `key` and `version` under the author's signature, a member could copy another member's signed body to a new key or a later version, and on a `private` room, where the host records no author, readers would attribute it to the original author.
+ *
+ * **A profile record.** A body carrying `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its records: it MUST carry none of `title`, `description`, `body`, `tags`, `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `file`, `basis`, `confidence`, `evidence`, `validFor` and `validUntil`, and the rules for locating, accepting and choosing it are `RoomProfileStatement`'s, applied on top of the four above. A reader that opens one in the course of reading or listing the room's records SHOULD NOT present it as a record — it is how the room describes itself, not something a member wrote into it. A reader that predates `roomProfile` refuses it by rule (1), which shows nothing rather than something wrong.
+ *
+ * **Provenance: what kind of claim a record is.** `basis`, `confidence`, `evidence` and `validFor` say what the author is asserting and on what footing — an observed fact, a statement of the author's own, something checked against a credential, or an agent's inference. They are inside the signature like every other member, so a reader can attribute them to `author` exactly as it attributes the body, and a change to any of them after signing fails rule (2). All four are OPTIONAL, and a record that carries none of them — every record written before they existed — verifies and reads exactly as before: absent means the author did not say, never a default value. A writer SHOULD set `basis`; an agent writing on its own account that does not know which value applies SHOULD write `inferred`, and a client relaying what its member typed SHOULD write `declared`. **They are provenance for display and weighting, never authority.** A reader MUST NOT treat any of them as granting, widening or evidencing a permission, MUST NOT let `basis: verified` stand in for verifying what `evidence` names, and MUST NOT fetch anything because `evidence` names it (see `RecordEvidence`). A reader that shows a record SHOULD show its `basis` beside its `author` — or say that none was stated — and an agent recalling records MAY weight by `basis` and `confidence`, but MUST treat `validFor.note` like `body`: as plain text, never as instructions.
+ *
+ * **Expiry.** `validUntil` is the instant after which the author no longer stands behind the record as current — a meeting note good for a month, a decision good for years. It is signed and sealed with the body, and nothing about it is in the clear: a host never sees it on the sealed tiers, so it cannot and MUST NOT be relied on to enforce it, and a writer MUST NOT copy it into any cleartext member of the write. A reader MUST NOT present a record whose `validUntil` is at or before the reader's current time in a default listing, search, browse or agent recall, and MAY present it on an explicit request for expired records, marked as expired. Expiry hides; it does not delete. The record, its ciphertext and any file it carries stay in the room until a member with `curate` retracts it (`rooms/records/curate`) or the room's records are pruned; a curator's agent MAY retract records it finds expired, which is how a sealed room reclaims their storage without telling its host anything about expiry.
+ *
+ * **Readers that predate these members.** A reader written before `basis`, `confidence`, `evidence`, `validFor` and `validUntil` refuses a body carrying any of them by rule (1), which shows nothing rather than something wrong — in particular it can never show an expired record as current. The same holds for a key holder sealing on a writer's behalf (`rooms/keys/seal`, `bodyInvalid`). A writer that meets such a refusal MAY write the record again without the provenance members, but MUST NOT drop `validUntil` to get a record accepted: a record that silently outlives its author's own expiry is the failure this member exists to prevent.
+ *
+ * **Kind: what a reader shows a record as.** `kind` says whether a record is a note — something kept in the room's library, titled or not — a message — a turn in the room's conversation — or a reaction to another record (`RecordKind`). It is inside the signature like every other member. Absent means `note`, so every record written before `kind` existed reads as the note it always was. The set is open: a reader MUST present a record whose `kind` it does not know as a note, and MUST NOT refuse it for its `kind`. A `message` carries its words in `body` and SHOULD carry no `title`. A reader that keeps a conversation apart from a library SHOULD show messages in the first and notes in the second, and MAY show both together. A reader MUST NOT treat `kind` as authority: it describes the record and confers nothing.
+ *
+ * **Untitled records.** A reader that keeps a conversation apart from a library MAY treat a record with no `kind` and no `title` as a message — it is how a writer that may not yet use `kind` writes one (*When a writer may use these members*) — and a reader that does so shows such records and records of `kind: message` in the same conversation, ordered together. Where it shows such a record as a message, it renders its `body` as plain text, as it renders a `message`'s; where it shows it as a note, it renders markdown (*What `body` is*).
+ *
+ * **What `body` is.** On a `message`, `body` is plain text: a reader MUST NOT render it as markup — not as markdown, not as HTML, not as a link it follows — and shows its characters as written. A reader never follows a URL in a record by itself; it MAY offer to open one only after the member explicitly asks to and confirms. On a `reaction` it is the reaction's value (*A reaction's value*), plain text likewise. On a `note`, and on a record of a kind the reader does not know, which it shows as a note, it is markdown, rendered inert. On a record with no `kind` and no `title` it follows how the reader shows it: plain text where it is shown as a message (*Untitled records*), markdown where it is shown as a note. On a record carrying `file` it is also the file's caption (*A file's caption*), plain text or markdown by the same rule; a `message` carrying `file` with an empty `body` is a photo or a file sent with no caption.
+ *
+ * **When it was written.** `writtenAt` is the instant the author wrote the record (`RecordWrittenAt`), in UTC, signed with the body. It is OPTIONAL on a note; a `message` or a `reaction` SHOULD carry it. **It does not move when the record is edited:** a writer rewriting a record MUST carry the `writtenAt` of the version it rewrites, unchanged; what marks an edit is `editedAt` (*Edits*). A reader orders a room's messages by `writtenAt`, then by `key` where two are equal; a message without one is ordered by the host's `createdAt` for it (`RecordMetadataV3`), which stands in for it, else by its `updatedAt`. A reader MAY instead order a conversation by `createdAt` throughout — the order in which the room received its records — rather than by `writtenAt`; the rules below about an implausible or backdated `writtenAt` still say what it shows. **The host's times.** `createdAt` is when the host stored the record's first version, and neither an edit nor a curation moves it; `updatedAt` is when the version the reader reads was stored, and both move it. So `writtenAt`, which is also kept across edits and curation, is compared with `createdAt`: against `updatedAt` an edit made a day later, or a pin, would read as a record claiming to be older than it is. Where the reader has no `createdAt` — a host that predates it, or a listing that does not carry it — it falls back to `updatedAt` as stated below. **It is the author's claim, not a time anyone attests.** A reader MUST treat as implausible a `writtenAt` later than the host's `createdAt` for the record, or, where it has none, later than the `updatedAt` for the version it reads, or, where it has neither, later than the instant it read the record — in each case by more than five minutes, for clock skew — and a rewrite whose `writtenAt` differs from the version it rewrote, where the reader holds that version. A reader orders an implausible record by `createdAt` (else by `updatedAt`, else by the instant it read it), and MUST NOT show the claimed time as when it was written. **Backdating.** A `writtenAt` more than 24 hours before the host's `createdAt` for the record claims to have been written well before the room received it. A reader MUST order such a record by `createdAt`, not by `writtenAt`, and MUST show that it arrived later than it claims — a record may be written offline and sent later, but a member must not be able to place a message silently in the room's past. Within 24 hours a reader MAY say how long after writing the room received it. Where the reader has no `createdAt`, a `writtenAt` long before `updatedAt` is not by itself implausible, since an edit or a curation moves `updatedAt`, and a reader MAY say how long after writing the room received it. Like every member, it confers nothing.
+ *
+ * **Replies.** `inReplyTo` names the record this one answers — another record of the same room, by `key`, and OPTIONALLY the `version` the author was answering (`RecordReference`). Any kind may carry it: a message may answer a note, and a note a message. It is signed, so a reader attributes the reply's target to `author` as it attributes the body. A reader resolves it only against records it can already list or read in this room with the authority it holds, and MUST NOT fetch anything else because of it. Where the target cannot be read — never written, withdrawn (*Withdrawing a message*), retracted, pruned, expired, sealed under an epoch the reader cannot open, or failing the reading rules above — the reader MUST still show the reply, marked as answering a record that is not available, and MUST NOT show anything of a target it could not verify.
+ *
+ * **Whether the target has changed.** Where `version` is present, a reader that shows the target SHOULD say that it has changed since only when the target's **content** differs from its content at that version — never because its `version` moved, which curation also does (`rooms/records/curate`). A record's content is every member of its body except `proof`, its location (`roomId`, `key` and `version`) and `editedAt`: on the sealed tiers the signed `SealedRecordBody`, on an `open` room the `cleartext` of `rooms/records/put`. Curation sets only a record's standing — its `status` and pinning, which are outside the body on every tier — so it never changes content. On a sealed tier a target whose body was written at the version the reply names — the body's own `version`, served as `sealed.version` once the record is curated — is unchanged, however far the record's own version has moved. Where the body was written at a later version, the reader compares the two contents if it holds the named version; if it does not, it MAY say the target was edited when the target carries an `editedAt` later than the reply's `writtenAt`, and otherwise says nothing.
+ *
+ * **Nothing answers a reaction.** A writer MUST NOT name a record of kind `reaction` in `inReplyTo`, whatever the kind of the record it writes: a reaction is not answered or reacted to. A reader that reads the target of an `inReplyTo` and finds a `reaction` MUST ignore the record naming it — show it nowhere, count it as no reaction — and refuses that record alone, never the room's others. This is a reader's rule. No host enforces it, and on the sealed tiers none could: a host never sees `kind`.
+ *
+ * **Reactions.** A record of kind `reaction` is a short response to another record: its target in `inReplyTo`, which it MUST carry, and its value in `body` — an emoji or a few words (*A reaction's value*). It SHOULD carry no `title`, `description`, `tags` or `file`. A reader MUST NOT show a reaction as a note or a message; it SHOULD show the values beside the target. A reader shows no reaction whose target is not available, and MUST NOT show a reaction that lacks `inReplyTo` or whose value is longer than 64 code points or holds a line terminator; it refuses that record alone, never the room's others. Like every record on a sealed tier, a reaction's key is opaque: a writer MUST NOT encode its target, its value or its `kind` in the key.
+ *
+ * **A reaction's value.** A reaction's value is its `body` normalised to Unicode Normalization Form C (NFC) with every U+FE0E and U+FE0F (variation selectors 15 and 16) then removed, so that `❤` and `❤️` are one value. A reader and a writer apply that normalisation before both the length check and any comparison. The value is at most 64 Unicode code points, counted after normalisation, and is one line: it holds no line terminator (U+000A, U+000B, U+000C, U+000D, U+0085, U+2028 or U+2029). A value that is empty, or holds only White_Space characters, is empty, and a version whose value is empty withdraws the reaction. Two values are the same when their normalised forms are equal code point for code point. The normal form is for measuring and comparing only: a reader MAY show a value in its fully qualified form, with U+FE0F where an emoji takes it.
+ *
+ * **Counting reactions.** One reaction per author, value and target: of the reactions whose `inReplyTo.key` names the same record, those with the same `author` and the same value count once, however many records carry them; one author's different values are different reactions. A new version of a reaction record with a different non-empty value changes that author's reaction: the earlier value no longer counts for the record, and the new one does. A writer reacting with a value it already holds a reaction record for, on the same target, SHOULD write a new version of that record — the same key — rather than a new one, so that a retry after a lost response leaves one record and not two. A reaction is withdrawn by its author writing a new version of the same reaction record with an empty value, and a reader counts nothing for a current version whose value is empty. **Only the reaction's author withdraws it:** an empty version counts as a withdrawal only when its `author` is the `author` of the version it replaces; a reader that holds an earlier version by another author MUST NOT count the empty one as withdrawing that author's reaction, and goes on counting the earlier version. Since every record carrying the same author, value and target counts, a writer withdrawing a reaction MUST withdraw every reaction record its author holds with that value and target.
+ *
+ * **Removed members.** A reaction counts for as long as its record is current, whether or not its author is still a member: a removed member's reactions keep counting until a member with `curate` retracts them (`rooms/records/curate`). A member who returns under a new DID is a different author, and their reactions count beside the ones their earlier DID left, not as the same person's.
+ *
+ * **Edits.** A record is rewritten by writing a new version under the same key (`rooms/records/put`), and that is how a message or a note is edited. The writer keeps `writtenAt` (*When it was written*) and, where the room's profile lists it, sets `editedAt` (`RecordEditedAt`) to the instant it made the edit; the first version of a record MUST NOT carry `editedAt`. A reader shows a record as edited when the version it shows carries `editedAt`, and MUST NOT infer an edit from `version`, which curation also moves. `editedAt` is the author's claim, as `writtenAt` is: a reader treats one earlier than the record's `writtenAt`, or later than the host's `updatedAt` for the version by more than five minutes, as implausible, and then shows that the record was edited but not when. The new version is a whole body, signed by whoever wrote it. A reader showing a version whose `author` differs from the version it last showed for that key MUST show the new author, and MUST NOT present it as an edit by the earlier one.
+ *
+ * **What a new version keeps.** A new version MUST keep the `kind` of the version it rewrites, absent included, and a new version of a reaction MUST keep its `inReplyTo`. A reader that holds an earlier version of a record and reads a later one that changes either MUST refuse that version: it MUST NOT show it as the record, nor count it as a reaction, and it refuses that version alone, never the room's others. Without this a member with `write` could rewrite another member's message as a reaction, and every reply to it would disappear (*Nothing answers a reaction*), or move another member's reaction to a record they never reacted to. A reader that has never read an earlier version has nothing to compare. On an `open` room a host MAY refuse a new version of a message or a reaction by anyone but its original author (`rooms/records/put`, Host item 15); on the sealed tiers no host can, since it never sees `kind`, and these reader rules are the only defence (`rooms/records/put`, *Security & Privacy*).
+ *
+ * **The record's original author.** Several rules turn on whether a new version comes from the record's own author. A reader that holds an earlier version compares with it. Where a listing or a read gives the host's `createdBy` (`RecordMetadataV3`) — the author of the record's first version, recorded by the host on `open` and `attributed` rooms — a reader that sees the record for the first time uses it as the record's author for those rules: a current version whose `author` is not `createdBy` is shown as a rewrite by that author and never as the original author's edit (*Edits*); an empty version of a message or a reaction by anyone but `createdBy` is not a withdrawal (*Withdrawing a message*, *Counting reactions*), and such a reaction is counted for its own author, not for `createdBy`. `createdBy` is the host's word: on `attributed` the host already attributes every version, so it tells a reader nothing the host could not have lied about before; it cannot tell a reader whether a rewrite kept `kind` or `inReplyTo`, which only an earlier version can. On `private` there is no `createdBy`, and a first-time reader has only the version in front of it.
+ *
+ * **Withdrawing a message.** The author of a `message` withdraws it by writing a new version of it — the same key, keeping its `kind` and any `inReplyTo` — with an empty `body` and no `file`. A reader shows a current version of a message with an empty `body` and no `file` as withdrawn, or not at all, and MUST NOT show any earlier version's content in its place; replies to it stay, as answering a record that is not available (*Replies*). It counts as a withdrawal only when its `author` is the `author` of the version it replaces; one by another member is that member's rewrite (*Edits*), never the author withdrawing their own message. Withdrawing needs only `write`. It is a rewrite, not a retraction: the record keeps its key and its place, and only a member with `curate` retracts it (`rooms/records/curate`).
+ *
+ * **Tombstones.** A retracted record keeps its key and version and nothing of its body (`rooms/records/curate`). On the sealed tiers `kind`, `inReplyTo`, `writtenAt` and `editedAt` were inside the sealed body and go with it. On an `open` room they were in `cleartext`, which is the body there, so an open room's tombstone keeps none of them either (`rooms/records/put`, *Retention*). A reader that held an earlier version of a retracted record uses the `kind` and the place in the conversation that version gave it — a retracted message shown as retracted where the message was, a retracted reaction counted as no reaction. A reader that held none shows the tombstone in no conversation and in no reaction count. Replies to a retracted record stay, as answering a record that is not available (*Replies*).
+ *
+ * **An author whose DID does not resolve.** Rule (2) fails in two ways, which a reader MUST tell apart: `author`'s DID does not resolve to a DID document — it no longer resolves, or its method reports it deactivated — or the proof does not verify against the document it resolves to. A record whose proof does not verify is refused, as above, except where *Which DID document* requires the placeholder instead. For a record whose author's DID does not resolve, a reader MAY, instead of refusing it, show a placeholder saying that the record's author cannot be verified, in the room's conversation, ordered by the host's `createdAt` for it, else its `updatedAt`, so that replies naming its key still anchor to it. It MUST NOT show or use any member of the body — not its `body`, `title`, `file`, `kind`, `inReplyTo` or `writtenAt` — MUST NOT count it as a reaction, and MUST NOT accept it as the room's profile (`RoomProfileStatement`). A placeholder is not a record shown with a warning: it shows none of the record.
+ *
+ * **A file's caption.** On a record carrying `file`, `body` is the file's caption. A reader that shows the file SHOULD show its `body` with it. A manifest's `width`, `height` and `preview` let a reader lay out and show an image before fetching it; they are advisory (`FileManifest`).
+ *
+ * **When a writer may use these members.** `kind`, `inReplyTo`, `writtenAt` and `editedAt`, and the `FileManifest` members `width`, `height` and `preview` inside `file`, are gated together. A conforming reader that predates them refuses a body carrying any of them by rule (1), as it refused provenance before it knew it: a message written with `kind` is invisible to it rather than shown wrong. **Not every reader conforms.** A reader that ignores the members it does not know shows a reaction as a post holding its value, and a withdrawn reaction as an empty post — which is why a room's readers move first, and the room says when its writers may follow. A writer MUST NOT write `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height` or `preview` into a room unless the room's current profile (`RoomProfileStatement`, as a reader resolves it) lists that member in `recordMembers` (`RoomProfile`). No profile, a profile without `recordMembers`, or one the writer cannot resolve means none of them may be written — the most restrictive reading. A writer MAY rely on a profile it resolved within the room's current epoch, without resolving it again for each write; once the room's epoch advances, it resolves the profile again before writing any of them. A writer that may not use them MAY write a message as a record with `body` and no `title`, which every reader shows (*Untitled records*). On the sealed tiers a writer whose key holder signs or seals for it needs one that accepts these members: `rooms/keys/seal/0.3` does, which `trust-task-discovery` tells it, and a key holder that predates them refuses them with `bodyInvalid`, as it refuses provenance.
+ *
+ * **Turning them on.** Whether a room's readers are ready is decided out of band by the room's owner or a curator: nothing in this family tells them which readers the room's members use. They list a member in `recordMembers` only once every reader they expect in the room accepts it — non-conforming readers included, which show the new records wrong rather than not at all — and in this order: (1) the readers, including every reader of the room's profile, since a reader that predates `recordMembers` refuses the profile carrying it; (2) the owner's key holder, which re-writes the profile under each new epoch after a removal (`RoomProfileStatement`, `rooms/keys/profile/write`) and MUST accept a profile carrying `recordMembers` before any profile carries it — one that refused it would re-write an older profile, or none, and the next removal would silently turn the members off; (3) on the sealed tiers, the key holders that seal for the room's writers (`rooms/keys/seal/0.3`); (4) then the profile. No room lists them by default. A room's profile lists them when its owner or a curator writes it with them — with `rooms/keys/profile/write` on an `attributed` or `private` room, or by writing the record at `room-profile` with `rooms/records/put` on an `open` one — both of which need `curate` or `admin`.
+ */
+export interface SealedRecordBody {
+  /**
+   * The room the record was written in, exactly as on the wire.
+   */
+  roomId: string;
+  /**
+   * The record's key, as in `rooms/records/put`.
+   */
+  key: string;
+  /**
+   * The version the writer intended the record to take, as sealed with `rooms/keys/seal`: the version the body is bound to. A record curated since keeps its body and moves to a new version, and carries this one as `sealed.version` (`SealedRecord`).
+   */
+  version: number;
+  /**
+   * The DID of the party that wrote the record: the member, or the agent acting under an attenuated credential, whose key signed `proof`. On a `private` room this is the only attribution there is.
+   */
+  author: string;
+  title?: string;
+  description?: string;
+  /**
+   * The record's text: plain text on a `message`, the value on a `reaction`, markdown on a note and on a kind the reader does not know (*What `body` is*). Human-readable, never a model-optimised blob, and rendered inert.
+   */
+  body?: string;
+  /**
+   * @maxItems 32
+   */
+  tags?: string[];
+  kind?: RecordKind;
+  /**
+   * The record this one answers or, on a `reaction`, responds to. See *Replies* and *Reactions*.
+   */
+  inReplyTo?: RecordReference;
+  writtenAt?: RecordWrittenAt;
+  editedAt?: RecordEditedAt;
+  basis?: RecordBasis;
+  confidence?: RecordConfidence;
+  evidence?: RecordEvidenceList;
+  validFor?: PermittedUse;
+  validUntil?: RecordValidUntil;
+  /**
+   * Present when the record carries a file. Its `blobRef` MUST be the one the record names in `blobs`.
+   */
+  file?: FileManifest;
+  /**
+   * Present only on the room's profile record, which then carries no `title`, `description`, `body`, `tags` or `file`. See `RoomProfileStatement`.
+   */
+  roomProfile?: RoomProfileStatement;
+  /**
+   * The author's Data Integrity proof over every other member.
+   */
+  proof: {};
 }
 export interface SealedShare {
   recipient: TrusteeIndex;
@@ -15359,6 +16636,47 @@ export interface Sync_GitNsV0_6 {
    */
   drift: DriftItem_GitNsV0_6[];
 }
+/**
+ * A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.
+ */
+export interface ThresholdRecoveryCommitment {
+  /**
+   * t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`.
+   */
+  threshold: number;
+  /**
+   * The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211).
+   *
+   * @minItems 3
+   */
+  members: [ThresholdRecoveryMember, ThresholdRecoveryMember, ThresholdRecoveryMember, ...ThresholdRecoveryMember[]];
+  /**
+   * Operator-facing name of the group. Custody projection only; never published.
+   */
+  label?: string;
+}
+/**
+ * One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).
+ */
+export interface ThresholdRecoveryMember {
+  keyType: KeyType;
+  /**
+   * The recovery key's public half. Not published by the VTA where the method commits by hash.
+   */
+  publicKeyMultibase: string;
+  /**
+   * Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.
+   */
+  proofOfPossession?: string;
+  /**
+   * Operator-facing name of the custodian. Custody projection only; never published.
+   */
+  label?: string;
+  /**
+   * Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published.
+   */
+  custodian?: RecoveryCustodian;
+}
 export interface Tier {
   /**
    * How the menu names it: desk, busy-desk.
@@ -16277,6 +17595,25 @@ export interface WakeTriggerPolicy {
    */
   allowedTriggers: string[];
 }
+/**
+ * One badge on a member's wall as a viewer sees it: the badge, how many times the member holds it, since when, and whether the member pinned it. Hidden badges are never wall entries (VTI-BDG-030).
+ */
+export interface WallEntry {
+  badge: Badge;
+  /**
+   * Accepted awards of this badge the member holds.
+   */
+  count: number;
+  /**
+   * When the member first accepted this badge.
+   */
+  since: string;
+  /**
+   * When the member last accepted an award of this badge.
+   */
+  latestAt?: string;
+  pinned: boolean;
+}
 export interface WalrusSettings {
   kind: "walrus";
   /**
@@ -16295,6 +17632,98 @@ export interface WalrusSettings {
    * How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.
    */
   extendBeforeEpochs: number;
+}
+/**
+ * A did:webs DID as the VTA holds it. The DID document is not here: the host derives it from `keri.cesr`, which `vta/webs/dids/get` returns on request. Every key named here is public, and every key id names a key the VTA holds and never returns.
+ */
+export interface WebsDidRecord {
+  /**
+   * The DID: `did:webs:<domain>:<path segments>:<AID>`, a port in the domain written `%3A<port>`.
+   */
+  did: string;
+  /**
+   * The KERI autonomic identifier: the self-addressing digest of the inception event, and the DID's final segment. It never changes: a rotation changes the keys, not the AID.
+   */
+  aid: string;
+  /**
+   * Context the DID belongs to. Its keys were derived in it, and deleting that context destroys them.
+   */
+  contextId: string;
+  /**
+   * The VTA's id for the hosting server that serves the slot.
+   */
+  serverId: string;
+  /**
+   * The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.
+   */
+  domain: string;
+  /**
+   * The slot on the hosting server: the path segments, then the AID, separated by `/`.
+   */
+  slot: string;
+  /**
+   * Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.
+   */
+  keriCesrUrl: string;
+  /**
+   * Where the derived document is served: `https://<domain>/<slot>/did.json`.
+   */
+  didJsonUrl: string;
+  /**
+   * Operator-facing label. Never published.
+   */
+  label?: string;
+  /**
+   * Whether this is its context's primary DID.
+   */
+  primary?: boolean;
+  /**
+   * Sequence number of the latest event in the key event log.
+   */
+  sequenceNumber: number;
+  /**
+   * The latest event as `<sequence number>:<SAID>`, the form `expectedVersionId` is compared against (vta/dids method profile `webs`, §3). Both parts are compared: a sequence number alone does not distinguish two events at the same position.
+   */
+  versionId: string;
+  /**
+   * The VTA's id for the current signing key, the one key of the key state (`kt` 1). It signs the DID's key events and what the DID signs as itself. After deactivation, the key the final rotation installed, which the VTA signs nothing more with.
+   */
+  signingKeyId: string;
+  /**
+   * The current signing key in CESR (an Ed25519 key, `D…`). The document's verification method for it is `<did>#<signingKey>`.
+   */
+  signingKey: string;
+  /**
+   * The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.
+   */
+  nextKeyId?: string;
+  /**
+   * The VTA's id for the designated key agreement key.
+   */
+  keyAgreementKeyId: string;
+  /**
+   * The designated key agreement key in CESR (an X25519 key, `C…`). Never the X25519 key converted from a signing key.
+   */
+  keyAgreementKey: string;
+  /**
+   * The designated aliases in force, the DID itself first. The did:webs resolution of the DID requires the AID to designate it, so the list is never empty while the DID is live.
+   */
+  alsoKnownAs: string[];
+  /**
+   * The designated services in force, `#didcomm` and `#tsp` included when present.
+   */
+  services: DesignatedService[];
+  /**
+   * True once `vta/webs/dids/delete` has published the rotation to no next keys. Irreversible.
+   */
+  deactivated: boolean;
+  /**
+   * When the deactivating rotation was published. Present exactly when `deactivated` is true.
+   */
+  deactivatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  ext?: Ext;
 }
 /**
  * A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.

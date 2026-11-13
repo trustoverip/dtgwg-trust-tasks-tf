@@ -6,6 +6,180 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.15...trust-tasks-https-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **rs,build,cli,codegen**: Review fixes — declared guard code, SchemaValidator, keyword slugs, generate --lang rs, registry hints, docs.rs ([#1215](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1215))
+
+* fix(rs): declared acl/revoke code in the guard, a caching SchemaValidator, docs.rs metadata
+
+  - guards::acl::reject_last_authority returns acl/revoke:lastAuthorityProtected,
+    the code every acl/revoke version declares (was snake_case); new
+    LAST_AUTHORITY_PROTECTED constant, pinned to the generated declarations ([#1093](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1093)).
+  - validate::SchemaValidator: a PayloadValidator compiling each schema once,
+    cached by the schema text's address and confirmed against its content;
+    validate_value and check_details use a shared one; prune_payload reuses a
+    parsed-schema cache; PayloadPolicy::accept_unvalidated() ([#1091](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1091)).
+  - docs.rs builds trust-tasks-rs with validate + acl and the facade with its
+    non-spec features, and trust-tasks-rs / trust-tasks-https enable doc_cfg
+    under docsrs, without which the docs.rs build cannot compile ([#1106](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1106)).
+
+- **https,proof**: Verify client response proofs as received, hold error responses to them, and bound DID resolution by default ([#1204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1204))
+
+* fix(https,proof)!: verify client response proofs as received, hold error responses to them, and bound DID resolution by default
+
+  HttpsClient verified a response's proof over the parsed and re-serialised
+  document, so a valid signature over, for example, an issuedAt written with
+  +00:00 was refused. It now verifies over the body exactly as received, as
+  the server already does.
+
+  With a response verifier configured, a trust-task-error response is now
+  returned as TrustTaskError only when its proof verifies and its issuer and
+  recipient match the configured VIDs. Otherwise it is returned as the new
+  ClientError::UnverifiedErrorResponse, which keeps the document for
+  diagnostics but marks it as unattested. ClientError is now non_exhaustive.
+
+  HttpsServer with a verifier and no explicit DID-method choice now accepts
+  did:key only (DEFAULT_ALLOWED_DID_METHODS). allowed_did_methods widens it;
+  the new allow_any_did_method lifts it. A server without a verifier is
+  unchanged.
+
+  CachedDidResolver now gives every resolution a deadline
+  (DEFAULT_RESOLUTION_TIMEOUT, 10 s, with_timeout) and refuses a DID naming
+  localhost or a loopback, private-network or link-local address before the
+  client is called (allow_private_hosts opts out). with_host_filter adds a
+  caller-supplied host allow-list.
+
+- **https,dart-https**: Cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors ([#1205](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1205))
+
+* fix(https,dart-https)!: cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors
+
+  Rust HttpsClient and Dart HttpsClient:
+
+  - The response body is read up to a cap (256 KiB by default,
+    max_response_bytes / maxResponseBytes) and refused beyond it, with a new
+    ResponseTooLarge error. A declared Content-Length over the cap is refused
+    before reading.
+  - server_url / base must be https. Plain http is accepted for a loopback
+    host, or elsewhere with allow_insecure_http / allowInsecureHttp, but a
+    bearer token is never sent over non-loopback http.
+  - Redirects are not followed by default; a 3xx is returned as an HTTP status
+    error so the signed document is never re-posted elsewhere. Rust can opt
+    into same-origin redirects with follow_redirects(true); an https client
+    never downgrades to http.
+  - Error text no longer quotes the response body: HttpStatus keeps at most
+    512 bytes in its field and leaves it out of Display; decode errors keep
+    only the category and position.
+
+  Dart only: every error the HTTP client raises (TLS included) is wrapped as
+  TransportException; the timeout now covers reading the body and cancels the
+  read when it fires; a responseVerifier requires a serverVid; a platform
+  client that followed a redirect anyway is detected by its final URL.
+
+- **runtime**: Settle or release the item-11 claim on every remaining path ([#1177](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1177))
+
+- Rust: the claim stays armed across a retryable refusal's awaited
+    release and is disarmed on the next statement, so a pipeline dropped
+    mid-release still releases it. A response or refusal whose `Serialize`
+    panics is recorded with no response before the panic continues.
+  - HTTPS server: `release_claim` holds a drop guard across its awaited
+    release, on both the refusal and the panic branch.
+  - `ReplayGuard::release_abandoned` documents that it must not block,
+    require a runtime context or panic, and the default's degradation for a
+    `release` that suspends, which a test now pins.
+  - Go: a `MarshalJSON` panic in `settle` records the claim with no
+    response, then the panic continues.
+  - Dart: a final refusal that cannot be encoded releases the claim, so a
+    resend is evaluated again, before the error is rethrown.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth ([#1171](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1171))
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+
+
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.14...trust-tasks-https-v0.37.15) — 2026-11-11
+
+
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.13...trust-tasks-https-v0.37.14) — 2026-11-10
+
+
+## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.12...trust-tasks-https-v0.37.13) — 2026-11-10
+
+
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.11...trust-tasks-https-v0.37.12) — 2026-11-09
+
+
+## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.10...trust-tasks-https-v0.37.11) — 2026-11-09
+
+
+## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.9...trust-tasks-https-v0.37.10) — 2026-11-08
+
+
+## [0.37.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.8...trust-tasks-https-v0.37.9) — 2026-11-08
+
+
+## [0.37.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.7...trust-tasks-https-v0.37.8) — 2026-11-07
+
+
+## [0.37.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.6...trust-tasks-https-v0.37.7) — 2026-11-06
+
+
+## [0.37.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.5...trust-tasks-https-v0.37.6) — 2026-11-05
+
+
+## [0.37.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.4...trust-tasks-https-v0.37.5) — 2026-11-05
+
+
+## [0.37.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.3...trust-tasks-https-v0.37.4) — 2026-11-05
+
+
+## [0.37.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.2...trust-tasks-https-v0.37.3) — 2026-11-05
+
+
 ## [0.37.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.1...trust-tasks-https-v0.37.2) — 2026-11-04
 
 

@@ -176,7 +176,7 @@ section {
   color: var(--tt-accent-on);
   border-color: var(--tt-accent);
 }
-.btn--primary:hover { background: var(--tt-teal); border-color: var(--tt-teal); color: #fff; }
+.btn--primary:hover { background: var(--tt-teal-text); border-color: var(--tt-teal-text); color: #fff; }
 
 .btn--ghost {
   border-color: var(--tt-line-strong);
@@ -398,9 +398,6 @@ a.btn[class*="--primary"]:hover { border-bottom-color: var(--tt-teal); }
 }
 .nav__links a:hover { color: var(--tt-text); }
 
-@media (max-width: 720px) {
-  .nav__links { display: none; }
-}
 
 /* ------------------------------------------------------------
    Hero

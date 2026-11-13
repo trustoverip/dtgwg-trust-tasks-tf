@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/mux/update/0.1",
+  "title": "Messaging — Mux Update — payload",
+  "description": "Narrow a stored grant — a smaller scope or an earlier expiry — without a new member signature. Anything that widens is refused. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "grantId"
+  ],
+  "properties": {
+    "grantId": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/GrantId",
+      "description": "The grant to narrow."
+    },
+    "scope": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxScope",
+      "description": "The new effective scope. MUST be a subset of the grant's current effective scope."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The new effective expiry. MUST be in the future and no later than the grant's current effective expiry."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Mux Update — response payload",
+      "description": "The success response to a messaging/mux/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grant",
+        "changed"
+      ],
+      "properties": {
+        "grant": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/GrantView",
+          "description": "The grant as it now stands."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False when the request named the values already in force."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

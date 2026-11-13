@@ -101,7 +101,11 @@ type Received[R any] struct {
 //
 // The Go TSP library resolves no VIDs, so the caller supplies the sender
 // identity — look it up from [AdvertisedSender] in your own store. decode reads
-// the request payload from JSON. handler returns the response document (build it
+// the request payload from JSON. A document holding two members whose names
+// differ only by case is refused malformedRequest before decode runs; decode
+// itself sees exact names only as far as it checks them — pass one built on
+// trusttasks.CheckMemberNames once this module requires a core that has it.
+// handler returns the response document (build it
 // with [tt.RespondWith]) or nil for a fire-and-forget spec, or a [tt.Refusal]
 // error.
 //
@@ -151,14 +155,27 @@ func Consume[P, R any](
 		return &Received[R]{Outcome: out, Transport: transport, Reply: reply}
 	}
 
-	// A raw view for the paths that answer before the typed decode. UnpackTrustTask
-	// guarantees string id and type, so this always parses.
+	// A raw view for the paths that answer before the typed decode.
+	// UnpackTrustTask guarantees string id and type, but another member can
+	// still fail to parse (an issuedAt that is not a string, a threadId that is
+	// a number). The sender is authenticated, so that body is answered
+	// malformedRequest (binding §4), not dropped — addressed from whichever
+	// routing members did parse.
 	var raw tt.Document[json.RawMessage]
 	if err := json.Unmarshal(unpacked.Document, &raw); err != nil {
-		return &Received[R]{
-			Outcome:   tt.ConsumeOutcome[R]{Kind: tt.OutcomeRejected},
-			Transport: transport,
-		}, err
+		return refused(routingView(unpacked.Document), tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "body is not a well-formed Trust Task document",
+		}), nil
+	}
+
+	// Two members differing only by case would be read as one by encoding/json
+	// and as two by every other reader; see caseFoldedDuplicate.
+	if _, dup := caseFoldedDuplicate(unpacked.Document); dup {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "document has two members whose names differ only by case",
+		}), nil
 	}
 
 	payload, err := decode(raw.Payload)
@@ -193,10 +210,14 @@ func Consume[P, R any](
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
 		Doc:           doc,
-		MyVID:         transport.Local,
-		Now:           now,
-		NewErrorID:    c.newID,
-		Handler:       handler,
+		// The document as it arrived: the item-11 digest is over it, so a
+		// member the payload type does not model still tells two documents
+		// under one id apart.
+		Received:   unpacked.Document,
+		MyVID:      transport.Local,
+		Now:        now,
+		NewErrorID: c.newID,
+		Handler:    handler,
 	})
 	if err != nil {
 		// A handler error that is not a Refusal, or a misconfiguration. The core
@@ -222,6 +243,34 @@ func PackReply(sender *tsp.PrivateIdentity, receiver *tsp.Identity, reply json.R
 		return nil, errors.New("tsp: nothing to reply with")
 	}
 	return PackTrustTask(reply, sender, receiver)
+}
+
+// routingView reads the members an error response is addressed from — id,
+// type, issuer, recipient and the thread members — out of a body that did not
+// parse as a whole, keeping each only when it is a string.
+func routingView(body json.RawMessage) *tt.Document[json.RawMessage] {
+	var members map[string]json.RawMessage
+	_ = json.Unmarshal(body, &members) // UnpackTrustTask checked it is an object
+	str := func(key string) *string {
+		var v *string // a JSON null leaves it nil
+		if json.Unmarshal(members[key], &v) != nil {
+			return nil
+		}
+		return v
+	}
+	doc := &tt.Document[json.RawMessage]{
+		Issuer:         str("issuer"),
+		Recipient:      str("recipient"),
+		ThreadID:       str("threadId"),
+		ParentThreadID: str("parentThreadId"),
+	}
+	if id := str("id"); id != nil {
+		doc.ID = *id
+	}
+	if typ := str("type"); typ != nil {
+		doc.Type = *typ
+	}
+	return doc
 }
 
 // documentWith rebuilds a typed document from the raw view and the decoded

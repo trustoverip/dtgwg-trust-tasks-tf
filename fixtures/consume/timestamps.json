@@ -1,0 +1,129 @@
+{
+  "description": "RFC 3339 date-time values (SPEC §4.2) as a Trust Task document's issuedAt and expiresAt carry them. Every runtime's reader must accept each `valid` value as the instant `epochMs` (milliseconds since 1970-01-01T00:00:00Z), and refuse each `invalid` one. A value is valid when it matches YYYY-MM-DDThh:mm:ss[.fraction](Z|±hh:mm) and every field is in range: month 1-12, a day the month has (leap years included), hour 0-23, minute and second 0-59 (no leap second), offset hours 0-23 and minutes 0-59. Each language's own date parser accepts, refuses or rolls over a different subset of the out-of-range values, so each runtime checks the ranges itself.",
+  "valid": [
+    {
+      "value": "2026-01-01T00:00:00Z",
+      "epochMs": 1767225600000,
+      "why": "the plain UTC form"
+    },
+    {
+      "value": "2026-01-01T00:00:00.000Z",
+      "epochMs": 1767225600000,
+      "why": "a zero fraction"
+    },
+    {
+      "value": "2026-01-01T00:00:00.5Z",
+      "epochMs": 1767225600500,
+      "why": "a one-digit fraction"
+    },
+    {
+      "value": "2026-01-01T00:00:00+00:00",
+      "epochMs": 1767225600000,
+      "why": "a zero offset"
+    },
+    {
+      "value": "2028-02-29T12:00:00Z",
+      "epochMs": 1835438400000,
+      "why": "February 29 of a leap year"
+    },
+    {
+      "value": "2000-02-29T12:00:00Z",
+      "epochMs": 951825600000,
+      "why": "February 29 of a year divisible by 400"
+    },
+    {
+      "value": "2026-04-30T23:59:59Z",
+      "epochMs": 1777593599000,
+      "why": "the last second of a 30-day month"
+    },
+    {
+      "value": "2026-12-31T23:59:59-23:59",
+      "epochMs": 1798847939000,
+      "why": "the largest negative offset"
+    },
+    {
+      "value": "2026-06-15T08:30:00+23:59",
+      "epochMs": 1781425860000,
+      "why": "the largest positive offset"
+    },
+    {
+      "value": "2026-06-15T08:30:00+05:45",
+      "epochMs": 1781491500000,
+      "why": "an offset with minutes"
+    }
+  ],
+  "invalid": [
+    {
+      "value": "2026-02-30T00:00:00Z",
+      "why": "February 30"
+    },
+    {
+      "value": "2026-02-29T00:00:00Z",
+      "why": "February 29 of a common year"
+    },
+    {
+      "value": "1900-02-29T00:00:00Z",
+      "why": "February 29 of a century year not divisible by 400"
+    },
+    {
+      "value": "2026-04-31T00:00:00Z",
+      "why": "April 31"
+    },
+    {
+      "value": "2026-13-01T00:00:00Z",
+      "why": "month 13"
+    },
+    {
+      "value": "2026-00-10T00:00:00Z",
+      "why": "month 0"
+    },
+    {
+      "value": "2026-01-00T00:00:00Z",
+      "why": "day 0"
+    },
+    {
+      "value": "2026-01-32T00:00:00Z",
+      "why": "day 32"
+    },
+    {
+      "value": "2026-01-01T24:00:00Z",
+      "why": "hour 24"
+    },
+    {
+      "value": "2026-01-01T23:60:00Z",
+      "why": "minute 60"
+    },
+    {
+      "value": "2026-12-31T23:59:60Z",
+      "why": "a leap second"
+    },
+    {
+      "value": "2026-01-01T00:00:00+24:00",
+      "why": "an offset of 24 hours"
+    },
+    {
+      "value": "2026-01-01T00:00:00+23:60",
+      "why": "an offset with minute 60"
+    },
+    {
+      "value": "2026-01-01T00:00:00+99:99",
+      "why": "an offset of 99:99"
+    },
+    {
+      "value": "2026-13-45T25:61:61Z",
+      "why": "every field out of range"
+    },
+    {
+      "value": "2026-01-01T00:00:00",
+      "why": "no zone designator"
+    },
+    {
+      "value": "2026-01-01 00:00:00Z",
+      "why": "a space for the T"
+    },
+    {
+      "value": "2026-01-01",
+      "why": "a bare date"
+    }
+  ]
+}

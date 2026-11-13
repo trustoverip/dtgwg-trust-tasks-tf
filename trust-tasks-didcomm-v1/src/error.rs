@@ -2,7 +2,7 @@
 //! vocabulary.
 
 use thiserror::Error;
-use trust_tasks_rs::RejectReason;
+use trust_tasks_rs::{RejectReason, UnanswerableBody};
 
 /// A DIDComm v1 transport failure.
 #[derive(Debug, Error)]
@@ -103,6 +103,21 @@ impl DidcommV1Error {
             _ => RejectReason::MalformedRequest {
                 reason: ENVELOPE_MALFORMED.to_string(),
             },
+        }
+    }
+}
+
+/// What [`DidcommV1Consumer`](crate::DidcommV1Consumer) reports for an
+/// attachment it could not answer: one that is not a document at all is
+/// [`InvalidDocument`](DidcommV1Error::InvalidDocument), as from
+/// [`unpack_trust_task`](crate::unpack_trust_task). A handler with no
+/// authenticated sender is never produced by this crate's unpack, which
+/// refuses such a message first.
+impl From<UnanswerableBody> for DidcommV1Error {
+    fn from(unanswerable: UnanswerableBody) -> Self {
+        match unanswerable {
+            UnanswerableBody::Unparsable(e) => DidcommV1Error::InvalidDocument(e),
+            _ => DidcommV1Error::UnauthenticatedSender,
         }
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-rs"
-version = "0.37.2"
+version = "0.38.0"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
@@ -18,11 +18,17 @@ readme = "README.md"
 keywords = ["trust-tasks", "trustoverip", "did", "json-schema", "verifiable"]
 categories = ["data-structures", "encoding"]
 publish = true
-# The generated per-spec conformance tests (1,057 files, 7.3 MB) run in this
+# The generated per-spec conformance tests (one file per specification version
+# with examples) run in this
 # repository's CI and nowhere else: a consumer never compiles another crate's
 # integration tests. Shipping them took the .crate to 9.96 MB of crates.io's
 # 10 MB upload limit.
-exclude = ["tests/conformance/"]
+#
+# CHANGELOG.md (~650 KB, and growing with every release) is excluded for the
+# same reason: the crate grew back to 9.8 MiB (#1097). It is published as each
+# crate's GitHub Release and lives in the repository; the README links there.
+# The `package` job in rust.yml fails above 9.9 MiB and warns above 9.5 MiB.
+exclude = ["tests/conformance/", "CHANGELOG.md"]
 
 [features]
 # Enables runtime payload validation against the JSON Schema bundled with
@@ -34,10 +40,11 @@ validate = ["dep:jsonschema"]
 # gets its feature from the generator, and
 # `tests/spec_feature_manifest.rs` fails if this table and `specs/` disagree.
 # trust-tasks-codegen:begin
-# One feature per top-level spec family. `default` is the umbrella, so an
-# unconfigured consumer gets every family exactly as before; the saving is
-# `default-features = false, features = ["vault"]` and friends.
-default = ["all-specs"]
+# One feature per top-level spec family, and the `all-specs` umbrella. `default`
+# is empty (#1102): every prebuilt module is deprecated, so a plain dependency
+# compiles the runtime alone. Opt in with `features = ["vault"]` and
+# friends, or `features = ["all-specs"]` for every family.
+default = []
 all-specs = [
     "acl",
     "audit",
@@ -125,17 +132,21 @@ serde_with = "3"
 chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
 thiserror = "2"
 async-trait = "0.1"
-jsonschema = { version = "0.46", default-features = false, optional = true }
+jsonschema = { version = "0.49", default-features = false, optional = true }
 # Used by codegen-emitted `FromStr` impls for newtypes whose underlying
 # JSON Schema declares a `pattern`. Pulled in transparently because the
 # typify-generated code references `::regress::Regex` directly.
-regress = "0.11"
+regress = "0.12"
 
 [dev-dependencies]
 serde_json = "1"
 tokio = { version = "1", features = ["rt", "macros"] }
 proptest = "1"
 
+# Not `all-features`: every spec family is over a thousand generated modules,
+# all deprecated (they are generated per application now), and documenting
+# them costs more memory than docs.rs gives a build. The runtime, `validate`,
+# and one family as a specimen of what generated code looks like.
 [package.metadata.docs.rs]
-all-features = true
+features = ["validate", "acl"]
 rustdoc-args = ["--cfg", "docsrs"]

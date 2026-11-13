@@ -18,13 +18,7 @@ export type JobId = string;
  * What the job asks the bridge to do — the same seven kinds git-ns/bridge/job/0.4 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.4 declares its `kind` inline rather than as a named $def; the two lists change together.
  */
 export type JobKind =
-  | "projectRoles"
-  | "createRepo"
-  | "bootstrap"
-  | "archive"
-  | "inspect"
-  | "beginBind"
-  | "beginAccountLink";
+  "projectRoles" | "createRepo" | "bootstrap" | "archive" | "inspect" | "beginBind" | "beginAccountLink";
 
 /**
  * A namespace's administrators list the bridge jobs queued or run for it — every namespace, for a community administrator — with each job's kind, state and last error. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
@@ -144,8 +138,13 @@ export type Response = GitNamespacesListBridgeJobsResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1",
   "title": "Git Namespaces — List Bridge Jobs — payload",
@@ -327,10 +326,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -486,7 +485,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

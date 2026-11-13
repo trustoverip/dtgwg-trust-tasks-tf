@@ -13,6 +13,8 @@ import (
 
 // Response Success response to vta/memory/delete. Type
 // https://trusttasks.org/spec/vta/memory/delete/0.1#response.
+//
+// Deprecated: superseded by vta/memory/delete/0.3
 type Response struct {
 	// The forgotten item's key.
 	Key string `json:"key"`
@@ -24,6 +26,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTA Memory Delete — payload
+//
+// Deprecated: superseded by vta/memory/delete/0.3
 type Payload struct {
 	// The VTA context the item lives in.
 	ContextID string `json:"contextId"`
@@ -48,7 +52,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/memory/delete/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/memory/delete/0.1#response"

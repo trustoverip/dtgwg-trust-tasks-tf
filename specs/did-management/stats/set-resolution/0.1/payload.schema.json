@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1",
+  "title": "Stats Set Resolution — payload",
+  "description": "Sets how much statistical detail the hosting service keeps over time for one slot. The outer document members are owned by the framework (SPEC §6.3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic", "resolution"],
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The slot whose statistics resolution is set."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain."
+    },
+    "resolution": {
+      "$ref": "#/$defs/Resolution",
+      "description": "The resolution to keep for this slot from now on. Declarative: requesting the resolution already set succeeds and changes nothing."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Resolution": {
+      "type": "string",
+      "enum": ["auto", "fine", "coarse", "off"],
+      "description": "`auto`: the hosting service's own policy decides, typically by the slot's traffic; this clears any override. `fine`: always keep the finest series the service offers. `coarse`: never keep the finest series, only the coarser ones. `off`: keep the slot's totals only, and no series over time."
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Stats Set Resolution — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "resolution", "previousResolution", "changed", "tier", "tierReason"],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "description": "Echo of the slot."
+        },
+        "resolution": {
+          "$ref": "#/$defs/Resolution",
+          "description": "The resolution now set for the slot."
+        },
+        "previousResolution": {
+          "$ref": "#/$defs/Resolution",
+          "description": "The resolution this request replaced; `auto` when none was set."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`false` when `previousResolution` already equalled the requested resolution."
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["fine", "coarse", "off"],
+          "description": "The detail the service keeps for the slot as of this response. Under `auto` it can change later with the slot's traffic or the service's policy."
+        },
+        "tierReason": {
+          "type": "string",
+          "enum": ["override", "policy", "traffic"],
+          "description": "Why `tier` applies: `override`, this slot's resolution; `policy`, a service-wide setting that applies to every slot; `traffic`, the service's automatic choice from the slot's activity."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

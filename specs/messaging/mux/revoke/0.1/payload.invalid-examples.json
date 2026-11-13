@@ -1,0 +1,9 @@
+[
+  {
+    "note": "Empty grantIds \u2014 omit the member instead.",
+    "payload": {
+      "as": "principal",
+      "grantIds": []
+    }
+  }
+]

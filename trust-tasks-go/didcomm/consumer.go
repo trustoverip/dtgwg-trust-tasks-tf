@@ -94,10 +94,15 @@ type Received[R any] struct {
 }
 
 // Receive opens wire addressed to the consumer's Recipient, resolving the
-// sender's key from the envelope's authenticated skid via resolve, and runs the
-// document through §7.2 for the specification spec.
+// sender's key via resolve from the bare DID of the envelope's skid, and runs the
+// document through §7.2 for the specification spec. The skid is authenticated
+// by that key: a forged one derives a key-encryption key that fails to unwrap.
 //
-// decode reads the request payload from JSON; handler returns the response
+// decode reads the request payload from JSON. A document holding two members
+// whose names differ only by case is refused malformedRequest before decode
+// runs; decode itself sees exact names only as far as it checks them — pass one
+// built on trusttasks.CheckMemberNames once this module requires a core that
+// has it; handler returns the response
 // document (build it with [tt.RespondWith]), nil for a fire-and-forget spec, or
 // a [tt.Refusal] error.
 //
@@ -172,6 +177,15 @@ func Consume[P, R any](
 		}), nil
 	}
 
+	// Two members differing only by case would be read as one by encoding/json
+	// and as two by every other reader; see caseFoldedDuplicate.
+	if _, dup := caseFoldedDuplicate(unpacked.Document); dup {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "document has two members whose names differ only by case",
+		}), nil
+	}
+
 	payload, err := decode(raw.Payload)
 	if err != nil {
 		return refused(&raw, tt.RejectReason{
@@ -204,10 +218,14 @@ func Consume[P, R any](
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
 		Doc:           doc,
-		MyVID:         transport.Local,
-		Now:           now,
-		NewErrorID:    c.newID,
-		Handler:       handler,
+		// The document as it arrived: the item-11 digest is over it, so a
+		// member the payload type does not model still tells two documents
+		// under one id apart.
+		Received:   unpacked.Document,
+		MyVID:      transport.Local,
+		Now:        now,
+		NewErrorID: c.newID,
+		Handler:    handler,
 	})
 	if err != nil {
 		// A handler error that is not a Refusal, or a misconfiguration. The core

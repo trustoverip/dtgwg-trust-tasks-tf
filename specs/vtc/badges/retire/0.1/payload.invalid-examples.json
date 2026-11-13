@@ -1,0 +1,54 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED.",
+    "payload": {
+      "reason": "The workshop programme ended."
+    }
+  },
+  {
+    "note": "`reason` is REQUIRED: a retirement is audited with why.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "Badges are addressed by BadgeId, never by their badge group's identifier; the group goes with the badge.",
+    "payload": {
+      "badgeId": "grp_Hs7Qm2Lk9Tn4Bv1X",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "There is no partial retirement: the awards are always kept (VTI-BDG-005), so no member says whether to.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "keepAwards": false,
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "A retired badge is answered with its `state` `retired`; the response is the shared Badge shape and admits no other state value.",
+    "variant": "response",
+    "payload": {
+      "badge": {
+        "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+        "kind": "community",
+        "name": "Workshop host",
+        "description": "Ran a workshop for the community.",
+        "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "mediaType": "image/png", "size": 61440 },
+        "repeatable": true,
+        "listed": true,
+        "state": "deleted",
+        "createdAt": "2026-11-06T09:00:02Z"
+      }
+    }
+  }
+]

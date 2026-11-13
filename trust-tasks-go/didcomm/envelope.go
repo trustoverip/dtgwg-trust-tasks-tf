@@ -4,6 +4,7 @@ import (
 	"crypto/ecdh"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -171,8 +172,15 @@ type Unpacked struct {
 // PackTrustTask seals doc into a DIDComm v2.1 authcrypt envelope from sender to
 // recipient (binding §2, §3.1). doc is the serialised Trust Task document; its
 // threadId (or, failing that, its id) becomes the DIDComm `thid`, and its
-// parentThreadId becomes `pthid`.
+// parentThreadId becomes `pthid`. A nil sender or recipient, or one not built
+// with [NewIdentity] / [NewPeerKey], is an error.
 func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([]byte, error) {
+	if sender == nil || sender.priv == nil {
+		return nil, errors.New("didcomm: no sender identity (build it with NewIdentity)")
+	}
+	if recipient == nil || recipient.pub == nil {
+		return nil, errors.New("didcomm: no recipient key (build it with NewPeerKey)")
+	}
 	var th threadHeaders
 	if err := json.Unmarshal(doc, &th); err != nil {
 		return nil, fmt.Errorf("didcomm: document is not a JSON object: %w", err)
@@ -197,9 +205,16 @@ func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([
 	return packAuthcrypt(plaintext, sender.priv, sender.Kid, recipient.pub, recipient.Kid)
 }
 
-// ResolveSender maps an authenticated sender DID to its X25519 key-agreement
-// key. The binding does no DID resolution itself (the Go-style model): the
-// caller supplies this, looking the DID up in its own store.
+// ResolveSender maps a sender DID — the bare DID of the envelope's skid, as
+// claimed and not yet authenticated — to its X25519 key-agreement key. The key
+// returned is what authenticates the skid: a forged one derives a
+// key-encryption key that fails to unwrap. The binding does no DID resolution
+// itself (the Go-style model): the caller supplies this, looking the DID up in
+// its own store.
+//
+// Return a non-nil error for a DID the store does not know. A nil *PeerKey, or
+// one not built with [NewPeerKey], is treated the same way: the envelope is
+// refused with [FailSenderUnresolved].
 type ResolveSender func(senderDID string) (*PeerKey, error)
 
 // UnpackTrustTask opens a DIDComm v2.1 authcrypt envelope addressed to
@@ -213,6 +228,9 @@ func UnpackTrustTask(wire []byte, recipient *Identity, resolve ResolveSender) (*
 		pk, err := resolve(bareDID(skid))
 		if err != nil {
 			return nil, err
+		}
+		if pk == nil || pk.pub == nil {
+			return nil, errors.New("resolver returned no key-agreement key")
 		}
 		return pk.pub, nil
 	})
@@ -230,10 +248,25 @@ func UnpackTrustTask(wire []byte, recipient *Identity, resolve ResolveSender) (*
 	if len(msg.Body) == 0 {
 		return nil, &EnvelopeError{Failure: FailInvalidBody, Detail: "message carries no body", Sender: inner.senderKid}
 	}
+	// DIDComm v2: the plaintext `from` names the DID whose key authcrypt
+	// authenticated, and `to` the DIDs the message was encrypted for. Both are
+	// inside the AEAD, so a mismatch is the sender's own statement disagreeing
+	// with its envelope, and the message is refused rather than attributed to
+	// either party.
+	sender := bareDID(inner.senderKid)
+	local := bareDID(recipient.Kid)
+	if msg.From != "" && bareDID(msg.From) != sender {
+		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: fmt.Sprintf("message from %s is not the authenticated sender %s", msg.From, sender), Sender: inner.senderKid}
+	}
+	if msg.To != nil && !containsDID(msg.To, local) {
+		return nil, &EnvelopeError{Failure: FailNotForThisRecipient, Detail: fmt.Sprintf("message to does not name %s", local), Sender: inner.senderKid}
+	}
 
 	return &Unpacked{
-		Document:  msg.Body,
-		Transport: Transport{Local: bareDID(inner.recipientKid), Peer: bareDID(inner.senderKid)},
+		Document: msg.Body,
+		// Local is the identity this call opened the envelope with, not a value
+		// read from the envelope.
+		Transport: Transport{Local: local, Peer: sender},
 		Thid:      msg.Thid,
 		Pthid:     msg.Pthid,
 	}, nil
@@ -258,6 +291,16 @@ func AdvertisedSender(wire []byte) string {
 	return bareDID(header.Skid)
 }
 
+// containsDID reports whether any of dids, fragment stripped, is did.
+func containsDID(dids []string, did string) bool {
+	for _, d := range dids {
+		if bareDID(d) == did {
+			return true
+		}
+	}
+	return false
+}
+
 // bareDID strips the #fragment from a DID URL: did:example:a#key-1 → did:example:a.
 func bareDID(didURL string) string {
 	if i := strings.IndexByte(didURL, '#'); i >= 0 {
@@ -274,7 +317,12 @@ func NewMessageID() string {
 
 func uuidV4() string {
 	var b [16]byte
-	_, _ = rand.Read(b[:])
+	if _, err := rand.Read(b[:]); err != nil {
+		// A document id needs entropy. Ignoring the error would mint the same
+		// all-zero id every time, which the peer's item-11 record then reads as
+		// an idConflict; fail loudly instead, as the tsp module's NewURNUUID does.
+		panic("trust-tasks: crypto/rand failed: " + err.Error())
+	}
 	b[6] = (b[6] & 0x0f) | 0x40
 	b[8] = (b[8] & 0x3f) | 0x80
 	const hexd = "0123456789abcdef"

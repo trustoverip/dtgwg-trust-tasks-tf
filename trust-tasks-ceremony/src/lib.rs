@@ -87,6 +87,11 @@ pub use affinidi::JcsSha256Digester;
 /// proof over the same document agree on what that document is.
 pub trait Digester {
     /// Returns the multibase-encoded multihash for `document` under `salt`.
+    ///
+    /// `salt` is the enactment salt already decoded from its multibase form,
+    /// whatever features are enabled. [`verify`] compares the *decoded* bytes
+    /// of what this returns with the receipt's digest, so any multibase base
+    /// will do; a value that is not multibase is [`Error::DigestEncoding`].
     fn digest(&self, document: &Value, salt: &[u8]) -> Result<String, Error>;
 }
 
@@ -474,7 +479,7 @@ pub fn verify(
     // The definition must be the one the steps were enacted under. A mismatch
     // means this receipt cannot be checked against this definition — it does not
     // mean the receipt is bad.
-    if receipt.definition_digest != definition_digest {
+    if !same_digest(&receipt.definition_digest, definition_digest) {
         return Ok(Outcome::Unverifiable {
             reason: format!(
                 "receipt pins definition digest {} but the definition supplied digests to {}",
@@ -679,7 +684,11 @@ pub fn verify(
         // --- held documents -------------------------------------------------
         if let Some(doc) = held.get(&s.id) {
             let recomputed = digester.digest(doc, &salt)?;
-            if recomputed != s.digest_multibase {
+            // The digester's own output must be multibase; one that is not is a
+            // broken backend, not a bad receipt.
+            let recomputed = decode_digest(&recomputed).map_err(Error::DigestEncoding)?;
+            let claimed = decode_digest(&s.digest_multibase);
+            if !claimed.is_ok_and(|claimed| ct_eq(&recomputed, &claimed)) {
                 return Ok(Outcome::Invalid {
                     reason: format!("step \"{}\" digest mismatch for document {}", s.step, s.id),
                 });
@@ -705,7 +714,7 @@ pub fn verify(
                 .and_then(|c| c.get("definitionDigest"))
                 .and_then(Value::as_str)
             {
-                if pinned != receipt.definition_digest {
+                if !same_digest(pinned, &receipt.definition_digest) {
                     return Ok(Outcome::Invalid {
                         reason: format!(
                             "document {} pins definition digest {pinned} but the receipt pins {}",
@@ -831,7 +840,7 @@ pub fn verify(
                     ),
                 });
             };
-            if predecessor.digest_multibase != p.digest_multibase {
+            if !same_digest(&predecessor.digest_multibase, &p.digest_multibase) {
                 return Ok(Outcome::Invalid {
                     reason: format!(
                         "document {} commits to predecessor {} with digest {} but the receipt gives that document digest {}",
@@ -973,22 +982,78 @@ fn is_ancestor(definition: &Definition, ancestor: &str, of: &str) -> bool {
     false
 }
 
+/// The longest encoded salt [`decode_salt`] accepts. A salt carries at least
+/// 128 bits of entropy (16 bytes, 22 base58btc characters); 1 KiB is far more
+/// than any salt needs, and keeps the multibase decoders, some of whose cost
+/// grows with the square of the input length, from running on a large value.
+const MAX_SALT_CHARS: usize = 1024;
+
 fn decode_salt(salt: Option<&str>) -> Result<Vec<u8>, Error> {
     match salt {
         None => Ok(Vec::new()),
-        Some(s) => {
-            #[cfg(feature = "affinidi")]
-            {
-                multibase::decode(s)
-                    .map(|(_, bytes)| bytes)
-                    .map_err(|e| Error::Salt(e.to_string()))
-            }
-            #[cfg(not(feature = "affinidi"))]
-            {
-                Ok(s.as_bytes().to_vec())
-            }
-        }
+        Some(s) if s.len() > MAX_SALT_CHARS => Err(Error::Salt(format!(
+            "salt is {} characters, longer than the {MAX_SALT_CHARS} accepted",
+            s.len()
+        ))),
+        // Decoded under every feature set: `trust-ceremony-receipt/0.1` defines
+        // `salt` as "the enactment salt, decoded from its multibase form". A
+        // backend-dependent reading would make the digests a build computes
+        // change with Cargo feature unification (#1094).
+        Some(s) => multibase::decode(s)
+            .map(|(_, bytes)| bytes)
+            .map_err(|e| Error::Salt(e.to_string())),
     }
+}
+
+/// Whether two multibase digests name the same multihash.
+///
+/// A multibase value *means* its decoded bytes, so the `z…` (base58btc) and
+/// `u…` (base64url) encodings of one multihash are the same digest, and
+/// comparing the strings would report a correct digest as a mismatch (#1094).
+/// A value that does not decode can only equal itself, byte for byte, so a
+/// malformed digest is never taken to match a well-formed one.
+fn same_digest(a: &str, b: &str) -> bool {
+    match (decode_digest(a), decode_digest(b)) {
+        (Ok(a), Ok(b)) => ct_eq(&a, &b),
+        (Err(_), Err(_)) => ct_eq(a.as_bytes(), b.as_bytes()),
+        _ => false,
+    }
+}
+
+/// The longest encoded digest [`decode_digest`] decodes. A SHA-512 multihash
+/// is 66 bytes: 91 base58btc characters, 133 base16. The bound exists for the
+/// same reason as [`MAX_SALT_CHARS`] — digests arrive in receipts and signed
+/// `prev` entries, and some multibase decoders are quadratic in input length —
+/// and a longer value is treated as one that does not decode.
+const MAX_DIGEST_CHARS: usize = 256;
+
+/// A multibase digest's bytes — its multihash.
+fn decode_digest(digest: &str) -> Result<Vec<u8>, String> {
+    if digest.len() > MAX_DIGEST_CHARS {
+        return Err(format!(
+            "digest is {} characters, longer than the {MAX_DIGEST_CHARS} accepted",
+            digest.len()
+        ));
+    }
+    multibase::decode(digest)
+        .map(|(_, bytes)| bytes)
+        .map_err(|e| e.to_string())
+}
+
+/// Byte equality whose running time depends on the inputs' length and not on
+/// where they first differ.
+///
+/// The digests are salted, and the salt is meant to stay with the receipt's
+/// holders (the receipt specification's privacy note), so comparing a
+/// recomputed digest with a claimed one should not reveal through timing how
+/// many leading bytes a guess got right. Lengths are not secret: a multihash
+/// declares its own.
+fn ct_eq(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let diff = a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y));
+    std::hint::black_box(diff) == 0
 }
 
 #[cfg(test)]

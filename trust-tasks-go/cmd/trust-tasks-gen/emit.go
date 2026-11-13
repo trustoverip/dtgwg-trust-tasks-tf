@@ -200,6 +200,31 @@ type emitter struct {
 
 func newEmitter() *emitter { return &emitter{names: map[string]bool{}} }
 
+// tailIdentifiers are the identifiers emitTail declares in every generated
+// package. They are taken before any schema-derived name, so a `$defs.Spec`,
+// an inline object at `Response.spec` or an enum constant `TypeURI`
+// (`$defs.Type` with the value `URI`) is suffixed like any other collision
+// instead of redeclaring the tail's own. All eight are reserved whether or not
+// the package emits them, so a type's name does not depend on whether the spec
+// declares a response. scripts/build-go-bindings.mjs keeps its own list.
+var tailIdentifiers = []string{
+	"TypeURI",
+	"Extends",
+	"Deprecation",
+	"ResponseTypeURI",
+	"PayloadSchemaJSON",
+	"ResponsePayloadSchemaJSON",
+	"Spec",
+	"ResponseSpec",
+}
+
+// reserveTailIdentifiers takes every name in tailIdentifiers.
+func (em *emitter) reserveTailIdentifiers() {
+	for _, name := range tailIdentifiers {
+		em.names[name] = true
+	}
+}
+
 // reserve takes preferred as a type name, suffixing 2, 3, … on a collision.
 func (em *emitter) reserve(preferred string) string {
 	name := preferred
@@ -397,10 +422,14 @@ func (em *emitter) declareEnum(node *object, values []any, hint string) string {
 	for _, v := range values {
 		s := v.(string)
 		constName := name + goIdent(s)
-		for seen[constName] {
+		// A constant shares the package scope with every type and with the
+		// tail, so it is checked against all of them (em.names), and taken
+		// there so a type declared later steers round it.
+		for seen[constName] || em.names[constName] {
 			constName += "_"
 		}
 		seen[constName] = true
+		em.names[constName] = true
 		lines = append(lines, "\t"+constName+" "+name+" = "+goString(s))
 	}
 	lines = append(lines, ")")

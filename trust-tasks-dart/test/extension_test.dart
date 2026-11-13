@@ -120,10 +120,12 @@ Future<ConsumeOutcome<auth03.Response>> consume(
       checks: checks ?? notConsequentialChecks(),
       doc: read.doc,
       received: passReceived ? (received ?? read.received) : null,
+      extendsIndex: chained,
       myVid: me,
       now: testNow,
       newErrorId: () => 'err-1',
       payloadToJson: (p) => p.toJson(),
+      responseToJson: (r) => r.toJson(),
       clock: fixedClock,
       handler: (accepted, parties) async => respondWith(
         accepted,
@@ -184,6 +186,19 @@ void main() {
     test('a cycle ends the walk', () {
       const cyclic = <String, String>{'${base}0.4': '0.3', '${base}0.3': '0.4'};
       expect(extensionChain('${base}0.4', index: cyclic), ['0.3']);
+    });
+
+    test('only a strictly earlier MINOR of the same MAJOR is a link', () {
+      // As Rust and TypeScript read SPEC §5.2: an upward, same-version or
+      // cross-MAJOR declaration in a caller-supplied index ends the walk.
+      const upward = <String, String>{'${base}0.2': '0.3'};
+      const self = <String, String>{'${base}0.2': '0.2'};
+      const crossMajor = <String, String>{'${base}2.1': '1.0'};
+      expect(extensionChain('${base}0.2', index: upward), isEmpty);
+      expect(extendsTo('${base}0.2', '${base}0.3', index: upward), isFalse);
+      expect(extensionChain('${base}0.2', index: self), isEmpty);
+      expect(extensionChain('${base}2.1', index: crossMajor), isEmpty);
+      expect(extendsTo('${base}2.1', '${base}1.0', index: crossMajor), isFalse);
     });
 
     test('another slug at the same version is never reached', () {
@@ -552,6 +567,56 @@ void main() {
     test('a value that is not the schema\'s shape is left alone', () {
       expect(prunePayload('a string', schema), 'a string');
       expect(prunePayload(null, schema), isNull);
+    });
+  });
+  group('prunePayload work limit', () {
+    // `next` is named from both `properties` and an `allOf` branch, so every
+    // level prunes its subtree twice: 2^depth steps.
+    const fanOutSchema = '''
+{
+  "\$ref": "#/\$defs/Node",
+  "\$defs": {
+    "Node": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"next": {"\$ref": "#/\$defs/Node"}, "v": {"type": "integer"}},
+      "allOf": [{"properties": {"next": {"\$ref": "#/\$defs/Node"}}}]
+    }
+  }
+}''';
+
+    Map<String, dynamic> chain(int depth, {bool extra = true}) {
+      var v = <String, dynamic>{'v': 0, if (extra) 'added': true};
+      for (var i = 1; i <= depth; i++) {
+        v = <String, dynamic>{'next': v, 'v': i, if (extra) 'added': true};
+      }
+      return v;
+    }
+
+    test('a shallow payload is still pruned', () {
+      expect(prunePayload(chain(3), fanOutSchema), chain(3, extra: false));
+    });
+
+    test('a payload beyond the limit is returned untouched, quickly', () {
+      final payload = chain(40);
+      final watch = Stopwatch()..start();
+      expect(identical(prunePayload(payload, fanOutSchema), payload), isTrue);
+      expect(watch.elapsed, lessThan(const Duration(seconds: 5)));
+    });
+
+    test('readForVersion refuses such a document as malformedRequest', () {
+      const spec = SpecPolicy(
+        typeUri: '${base}0.3',
+        payloadSchema: fanOutSchema,
+      );
+      final json = <String, dynamic>{
+        ...authDoc('0.4'),
+        'payload': chain(40),
+      };
+      final reason =
+          refused(readForVersion(json, spec, fromJson, index: chained));
+      expect(reason.code, StandardCode.malformedRequest);
+      expect(reason.message, contains('too complex to re-read'));
     });
   });
 }

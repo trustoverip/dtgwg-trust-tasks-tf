@@ -1,0 +1,24 @@
+[
+  {
+    "note": "No epoch — the request must name the epoch it voids, so a repeat never advances it twice.",
+    "payload": {
+      "did": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Negative epoch.",
+    "payload": {
+      "did": "did:web:alice.example",
+      "epoch": -1
+    }
+  },
+  {
+    "note": "Response without epochAdvanced.",
+    "variant": "response",
+    "payload": {
+      "did": "did:web:alice.example",
+      "epoch": 4,
+      "revokedGrants": 0
+    }
+  }
+]

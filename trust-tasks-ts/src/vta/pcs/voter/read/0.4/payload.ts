@@ -9,7 +9,7 @@ import type { Ext } from "../../../../../_shared/components.js";
 /**
  * A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.
  *
- * @deprecated superseded by vta/pcs/voter/read/0.6
+ * @deprecated superseded by vta/pcs/voter/read/0.7
  */
 export interface VTAPCSVoterReadPayload {
   /**
@@ -37,7 +37,7 @@ export interface VTAPCSVoterReadPayload {
 /**
  * The signed read, to send to the community.
  *
- * @deprecated superseded by vta/pcs/voter/read/0.6
+ * @deprecated superseded by vta/pcs/voter/read/0.7
  */
 export interface VTAPCSVoterReadResponsePayload {
   document: ReadDocument;
@@ -89,12 +89,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/voter/read/0.6";
+export const DEPRECATION: string | null = "superseded by vta/pcs/voter/read/0.7";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/voter/read/0.6
+ * @deprecated superseded by vta/pcs/voter/read/0.7
  */
 export type Payload = VTAPCSVoterReadPayload;
 
@@ -104,7 +104,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/voter/read
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/voter/read/0.6
+ * @deprecated superseded by vta/pcs/voter/read/0.7
  */
 export type Response = VTAPCSVoterReadResponsePayload;
 
@@ -116,8 +116,13 @@ export type Response = VTAPCSVoterReadResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/pcs/voter/read/0.4",
   "title": "VTA PCS — Voter Read — payload",
@@ -252,10 +257,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -343,7 +348,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

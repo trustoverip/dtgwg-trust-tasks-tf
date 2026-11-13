@@ -10,7 +10,11 @@
 
 import 'dart:convert';
 
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+// An application imports the library `dart run trust_tasks:generate` wrote
+// into its own package (`package:my_app/trust_tasks/acl/grant/v0_3/...`). This
+// example runs inside this package, so it uses the prebuilt library of the same
+// version, which has the same surface.
+import 'package:trust_tasks/specs/acl/grant/v0_3/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 
 const me = 'did:web:maintainer.example';
@@ -46,6 +50,7 @@ String inboundJson({String role = 'admin'}) => jsonEncode({
           'act': {'scope': 'all'},
           'keys': {'scope': 'all'},
           'capabilities': {'scope': 'ceiling'},
+          'purposes': {'scope': 'any'},
         },
       },
     });
@@ -70,11 +75,23 @@ Future<void> main() async {
 
   var executions = 0;
 
-  Future<ConsumeOutcome<acl_grant.Response>> deliver(String json) {
-    final doc = TrustTaskDocument<acl_grant.Payload>.fromJson(
-      jsonDecode(json) as Map<String, dynamic>,
+  Future<ConsumeOutcome<acl_grant.Response>> deliver(String body) async {
+    // parseTrustTaskDocument never throws: a member of the wrong type, or a
+    // body nested deeper than any document needs, comes back as a
+    // malformedRequest reason. Nothing in such a body can be trusted to address
+    // an answer to, so this example answers nothing; an HTTPS server answers
+    // it the way it answers a body that does not parse.
+    final json = jsonDecode(body);
+    final TrustTaskDocument<acl_grant.Payload> doc;
+    switch (parseTrustTaskDocument(
+      json,
       (payload) => acl_grant.Payload.fromJson(payload! as Map<String, dynamic>),
-    );
+    )) {
+      case ParsedDocument(:final document):
+        doc = document;
+      case UnparsableDocument(:final reason):
+        return Suppressed(reason);
+    }
 
     return consumeInbound<acl_grant.Payload, acl_grant.Response>(
       // What the transport authenticated about the sender. §4.8.1 cross-checks
@@ -95,6 +112,9 @@ Future<void> main() async {
       now: DateTime.parse('2026-01-01T00:00:30Z'),
       newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
       payloadToJson: (p) => p.toJson(),
+      responseToJson: (r) => r.toJson(),
+      // The document as it arrived, for the item-11 digest.
+      received: json as Map<String, dynamic>,
       handler: (accepted, parties) async {
         // Only reached once every framework check has passed.
         executions++;

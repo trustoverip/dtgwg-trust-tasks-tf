@@ -27,6 +27,16 @@ window.TT_BINDINGS = [
         href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
         language: "Rust",
       },
+      {
+        name: "@openvtc/trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ts-tsp",
+        language: "TypeScript",
+      },
+      {
+        name: "trust-tasks-go/tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
+        language: "Go",
+      },
     ],
   },
   {

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webs/dids/get/0.1",
+  "title": "VTA did:webs DIDs Get — payload",
+  "description": "Fetch one did:webs DID the VTA holds, optionally with its keri.cesr stream. Alpha.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "pattern": "^did:webs:",
+      "description": "The DID."
+    },
+    "includeKeriCesr": {
+      "type": "boolean",
+      "description": "Return the DID's keri.cesr stream as well as the record. Absent means no. The stream is the DID's whole key event history and its designations, and is the only thing the derived document can be checked against."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA did:webs DIDs Get — response payload",
+      "description": "Success response to vta/webs/dids/get. Type https://trusttasks.org/spec/vta/webs/dids/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record"
+      ],
+      "properties": {
+        "record": {
+          "$ref": "../../../_shared/0.1/webs-records.schema.json#/$defs/WebsDidRecord"
+        },
+        "keriCesr": {
+          "type": "string",
+          "description": "The keri.cesr stream as the VTA last published it, present only when `includeKeriCesr` was true. Its absence means it was not asked for, never that the DID has no history."
+        },
+        "rotationStaged": {
+          "type": "boolean",
+          "description": "Present and true when a rotation is staged but not yet committed: the host may already serve it. The VTA completes it before writing anything else."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

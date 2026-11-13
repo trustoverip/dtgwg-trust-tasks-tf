@@ -167,7 +167,7 @@ Alice asked to grant Carol administrative authority; the community requires two 
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "approval",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.3",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -187,7 +187,7 @@ Alice asked to grant Carol administrative authority; the community requires two 
           "templateDigest": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
         },
         "payload": {
-          "entry": { "subject": "did:web:carol.example", "role": "admin", "act": { "scope": "all" }, "keys": { "scope": "all" }, "capabilities": { "scope": "ceiling" }, "label": "Carol — operations" }
+          "entry": { "subject": "did:web:carol.example", "role": "admin", "act": { "scope": "all" }, "keys": { "scope": "all" }, "purposes": { "scope": "any" }, "capabilities": { "scope": "ceiling" }, "label": "Carol — operations" }
         },
         "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
         "challenge": "c7f19a3e5b2d48f0a6e1d9c4b8f20a37",
@@ -226,7 +226,7 @@ Alice asked to revoke Carol's administrative entry. The community has no adminis
         "actionId": "act_Cf9xT2kWq7Ln4Rv8",
         "category": "coolingOff",
         "kind": "acl.revoke.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/revoke/0.2",
+        "typeUri": "https://trusttasks.org/spec/acl/revoke/0.3",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T09:00:00Z",

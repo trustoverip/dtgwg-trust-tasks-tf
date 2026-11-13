@@ -44,19 +44,53 @@ library, verified and then tampered with.
 
 1. The proof is a `DataIntegrityProof` with a non-empty `cryptosuite`,
    `verificationMethod`, `proofPurpose` and `proofValue`.
-2. The cryptosuite is one this verifier accepts.
-3. `created`, when present, is a `dateTimeStamp` — ending in `Z` or an explicit
+2. `proofPurpose` names a signing relationship: `authentication`,
+   `assertionMethod`, `capabilityInvocation` or `capabilityDelegation`.
+   `keyAgreement` and any other value are refused (SPEC §4.7.3).
+3. The cryptosuite is one this verifier accepts.
+4. `created`, when present, is a `dateTimeStamp` — ending in `Z` or an explicit
    offset — and no more than `clockSkew` (60 seconds by default) in the future.
    An offset-less timestamp is refused rather than guessed at: VC Data
    Integrity §2.1 says to read it as UTC, and `DateTime.parse` would read it as
-   local time.
-4. **The proof is bound to the document's `issuer`.** A valid signature proves
+   local time. `expires`, when present, is a `dateTimeStamp` that has not
+   passed, with every field in range: no February 30, hour 24, leap second, or
+   offset beyond ±14:00.
+5. **The proof is bound to the document's `issuer`.** A valid signature proves
    only that *some* key signed. The DID part of `verificationMethod` (before
    `#`) must equal `issuer` exactly, with no normalization (SPEC §4.8), or the
    document is refused as `issuerMismatch`. Without this, anyone could sign
    with their own key while claiming to be someone else.
-5. The signature verifies over the document minus its `proof`, using the key
-   the issuer's DID resolves to.
+6. The issuer's DID document lists the `verificationMethod` under the
+   relationship `proofPurpose` names — by absolute reference, by a fragment
+   relative to the DID, or embedded — defines it under `verificationMethod`,
+   and names the issuer as its controller. A `did:key` lists its key under all
+   four signing relationships. A key published only for `keyAgreement`, or for
+   another relationship, is refused as `signatureInvalid`.
+7. An Ed25519 key is a canonically encoded point of large order. A
+   small-order key satisfies the verification equation for any message with a
+   chosen signature; ssi 4 refuses it, and ssi 3.9 does not, so this package
+   checks it whichever ssi resolves.
+8. A proof that carries `@context` carries the document's `@context`, exactly
+   (eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4 checks only that the
+   document's starts with the proof's; this verifier returns no document, so
+   it does not accept `@context` entries the signature does not cover).
+   Otherwise the proof is refused as `malformedProof`.
+9. The signature verifies over the proof configuration (the proof minus
+   `proofValue`, exactly as received) and the document minus its `proof`,
+   using that key. `signTrustTask` copies a document's `@context` into the
+   proof, as the cryptosuites' Create Proof algorithm requires.
+
+Two cases where this package refuses what `trust-tasks-proof` (Rust) accepts:
+
+- **A key embedded only under a relationship.** ssi takes the key from the
+  document's `verificationMethod` set, so a method that appears embedded under
+  `authentication` (say) and nowhere in `verificationMethod` cannot be used,
+  and the proof is refused. When it appears in both, the two must carry the
+  same key and both must name the issuer as controller.
+- **`did:scid` with a `?src=` locator.** Rust strips the locator before
+  comparing the method with its document. This package compares the
+  `verificationMethod` with the document exactly, so a reference carrying
+  `?src=` does not match the method the document lists under the bare DID.
 
 The verifier never mutates the document it is given and never throws for a bad
 one.
@@ -77,7 +111,7 @@ you accept `did:web`, prefer a resolver that caches and bounds its fetches.
 |---|---|
 | `eddsa-jcs-2022` | ✓ |
 | `ecdsa-jcs-2019` | ✓ P-256. P-384 too, but the Rust crate (through `affinidi-data-integrity` 0.7.11) accepts only P-256 for this suite, so use P-256 when a Rust peer must verify |
-| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document has no JSON-LD `@context`, so there is nothing for RDF canonicalization to expand |
+| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document is JSON whether or not it carries `@context` (SPEC §4.7.1), so it is never expanded for RDF canonicalization |
 | ML-DSA suites | — see below |
 
 Pass `cryptosuites:` to either constructor to accept a subset.
@@ -103,6 +137,10 @@ else in it, replacing any proof already there. It refuses — with a
 
 The cryptosuite follows from the key: `eddsa-jcs-2022` for Ed25519,
 `ecdsa-jcs-2019` for P-256 and P-384. `created` is written in UTC with a `Z`.
+`proofPurpose` defaults to `authentication`, the purpose SPEC §4.7.3 recommends
+for a Trust Task document; pass `assertionMethod` only where a specification
+defines the proof as an attestation. A purpose outside `signingPurposes` is an
+`ArgumentError`.
 
 It builds the proof itself instead of calling `ssi`'s generators. Before ssi
 4.3.0 those wrote `created` with no zone designator, which this verifier and

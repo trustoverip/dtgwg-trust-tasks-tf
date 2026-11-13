@@ -8,6 +8,8 @@ import type { DataCommitment, DigestMultibase, Ext, HeadVersion, ReadVerificatio
 
 /**
  * What a member asks of their own key holder: one record of a room (`key`), or up to 32 (`keys`), read from the named host, checked and opened. Exactly one of `key` and `keys` is present. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/keys/read/0.3
  */
 export interface RoomsKeysReadPayload {
   /**
@@ -36,6 +38,8 @@ export interface RoomsKeysReadPayload {
 }
 /**
  * Success response to rooms/keys/read. Type https://trusttasks.org/spec/rooms/keys/read/0.2#response. For a request naming `key`, the record and its verdict, as in 0.1, with `createdAt` and `createdBy`. For a request naming `keys`, `results`: one entry per key, each its own success or error.
+ *
+ * @deprecated superseded by rooms/keys/read/0.3
  */
 export interface RoomsKeysReadResponsePayload {
   roomId: string;
@@ -173,15 +177,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/keys/read/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/read/0.3
+ */
 export type Payload = RoomsKeysReadPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/read/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/read/0.3
+ */
 export type Response = RoomsKeysReadResponsePayload;
 
 /**
@@ -192,8 +204,13 @@ export type Response = RoomsKeysReadResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/read/0.2",
   "title": "Rooms Keys Read — payload",
@@ -526,10 +543,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -823,7 +840,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

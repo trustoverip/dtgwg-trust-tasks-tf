@@ -27,7 +27,8 @@
 //!    runs first, so a misaddressed document is suppressed (§8.1).
 //! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
 //! 7. `proof.verificationMethod` DID-method pre-screen — see
-//!    [`HttpsServerBuilder::allowed_did_methods`].
+//!    [`HttpsServerBuilder::allowed_did_methods`]. With a verifier
+//!    configured and no explicit choice, only `did:key` passes.
 //! 8. Proof verification (the only step that may egress).
 //! 9. **Duplicate-execution claim** (§7.2 item 11) — see
 //!    [`HttpsServerBuilder::replay_protection`].
@@ -68,7 +69,7 @@ use tower::limit::ConcurrencyLimitLayer;
 use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
-    discovery::DiscoveryRegistry, document_digest, erase_verifier,
+    discovery::DiscoveryRegistry, erase_verifier, received_document_digest,
     specs::trust_task_discovery::v0_4 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
     ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
     ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
@@ -162,6 +163,24 @@ struct ServerState {
     freshness: FreshnessPolicy,
 }
 
+/// Which DID methods `proof.verificationMethod` may name, as configured.
+enum DidMethodPolicy {
+    /// No explicit choice: `did:key` only when a verifier is configured
+    /// (see [`DEFAULT_ALLOWED_DID_METHODS`]); nothing to screen without one.
+    Default,
+    /// [`HttpsServerBuilder::allowed_did_methods`].
+    Only(BTreeSet<String>),
+    /// [`HttpsServerBuilder::allow_any_did_method`].
+    Any,
+}
+
+/// The DID methods a server with a verifier accepts in
+/// `proof.verificationMethod` when neither
+/// [`HttpsServerBuilder::allowed_did_methods`] nor
+/// [`HttpsServerBuilder::allow_any_did_method`] was called: `did:key`, whose
+/// key is in the identifier, so verifying it never leaves the process.
+pub const DEFAULT_ALLOWED_DID_METHODS: &[&str] = &["key"];
+
 /// Builder for [`HttpsServer`].
 pub struct HttpsServerBuilder {
     local_vid: Option<String>,
@@ -169,7 +188,7 @@ pub struct HttpsServerBuilder {
     routes: HashMap<String, Route>,
     verifier: Option<Arc<dyn DynProofVerifier>>,
     require_attribution: bool,
-    allowed_did_methods: Option<BTreeSet<String>>,
+    did_methods: DidMethodPolicy,
     replay_protection: bool,
     replay_guard: Option<Arc<dyn ReplayGuard>>,
     freshness: FreshnessPolicy,
@@ -204,9 +223,9 @@ impl HttpsServerBuilder {
 
     /// Plug in an in-band [`ProofVerifier`]. When configured, the
     /// server verifies the `proof` member of every proof-bearing
-    /// document and rejects with `proof_invalid` on failure; when
+    /// document and rejects with `proofInvalid` on failure; when
     /// absent, the server rejects proof-bearing documents with
-    /// `malformed_request` (the
+    /// `malformedRequest` (the
     /// [`PROOF_NOT_ACCEPTED_BY_POLICY`](trust_tasks_rs::PROOF_NOT_ACCEPTED_BY_POLICY)
     /// rule — matches `consume_inbound` under
     /// [`ProofPolicy::RejectIfPresent`](trust_tasks_rs::ProofPolicy::RejectIfPresent)).
@@ -440,10 +459,14 @@ impl HttpsServerBuilder {
     /// it. Pinning the accepted methods (`["key"]`, `["web", "webvh"]`, …)
     /// bounds where that egress can go.
     ///
-    /// Defaults to no restriction, which preserves existing behaviour for
-    /// servers with no verifier configured (those reject proof-bearing
-    /// documents outright and never egress). A `verificationMethod` that is
-    /// not a DID URL at all is rejected whenever a restriction is set.
+    /// **Default:** with a verifier configured and neither this nor
+    /// [`Self::allow_any_did_method`] called, only
+    /// [`DEFAULT_ALLOWED_DID_METHODS`] (`did:key`) passes — a method that
+    /// resolves over the network is opt-in, never implied by plugging in a
+    /// resolving verifier. A server with no verifier screens nothing by
+    /// default: it refuses proof-bearing documents outright and never
+    /// egresses. A `verificationMethod` that is not a DID URL at all is
+    /// rejected whenever a restriction applies.
     ///
     /// This is a coarse pre-screen at the binding boundary. Depth — resolved
     /// host allow-listing, redirect policy, per-resolution timeouts and
@@ -453,7 +476,19 @@ impl HttpsServerBuilder {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.allowed_did_methods = Some(methods.into_iter().map(Into::into).collect());
+        self.did_methods = DidMethodPolicy::Only(methods.into_iter().map(Into::into).collect());
+        self
+    }
+
+    /// Accept a `proof.verificationMethod` of any DID method, lifting the
+    /// `did:key`-only default described on [`Self::allowed_did_methods`].
+    ///
+    /// Only for a verifier that never resolves over the network, or whose
+    /// resolver bounds where it goes (a host allow-list, private addresses
+    /// refused, a deadline per resolution) — otherwise any caller can make
+    /// this server fetch from a host it names.
+    pub fn allow_any_did_method(mut self) -> Self {
+        self.did_methods = DidMethodPolicy::Any;
         self
     }
 
@@ -578,6 +613,16 @@ impl HttpsServerBuilder {
         // A builder is built once, so this is the first and only `set`; the
         // discovery handler reads the policy the server actually applies.
         let _ = self.applied_freshness.set(self.freshness);
+        let allowed_did_methods = match self.did_methods {
+            DidMethodPolicy::Only(methods) => Some(methods),
+            DidMethodPolicy::Any => None,
+            DidMethodPolicy::Default => self.verifier.is_some().then(|| {
+                DEFAULT_ALLOWED_DID_METHODS
+                    .iter()
+                    .map(|m| (*m).to_string())
+                    .collect()
+            }),
+        };
         HttpsServer {
             state: Arc::new(ServerState {
                 local_vid: self.local_vid,
@@ -585,7 +630,7 @@ impl HttpsServerBuilder {
                 routes: self.routes,
                 verifier: self.verifier,
                 require_attribution: self.require_attribution,
-                allowed_did_methods: self.allowed_did_methods,
+                allowed_did_methods,
                 // Secure by default: the record is kept unless the deployment
                 // said otherwise, and the default guard is the in-process one.
                 replay_guard: self.replay_protection.then(|| {
@@ -622,7 +667,7 @@ impl HttpsServer {
             verifier: None,
             // Secure by default: see `HttpsServerBuilder::require_attribution`.
             require_attribution: true,
-            allowed_did_methods: None,
+            did_methods: DidMethodPolicy::Default,
             // Secure by default: see `HttpsServerBuilder::replay_protection`.
             replay_protection: true,
             replay_guard: None,
@@ -847,12 +892,12 @@ async fn dispatch_handler(
     //
     //   * Verifier configured (`HttpsServerBuilder::with_verifier`):
     //     mirror `ProofPolicy::Verify` — proof-bearing documents are
-    //     verified, failure rejects `proof_invalid`. Proofless
+    //     verified, failure rejects `proofInvalid`. Proofless
     //     documents proceed; the per-spec `IS_PROOF_REQUIRED` check in
     //     the dispatch closure catches REQUIRED specs.
     //
     //   * No verifier (default): mirror `ProofPolicy::RejectIfPresent`
-    //     — proof-bearing documents are rejected `malformed_request`
+    //     — proof-bearing documents are rejected `malformedRequest`
     //     with the framework-shared `PROOF_NOT_ACCEPTED_BY_POLICY`
     //     wire message. Silently dropping a producer's proof would
     //     mislead them about the exchange's integrity guarantees, and
@@ -894,17 +939,10 @@ async fn dispatch_handler(
         // Keyed on `id`, compared on a digest of the whole canonical document
         // (`proof` included) — §7.2's *Keying and comparison*. An `id` alone
         // cannot tell the §8.4 retry it must absorb from the conflict it must
-        // reject.
-        let digest = match document_digest(&doc) {
-            Ok(digest) => digest,
-            Err(e) => {
-                return reject_response(
-                    Some(&handler),
-                    Some(&doc),
-                    RejectReason::malformed_from_serde(&e),
-                );
-            }
-        };
+        // reject. Over `received`, the body as it arrived, not `doc`
+        // re-serialised: that re-renders `issuedAt` and `expiresAt`, so two
+        // bodies spelling one instant differently would compare equal.
+        let digest = received_document_digest(&received);
 
         // §7.2 (*Bounding the record*): "A *consumer* that can establish
         // neither an `expiresAt` nor an age for a document has no window in
@@ -1048,9 +1086,52 @@ async fn dispatch_handler(
 /// Drop a claim whose execution produced no recorded response. Best-effort: a
 /// guard that cannot release leaves the record standing until `retain_until`,
 /// which is safe (item 11 still holds) but unkind to a legitimate retry.
+///
+/// Cancellation-safe: if the request future is dropped while the release is
+/// awaited (a timeout layer, a client disconnect), [`AbandonedRelease`]
+/// finishes it through [`ReplayGuard::release_abandoned`] rather than leaving
+/// the claim in flight.
 async fn release_claim(state: &ServerState, id: &str, digest: Option<&DocumentDigest>) {
     if let (Some(guard), Some(digest)) = (&state.replay_guard, digest) {
-        let _ = guard.release(id, digest).await;
+        release_with(guard.as_ref(), id, digest).await;
+    }
+}
+
+/// [`release_claim`]'s body, over the guard alone.
+async fn release_with(guard: &dyn ReplayGuard, id: &str, digest: &DocumentDigest) {
+    let pending = AbandonedRelease {
+        guard,
+        id,
+        digest,
+        armed: true,
+    };
+    let _ = guard.release(id, digest).await;
+    pending.disarm();
+}
+
+/// Releases a claim from its destructor unless disarmed — see [`release_claim`].
+struct AbandonedRelease<'a> {
+    guard: &'a dyn ReplayGuard,
+    id: &'a str,
+    digest: &'a DocumentDigest,
+    armed: bool,
+}
+
+impl AbandonedRelease<'_> {
+    fn disarm(mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for AbandonedRelease<'_> {
+    fn drop(&mut self) {
+        if self.armed {
+            // A guard that panics here loses only this release; a panic from a
+            // destructor during another unwind would abort the process.
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                self.guard.release_abandoned(self.id, self.digest);
+            }));
+        }
     }
 }
 
@@ -1168,7 +1249,7 @@ fn build_error_response(
     let new_id = format!("urn:uuid:{}", Uuid::new_v4());
     match (handler, request) {
         (Some(h), Some(req)) => {
-            // Apply §8.1 routing — identity_mismatch goes to the
+            // Apply §8.1 routing — identityMismatch goes to the
             // transport-authenticated peer (or is suppressed; we still
             // synthesise the document for the HTTP body, but route the
             // outbound recipient correctly).
@@ -1199,7 +1280,7 @@ fn build_error_response(
 }
 
 /// When `TransportHandler::reject` returns `None` (no transport-
-/// authenticated sender under identity_mismatch), the framework rule
+/// authenticated sender under identityMismatch), the framework rule
 /// (SPEC §8.1) is that the consumer SHOULD NOT emit a response. HTTP
 /// gives us no way to "not emit" — the TCP connection already exists and
 /// the peer is waiting for a status line. We therefore emit the *same*
@@ -1246,4 +1327,54 @@ fn refuse_unauthenticated_discovery(
         });
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod release_tests {
+    use super::*;
+    use std::future::Future;
+    use trust_tasks_rs::{ReplayGuardError, ReplayVerdict};
+
+    /// `release` never completes, as a store round trip in progress when the
+    /// request is cancelled; `release_abandoned` releases at once.
+    struct StalledRelease(InMemoryReplayGuard);
+
+    #[async_trait::async_trait]
+    impl ReplayGuard for StalledRelease {
+        async fn claim(
+            &self,
+            id: &str,
+            digest: &DocumentDigest,
+            retain_until: Option<chrono::DateTime<chrono::Utc>>,
+            now: chrono::DateTime<chrono::Utc>,
+        ) -> Result<ReplayVerdict, ReplayGuardError> {
+            self.0.claim(id, digest, retain_until, now).await
+        }
+        async fn release(&self, _: &str, _: &DocumentDigest) -> Result<(), ReplayGuardError> {
+            std::future::pending().await
+        }
+        fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+            self.0.release_abandoned(id, digest);
+        }
+    }
+
+    /// A request dropped while its claim's release is awaited (a timeout
+    /// layer, a client disconnect) still releases the claim.
+    #[test]
+    fn a_release_cancelled_mid_await_still_releases_the_claim() {
+        let guard = StalledRelease(InMemoryReplayGuard::new(8));
+        let digest = trust_tasks_rs::received_document_digest(&serde_json::json!({"id": "req-1"}));
+        let now = chrono::Utc::now();
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let claimed = std::pin::pin!(guard.claim("req-1", &digest, None, now)).poll(&mut cx);
+        assert!(matches!(
+            claimed,
+            std::task::Poll::Ready(Ok(ReplayVerdict::Fresh))
+        ));
+
+        let released = std::pin::pin!(release_with(&guard, "req-1", &digest)).poll(&mut cx);
+        assert!(released.is_pending());
+        // The pinned future was dropped at the end of the statement above.
+        assert_eq!(guard.0.len(), 0, "the claim was left in flight");
+    }
 }

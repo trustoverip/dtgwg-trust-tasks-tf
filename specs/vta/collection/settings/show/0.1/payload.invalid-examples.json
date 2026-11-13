@@ -1,0 +1,35 @@
+[
+  {
+    "note": "No `contextId`: the setting belongs to one trust context, and a VTA answers about no context the caller does not name (VTI-NTF-094, VTI-NTF-096).",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — asking for every context's setting at once — is refused: a party sees only the contexts it has standing in (VTI-NTF-096).",
+    "payload": {
+      "contextId": "personal",
+      "allContexts": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`changedBy` without `changedAt`: who last changed the setting and when are stated together or not at all.",
+    "payload": {
+      "setting": {
+        "contextId": "personal",
+        "collectByDefault": false,
+        "suspendedByOperator": false,
+        "changedBy": "did:key:z6MkWalletClient"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `suspendedByOperator`: a principal reading `disabled` in vta/collection/list must be able to tell its own context's setting from an operator's suspension (VTI-NTF-098).",
+    "payload": {
+      "setting": {
+        "contextId": "personal",
+        "collectByDefault": true
+      }
+    }
+  }
+]

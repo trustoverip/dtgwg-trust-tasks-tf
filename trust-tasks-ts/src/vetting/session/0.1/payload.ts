@@ -87,8 +87,13 @@ export type Response = VettingSessionResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vetting/session/0.1",
   "title": "Vetting Session — payload",
@@ -381,10 +386,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -613,7 +618,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

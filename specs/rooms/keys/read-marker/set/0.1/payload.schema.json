@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1",
+  "title": "Rooms Keys Read Marker Set — payload",
+  "description": "Tell the member's key holder where the member has now seen one room's conversation up to. The key holder keeps the further of the marker it holds and this one — the greater `version`; at equal `version`, the later `createdAt` — unless `rewind` asks it to take this one even when it is behind. Kept for the member alone: nothing here reaches the room, its host, its owner, another member or a community. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "member",
+    "readMarker"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID, as rooms/keys/list returns it."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The member whose marker this is: the DID the room admitted, as rooms/keys/list 0.3 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a marker for each."
+    },
+    "readMarker": {
+      "$ref": "../../../../_shared/0.1/read-marker.schema.json#/$defs/ReadMarker",
+      "description": "Where the member has now seen the conversation up to. Without `rewind`, kept only if it is further on than the marker the key holder holds."
+    },
+    "rewind": {
+      "type": "boolean",
+      "const": true,
+      "description": "Take `readMarker` even when it is behind the marker held: \"mark as unread\". Only `true` is meaningful, so only `true` is accepted; absent, the marker only moves forward."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Read Marker Set — response payload",
+      "description": "Success response to rooms/keys/read-marker/set. Type https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1#response. The marker now in force, which the caller adopts, and whether this request moved it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "member",
+        "readMarker",
+        "moved"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Repeated from the request."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Repeated from the request."
+        },
+        "readMarker": {
+          "$ref": "../../../../_shared/0.1/read-marker.schema.json#/$defs/ReadMarker",
+          "description": "The marker now in force: the requested one when it moved the marker, else the one the key holder already held — further on, because another of the member's devices had read further."
+        },
+        "moved": {
+          "type": "boolean",
+          "description": "`true` when this request changed the marker. `false` when the marker held was already as far on — or, for a rewind, already equal: nothing was written. A retried request answers `false`, which is what makes the task safe to repeat."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

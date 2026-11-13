@@ -3,4 +3,5 @@
 pub mod accept;
 pub mod read;
 pub mod receipt;
+pub mod receipts;
 pub mod register;

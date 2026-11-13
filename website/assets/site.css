@@ -233,11 +233,11 @@
   border: 1px solid;
 }
 .tt-status .dot { width: 6px; height: 6px; border-radius: 50%; }
-.tt-status--standard  { color: var(--tt-teal);   border-color: color-mix(in srgb, var(--tt-teal) 35%, transparent); }
+.tt-status--standard  { color: var(--tt-teal-text);   border-color: color-mix(in srgb, var(--tt-teal) 35%, transparent); }
 .tt-status--standard  .dot { background: var(--tt-teal); }
-.tt-status--candidate { color: var(--tt-amber);  border-color: color-mix(in srgb, var(--tt-amber) 40%, transparent); }
+.tt-status--candidate { color: var(--tt-amber-text);  border-color: color-mix(in srgb, var(--tt-amber) 40%, transparent); }
 .tt-status--candidate .dot { background: var(--tt-amber); }
-.tt-status--draft     { color: var(--tt-violet); border-color: color-mix(in srgb, var(--tt-violet) 35%, transparent); }
+.tt-status--draft     { color: var(--tt-violet-text); border-color: color-mix(in srgb, var(--tt-violet) 35%, transparent); }
 .tt-status--draft     .dot { background: var(--tt-violet); }
 
 /* ---------- Spec page (long-form) ------------------------- */
@@ -248,7 +248,7 @@
   padding-block: var(--tt-space-8);
 }
 @media (max-width: 980px) {
-  .tt-spec { grid-template-columns: 1fr; }
+  .tt-spec { grid-template-columns: minmax(0, 1fr); }
   .tt-spec__sidebar { position: static !important; }
 }
 .tt-spec__sidebar {
@@ -367,7 +367,7 @@
   transition: all var(--tt-duration-1) var(--tt-ease);
 }
 .tt-codeblock__copy:hover { background: rgba(255,255,255,0.15); color: #fff; }
-.tt-codeblock__copy.copied { background: var(--tt-teal); color: #fff; border-color: var(--tt-teal); }
+.tt-codeblock__copy.copied { background: var(--tt-teal-text); color: #fff; border-color: var(--tt-teal-text); }
 
 /* ---------- Hero variants --------------------------------- */
 .tt-hero {
@@ -487,7 +487,8 @@ body[data-type="hybrid"] h1, body[data-type="hybrid"] h2 {
   align-items: start;
 }
 @media (max-width: 880px) { .tt-filter-rail { grid-template-columns: 1fr; } }
-.tt-filter-rail__side h5 {
+.tt-filter-rail__side h5,
+.tt-filter-rail__side .tt-filter-group__heading {
   font-family: var(--tt-font-mono);
   font-size: var(--tt-text-xs);
   letter-spacing: var(--tt-tracking-wide);
@@ -636,9 +637,6 @@ mark.tt-mark {
   padding: 0 0.1em;
   border-radius: 2px;
 }
-
-/* ---------- Tweaks panel positioning override ------------ */
-[data-tweaks-panel] { z-index: 9999; }
 
 /* ---------- Rendered-markdown prose (framework spec) ----- */
 .tt-prose {
@@ -804,3 +802,117 @@ mark.tt-mark {
 .tt-status--retired   .dot { background: var(--tt-text-muted); }
 .tt-status--withdrawn { color: var(--tt-text-muted); border-color: color-mix(in srgb, var(--tt-text-muted) 25%, transparent); opacity: 0.65; text-decoration: line-through; }
 .tt-status--withdrawn .dot { background: var(--tt-text-muted); }
+
+/* ---------- Accessibility helpers (#1156) ----------------- */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+.tt-skip-link {
+  position: absolute;
+  left: var(--tt-space-4);
+  top: -100px;
+  z-index: calc(var(--tt-z-nav) + 1);
+  padding: var(--tt-space-2) var(--tt-space-4);
+  background: var(--tt-surface);
+  color: var(--tt-text);
+  border: 1.5px solid var(--tt-text);
+  border-radius: var(--tt-radius-sm);
+}
+.tt-skip-link:focus { top: var(--tt-space-3); }
+main:focus, main h1:focus { outline: none; }
+
+/* ---------- Narrow-width navigation (#1149) ---------------
+   The eleven links do not fit one row below this width, so the row becomes a
+   panel behind a disclosure button. Above it the button is hidden and the
+   panel is the ordinary row. */
+.nav__toggle {
+  display: none;
+  align-items: center;
+  gap: var(--tt-space-2);
+  padding: var(--tt-space-2) var(--tt-space-3);
+  font: inherit;
+  font-size: var(--tt-text-sm);
+  color: var(--tt-text);
+  background: transparent;
+  border: 1px solid var(--tt-line-strong);
+  border-radius: var(--tt-radius-sm);
+  cursor: pointer;
+}
+@media (max-width: 1240px) {
+  .nav__inner { flex-wrap: wrap; position: relative; }
+  .nav__toggle { display: inline-flex; margin-left: auto; }
+  .nav__github { display: none; }
+  .nav__panel { display: none; flex-basis: 100%; }
+  .nav__panel--open { display: block; }
+  .nav__panel .nav__links {
+    flex-direction: column;
+    gap: 0;
+    padding-block: var(--tt-space-2);
+    border-top: 1px solid var(--tt-border);
+  }
+  .nav__panel .nav__links a {
+    display: block;
+    padding: var(--tt-space-2) 0;
+    font-size: var(--tt-text-base);
+  }
+  .nav__links a.active::after { display: none; }
+  .nav__links a.active { font-weight: 500; }
+}
+
+/* ---------- Footer site map ------------------------------- */
+.tt-footer-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--tt-space-5);
+  padding-block: var(--tt-space-5);
+  margin-bottom: var(--tt-space-5);
+  border-bottom: 1px solid var(--tt-border);
+}
+.tt-footer-nav__heading {
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-xs);
+  font-weight: 400;
+  letter-spacing: var(--tt-tracking-wide);
+  text-transform: uppercase;
+  color: var(--tt-text-muted);
+  margin: 0 0 var(--tt-space-2);
+}
+.tt-footer-nav ul { list-style: none; margin: 0; padding: 0; }
+.tt-footer-nav li { padding-block: 2px; }
+
+/* ---------- Version lifecycle banner (#1155) -------------- */
+.tt-lifecycle {
+  margin: 0 0 var(--tt-space-5);
+  padding: var(--tt-space-3) var(--tt-space-4);
+  border: 1px solid var(--tt-line-strong);
+  border-left: 3px solid var(--tt-amber);
+  background: color-mix(in srgb, var(--tt-amber) 8%, var(--tt-surface));
+  color: var(--tt-text);
+}
+.tt-lifecycle--retired,
+.tt-lifecycle--withdrawn {
+  border-left-color: var(--tt-coral);
+  background: color-mix(in srgb, var(--tt-coral) 7%, var(--tt-surface));
+}
+
+/* ---------- Registry: show more --------------------------- */
+.tt-show-more { margin-top: var(--tt-space-5); text-align: center; }
+
+/* ---------- Boot fallback (#1153) ------------------------- */
+.tt-boot {
+  max-width: 40rem;
+  margin: 15vh auto;
+  padding: 0 var(--tt-space-5);
+  font-family: var(--tt-font-body);
+  color: var(--tt-text);
+}
+
+/* Long unbroken values (Type URIs, slugs) must wrap at phone width rather than
+   widen the page. */
+.tt-meta-grid dd, .tt-meta-grid dd code { min-width: 0; overflow-wrap: anywhere; }
+.tt-prose { overflow-wrap: anywhere; }
+.tt-prose pre, .tt-prose table { max-width: 100%; overflow-x: auto; }

@@ -135,8 +135,15 @@ async fn spawn_server_with(verifier: VerifierMode) -> SocketAddr {
 
     builder = match verifier {
         VerifierMode::None => builder,
-        VerifierMode::AcceptAll => builder.with_verifier(AcceptAllVerifier),
-        VerifierMode::RejectAll => builder.with_verifier(RejectAllVerifier),
+        // The stub verifiers resolve nothing, so the fixture's `did:web`
+        // proofs may reach them; the `did:key`-only default is pinned by
+        // `default_did_method_screen_*` below.
+        VerifierMode::AcceptAll => builder
+            .with_verifier(AcceptAllVerifier)
+            .allow_any_did_method(),
+        VerifierMode::RejectAll => builder
+            .with_verifier(RejectAllVerifier)
+            .allow_any_did_method(),
     };
 
     let server = builder.build();
@@ -1195,6 +1202,84 @@ async fn disallowed_did_method_never_reaches_the_verifier() {
     assert_eq!(calls.load(AtomicOrdering::SeqCst), 0);
 }
 
+/// A server with a verifier and no DID-method choice accepts `did:key` only:
+/// a `did:web` proof is refused before the verifier is asked to resolve it.
+#[tokio::test]
+async fn default_did_method_screen_admits_did_key_only_when_a_verifier_is_set() {
+    async fn spawn(calls: &Arc<AtomicUsize>, any: bool) -> SocketAddr {
+        let mut builder = HttpsServer::builder()
+            .local_vid(SERVER_VID)
+            .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
+            .with_verifier(SpyVerifier(Arc::clone(calls)))
+            .on::<list::v0_3::Payload, _>(|_req, _ctx| Ok(list_response()));
+        if any {
+            builder = builder.allow_any_did_method();
+        }
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let app = builder.build().into_router();
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+        addr
+    }
+    fn with_vm(id: &str, vm: &str) -> TrustTask<list::v0_3::Payload> {
+        let mut req = TrustTask::for_payload(id, list_payload());
+        req.proof = Some(Proof {
+            proof_type: "DataIntegrityProof".into(),
+            cryptosuite: "eddsa-jcs-2022".into(),
+            verification_method: vm.into(),
+            created: chrono::Utc::now(),
+            proof_purpose: "assertionMethod".into(),
+            proof_value: "z3kg".into(),
+            extra: Default::default(),
+        });
+        req
+    }
+
+    assert_eq!(trust_tasks_https::DEFAULT_ALLOWED_DID_METHODS, ["key"]);
+
+    let calls = Arc::new(AtomicUsize::new(0));
+    let addr = spawn(&calls, false).await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(with_vm(
+            "urn:uuid:test-default-screen-web",
+            "did:web:elsewhere.example#key-1",
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::TrustTaskError { error, .. } => {
+            assert_eq!(error.payload.code, StandardCode::ProofInvalid.into())
+        }
+        other => panic!("expected proofInvalid, got {other:?}"),
+    }
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 0);
+
+    client
+        .send::<list::v0_3::Payload>(with_vm(
+            "urn:uuid:test-default-screen-key",
+            "did:key:z6MkExample#z6MkExample",
+        ))
+        .await
+        .expect("did:key passes the default screen");
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+
+    // `allow_any_did_method` lifts the default.
+    let calls = Arc::new(AtomicUsize::new(0));
+    let addr = spawn(&calls, true).await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    client
+        .send::<list::v0_3::Payload>(with_vm(
+            "urn:uuid:test-any-method",
+            "did:web:elsewhere.example#key-1",
+        ))
+        .await
+        .expect("any method accepted when opted in");
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
 // ─── Response binding (finding 3) ─────────────────────────────────────────
 
 /// A server that answers every POST with one canned body and status. Stands
@@ -1373,6 +1458,152 @@ async fn error_response_about_another_document_is_rejected() {
             assert_eq!(actual, "urn:uuid:someone-elses-request");
         }
         other => panic!("expected ErrorResponseMismatch, got {other:?}"),
+    }
+}
+
+// ─── Response proofs: as received, and on error responses too ────────────
+
+/// A `did:key` signer for canned responses: `(secret, did)`.
+fn response_signer(seed: u8) -> (affinidi_secrets_resolver::secrets::Secret, String) {
+    use affinidi_secrets_resolver::secrets::Secret;
+    let pk_mb = Secret::generate_ed25519(None, Some(&[seed; 32]))
+        .get_public_keymultibase()
+        .expect("ed25519 public multikey");
+    let vm = format!("did:key:{pk_mb}#{pk_mb}");
+    let mut secret = Secret::generate_ed25519(Some(&vm), Some(&[seed; 32]));
+    secret.id = vm.clone();
+    (secret, vm.split('#').next().unwrap().to_string())
+}
+
+async fn sign_value(
+    doc: serde_json::Value,
+    secret: &affinidi_secrets_resolver::secrets::Secret,
+) -> serde_json::Value {
+    use trust_tasks_proof::affinidi::{sign_trust_task, SignOptions};
+    sign_trust_task(&doc, secret, SignOptions::new())
+        .await
+        .expect("sign")
+}
+
+/// A client requiring signed responses from `server_did`.
+fn verifying_client(addr: SocketAddr, server_did: &str) -> HttpsClient {
+    HttpsClient::builder()
+        .server_url(format!("http://{addr}"))
+        .server_vid(server_did)
+        .my_vid("did:web:alice.example")
+        .with_response_verifier(trust_tasks_proof::affinidi::Verifier::for_did_key())
+        .build()
+        .unwrap()
+}
+
+/// REGRESSION. The client verified a response's proof over the parsed and
+/// re-serialised document, so a genuine signature over an `issuedAt` written
+/// with `+00:00` (which re-renders as `Z`) was refused. It is now checked
+/// over the body as received.
+#[tokio::test]
+async fn a_response_proof_is_verified_over_the_body_as_received() {
+    let (secret, server_did) = response_signer(11);
+    let request_id = "urn:uuid:test-response-as-received";
+    let issued_at = Utc::now().format("%Y-%m-%dT%H:%M:%S+00:00").to_string();
+    let body = serde_json::json!({
+        "id": "urn:uuid:canned-signed-response",
+        "type": format!("{}#response", list::v0_3::Payload::TYPE_URI),
+        "threadId": request_id,
+        "issuer": server_did,
+        "recipient": "did:web:alice.example",
+        "issuedAt": issued_at,
+        "payload": serde_json::to_value(list_response()).unwrap(),
+    });
+    let signed = sign_value(body, &secret).await;
+
+    let addr = spawn_canned_server(200, signed).await;
+    let client = verifying_client(addr, &server_did);
+    client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(request_id, list_payload()))
+        .await
+        .expect("a valid signature over the received body verifies");
+}
+
+fn error_body(request_id: &str, issuer: &str) -> serde_json::Value {
+    let mut req = TrustTask::for_payload(request_id.to_string(), list_payload());
+    req.issuer = Some("did:web:alice.example".into());
+    req.recipient = Some(issuer.into());
+    let mut error_doc = req.reject_with(
+        "urn:uuid:canned-error".to_string(),
+        RejectReason::PermissionDenied {
+            reason: "nope".into(),
+        },
+    );
+    error_doc.issuer = Some(issuer.into());
+    error_doc.recipient = Some("did:web:alice.example".into());
+    serde_json::to_value(&error_doc).unwrap()
+}
+
+/// REGRESSION. With a response verifier configured, an unsigned
+/// `trust-task-error` was still returned as the server's answer. It is now
+/// reported as unverified, with the document kept for diagnostics.
+#[tokio::test]
+async fn an_unsigned_error_response_is_unverified_when_proofs_are_required() {
+    let (_secret, server_did) = response_signer(12);
+    let request_id = "urn:uuid:test-unsigned-error";
+    let addr = spawn_canned_server(403, error_body(request_id, &server_did)).await;
+    let client = verifying_client(addr, &server_did);
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(request_id, list_payload()))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::UnverifiedErrorResponse {
+            http_status,
+            reason,
+            error,
+        } => {
+            assert_eq!(http_status, 403);
+            assert!(reason.contains("no proof"), "{reason}");
+            assert_eq!(error.payload.code, StandardCode::PermissionDenied.into());
+        }
+        other => panic!("expected UnverifiedErrorResponse, got {other:?}"),
+    }
+}
+
+/// An error signed by another party is unverified too, even though its
+/// proof is internally valid.
+#[tokio::test]
+async fn an_error_response_signed_by_another_party_is_unverified() {
+    let (_server_secret, server_did) = response_signer(13);
+    let (other_secret, other_did) = response_signer(14);
+    let request_id = "urn:uuid:test-foreign-error";
+    let signed = sign_value(error_body(request_id, &other_did), &other_secret).await;
+    let addr = spawn_canned_server(403, signed).await;
+    let client = verifying_client(addr, &server_did);
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(request_id, list_payload()))
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(err, ClientError::UnverifiedErrorResponse { .. }),
+        "expected UnverifiedErrorResponse, got {err:?}"
+    );
+}
+
+/// An error signed by the configured server is its answer.
+#[tokio::test]
+async fn a_signed_error_response_from_the_server_is_returned() {
+    let (secret, server_did) = response_signer(15);
+    let request_id = "urn:uuid:test-signed-error";
+    let signed = sign_value(error_body(request_id, &server_did), &secret).await;
+    let addr = spawn_canned_server(403, signed).await;
+    let client = verifying_client(addr, &server_did);
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(request_id, list_payload()))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::TrustTaskError { http_status, error } => {
+            assert_eq!(http_status, 403);
+            assert_eq!(error.payload.code, StandardCode::PermissionDenied.into());
+        }
+        other => panic!("expected TrustTaskError, got {other:?}"),
     }
 }
 
@@ -2259,3 +2490,229 @@ mod superseded_discovery {
     }
 }
 // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+
+/// §7.2 item 11 compares the body **as received**: the same instant written
+/// with and without fractional seconds is a different serialization, so a
+/// second document under the `id` that differs only there is an `idConflict`.
+/// A digest over the parsed document re-renders the timestamp and cannot see
+/// the difference.
+#[tokio::test]
+async fn a_differently_spelled_timestamp_under_a_reused_id_is_an_id_conflict() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let issued = Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+    let with_fraction = issued.replace('Z', ".000Z");
+    let body = |issued_at: &str| {
+        serde_json::json!({
+            "id": "urn:uuid:replay-spelling",
+            "type": "https://trusttasks.org/spec/acl/list/0.3",
+            "issuer": "did:web:alice.example",
+            "recipient": SERVER_VID,
+            "issuedAt": issued_at,
+            "payload": {},
+        })
+        .to_string()
+    };
+
+    let (first_status, _) = post_raw(addr, &body(&issued)).await;
+    let (status, reply) = post_raw(addr, &body(&with_fraction)).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 409);
+    let doc: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("idConflict"));
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
+/// §7.2 item 11: a member the handler does not read — here an unrecognised
+/// top-level member — is part of the document, so adding one under a reused
+/// `id` is an `idConflict`, not a retry.
+#[tokio::test]
+async fn an_added_member_under_a_reused_id_is_an_id_conflict() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let original = replay_body("urn:uuid:replay-extra", Utc::now(), None);
+    let mut extended: serde_json::Value = serde_json::from_str(&original).unwrap();
+    extended["trace"] = serde_json::json!("abc");
+
+    let (first_status, _) = post_raw(addr, &original).await;
+    let (status, reply) = post_raw(addr, &extended.to_string()).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 409);
+    let doc: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("idConflict"));
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
+// ─── Client transport limits ─────────────────────────────────────────────
+
+/// Serve one fixed raw reply (status, headers, body) to every POST, counting
+/// the requests it receives.
+async fn spawn_raw_server(
+    status: u16,
+    headers: Vec<(&'static str, String)>,
+    body: Vec<u8>,
+) -> (SocketAddr, Arc<AtomicUsize>) {
+    let hits = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&hits);
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let app = axum::Router::new().route(
+        "/trust-tasks",
+        axum::routing::post(move || {
+            let headers = headers.clone();
+            let body = body.clone();
+            counter.fetch_add(1, AtomicOrdering::SeqCst);
+            async move {
+                let mut response = axum::response::Response::builder()
+                    .status(status)
+                    .header(axum::http::header::CONTENT_TYPE, "application/json");
+                for (name, value) in headers {
+                    response = response.header(name, value);
+                }
+                response.body(axum::body::Body::from(body)).unwrap()
+            }
+        }),
+    );
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    (addr, hits)
+}
+
+#[test]
+fn a_plain_http_server_url_is_refused_unless_loopback_or_allowed() {
+    let refused = |b: trust_tasks_https::HttpsClientBuilder| match b.build() {
+        Err(ClientError::Config(msg)) => msg,
+        Err(other) => panic!("expected a configuration error, got {other:?}"),
+        Ok(_) => panic!("expected a configuration error"),
+    };
+
+    let msg = refused(HttpsClient::builder().server_url("http://server.example"));
+    assert!(msg.contains("allow_insecure_http"), "{msg}");
+
+    // A bearer token never crosses non-loopback http, even when http is
+    // otherwise allowed.
+    let msg = refused(
+        HttpsClient::builder()
+            .server_url("http://server.example")
+            .my_token("alice")
+            .allow_insecure_http(true),
+    );
+    assert!(msg.contains("bearer token"), "{msg}");
+
+    refused(HttpsClient::builder().server_url("ftp://server.example"));
+
+    HttpsClient::builder()
+        .server_url("http://server.example")
+        .allow_insecure_http(true)
+        .build()
+        .expect("token-less http is allowed when asked for");
+    for url in [
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "http://[::1]:3000",
+    ] {
+        HttpsClient::builder()
+            .server_url(url)
+            .my_token("alice")
+            .build()
+            .unwrap_or_else(|e| panic!("{url}: {e}"));
+    }
+    HttpsClient::builder()
+        .server_url("https://server.example")
+        .my_token("alice")
+        .build()
+        .expect("https");
+}
+
+/// A redirect is returned, not followed, so the document is never re-posted
+/// to another URL.
+#[tokio::test]
+async fn redirects_are_not_followed_by_default() {
+    let (elsewhere, elsewhere_hits) = spawn_raw_server(200, Vec::new(), b"{}".to_vec()).await;
+    let (addr, _) = spawn_raw_server(
+        307,
+        vec![("location", format!("http://{elsewhere}/trust-tasks"))],
+        Vec::new(),
+    )
+    .await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-redirect",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::HttpStatus { http_status, .. } => assert_eq!(http_status, 307),
+        other => panic!("expected HttpStatus 307, got {other:?}"),
+    }
+    assert_eq!(elsewhere_hits.load(AtomicOrdering::SeqCst), 0);
+}
+
+/// A response over the cap is refused, whether or not it declares its length.
+#[tokio::test]
+async fn a_response_over_max_response_bytes_is_refused() {
+    let big = format!("{{\"pad\":\"{}\"}}", "x".repeat(4096)).into_bytes();
+    let (addr, _) = spawn_raw_server(200, Vec::new(), big).await;
+    let client = HttpsClient::builder()
+        .server_url(format!("http://{addr}"))
+        .server_vid(SERVER_VID)
+        .my_vid("did:web:alice.example")
+        .max_response_bytes(1024)
+        .build()
+        .unwrap();
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-too-large",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::ResponseTooLarge { limit } => assert_eq!(limit, 1024),
+        other => panic!("expected ResponseTooLarge, got {other:?}"),
+    }
+}
+
+/// Error text does not quote what the peer sent.
+#[tokio::test]
+async fn client_errors_do_not_quote_the_response_body() {
+    let marker = "BODY-MARKER";
+    let body = format!("{marker}{}", "z".repeat(2048)).into_bytes();
+    let (addr, _) = spawn_raw_server(502, vec![], body).await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-status-body",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    assert!(!err.to_string().contains(marker), "{err}");
+    match err {
+        ClientError::HttpStatus { body, .. } => assert!(body.len() <= 512, "{}", body.len()),
+        other => panic!("expected HttpStatus, got {other:?}"),
+    }
+
+    // A 2xx that is not the expected document: serde's own message would
+    // quote the offending value.
+    let (addr, _) = spawn_raw_server(
+        200,
+        vec![],
+        format!("{{\"id\": \"urn:uuid:x\", \"type\": \"{marker}\", \"payload\": {{}}}}")
+            .into_bytes(),
+    )
+    .await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-decode-body",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    assert!(matches!(err, ClientError::ResponseDecode(_)), "{err:?}");
+    assert!(!err.to_string().contains(marker), "{err}");
+}

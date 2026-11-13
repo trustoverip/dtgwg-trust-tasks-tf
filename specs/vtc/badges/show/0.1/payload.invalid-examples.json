@@ -1,0 +1,66 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Badges are addressed by BadgeId, not by their badge group's identifier.",
+    "payload": {
+      "badgeId": "grp_Hs7Qm2Lk9Tn4Bv1X"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `includeHolders`; the holders are a paginated listing of their own (VTI-BDG-033), never inline.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "includeHolders": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "`credentialRegime` is REQUIRED on every answer, `none` included: a portal must know whether accepting issues anything.",
+    "variant": "response",
+    "payload": {
+      "badge": {
+        "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+        "kind": "community",
+        "name": "Workshop host",
+        "description": "Ran a workshop for the community.",
+        "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+        "repeatable": true,
+        "listed": true,
+        "state": "active",
+        "createdAt": "2026-11-06T09:00:02Z"
+      },
+      "myCount": 0,
+      "myState": "none"
+    }
+  },
+  {
+    "note": "`owners` are EntryIds, never the holders' directory cards; who may see what of an owner is the directory's projection.",
+    "variant": "response",
+    "payload": {
+      "badge": {
+        "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+        "kind": "community",
+        "name": "Workshop host",
+        "description": "Ran a workshop for the community.",
+        "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+        "repeatable": true,
+        "listed": true,
+        "state": "active",
+        "createdAt": "2026-11-06T09:00:02Z"
+      },
+      "myCount": 0,
+      "myState": "none",
+      "owners": [ { "entryId": "dir_Pr1yaNatarajan00", "fields": {} } ],
+      "credentialRegime": "inside"
+    }
+  }
+]

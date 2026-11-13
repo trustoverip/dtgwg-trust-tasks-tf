@@ -119,7 +119,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a caller without unqualified `vtc.groups.manage` with `permissionDenied`, and refuse with `policyRefused` where its `groups` policy refuses.
-2. Refuse a rule on a static group, a missing rule on a dynamic group, or a rule that reads anything but verified facts — community role, `admin`- or `credential`-sourced fields, personhood, join date — with `ruleInvalid`. A rule **MUST NOT** read a `member`-sourced field.
+2. Refuse a rule on a static group, a missing rule on a dynamic group, or a rule that reads anything but verified facts — community role, `admin`- or `credential`-sourced fields, personhood, join date — with `ruleInvalid`. A rule **MUST NOT** read a `member`-sourced field, and only a badge's group reads the counts `kudosReceived`, `ideasSelected` and `electionTickets` (VTI-BDG-015, [`vtc/badges/create`](../../../badges/create/0.1/spec.md)): refuse them here with `ruleInvalid`, as `atLeast` on any other fact.
 3. Refuse `joinPolicy` on a dynamic group, and `showMembers` wider than `visibility`, with `settingsInvalid`. A community that serves only static groups **MAY** refuse a dynamic one with `kindNotServed` once its rule has been checked; it **MUST NOT** store a dynamic group it does not compute.
 4. Perform the steps above in order, store the group only after they succeed, refuse with `noKeyHolder` when it has no VTA to hold the group's keys, and **MUST NOT** hold any group key itself.
 5. Issue the group's authorization credential with an expiry, and renew it well before it lapses for as long as the group exists.

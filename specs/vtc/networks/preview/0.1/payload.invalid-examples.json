@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing `url`.",
+    "payload": {
+      "network": "did:example:whn"
+    }
+  },
+  {
+    "note": "`network` is not a DID.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "https://whn.example.org"
+    }
+  },
+  {
+    "note": "An unknown member.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "groups": []
+    }
+  }
+]

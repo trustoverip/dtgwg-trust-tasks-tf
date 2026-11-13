@@ -4,6 +4,11 @@
 
 const { useState: useS, useEffect: useE, useMemo: useM, useRef: useR } = React;
 
+/* Version ordering and per-slug collapsing live in assets/routes.js, shared
+ * with the generated TT_STATS footer and the build's link check. */
+const { cmpVersion, byVersionDesc } = window.ttRoutes;
+const latestPerSlug = window.ttRoutes.latestPerSlug;
+
 /* ============================================================
    Markdown helpers — used by SpecPage and (lightly) FrameworkSpecPage
    ============================================================ */
@@ -72,7 +77,7 @@ function renderSupersededBy(ref, setRoute) {
   const slug = m ? m[1] : ref;
   let version = m ? m[2] : null;
   if (!version) {
-    const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+    const cmpVer = cmpVersion;
     const live = (window.TT_TASKS || []).filter(t => t.slug === slug && t.status !== "retired" && t.status !== "withdrawn");
     if (live.length) version = live.reduce((a, b) => (cmpVer(a.version, b.version) >= 0 ? a : b)).version;
   }
@@ -82,6 +87,37 @@ function renderSupersededBy(ref, setRoute) {
       href={`/spec/${slug}/${version}`}
       onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug, version }); window.scrollTo(0, 0); }}
     >{slug} v{version}</a>
+  );
+}
+
+/* The "a newer version exists" notice (#1155). `task.lifecycle` is computed by
+ * scripts/build-registry.mjs with the rule the four libraries use to mark a
+ * generated module deprecated: superseded when a later version of the slug is
+ * live at an equal or higher maturity, plus retired and withdrawn. A reader
+ * arriving from a link or a search gets the same signal a library user gets
+ * from their compiler. */
+function LifecycleBanner({ task, setRoute }) {
+  const lc = task.lifecycle;
+  if (!lc || lc.state === "current") return null;
+  const succ = lc.successor && /^(.*)\/(\d+\.\d+)$/.exec(lc.successor);
+  const link = succ && (
+    <a
+      href={`/spec/${succ[1]}/${succ[2]}`}
+      onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: succ[1], version: succ[2] }); }}
+    >{succ[1] === task.slug ? `v${succ[2]}` : `${succ[1]} v${succ[2]}`}</a>
+  );
+  let text;
+  if (lc.state === "superseded") {
+    text = <>This version is <b>superseded</b>{link ? <> by {link}</> : null}. Implementations should move to the newer version; the client libraries mark this one deprecated.</>;
+  } else if (lc.state === "retired") {
+    text = <>This version is <b>retired</b>{link ? <> — use {link} instead</> : null}. It is kept for reference and is withdrawn in a later scheduled batch.</>;
+  } else {
+    text = <>This version is <b>withdrawn</b>{link ? <> — the current version is {link}</> : null}. It is history: no library generates it, and its schema stays published only so pinned digests still resolve.</>;
+  }
+  return (
+    <div className={`tt-lifecycle tt-lifecycle--${lc.state}`} role="note">
+      {text}
+    </div>
   );
 }
 
@@ -102,7 +138,7 @@ function renderSupersededBy(ref, setRoute) {
 
 /* Human-readable summary of a proofRequirement, which is either a single
  * `requirement` covering both variants or a per-variant `{request, response}`
- * pair (SPEC §7.3 item 8). The Metadata row above reads `.requirement`
+ * pair (SPEC §7.3 item 8). The Metadata row and this panel both use it; reading `.requirement`
  * directly, which renders blank for the per-variant form. */
 function proofLevels(pr) {
   if (!pr) return null;
@@ -151,7 +187,7 @@ function ClassificationPanel({ task, setRoute }) {
       <p style={{ color: "var(--tt-text-muted)" }}>
         Each declaration below is <b>descriptive</b>: it states what this task does and what it moves,
         never whether a consumer must obtain consent, approval or a step-up. That decision belongs to
-        the consumer's own policy (<SpecRef section="7.3" setRoute={() => {}}>§7.3</SpecRef> item 13).
+        the consumer's own policy (<SpecRef section="7.3" setRoute={setRoute}>§7.3</SpecRef> item 13).
       </p>
       <div style={{ borderBottom: "1px solid var(--tt-border)" }}>
         <ClassificationRow
@@ -163,13 +199,13 @@ function ClassificationPanel({ task, setRoute }) {
           label="Side effects"
           level={se && se.level}
           rationale={se && se.rationale}
-          accent={se && se.level === "destructive" ? "var(--tt-coral)" : undefined}
+          accent={se && se.level === "destructive" ? "var(--tt-coral-text)" : undefined}
         />
         <ClassificationRow
           label="Exposure"
           level={exposureLevel}
           rationale={ex && ex.rationale}
-          accent={ex && (ex.discloses === "secret" || ex.actsAsSubject) ? "var(--tt-coral)" : undefined}
+          accent={ex && (ex.discloses === "secret" || ex.actsAsSubject) ? "var(--tt-coral-text)" : undefined}
         />
         {/* Framework 0.5.0 and OPTIONAL, so the row appears only when declared —
             an "undeclared" row on every spec in the registry would be noise, and
@@ -201,12 +237,41 @@ function ClassificationPanel({ task, setRoute }) {
  * did.
  *
  * Applied to spec and binding prose. The framework spec's own page needs no
- * such rewrite: its cross-references are bare `#anchor` fragments. */
-function rewriteSpecMdLinks(html) {
-  return html.replace(
-    /href="(?:(?:\.\.\/)+|\/)SPEC\.md(#[^"]*)?"/g,
-    (_m, frag) => `href="/specification${frag || ''}"`
-  );
+ * such rewrite: its cross-references are bare `#anchor` fragments.
+ *
+ * Every other relative link is handled the same way (#1146): resolved against
+ * the prose file's served path — which is what it is written relative to —
+ * and mapped onto the site's own routes, so `../../change-role/0.1/spec.md`
+ * from acl/grant lands on /spec/acl/change-role/0.1 rather than on
+ * /spec/change-role/0.1/spec.md. The mapping is `resolveProseHref` in
+ * assets/routes.js, which the build runs over every link to check it. */
+let sharedSlugByPathCache = null;
+function sharedSlugByPath() {
+  if (!sharedSlugByPathCache) {
+    sharedSlugByPathCache = new Map((window.TT_SHARED || []).map(r => [r.sourcePath, r.slug]));
+  }
+  return sharedSlugByPathCache;
+}
+function rewriteProseLinks(html, prosePath) {
+  return window.ttRoutes.rewriteProseLinks(html, prosePath, sharedSlugByPath());
+}
+
+/* Internal links inside rendered prose are plain <a href>s in an HTML string,
+ * so React's per-link onClick is not available. This delegated handler sends
+ * a plain left-click on one that names a client-side route through the SPA
+ * router instead of a full page load. */
+function onProseClick(e) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest && e.target.closest("a[href]");
+  if (!a || a.target || a.hasAttribute("download")) return;
+  const href = a.getAttribute("href");
+  if (!href || href.charAt(0) !== "/" || href.indexOf("//") === 0) return;
+  const url = new URL(href, location.origin);
+  // A fragment on the current page is the browser's job.
+  if (url.pathname === location.pathname && url.hash) return;
+  if (!window.ttRoutes.isSpaPath(url.pathname) || typeof window.ttNavigate !== "function") return;
+  e.preventDefault();
+  window.ttNavigate(url.pathname + url.search + url.hash);
 }
 
 /* GitHub-style heading slug: strip HTML, strip punctuation (including `.`),
@@ -248,21 +313,6 @@ function injectHeadingIds(html) {
 /* ============================================================
    HOME
    ============================================================ */
-// Collapse a task list to one entry per slug — the latest non-retired version
-// — so coexisting 0.1/0.2 specs count and display as one distinct Trust Task.
-function latestPerSlug(tasks) {
-  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
-  const bySlug = new Map();
-  for (const t of tasks) {
-    const prev = bySlug.get(t.slug);
-    if (!prev) { bySlug.set(t.slug, t); continue; }
-    const pr = prev.status === "retired" || prev.status === "withdrawn", tr = t.status === "retired" || t.status === "withdrawn";
-    if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
-    if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
-  }
-  return [...bySlug.values()];
-}
-
 // Distinct-slug count per category (not per version).
 function countSlugsByCategory(tasks) {
   const sets = {};
@@ -721,7 +771,7 @@ function SpecListRow({ task, dateLabel, dateValue, setRoute }) {
         <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginLeft: "0.4em" }}>v{task.version}</span>
       </span>
       <span className="tt-home-list__title">{task.title}</span>
-      <span className="tt-home-list__cat" style={{ color: catColor(task.category) }}>{cat ? cat.name : task.category}</span>
+      <span className="tt-home-list__cat" style={{ color: catTextColor(task.category) }}>{cat ? cat.name : task.category}</span>
       <span className="tt-home-list__date" title={dateLabel}>{dateValue}</span>
     </a>
   );
@@ -741,11 +791,11 @@ function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
       <div>
         <h3 className="tt-task-card__title"><Highlight text={task.title} query={query} /></h3>
         <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          <span style={{ opacity: 0.6 }}>https://trusttasks.org</span>/spec/<span style={{ color: "var(--tt-text)" }}>{task.slug}</span>/<span style={{ color: catColor(task.category) }}>{task.version}</span>
+          <span style={{ opacity: 0.6 }}>https://trusttasks.org</span>/spec/<span style={{ color: "var(--tt-text)" }}>{task.slug}</span>/<span style={{ color: catTextColor(task.category) }}>{task.version}</span>
         </div>
         <p className="tt-task-card__summary"><Highlight text={task.summary} query={query} /></p>
         <div className="tt-task-card__meta">
-          <span className="pill" style={{ borderColor: catColor(task.category), color: catColor(task.category) }}>
+          <span className="pill" style={{ borderColor: catColor(task.category), color: catTextColor(task.category) }}>
             <span className="dot" style={{ background: catColor(task.category) }}></span>
             {catName(task.category)}
           </span>
@@ -771,11 +821,46 @@ function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
 /* ============================================================
    REGISTRY
    ============================================================ */
-function RegistryPage({ initial, setRoute }) {
-  const [q, setQ] = useS(initial?.q || "");
-  const [activeCat, setActiveCat] = useS(initial?.cat || null);
-  const [activeKw, setActiveKw] = useS(initial?.kw || null);
-  const [activeStatus, setActiveStatus] = useS(null);
+/* The registry's filters live in the URL — /registry/<cat>?q=&kw=&status= —
+ * so a filtered view can be shared, bookmarked and restored by Back (#1154).
+ * The page holds no filter state of its own: it reads `route`, and a change
+ * replaces the history entry (setRoute with `replace`) rather than pushing
+ * one per keystroke. Because the state follows the URL, Back/Forward between
+ * category URLs and the nav's "Registry" link both reset the list correctly,
+ * which they did not while the page seeded local state once from its props.
+ *
+ * The search box keeps a local draft so typing stays immediate, and writes it
+ * to the URL after a short pause; the result list filters on the URL's value. */
+const REGISTRY_PAGE_SIZE = 60;
+const STATUS_ORDER = ["standard", "candidate", "draft", "retired", "withdrawn"];
+const STATUS_DOT = {
+  standard: "var(--tt-teal)", candidate: "var(--tt-amber)", draft: "var(--tt-violet)",
+  retired: "var(--tt-text-muted)", withdrawn: "var(--tt-text-muted)",
+};
+
+function RegistryPage({ route, setRoute }) {
+  const activeCat = route.cat || null;
+  const activeKw = route.kw || null;
+  const activeStatus = route.status || null;
+  const q = route.q || "";
+  const [draft, setDraft] = useS(q);
+  const [limit, setLimit] = useS(REGISTRY_PAGE_SIZE);
+
+  const update = (patch) => {
+    const next = { name: "registry", cat: activeCat, kw: activeKw, status: activeStatus, q, ...patch };
+    setRoute(next, { replace: true });
+  };
+
+  // The URL changed from outside the search box (Back, a link, Clear): follow it.
+  useE(() => { setDraft(q); }, [q]);
+  // Typing: write the draft to the URL after a pause.
+  useE(() => {
+    if (draft === q) return;
+    const t = setTimeout(() => update({ q: draft }), 200);
+    return () => clearTimeout(t);
+  }, [draft]);
+  // A new filter starts from the first page of results.
+  useE(() => { setLimit(REGISTRY_PAGE_SIZE); }, [activeCat, activeKw, activeStatus, q]);
 
   const counts = useM(() => countSlugsByCategory(window.TT_TASKS), []);
 
@@ -785,6 +870,19 @@ function RegistryPage({ initial, setRoute }) {
     return Object.entries(kws).sort((a, b) => b[1] - a[1]);
   }, []);
 
+  // Only the statuses the registry actually holds: a chip that can never
+  // match anything is noise, and one the registry does hold (retired) must
+  // be selectable.
+  const statuses = useM(() => {
+    const present = new Set(window.TT_TASKS.map(t => t.status));
+    return [...STATUS_ORDER.filter(s => present.has(s)), ...[...present].filter(s => !STATUS_ORDER.includes(s)).sort()];
+  }, []);
+
+  // Lower-cased search text per task, built once rather than per keystroke.
+  const haystacks = useM(() => new Map(window.TT_TASKS.map(t => [
+    t, (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase()
+  ])), []);
+
   const results = useM(() => {
     const ql = q.trim().toLowerCase();
     const filtered = window.TT_TASKS.filter(t => {
@@ -792,15 +890,16 @@ function RegistryPage({ initial, setRoute }) {
       if (activeKw && !t.keywords.includes(activeKw)) return false;
       if (activeStatus && t.status !== activeStatus) return false;
       if (!ql) return true;
-      const hay = (t.title + " " + t.summary + " " + t.keywords.join(" ") + " " + t.slug).toLowerCase();
-      return hay.includes(ql);
+      return haystacks.get(t).includes(ql);
     });
     // Collapse to one card per slug — the latest non-retired version. Older and
     // retired versions stay reachable from the spec page's version switcher.
     return latestPerSlug(filtered);
   }, [q, activeCat, activeKw, activeStatus]);
 
-  const onClear = () => { setQ(""); setActiveCat(null); setActiveKw(null); setActiveStatus(null); };
+  const onClear = () => { setDraft(""); update({ cat: null, kw: null, status: null, q: "" }); };
+  const toggleKw = (k) => update({ kw: activeKw === k ? null : k });
+  const shown = results.slice(0, limit);
 
   return (
     <React.Fragment>
@@ -813,27 +912,28 @@ function RegistryPage({ initial, setRoute }) {
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container container--wide">
           <label className="tt-search" htmlFor="tt-reg-search" style={{ marginBottom: "var(--tt-space-5)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
               <circle cx="11" cy="11" r="7" />
               <path d="m21 21-4.3-4.3" />
             </svg>
+            <span className="sr-only">Search the registry</span>
             <input
               id="tt-reg-search"
               type="search"
               placeholder="Search the registry…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
             />
           </label>
 
           <div className="tt-filter-rail">
-            <aside className="tt-filter-rail__side">
+            <aside className="tt-filter-rail__side" aria-label="Filters">
               <div className="tt-filter-group">
-                <h5>Category</h5>
+                <h2 className="tt-filter-group__heading">Category</h2>
                 <div className="tt-chips" style={{ flexDirection: "column", alignItems: "flex-start" }}>
                   {window.TT_CATEGORIES.map(c => (
-                    <button key={c.id} className="tt-chip" aria-pressed={activeCat === c.id} onClick={() => setActiveCat(activeCat === c.id ? null : c.id)}>
-                      <span className="dot" style={{ background: catColor(c.id) }}></span>
+                    <button key={c.id} type="button" className="tt-chip" aria-pressed={activeCat === c.id} onClick={() => update({ cat: activeCat === c.id ? null : c.id })}>
+                      <span className="dot" style={{ background: catColor(c.id) }} aria-hidden="true"></span>
                       {c.name}<span className="tt-chip__count">{counts[c.id] || 0}</span>
                     </button>
                   ))}
@@ -841,11 +941,11 @@ function RegistryPage({ initial, setRoute }) {
               </div>
 
               <div className="tt-filter-group">
-                <h5>Status</h5>
+                <h2 className="tt-filter-group__heading">Status</h2>
                 <div className="tt-chips" style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                  {["standard", "candidate", "draft"].map(s => (
-                    <button key={s} className="tt-chip" aria-pressed={activeStatus === s} onClick={() => setActiveStatus(activeStatus === s ? null : s)}>
-                      <span className="dot" style={{ background: s === "standard" ? "var(--tt-teal)" : s === "candidate" ? "var(--tt-amber)" : "var(--tt-violet)" }}></span>
+                  {statuses.map(s => (
+                    <button key={s} type="button" className="tt-chip" aria-pressed={activeStatus === s} onClick={() => update({ status: activeStatus === s ? null : s })}>
+                      <span className="dot" style={{ background: STATUS_DOT[s] || "var(--tt-text-muted)" }} aria-hidden="true"></span>
                       {s}
                     </button>
                   ))}
@@ -853,10 +953,10 @@ function RegistryPage({ initial, setRoute }) {
               </div>
 
               <div className="tt-filter-group">
-                <h5>Keywords</h5>
+                <h2 className="tt-filter-group__heading">Keywords</h2>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--tt-space-2)" }}>
                   {allKeywords.slice(0, 18).map(([k]) => (
-                    <button key={k} className="tt-keyword" aria-pressed={activeKw === k} onClick={() => setActiveKw(activeKw === k ? null : k)}>{k}</button>
+                    <button key={k} type="button" className="tt-keyword" aria-pressed={activeKw === k} onClick={() => toggleKw(k)}>{k}</button>
                   ))}
                 </div>
               </div>
@@ -864,7 +964,7 @@ function RegistryPage({ initial, setRoute }) {
 
             <div>
               <div className="tt-results-bar">
-                <div className="tt-results-bar__count">
+                <div className="tt-results-bar__count" aria-live="polite">
                   <b>{results.length}</b> of {new Set(window.TT_TASKS.map(t => t.slug)).size} specifications
                   {activeCat && <> · category <b>{catName(activeCat)}</b></>}
                   {activeStatus && <> · status <b>{activeStatus}</b></>}
@@ -872,25 +972,34 @@ function RegistryPage({ initial, setRoute }) {
                   {q && <> · matching <b>“{q}”</b></>}
                 </div>
                 {(q || activeCat || activeKw || activeStatus) && (
-                  <button className="tt-clear" onClick={onClear}>Clear filters</button>
+                  <button type="button" className="tt-clear" onClick={onClear}>Clear filters</button>
                 )}
               </div>
 
               {results.length === 0 ? (
                 <div className="tt-empty">No specifications match these filters.</div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
-                  {results.map(t => (
-                    <RegistryCard
-                      key={t.id}
-                      task={t}
-                      setRoute={setRoute}
-                      query={q}
-                      activeKw={activeKw}
-                      onKwToggle={(k) => setActiveKw(activeKw === k ? null : k)}
-                    />
-                  ))}
-                </div>
+                <React.Fragment>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
+                    {shown.map(t => (
+                      <RegistryCard
+                        key={t.id}
+                        task={t}
+                        setRoute={setRoute}
+                        query={q}
+                        activeKw={activeKw}
+                        onKwToggle={toggleKw}
+                      />
+                    ))}
+                  </div>
+                  {results.length > shown.length && (
+                    <div className="tt-show-more">
+                      <button type="button" className="btn btn--ghost" onClick={() => setLimit(limit + REGISTRY_PAGE_SIZE)}>
+                        Show {Math.min(REGISTRY_PAGE_SIZE, results.length - shown.length)} more ({results.length - shown.length} not shown)
+                      </button>
+                    </div>
+                  )}
+                </React.Fragment>
               )}
             </div>
           </div>
@@ -921,6 +1030,13 @@ function sharedAccent(rec) {
   if (rec.kind === "method-extension") return "var(--tt-amber, var(--tt-coral))";
   const cat = window.TT_CATEGORIES.find(c => c.id === rec.family);
   return cat ? `var(--tt-${cat.color})` : "var(--tt-navy)";
+}
+/* The same choice as a text colour (see catTextColor in components.jsx). */
+function sharedAccentText(rec) {
+  if (rec.kind === "framework") return "var(--tt-text-muted)";
+  if (rec.kind === "method-extension") return "var(--tt-amber-text)";
+  const cat = window.TT_CATEGORIES.find(c => c.id === rec.family);
+  return cat ? `var(--tt-${cat.color}-text)` : "var(--tt-navy)";
 }
 
 /* Compact card describing one shared-schema dependency. Clicking navigates
@@ -1067,7 +1183,7 @@ function SchemaPage({ slug, setRoute }) {
     ? (window.TT_SHARED || [])
         .map(s => { const p = parseV(s.slug); return p && p.base === selfV.base ? { version: p.ver, slug: s.slug } : null; })
         .filter(Boolean)
-        .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); })
+        .sort((a, b) => cmpVersion(a.version, b.version))
     : [];
   useE(() => {
     if (!selfV) return;
@@ -1104,7 +1220,7 @@ function SchemaPage({ slug, setRoute }) {
       <div>
         <div style={{ marginBottom: "var(--tt-space-4)" }}>
           <span className="tt-spec__num">
-            <span style={{ color: accent }}>{sharedKindLabel(rec.kind)}</span>
+            <span style={{ color: sharedAccentText(rec) }}>{sharedKindLabel(rec.kind)}</span>
             {rec.family && rec.kind !== "framework" ? ` · ${rec.family}` : ""}
             {" · "}{rec.slug}
           </span>
@@ -1123,7 +1239,7 @@ function SchemaPage({ slug, setRoute }) {
           const versions = (window.TT_SHARED || [])
             .map(s => { const p = parse(s.slug); return p && p.base === self.base ? { ver: p.ver, slug: s.slug } : null; })
             .filter(Boolean)
-            .sort((a, b) => { const pa = a.ver.split(".").map(Number), pb = b.ver.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); });
+            .sort((a, b) => cmpVersion(b.ver, a.ver));
           if (versions.length < 2) return null;
           return (
             <div style={{ marginBottom: "var(--tt-space-5)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
@@ -1298,7 +1414,7 @@ function SchemasIndexPage({ setRoute }) {
           // Collapse to one card per shared component — the latest version.
           // Older versions stay reachable from the detail page's version switcher.
           const parseV = (sl) => { const m = sl.match(/^(.*)\/(\d+\.\d+)\/(.*)$/); return m ? { base: m[1] + "//" + m[3], ver: m[2] } : { base: sl, ver: "0.0" }; };
-          const cmpV = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+          const cmpV = cmpVersion;
           const byBase = new Map();
           for (const s of catalog.filter(x => x.kind === g.id)) {
             const p = parseV(s.slug), prev = byBase.get(p.base);
@@ -1384,7 +1500,7 @@ function SpecNotFound({ slug, version, id, registered, setRoute }) {
   const asked = `${slug || id || "(missing slug)"}${version ? `/${version}` : ""}`;
   // A known slug at an unknown version is the likelier typo of the two, and the
   // registry already knows which versions do exist — so offer them.
-  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); };
+  const cmpVer = (a, b) => cmpVersion(b, a);
   const siblings = slug ? registered.filter(t => t.slug === slug).sort((a, b) => cmpVer(a.version, b.version)) : [];
   return (
     <section className="container">
@@ -1431,7 +1547,7 @@ function SpecDetail({ task, setRoute }) {
 
   // All registered versions of this slug (ascending) and the two sides of the
   // diff, defaulting to (previous → current) for the version being viewed.
-  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
+  const cmpVer = cmpVersion;
   const versions = window.TT_TASKS.filter(t => t.slug === task.slug).sort((a, b) => cmpVer(a.version, b.version));
   const curIdx = versions.findIndex(v => v.version === task.version);
   const prevTask = curIdx > 0 ? versions[curIdx - 1] : null;
@@ -1461,10 +1577,8 @@ function SpecDetail({ task, setRoute }) {
       .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
       .then(src => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
+        const rawHtml = rewriteProseLinks(ttMarkdown.renderMarkdown(body), task.prosePath);
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
@@ -1512,6 +1626,8 @@ function SpecDetail({ task, setRoute }) {
         <h1 className="tt-spec__title">{task.title}</h1>
         <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{task.summary}</p>
 
+        <LifecycleBanner task={task} setRoute={setRoute} />
+
         <div
           className="tt-type-uri"
           style={{
@@ -1528,16 +1644,17 @@ function SpecDetail({ task, setRoute }) {
           <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{typeURI}</code>
           <button
             type="button"
-            onClick={() => { navigator.clipboard?.writeText(typeURI); setCopied(true); setTimeout(() => setCopied(false), 1400); }}
-            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? catColor(task.category) : "var(--tt-text-muted)", cursor: "pointer" }}
+            onClick={() => copyText(typeURI).then(ok => { if (!ok) return; setCopied(true); setTimeout(() => setCopied(false), 1400); })}
+            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? catTextColor(task.category) : "var(--tt-text-muted)", cursor: "pointer" }}
           >
             {copied ? "Copied" : "Copy"}
           </button>
+          <span className="sr-only" aria-live="polite">{copied ? "Type URI copied" : ""}</span>
         </div>
 
         <div className="tt-spec__banner">
           <span><b>Status</b> &nbsp; <TTStatus status={task.status} /></span>
-          <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catColor(task.category), borderBottom: 0 }}>{cat ? cat.name : task.category}</a></span>
+          <span><b>Category</b> &nbsp; <a href="/categories" onClick={(e) => { e.preventDefault(); setRoute({ name: "categories" }); }} style={{ color: catTextColor(task.category), borderBottom: 0 }}>{cat ? cat.name : task.category}</a></span>
           <span><b>Updated</b> &nbsp; {task.updated}</span>
           <span>
             <b>Editors</b> &nbsp; {renderAuthorList(task.authors)}
@@ -1553,7 +1670,7 @@ function SpecDetail({ task, setRoute }) {
           <dd>
             {window.TT_TASKS
               .filter(t => t.slug === task.slug)
-              .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); })
+              .sort(byVersionDesc)
               .map((v, i) => (
                 <React.Fragment key={v.version}>
                   {i > 0 && <span style={{ color: "var(--tt-text-muted)" }}> · </span>}
@@ -1566,8 +1683,8 @@ function SpecDetail({ task, setRoute }) {
           </dd>
           <dt>Type URI</dt><dd><code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{typeURI}</code></dd>
           <dt>Target framework</dt><dd>{task.targetFrameworkVersion ? `trust-task/${task.targetFrameworkVersion}` : "—"}</dd>
-          <dt>Parties</dt><dd>{task.parties.join(" ↔ ")}</dd>
-          <dt>Proof requirement</dt><dd>{task.proofRequirement ? task.proofRequirement.requirement : "—"}</dd>
+          <dt>Parties</dt><dd>{(task.parties || []).join(" ↔ ") || "—"}</dd>
+          <dt>Proof requirement</dt><dd>{proofLevels(task.proofRequirement) || "—"}</dd>
           <dt>Category</dt><dd>{cat ? cat.name : task.category}</dd>
           <dt>Keywords</dt>
           <dd>
@@ -1656,9 +1773,13 @@ function SpecDetail({ task, setRoute }) {
             <>
               <dt>Carries</dt>
               <dd>
-                <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                {/* `reference` is `format: uri`, which admits any scheme; only
+                    an http(s) reference becomes a link. */}
+                {/^https?:\/\//i.test(task.carries.reference || "")
+                  ? <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                  : <span>{task.carries.protocol} {task.carries.version}</span>}
                 {" "}operation <code>{task.carries.operation}</code>
-                <span style={{ color: "var(--tt-text-muted)" }}> — this specification is that operation carried as a Trust Task; its meaning is the protocol's (<a href="/SPEC.md#94-carried-protocols">SPEC §9.4</a>).</span>
+                <span style={{ color: "var(--tt-text-muted)" }}> — this specification is that operation carried as a Trust Task; its meaning is the protocol's (<SpecRef section="9.4" setRoute={setRoute}>SPEC §9.4</SpecRef>).</span>
               </dd>
             </>
           )}
@@ -1683,7 +1804,7 @@ function SpecDetail({ task, setRoute }) {
           <p style={{ color: "var(--tt-text-muted)" }}>Loading specification…</p>
         )}
         {!proseError && proseHtml && (
-          <article className="tt-prose" dangerouslySetInnerHTML={{ __html: proseHtml }} />
+          <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: proseHtml }} />
         )}
 
         <h2 id="schema">JSON Schema</h2>
@@ -1881,25 +2002,25 @@ function EcosystemPage({ setRoute }) {
 
           <div className="grid grid--4" style={{ marginTop: "var(--tt-space-5)", gap: "var(--tt-space-4)" }}>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("violet")}` }}>
-              <div className="card__index" style={{ color: accentColor("violet") }}>Layer 01</div>
+              <div className="card__index" style={{ color: accentText("violet") }}>Layer 01</div>
               <h4>Vocabulary</h4>
               <p>What two parties exchange. Typed, JSON, transport-agnostic.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Trust Tasks</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("teal")}` }}>
-              <div className="card__index" style={{ color: accentColor("teal") }}>Layer 02</div>
+              <div className="card__index" style={{ color: accentText("teal") }}>Layer 02</div>
               <h4>Credentials</h4>
               <p>What participants carry. Six W3C VC types from the DTG.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>DTG Credentials</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("coral")}` }}>
-              <div className="card__index" style={{ color: accentColor("coral") }}>Layer 03</div>
+              <div className="card__index" style={{ color: accentText("coral") }}>Layer 03</div>
               <h4>Infrastructure</h4>
               <p>What holds keys and authorizes operations. The VTA.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Verifiable Trust Infrastructure</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("amber")}` }}>
-              <div className="card__index" style={{ color: accentColor("amber") }}>Layer 04</div>
+              <div className="card__index" style={{ color: accentText("amber") }}>Layer 04</div>
               <h4>Tooling</h4>
               <p>What developers use to participate in a community.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>OpenVTC</div>
@@ -1925,13 +2046,13 @@ function EcosystemPage({ setRoute }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "var(--tt-space-3)", marginBottom: "var(--tt-space-3)" }}>
                   <div>
-                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentColor(p.accent), marginBottom: "var(--tt-space-1)" }}>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(p.accent), marginBottom: "var(--tt-space-1)" }}>
                       {p.role}{p.self ? " · this site" : ""}
                     </div>
                     <h3 style={{ margin: 0 }}>{p.name}</h3>
                     <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)" }}>{p.tagline}</div>
                   </div>
-                  <span className="pill" style={{ borderColor: accentColor(p.accent), color: accentColor(p.accent), textTransform: "capitalize" }}>
+                  <span className="pill" style={{ borderColor: accentColor(p.accent), color: accentText(p.accent), textTransform: "capitalize" }}>
                     <span className="dot" style={{ background: accentColor(p.accent) }}></span>
                     {p.tier}
                   </span>
@@ -1947,7 +2068,7 @@ function EcosystemPage({ setRoute }) {
 
                 <div style={{ display: "flex", gap: "var(--tt-space-4)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                   {p.primary && (
-                    <a href={p.primary.href} target="_blank" rel="noreferrer" style={{ color: accentColor(p.accent), borderBottom: 0 }}>
+                    <a href={p.primary.href} target="_blank" rel="noreferrer" style={{ color: accentText(p.accent), borderBottom: 0 }}>
                       {p.primary.label} →
                     </a>
                   )}
@@ -2085,9 +2206,7 @@ function FrameworkSpecPage({ setRoute }) {
       })
       .then(text => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = marked.parse(text);
+        const rawHtml = rewriteProseLinks(ttMarkdown.renderMarkdown(text), "/SPEC.md");
         const { html: withIds } = injectHeadingIds(rawHtml);
         setHtml(withIds);
       })
@@ -2131,7 +2250,7 @@ function FrameworkSpecPage({ setRoute }) {
             <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>Loading specification…</div>
           )}
           {!error && html && (
-            <article className="tt-prose" dangerouslySetInnerHTML={{ __html: html }} />
+            <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: html }} />
           )}
         </div>
       </section>
@@ -2147,17 +2266,41 @@ function FrameworkSpecPage({ setRoute }) {
  *
  * The matrix is the point of the page. "Which languages are there" is a list;
  * "can I do TSP from Dart" is the question a reader arrives with, and the
- * matrix answers it — TSP over Rust or Go today, Dart to follow — instead of
- * leaving it discoverable only by reading the source tree.
+ * matrix answers it instead of leaving it discoverable only by reading the
+ * source tree.
  *
  * Both lists come from assets/libraries.js and are checked against the source
  * tree by `checkLibraryRegistry()` at build time, so a library cannot claim a
- * transport it does not ship and a published binding cannot go unlisted.
+ * transport it does not ship and a published binding cannot go unlisted. The
+ * prose around the matrix is derived from the same data — every hand-written
+ * count and "X ships Y" sentence here went stale (#1158).
  */
+const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+function numberWord(n) { return NUMBER_WORDS[n] || String(n); }
+function capitalized(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function listJoin(items) {
+  if (items.length <= 1) return items.join("");
+  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+}
+
 function ImplementationsPage({ setRoute }) {
   const accent = (c) => `var(--tt-${c})`;
   const libs = window.TT_LIBRARIES || [];
   const caps = window.TT_LIBRARY_CAPABILITIES || [];
+  const capLabel = (id) => (caps.find(c => c.id === id) || {}).label || id;
+  // "Rust ships TSP, HTTPS, …; Go ships DIDComm v2 (TSP built, not yet released)"
+  const transportSummary = libs.map(lib => {
+    const bindings = (lib.capabilities || []).filter(id => id.startsWith("binding:"));
+    const released = bindings.filter(id => !((lib.transports || {})[id] || {}).unreleased).map(capLabel);
+    const unreleased = bindings.filter(id => ((lib.transports || {})[id] || {}).unreleased).map(capLabel);
+    let s = released.length ? `${lib.language} ships ${listJoin(released)}` : `${lib.language} ships no transport binding yet`;
+    if (unreleased.length) s += ` (${listJoin(unreleased)} built, not yet released)`;
+    return s;
+  }).join("; ");
+  const latestBundle = (() => {
+    const t = (window.TT_TASKS || []).find(x => x.slug === "acl/grant" && x.lifecycle && x.lifecycle.state === "current");
+    return t ? `/specs/${t.slug}/${t.version}/bundle.json` : null;
+  })();
 
   // Row groups, in first-seen order, so the matrix keeps the ordering
   // libraries.js declares rather than an alphabetical one nobody chose.
@@ -2169,10 +2312,7 @@ function ImplementationsPage({ setRoute }) {
   const bindingHref = (slug) => {
     const all = (window.TT_BINDINGS || []).filter(b => b.slug === slug);
     if (all.length === 0) return null;
-    const latest = all.slice().sort((a, b) => {
-      const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number);
-      return (pb[0] - pa[0]) || (pb[1] - pa[1]);
-    })[0];
+    const latest = all.slice().sort(byVersionDesc)[0];
     return { slug, version: latest.version };
   };
 
@@ -2187,14 +2327,66 @@ function ImplementationsPage({ setRoute }) {
     <React.Fragment>
       <PageHero
         eyebrow="Reference libraries"
-        title="Four languages, one contract."
-        lede="Trust Tasks has four reference client libraries. All four generate a typed payload for every specification in the registry and implement the SPEC §7.2 consumer pipeline, and a cross-language conformance check holds them to the same verdict on the same document. Transport bindings are where they differ."
+        title={`${capitalized(numberWord(libs.length))} languages, one contract.`}
+        lede={`Trust Tasks has ${numberWord(libs.length)} reference client libraries. Each generates typed payloads from the registry's bundles for the specifications an application pins, and implements the SPEC §7.2 consumer pipeline; a cross-language conformance check holds them to the same verdict on the same document. Transport bindings are where they differ.`}
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
           <a className="btn btn--ghost" href="/bindings" onClick={(e) => { e.preventDefault(); setRoute({ name: "bindings" }); }}>Transport bindings →</a>
           <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
         </div>
       </PageHero>
+
+      {/* GENERATE FROM THE REGISTRY (#1158) — the direction the libraries
+          have taken (docs/design/consumer-side-generation.md), which the site
+          did not mention anywhere. */}
+      <section id="generate" style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Generate from the registry</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Pin the tasks you use; generate their types.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            Every specification version is published as a self-contained, content-addressed <b>registry bundle</b>: its payload and response schemas with every <code>$ref</code> inlined, its front-matter policy, error codes and lifecycle, in canonical JSON named by its <code>sha256:</code> digest. An application pins the versions it implements, vendors their bundles, and generates its types from them at build time — no network, and nothing it did not ask for.
+          </p>
+          <ul style={{ color: "var(--tt-text-muted)", maxWidth: "62ch", lineHeight: 1.8 }}>
+            <li><a href="/specs/index.json"><code>/specs/index.json</code></a> — every version, with its digest, status and <code>extends</code> chain.</li>
+            {latestBundle && <li><a href={latestBundle}><code>{latestBundle}</code></a> — one version's bundle; every version has one at <code>/specs/&lt;slug&gt;/&lt;M.N&gt;/bundle.json</code>.</li>}
+            <li><code>/specs/by-digest/sha256-&lt;hex&gt;.json</code> — the append-only store a lockfile fetches from, so a pinned digest keeps resolving after a draft changes.</li>
+          </ul>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            The <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-cli" target="_blank" rel="noreferrer"><code>trust-tasks</code> CLI</a> keeps the pins — <code>trust-tasks.toml</code> for intent, <code>trust-tasks.lock</code> for the resolved digests — and runs your language's generator over them:
+          </p>
+          <CodeBlock language="sh" json={`cargo install trust-tasks-cli
+trust-tasks add acl/grant vault/upsert   # pin, and vendor the bundles
+trust-tasks check                        # offline, for CI: digests, lock, manifest
+trust-tasks generate --lang ts --out src/tasks`} />
+          <div style={{ overflowX: "auto", marginTop: "var(--tt-space-5)", border: "1px solid var(--tt-border)", background: "var(--tt-surface-elev)" }}>
+            <table style={{ borderCollapse: "collapse", width: "100%", minWidth: "36rem" }}>
+              <caption className="sr-only">Generator for each library</caption>
+              <thead>
+                <tr>
+                  <th scope="col" style={{ textAlign: "left", padding: "var(--tt-space-3) var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", fontWeight: 400 }}>Library</th>
+                  <th scope="col" style={{ textAlign: "left", padding: "var(--tt-space-3) var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", fontWeight: 400 }}>Generator</th>
+                </tr>
+              </thead>
+              <tbody>
+                {libs.filter(lib => lib.generate).map(lib => (
+                  <tr key={lib.id}>
+                    <th scope="row" style={{ textAlign: "left", padding: "var(--tt-space-3) var(--tt-space-4)", borderTop: "1px solid var(--tt-border)", fontWeight: 400, whiteSpace: "nowrap" }}>{lib.language}</th>
+                    <td style={{ padding: "var(--tt-space-3) var(--tt-space-4)", borderTop: "1px solid var(--tt-border)" }}>
+                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>{lib.generate.package}</div>
+                      <code style={{ fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)" }}>{lib.generate.how}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch", marginTop: "var(--tt-space-5)" }}>
+            <b>The prebuilt modules are deprecated.</b> Each library still ships a generated module for every specification in the registry, and each is marked deprecated in all four — <code>#[deprecated]</code>, <code>@deprecated</code>, <code>Deprecated:</code>, <code>@Deprecated</code> — in favour of generating the ones you pin. The framework's own specifications are not affected: the runtimes speak them. The model is described in <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/docs/design/consumer-side-generation.md" target="_blank" rel="noreferrer">consumer-side generation</a>.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
 
       {/* THE LIBRARIES */}
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
@@ -2218,7 +2410,7 @@ function ImplementationsPage({ setRoute }) {
               >
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
                   <div>
-                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(lib.accent), marginBottom: "var(--tt-space-1)" }}>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(lib.accent), marginBottom: "var(--tt-space-1)" }}>
                       {lib.language} · {lib.registry}
                     </div>
                     <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{lib.name}</h3>
@@ -2228,10 +2420,10 @@ function ImplementationsPage({ setRoute }) {
                   </div>
                   <div style={{ display: "flex", gap: "var(--tt-space-4)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
                     {lib.docsUrl && (
-                      <a href={lib.docsUrl} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>Docs →</a>
+                      <a href={lib.docsUrl} target="_blank" rel="noreferrer" style={{ color: accentText(lib.accent), borderBottom: 0 }}>Docs →</a>
                     )}
-                    <a href={lib.packageUrl} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>{lib.registry} →</a>
-                    <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/${lib.dir}`} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>Source →</a>
+                    <a href={lib.packageUrl} target="_blank" rel="noreferrer" style={{ color: accentText(lib.accent), borderBottom: 0 }}>{lib.registry} →</a>
+                    <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/${lib.dir}`} target="_blank" rel="noreferrer" style={{ color: accentText(lib.accent), borderBottom: 0 }}>Source →</a>
                   </div>
                 </div>
 
@@ -2260,7 +2452,7 @@ function ImplementationsPage({ setRoute }) {
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>What supports what</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Capability matrix.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
-            The core rows are deliberately uniform — a document that one library accepts, all four accept, and <code>check-bindings</code> fails the build if they diverge. The transport rows are where the libraries genuinely differ: <strong>Rust ships all four bindings, Dart ships HTTPS, DIDComm v2 and a proof backend, and Go ships TSP</strong>. Every library carries the transport seam, so a binding can be written against any of them.
+            The core rows are deliberately uniform — a document that one library accepts, all {numberWord(libs.length)} accept, and <code>check-bindings</code> fails the build if they diverge. The transport rows are where the libraries genuinely differ: <strong>{transportSummary}</strong>. Every library carries the transport seam, so a binding can be written against any of them.
           </p>
 
           <div style={{ overflowX: "auto", marginTop: "var(--tt-space-6)", border: "1px solid var(--tt-border)", background: "var(--tt-surface-elev)" }}>
@@ -2271,7 +2463,7 @@ function ImplementationsPage({ setRoute }) {
                     Capability
                   </th>
                   {libs.map(lib => (
-                    <th key={lib.id} style={{ padding: "var(--tt-space-4)", textAlign: "center", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(lib.accent), fontWeight: 400, whiteSpace: "nowrap" }}>
+                    <th key={lib.id} style={{ padding: "var(--tt-space-4)", textAlign: "center", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(lib.accent), fontWeight: 400, whiteSpace: "nowrap" }}>
                       {lib.language}
                     </th>
                   ))}
@@ -2320,14 +2512,19 @@ function ImplementationsPage({ setRoute }) {
                             const pkgLabel = { fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", whiteSpace: "nowrap" };
                             return (
                               <td key={lib.id} style={cellStyle}>
-                                {supported ? (
+                                {supported && impl && impl.unreleased ? (
                                   <React.Fragment>
-                                    <span aria-label={`${lib.language}: ships`} title={`${lib.language}: ships`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>●</span>
+                                    <span aria-label={`${lib.language}: built, not yet released — ${impl.unreleased}`} title={`Built, not yet released — ${impl.unreleased}`} style={{ color: accentText(lib.accent), fontSize: "1.1em" }}>○</span>
+                                    <div style={pkgLabel}>{impl.package}</div>
+                                  </React.Fragment>
+                                ) : supported ? (
+                                  <React.Fragment>
+                                    <span aria-label={`${lib.language}: ships`} title={`${lib.language}: ships`} style={{ color: accentText(lib.accent), fontSize: "1.1em" }}>●</span>
                                     {impl && <div style={pkgLabel}>{impl.package}</div>}
                                   </React.Fragment>
                                 ) : found ? (
                                   <React.Fragment>
-                                    <span aria-label={`${lib.language}: not built yet — could be built on ${found.package}`} title={`Not built yet — could be built on ${found.package}`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>◐</span>
+                                    <span aria-label={`${lib.language}: not built yet — could be built on ${found.package}`} title={`Not built yet — could be built on ${found.package}`} style={{ color: accentText(lib.accent), fontSize: "1.1em" }}>◐</span>
                                     <div style={pkgLabel}>
                                       <a href={found.url} target="_blank" rel="noreferrer" style={{ color: "var(--tt-text-muted)" }}>{found.package}</a>
                                     </div>
@@ -2348,8 +2545,9 @@ function ImplementationsPage({ setRoute }) {
           </div>
 
           <div style={{ display: "flex", gap: "var(--tt-space-6)", flexWrap: "wrap", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)", color: "var(--tt-text-muted)" }}>
-            <span><span style={{ color: "var(--tt-accent)" }}>●</span> &nbsp;Ships — install it today</span>
-            <span><span style={{ color: "var(--tt-accent)" }}>◐</span> &nbsp;Not built yet — a published package exists to build it on</span>
+            <span><span style={{ color: "var(--tt-accent)" }} aria-hidden="true">●</span> &nbsp;Ships — install it today</span>
+            <span><span style={{ color: "var(--tt-accent)" }} aria-hidden="true">○</span> &nbsp;Built and tested here, not yet released</span>
+            <span><span style={{ color: "var(--tt-accent)" }} aria-hidden="true">◐</span> &nbsp;Not built yet — a published package exists to build it on</span>
             <span><span style={{ color: "var(--tt-border)" }}>—</span> &nbsp;Neither</span>
           </div>
 
@@ -2357,7 +2555,7 @@ function ImplementationsPage({ setRoute }) {
             A half circle is <strong>evidence, not a roadmap</strong>. It means a published package in that language already provides the underlying protocol — named beneath the mark, and linked so you can check — so a binding is a matter of writing the adapter rather than implementing the protocol. It does not mean anyone has committed to building it.
           </p>
           <p style={{ color: "var(--tt-text-muted)", fontSize: "var(--tt-text-sm)", maxWidth: "62ch" }}>
-            A dash means neither a shipped binding nor a known foundation. TSP is dashed for TypeScript because no Trust Spanning Protocol library is published for it; Go ships a TSP binding and Dart has one built on the affinidi-tsp-dart library, which is why Dart's TSP cell is a half circle until that library reaches pub.dev. And where a library ships no Data Integrity verifier, the <code>ProofVerifier</code> seam is still there and you supply the backend — deliberately, because the cryptosuite is the consumer's choice rather than the framework's.
+            An open circle is a binding built and tested in this repository whose release waits on a dependency; the mark's label names which. A dash means neither a shipped binding nor a known foundation. And where a library ships no Data Integrity verifier, the <code>ProofVerifier</code> seam is still there and you supply the backend — deliberately, because the cryptosuite is the consumer's choice rather than the framework's.
           </p>
         </div>
       </section>
@@ -2430,12 +2628,12 @@ function RustImplementationPage({ setRoute }) {
       role: "Core library",
       tagline: "Framework primitives, types, dispatcher.",
       summary:
-        "The reference implementation of SPEC.md §4–§11 — TrustTask<P> envelopes, TypeUri parser, Proof/ProofVerifier traits, the typed error pipeline, TransportHandler with §4.8.1 identity precedence baked in, a discovery module, and generated payload types for every spec in the registry.",
+        "The reference implementation of SPEC.md §4–§11 — TrustTask<P> envelopes, TypeUri parser, Proof/ProofVerifier traits, the typed error pipeline, TransportHandler with §4.8.1 identity precedence baked in, a discovery module, and the runtime that generated payload modules plug into. It also still ships a prebuilt module for every registry spec, deprecated in favour of generating the ones you pin with trust-tasks-build.",
       bullets: [
         "TrustTask<P>, TypeUri, Proof, RejectReason, ErrorPayload",
         "TransportHandler trait + NoopHandler / InMemoryHandler",
         "Dispatcher<R> for typed multi-spec consumers",
-        "specs::* — generated payload types for every registry spec",
+        "specs::* — prebuilt payload types for every registry spec (deprecated)",
         "Optional validate feature — JSON Schema check against embedded schemas",
       ],
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-rs",
@@ -2532,6 +2730,36 @@ function RustImplementationPage({ setRoute }) {
         "No crypto dependency — sign the canonical form with your own signer",
       ],
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-capability-client",
+    },
+    {
+      name: "trust-tasks-build",
+      accent: "teal",
+      role: "Consumer-side generator · build.rs",
+      tagline: "Types for the tasks you pin, generated at build time.",
+      summary:
+        "Turns the specification versions an application pins in trust-tasks.lock into Rust modules, from the vendored registry bundles and with no network at build time. Each module holds what the prebuilt one does — the Payload/Response types and builders, the policy constants, EXTENDS, DEPRECATION and ERROR_CODES — because it is the same generator. This is what replaces the deprecated prebuilt modules.",
+      bullets: [
+        "trust_tasks_build::Config::new().compile() in build.rs",
+        "include!(concat!(env!(\"OUT_DIR\"), \"/trust_tasks_generated.rs\"))",
+        "Verifies each bundle against the digest the lock pins",
+        "Depend on trust-tasks-rs with default-features = false",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-build",
+    },
+    {
+      name: "trust-tasks-cli",
+      accent: "amber",
+      role: "The trust-tasks command",
+      tagline: "Pin, vendor and check the registry bundles you use.",
+      summary:
+        "Records the tasks an application uses in trust-tasks.toml, resolves them to digests in trust-tasks.lock, vendors each bundle verified by digest, and checks all three offline in CI. trust-tasks generate runs the generator for Rust, TypeScript, Go or Dart over the lock.",
+      bullets: [
+        "trust-tasks add / remove / update / list",
+        "trust-tasks check — offline, for CI",
+        "trust-tasks generate --lang <rs|ts|go|dart>",
+        "cargo install trust-tasks-cli",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-cli",
     },
   ];
 
@@ -2704,7 +2932,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <PageHero
         eyebrow="Reference implementation · Rust"
         title="trust-tasks for Rust."
-        lede="A reference Rust implementation of the Trust Tasks framework — nine published crates covering the framework envelope, four transport bindings, a W3C Data Integrity proof verifier, Trust Ceremony helpers and a shared capability wire client, plus a codegen tool that turns registry specs into typed payload modules."
+        lede="A reference Rust implementation of the Trust Tasks framework — published crates covering the framework envelope, the TSP, HTTPS, DIDComm v2 and DIDComm v1 transport bindings, a W3C Data Integrity proof verifier, Trust Ceremony helpers, a shared capability wire client, and the consumer-side generator and CLI that turn the registry bundles an application pins into typed payload modules."
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
           <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
@@ -2717,7 +2945,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container">
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Workspace at a glance</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Nine published crates, one codegen tool.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>{capitalized(numberWord(crates.length))} published crates.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
             Each crate is independently usable. <code>trust-tasks-tsp</code> is the preferred
             transport binding; the core <code>trust-tasks-rs</code> library underpins every
@@ -2737,7 +2965,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
               >
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
                   <div>
-                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), marginBottom: "var(--tt-space-1)" }}>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(c.accent), marginBottom: "var(--tt-space-1)" }}>
                       {c.role}
                     </div>
                     <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{c.name}</h3>
@@ -2745,7 +2973,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
                       {c.tagline}
                     </div>
                   </div>
-                  <a href={c.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(c.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
+                  <a href={c.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(c.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
                     Source →
                   </a>
                 </div>
@@ -2758,7 +2986,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
           </div>
 
           <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-5)", fontSize: "var(--tt-text-sm)" }}>
-            <b style={{ color: "var(--tt-text)" }}>trust-tasks-codegen</b> — internal-only build tool that reads <code>specs/&lt;slug&gt;/&lt;version&gt;/payload.schema.json</code>, runs each through <a href="https://crates.io/crates/typify" target="_blank" rel="noreferrer">typify</a>, and writes per-spec Rust modules into <code>trust-tasks-rs/src/specs/</code>. Output is committed; a CI gate runs the generator and <code>git diff --exit-code</code> to prevent drift. You don't depend on this crate directly — it runs to refresh the generated tree when a new spec lands in the registry.
+            <b style={{ color: "var(--tt-text)" }}>trust-tasks-codegen</b> — internal-only build tool that reads <code>specs/&lt;slug&gt;/&lt;version&gt;/payload.schema.json</code>, runs each through <a href="https://crates.io/crates/typify" target="_blank" rel="noreferrer">typify</a>, and writes per-spec Rust modules into <code>trust-tasks-rs/src/specs/</code>. Output is committed; a CI gate runs the generator and <code>git diff --exit-code</code> to prevent drift. You don't depend on this crate directly — it refreshes the prebuilt (deprecated) tree; an application generates its own with trust-tasks-build.
           </p>
         </div>
       </section>
@@ -2984,7 +3212,7 @@ function BindingsPage({ setRoute }) {
                 >
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
                     <div>
-                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(b.accent), marginBottom: "var(--tt-space-1)" }}>
+                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(b.accent), marginBottom: "var(--tt-space-1)" }}>
                         Transport binding · v{b.version}
                       </div>
                       <h3 style={{ margin: 0 }}>{b.title}</h3>
@@ -3046,7 +3274,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
     ? all.find(b => b.slug === slug && b.version === version)
     : all
       .filter(b => b.slug === slug)
-      .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); })[0];
+      .sort(byVersionDesc)[0];
   if (!binding) {
     return (
       <section className="container">
@@ -3086,10 +3314,8 @@ function BindingSpecPage({ slug, version, setRoute }) {
       .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
       .then(src => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
+        const rawHtml = rewriteProseLinks(ttMarkdown.renderMarkdown(body), binding.prosePath);
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
@@ -3135,7 +3361,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
           // only the latest, so this is the only navigation to the older ones.
           const versions = all
             .filter(b => b.slug === binding.slug)
-            .sort((a, b) => { const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); });
+            .sort(byVersionDesc);
           if (versions.length < 2) return null;
           return (
             <div style={{ marginBottom: "var(--tt-space-5)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)" }}>
@@ -3167,11 +3393,12 @@ function BindingSpecPage({ slug, version, setRoute }) {
           <code style={{ flex: 1, padding: "var(--tt-space-3) var(--tt-space-4)", overflow: "auto", whiteSpace: "nowrap", color: "var(--tt-text)" }}>{binding.bindingURI}</code>
           <button
             type="button"
-            onClick={() => { navigator.clipboard?.writeText(binding.bindingURI); setCopied(true); setTimeout(() => setCopied(false), 1400); }}
-            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? accent(binding.accent) : "var(--tt-text-muted)", cursor: "pointer" }}
+            onClick={() => copyText(binding.bindingURI).then(ok => { if (!ok) return; setCopied(true); setTimeout(() => setCopied(false), 1400); })}
+            style={{ borderLeft: "1px solid var(--tt-border)", background: "transparent", padding: "0 var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: copied ? accentText(binding.accent) : "var(--tt-text-muted)", cursor: "pointer" }}
           >
             {copied ? "Copied" : "Copy"}
           </button>
+          <span className="sr-only" aria-live="polite">{copied ? "Binding URI copied" : ""}</span>
         </div>
 
         {binding.envelopeType && (
@@ -3223,7 +3450,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
           <p style={{ color: "var(--tt-text-muted)" }}>Loading binding specification…</p>
         )}
         {!proseError && proseHtml && (
-          <article className="tt-prose" dangerouslySetInnerHTML={{ __html: proseHtml }} />
+          <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: proseHtml }} />
         )}
 
         <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
@@ -3441,9 +3668,9 @@ const IMPLEMENTATION_DETAILS = {
     accent: "sky",
     eyebrow: "Reference implementation · Go",
     title: "trust-tasks for Go.",
-    lede: "A reference Go implementation: one package per specification and the SPEC §7.2 consumer pipeline, with no dependencies beyond the standard library — plus a ToIP TSP transport binding shipped as a separate module so the core stays dependency-free.",
-    heading: "Two modules, one dependency-free core.",
-    blurb: "The core module has zero dependencies — its selling point. The TSP binding lives in a separate nested module so a consumer who only wants the types and the pipeline never pulls the transport's cryptography.",
+    lede: "A reference Go implementation: the SPEC §7.2 consumer pipeline and a generator for the specifications you pin, with no dependencies beyond the standard library — plus transport, proof and capability modules kept separate so the core stays dependency-free.",
+    heading: "A dependency-free core, and modules beside it.",
+    blurb: "The core module has zero dependencies — its selling point. Each binding, the proof backend and the capability client live in separate nested modules, each released on its own tag, so a consumer who only wants the types and the pipeline never pulls a transport's cryptography.",
     packages: [
       {
         name: "trust-tasks-go", accent: "sky", role: "Core · types + pipeline",
@@ -3452,21 +3679,55 @@ const IMPLEMENTATION_DETAILS = {
         bullets: [
           "Document[P] envelopes, generics-typed over the payload",
           "ConsumeInbound[P, R] — the §7.2 pipeline, guard and freshness wired",
-          "One package per spec: specs/<slug>/v<MAJOR>_<MINOR>",
+          "cmd/trust-tasks-gen — generate the specifications you pin",
+          "Prebuilt specs/<slug>/v<MAJOR>_<MINOR> packages (deprecated)",
           "No dependencies beyond the standard library",
         ],
         repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go",
       },
       {
-        name: "trust-tasks-go/tsp", accent: "violet", role: "TSP binding · separate module",
+        name: "trust-tasks-go/didcomm", accent: "violet", role: "DIDComm v2.1 binding · separate module",
+        tagline: "Authcrypt envelopes on the standard library.",
+        summary: "DIDComm v2.1 authcrypt — ECDH-1PU key agreement over X25519 with A256KW and A256CBC-HS512 — rolled on crypto/ecdh with no third-party code. The sender is authenticated by the ECDH-1PU static secret, not trusted from the header. Interoperates with the affinidi DIDComm stack in both directions.",
+        bullets: [
+          "PackTrustTask / UnpackTrustTask over authcrypt JWEs",
+          "Consumer with the §7.2 pipeline and the replay record",
+          "Key-based: a ResolveSender callback, no DID resolution",
+          "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/didcomm",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/didcomm",
+      },
+      {
+        name: "trust-tasks-go/proof", accent: "amber", role: "Data Integrity · separate module",
+        tagline: "Verify and sign, on the standard library.",
+        summary: "A ProofVerifier behind the framework's seam for eddsa-jcs-2022 (Ed25519) and ecdsa-jcs-2019 (P-256/P-384), with its own RFC 8785 canonicaliser. It reproduces the shared eddsa-jcs-2022 fixture's proofValue byte for byte, so a document signed by the Rust, TypeScript or Dart backend verifies here and the reverse.",
+        bullets: [
+          "Binds the proof to the in-band issuer",
+          "did:key only, no network",
+          "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/proof",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/proof",
+      },
+      {
+        name: "trust-tasks-go/capabilityclient", accent: "teal", role: "Capability wire client · separate module",
+        tagline: "Builders and reply parsing for the capability families.",
+        summary: "The Go port of the Rust capability client: document builders for governance/capability/* and git-trust/*, envelope parsing and reply classification. Pure wire logic — no crypto, no transport; sign what it builds with trust-tasks-go/proof.",
+        bullets: [
+          "Idempotent success keyed on the §8.5 extended error code",
+          "NewAttempt clears the proof and re-stamps id and issuedAt",
+          "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/capabilityclient",
+      },
+      {
+        name: "trust-tasks-go/tsp", accent: "sky", role: "TSP binding · not yet released",
         tagline: "Seal a document into a ToIP TSP message.",
-        summary: "A separate nested Go module — so the core stays dependency-free — built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP message whose HPKE authenticated encryption binds the sender's VID; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte.",
+        summary: "A separate nested Go module built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP message whose HPKE authenticated encryption binds the sender's VID; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte. Built and tested, but not yet tagged for release: it requires affinidi-tsp-go at a pseudo-version until that library is tagged.",
         bullets: [
           "PackTrustTask / UnpackTrustTask over a Direct TSP message",
           "Consumer.Receive — guarded §7.2, replay record on by default",
           "AdvertisedSender lets the caller resolve the sender VID",
           "Envelope type: https://trusttasks.org/binding/tsp/0.1/envelope",
-          "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/tsp",
         ],
         repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
       },
@@ -3476,8 +3737,8 @@ const IMPLEMENTATION_DETAILS = {
     accent: "coral",
     eyebrow: "Reference implementation · Dart",
     title: "trust-tasks for Dart.",
-    lede: "A reference Dart implementation: a typed payload for every specification and the SPEC §7.2 pipeline, dependency-free — with four companion packages for proofs and transports, each interoperating with its Rust counterpart.",
-    heading: "A dependency-free core, four companions.",
+    lede: "A reference Dart implementation: the SPEC §7.2 pipeline and a generator for the specifications you pin, dependency-free — with companion packages for proofs, transports and the capability families, each interoperating with its Rust counterpart.",
+    heading: "A dependency-free core, and companions.",
     blurb: "The core is dependency-free — the cryptosuite and the JSON Schema engine are interfaces you supply. Each companion package fills one of those seams or adds a transport, and each is tested against the Rust implementation on the same document.",
     packages: [
       {
@@ -3487,7 +3748,8 @@ const IMPLEMENTATION_DETAILS = {
         bullets: [
           "TrustTaskDocument<P>, the sealed ConsumeOutcome hierarchy",
           "consumeInbound — the §7.2 pipeline, guard and freshness wired",
-          "Import one spec: package:trust_tasks/specs/<slug>/v0_1/payload.dart",
+          "dart run trust_tasks:generate — the specifications you pin",
+          "Prebuilt package:trust_tasks/specs/… libraries (deprecated)",
           "No dependencies — you supply the cryptosuite and schema engine",
         ],
         repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart",
@@ -3527,6 +3789,17 @@ const IMPLEMENTATION_DETAILS = {
           "dart pub add trust_tasks_didcomm",
         ],
         repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-didcomm",
+      },
+      {
+        name: "trust_tasks_capability_client", accent: "teal", role: "Capability wire client",
+        tagline: "Builders and reply parsing for the capability families.",
+        summary: "The Dart port of the Rust capability client: document builders for governance/capability/* and git-trust/*, envelope parsing and reply classification. Outcomes and replies are sealed hierarchies, so a switch over them is exhaustive. Pure wire logic — sign what it builds with trust_tasks_proof.",
+        bullets: [
+          "Idempotent success keyed on the §8.5 extended error code",
+          "Reuses the core's slugFromTypeUri",
+          "dart pub add trust_tasks_capability_client",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-capability-client",
       },
       {
         name: "trust_tasks_tsp", accent: "sky", role: "TSP binding · not yet on pub.dev",
@@ -3578,7 +3851,7 @@ function ImplementationDetailPage({ id, setRoute }) {
               >
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
                   <div>
-                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(pkg.accent), marginBottom: "var(--tt-space-1)" }}>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(pkg.accent), marginBottom: "var(--tt-space-1)" }}>
                       {pkg.role}
                     </div>
                     <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{pkg.name}</h3>
@@ -3586,7 +3859,7 @@ function ImplementationDetailPage({ id, setRoute }) {
                       {pkg.tagline}
                     </div>
                   </div>
-                  <a href={pkg.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(pkg.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
+                  <a href={pkg.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accentText(pkg.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
                     Source →
                   </a>
                 </div>

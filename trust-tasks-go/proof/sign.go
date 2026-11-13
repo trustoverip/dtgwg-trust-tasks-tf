@@ -1,6 +1,7 @@
 package proof
 
 import (
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rand"
@@ -24,8 +25,10 @@ type Signer struct {
 }
 
 // SignerFromPrivateKey builds a [Signer] from a raw private key: a 32-byte
-// Ed25519 seed, or the big-endian scalar of a P-256 (32-byte) or P-384
-// (48-byte) key.
+// Ed25519 seed, or the big-endian scalar of a P-256 (exactly 32 bytes) or
+// P-384 (exactly 48 bytes) key. An ECDSA scalar must be in [1, n-1], where n is
+// the curve's group order; a key of another length, zero, or n or above is
+// refused with an error.
 func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 	switch curve {
 	case Ed25519:
@@ -45,11 +48,23 @@ func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 		}, nil
 	case P256, P384:
 		params := curveParams(curve)
+		byteLen := (params.Params().BitSize + 7) / 8
+		if len(privateKey) != byteLen {
+			return nil, fmt.Errorf("%s private key must be a %d-byte big-endian scalar, got %d bytes", curve, byteLen, len(privateKey))
+		}
+		// crypto/ecdh refuses a scalar of zero or one not below the group
+		// order, and derives the public key without the deprecated
+		// elliptic.Curve.ScalarBaseMult.
+		ecdhKey, err := ecdhCurve(curve).NewPrivateKey(privateKey)
+		if err != nil {
+			return nil, fmt.Errorf("%s private key is not a valid scalar (it must be in [1, n-1]): %w", curve, err)
+		}
+		point := ecdhKey.PublicKey().Bytes() // 0x04 || X || Y
+		x := new(big.Int).SetBytes(point[1 : 1+byteLen])
+		y := new(big.Int).SetBytes(point[1+byteLen:])
 		d := new(big.Int).SetBytes(privateKey)
-		x, y := params.ScalarBaseMult(privateKey)
 		priv := &ecdsa.PrivateKey{PublicKey: ecdsa.PublicKey{Curve: params, X: x, Y: y}, D: d}
 		vm := didKeyFromEcdsa(&priv.PublicKey, curve)
-		byteLen := (params.Params().BitSize + 7) / 8
 		return &Signer{
 			curve:              curve,
 			VerificationMethod: vm,
@@ -74,7 +89,10 @@ func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 
 // SignOptions tunes a signature.
 type SignOptions struct {
-	// ProofPurpose defaults to "assertionMethod".
+	// ProofPurpose defaults to "authentication": a Trust Task proof shows the
+	// issuer controls its identifier (SPEC §4.7.3). "assertionMethod" is for a
+	// proof a specification defines as an attestation. It must be one of
+	// [SigningPurposes].
 	ProofPurpose string
 	// Created is the proof's timestamp; the zero value means "now". It is
 	// written in UTC, Z-terminated, with no sub-second field — chrono's form, so
@@ -95,7 +113,8 @@ func didOf(verificationMethod string) string {
 // Sign returns a copy of doc with a proof over everything else in it. It refuses
 // — returning an error — to sign a document whose issuer is absent or is not the
 // signer's did:key: such a document could never verify (SPEC §4.7). An existing
-// proof is replaced.
+// proof is replaced. A document carrying @context gets a proof carrying the
+// same @context, as the cryptosuites' Create Proof algorithm requires.
 func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, error) {
 	tree, err := decode(doc)
 	if err != nil {
@@ -126,7 +145,10 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 	}
 	purpose := opts.ProofPurpose
 	if purpose == "" {
-		purpose = "assertionMethod"
+		purpose = "authentication"
+	}
+	if err := checkProofPurpose(purpose); err != nil {
+		return nil, fmt.Errorf("proof: %w", err)
 	}
 	config := map[string]any{
 		"type":               "DataIntegrityProof",
@@ -134,6 +156,14 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 		"created":            created.UTC().Format(time.RFC3339),
 		"verificationMethod": s.VerificationMethod,
 		"proofPurpose":       purpose,
+	}
+	// eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+	// unsecuredDocument.@context is present, set proof.@context to
+	// unsecuredDocument.@context." The proof configuration is hashed with it and
+	// the emitted proof carries it. A document without @context (the usual
+	// Trust Task) gets exactly the proof it got before.
+	if context, ok := body["@context"]; ok {
+		config["@context"] = context
 	}
 
 	configBytes, err := canonicalize(config)
@@ -163,4 +193,13 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 		return nil, fmt.Errorf("proof: marshal signed document: %w", err)
 	}
 	return out, nil
+}
+
+// ecdhCurve returns the crypto/ecdh curve for a P-curve, used to validate a
+// private scalar and derive its public key.
+func ecdhCurve(c Curve) ecdh.Curve {
+	if c == P384 {
+		return ecdh.P384()
+	}
+	return ecdh.P256()
 }

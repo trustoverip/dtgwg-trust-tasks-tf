@@ -33,18 +33,36 @@ Commit all three. Edits to `trust-tasks.toml` keep your comments.
 | `trust-tasks check` | **Offline**, for CI: every lock entry has its vendored bundle and `sha256(file)` is the locked digest; the bundle is the version it is filed as; no stray `*.bundle.json`; the manifest and the lock agree; the lock was resolved against the registry in use. Exits 1 on any problem. |
 | `trust-tasks fetch` | Restores missing or altered vendored bundles by the digest the lock pins, from the registry's by-digest store. Never moves a pin. |
 | `trust-tasks list [--remote]` | The pinned versions with their status and deprecation, from the vendored bundles. `--remote` adds the latest live version in the registry, and whether moving to it is an extension or a break. |
-| `trust-tasks generate --lang <rs\|ts\|go\|dart> --out <dir> [-- <args>]` | Runs `check`, then that language's generator over the lock, from the project directory: `npx --no-install trust-tasks-gen-ts` (`npm i -D @openvtc/trust-tasks-gen`), `go run …/trust-tasks-go/cmd/trust-tasks-gen` (from a module requiring `trust-tasks-go`) or `dart run trust_tasks:generate` (from a package depending on `trust_tasks`), with `--lock` and `--out` filled in and anything after `--` passed on. It installs nothing. Refuses a lock that does not verify. `--lang rs` only checks: Rust generates in `build.rs` with `trust-tasks-build`. |
+| `trust-tasks generate --lang <rs\|ts\|go\|dart> --out <dir> [-- <args>]` | Runs `check`, then that language's generator over the lock, from the project directory: `npx --no-install trust-tasks-gen-ts` (`npm i -D @openvtc/trust-tasks-gen`), `go run …/trust-tasks-go/cmd/trust-tasks-gen` (from a module requiring `trust-tasks-go`) or `dart run trust_tasks:generate` (from a package depending on `trust_tasks`), with `--lock` and `--out` filled in and anything after `--` passed on. It installs nothing. Refuses a lock that does not verify. `--lang rs` runs `trust-tasks-build` in-process and writes `<out>/trust_tasks_generated.rs` — the file `build.rs` generates into `OUT_DIR`, for reading or review; after `--` it takes `--index` (the `schema_index` module) and `--runtime-path <path>`. An application still generates in `build.rs`. |
 
-Global options: `--registry <url>` (or `TRUST_TASKS_REGISTRY`) and
-`-C, --dir <dir>` (the directory holding `trust-tasks.toml`; by default the
-nearest one at or above the current directory).
+Global options: `--registry <url>` (or `TRUST_TASKS_REGISTRY`),
+`--allow-http-registry` (see below) and `-C, --dir <dir>` (the directory
+holding `trust-tasks.toml`; by default the nearest one at or above the current
+directory).
 
 ### The registry
 
 `https://trusttasks.org` unless `trust-tasks.toml` sets `registry = "…"` or
 `--registry` / `TRUST_TASKS_REGISTRY` overrides it. A registry is a site root
 with this layout under it — so a private mirror, a `file://` URL or a plain
-directory works the same (that is how the tests run offline):
+directory works the same (that is how the tests run offline).
+
+The registry a lock was resolved against is recorded in `trust-tasks.lock`, and
+`check` compares it with the one in use. `--registry` and
+`TRUST_TASKS_REGISTRY` are not written into `trust-tasks.toml`, so to keep a
+mirror for every command — CI's bare `check` included — set
+`registry = "<url>"` there (`add` and `update` say so when the two differ).
+The CLI sends no credentials: a registry answering 401 or 403 is reported as
+such, not as a missing index.
+
+A registry URL must be `https://`: the index supplies the digests a pin
+records, so over plain http anyone on the network path could choose both the
+digests and the bundles they name. An `http://` registry on loopback
+(`localhost`, `127.0.0.0/8`, `[::1]`) is accepted for local mirrors and tests;
+any other is refused unless `--allow-http-registry` is given. An https
+registry is never followed to an http redirect.
+
+The layout under the site root:
 
 ```text
 specs/index.json                          every version: digest, status, extends
@@ -93,7 +111,8 @@ different specifications and can be pinned together. Refused:
 - a bundle whose Type URI, slug and version disagree with each other or the lock.
 
 `TRUST_TASKS_CA_FILE` names a PEM bundle trusted *instead of* the Mozilla roots,
-for a source behind an internal CA.
+for a source (or a registry mirror) behind an internal CA. Every https fetch the
+CLI makes honours it, `registry build`'s included.
 
 ### Publishing a source: `trust-tasks registry build`
 

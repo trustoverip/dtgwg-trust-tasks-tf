@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-ceremony"
-version = "0.2.0"
+version = "0.2.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -14,6 +14,13 @@ publish = true
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+# Not behind `affinidi`: the receipt specification defines the salt as a
+# multibase value and every digest as a multibase multihash, so decoding them
+# is part of verifying a receipt under any backend. While it was optional, a
+# `default-features = false` build hashed the salt's *string* bytes, and
+# enabling `affinidi` anywhere in the dependency graph silently changed every
+# digest that build computed (#1094).
+multibase = "0.9"
 
 # `affinidi` backend deps.
 #
@@ -28,15 +35,15 @@ thiserror = "2"
 # ever changes its canonicalizer, this pin has to move with it, or a ceremony
 # digest and a proof over the same document stop agreeing on what the document
 # is.
-serde_json_canonicalizer = { version = "0.3", optional = true }
-sha2 = { version = "0.10", optional = true }
-multibase = { version = "0.9", optional = true }
+serde_json_canonicalizer = { version = "0.4", optional = true }
+sha2 = { version = "0.11", optional = true }
 
 [features]
 default = ["affinidi"]
 # `affinidi` — the Digester backed by the same JCS canonicalizer the Affinidi
 # Data Integrity suite uses, with SHA-256 multihash and multibase encoding.
-affinidi = ["dep:serde_json_canonicalizer", "dep:sha2", "dep:multibase"]
+# Salt and digest decoding do not depend on it.
+affinidi = ["dep:serde_json_canonicalizer", "dep:sha2"]
 
 [dev-dependencies]
 serde_json = "1"

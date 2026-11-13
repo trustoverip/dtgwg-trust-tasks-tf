@@ -11,6 +11,892 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.29.0 — 2026-11-12
+
+
+### Added
+
+- **messaging/mux/ack**: Acknowledge frames on the mux connection they were delivered on (0.1) (#1174)
+
+* feat(messaging/mux/ack): acknowledge frames on the mux connection they were delivered on (0.1)
+
+- **vta/dids**: Key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians (#993)
+
+* feat(vta/dids): key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians
+
+  Key roles were all-or-nothing: every key-role identity needed an external
+  recovery key, and an identity without roles was not served at all. The VTI
+  specification now gives every service DID a key assurance level its operator
+  chooses (VTI-KEY-194): 1 single key, 2 role-separated, 3 recoverable.
+
+  - vta/dids/create/1.1: `assuranceLevel` (2 or 3) is required;
+    `recoveryCommitment` is required at level 3 and refused at level 2; a level-3
+    identity under a method with witnesses needs one (witnessRequired); a
+    template MAY set a level floor (assuranceLevelBelowTemplate). create/1.0 is
+    released, so the changed shape is a new version rather than an in-place edit.
+  - vta/dids/upgrade/1.0 (new): raise an identity's level in place, from 1 to
+    2 or 3 or from 2 to 3, with fresh keys for every tightened role; never lower.
+    `previousKeys` is retire (RECOMMENDED), revoke, or, from level 1, keep.
+  - _shared/0.1 (additive): KeyAssuranceLevel, RecoveryCustodian and its kind,
+    ThresholdRecoveryCommitment (a condition over whole keys, VTI-KEY-210–221),
+    the declareAssuranceLevel change, the roleKeysInBackups warning; CONVENTIONS
+    §3.4 (levels and the `keyAssurance` member), §3.5 (raising), §5.6–§5.7
+    (recovery custodians, threshold custodians), §19, two family error codes
+    (assuranceLevelMismatch, witnessRequired), and level-scoped custody, witness
+    and approval rules.
+  - 1.0 tasks, additively: keys/rotate gains `useRecoveryKey` and
+    `recoveryProof`; keys/list reports `assuranceLevel`; keys/revoke
+    `scope: boundary` and recover are level 3 only; update refuses
+    `keyAssurance` and the removal of a level-3 identity's last witness.
+  - Method profiles: did:webvh names the recovery commitment in
+    `state.keyAssurance`; did:webs maps the levels onto its next-key threshold,
+    every rotation exposes K and commits a fresh K′.
+  - vta/webs/dids/create/0.2 now links vta/dids/create/1.1.
+
+  Rebased onto main as one commit (was five, including a merge of main).
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **vta/webs/dids/create**: DID classes, service DIDs and DID templates (0.2) (#1159)
+
+create 0.2 takes a required didClass (relationship, persona or service,
+  VTI-KEY-190 - 193) and records it. A service did:webs - the durable identity
+  of the VTA, a VTC, a VTN, a host service or an integration - is allowed at
+  level 1 as an optional, alpha method (VTI-KEY-001 / VTI-KEY-003 as being
+  amended, dtgwg-vti-spec#120), enabled separately in the VTA's configuration
+  (serviceDidNotPermitted when it is off); didClassConflict holds VTI-KEY-193.
+
+  A DID may be shaped by a DID template (template, templateContext,
+  templateVars), exclusive of the explicit service and alias members. The VTA
+  renders it and maps its document onto the did:webs derivation: one Ed25519
+  signing key in authentication and assertionMethod, one designated X25519 key
+  agreement key, designated services and aliases; anything else is refused
+  with templateNotRepresentable (details.reason, details.members), and
+  templateNotFound / templateVarsInvalid as for the other template consumers.
+
+  Family conventions move to vta/webs/_shared/0.2 (CONVENTIONS.md section 1
+  rewritten for classes and service DIDs, section 9 the template mapping;
+  webs-records adds WebsDidClass and an optional didClass on the record).
+  0.1 is unchanged and now superseded.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+- **rooms/watch**: A live watch for an open conversation (0.2), and rooms/keys/watch 0.2 (#1087)
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/signal-delay/set**: A room may turn off the watch signal's randomised delay (0.1), set at rooms/create 0.3 and served by rooms/info 0.4 (#1084)
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/records/list**: Newest-first listing for a conversation's head (0.7), and rooms/keys/browse 0.5 (#1088)
+
+Chat clients open a conversation at its newest messages, but a room
+  listing only paged forward from sinceVersion, so a client opening a room
+  with tens of thousands of records had to page from the start.
+
+  rooms/records/list 0.7 adds an optional `order` (`oldestFirst`, the
+  default, or `newestFirst`), defined once as `ListOrder` in
+  rooms/_shared/0.2. Newest first returns rows in descending version;
+  sinceVersion still bounds from below; tombstones and lastPrune are
+  unchanged; a cursor is valid only under the order it was issued for
+  (invalidCursor otherwise). The spec states what makes it correct for chat
+  although edits move a record's version: a newest-first listing whose
+  lowest version is V holds every record whose current version is above V,
+  so every message created since V; a reader orders by createdAt, not by
+  row order. A record changed mid-listing moves above the listing's first
+  row, so a catching-up reader takes the first page's highest version as
+  its watermark, and only after reading to the end.
+
+  rooms/keys/browse 0.5 passes `order` through, and adds `maxPages`,
+  `cursor` and response `nextCursor`: a 0.4 recipient always reads the
+  host's listing to its end, so order alone would still read the whole
+  room before answering. The MemberProfile "Near the room's head" rule
+  now says how a newest-first reader finds names (500 rows below the
+  earliest record it shows reach at least 500 versions).
+
+- **rooms/keys/read-marker**: A member's read marker kept by their key holder, so every device agrees on unread (0.1), and rooms/keys/list 0.3 (#1086)
+
+rooms/changed 0.1 counts unread messages against a read marker that was each
+  client's own, so a member's phone and laptop disagreed about what is unread and
+  a notification read on one device stayed on the other.
+
+  - rooms/keys/read-marker/set 0.1: a member's client tells their key holder
+    where the member has seen a room up to (room version + host createdAt of the
+    newest message seen). The marker only moves forward (greater version; at equal
+    version, later createdAt) unless `rewind: true` ("mark as unread"); the answer
+    is the marker in force and `moved`, so racing devices converge without a
+    precondition. Acting as the member, delegates refused, notHeld as for
+    rooms/keys/label. Idempotent; retry class two.
+  - rooms/keys/read-marker/moved 0.1: one-way, key holder to the member's other
+    clients holding a rooms/keys/watch on the room as that member (never the
+    setter), so a device can clear a notification.
+  - rooms/keys/list 0.3: each entry may carry `readMarker`, returned under
+    includePersonal beside the personal label.
+  - ReadMarker in rooms/_shared/0.1/read-marker.schema.json.
+  - rooms/changed 0.1 (draft, prose): a reader MAY keep its marker with its key
+    holder; it is still never sent to the host, the room or another member.
+
+- **messaging/mux**: Connections, an administrator's view of live mux connections (#1083)
+
+Adds messaging/mux/connections/0.1: an administrator lists a mediator's live mux connections — principal, wire (didcomm | tsp), openedAt, exact memberCount, and members with source, grantId, scope, expiresAt and deliveryActive — paged by cursor/limit with a per-page member budget that splits a large connection across pages, and a required coverage (allInstances | thisInstance) so a horizontally scaled mediator never implies completeness it lacks. Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries (#1224)
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+- **vta/webs**: Every node resolves did:webs; drop the resolvedMethods gate (#1180)
+
+Follows dtgwg-vti-spec#123: did:webs is a method every VTI node resolves
+  (VTI-KEY-003) and VTI-KEY-008 is withdrawn. vta/webs/_shared/0.2 CONVENTIONS
+  §1 and §9.2, vta/webs/dids/create/0.2 and the vta/dids webs method profile no
+  longer tell a node to check a peer's resolvedMethods or to keep a did:webvh
+  identity for peers that have not declared did:webs. resolvedMethods in a
+  template stays ignored, not refused. Prose only; no schema changes.
+
+
+
+### Fixed
+
+- **runtime**: Bound the work of pruning a payload read forward along extends (#1209)
+
+* fix(runtime): bound the work of pruning a payload read forward along extends
+
+  Pruning a later version's payload to the implemented version's schema runs
+  before any proof is checked. Its cost could grow exponentially with the
+  payload's nesting depth: in TypeScript, choosing a oneOf/anyOf branch pruned
+  the whole subtree once per branch, at every level; in all four runtimes, a
+  recursive member named from more than one place (properties and an allOf
+  branch) was pruned once per place, at every level.
+
+  Each runtime now gives a prune at most 100,000 steps plus 64 per value in
+  the payload. readForSpec (TS), ReadForSpec (Go), readForVersion (Dart), and
+  read_as, the dispatchers and consume_dispatched (Rust) refuse a payload
+  that needs more as malformedRequest, saying why. prunePayload /
+  prune_payload on their own return the payload untouched instead.
+
+  TypeScript also remembers, for the rest of a walk, the branch chosen for
+  each value and the structural matcher's answers, so a value under nested
+  oneOfs is decided once rather than once per enclosing branch, and compiles
+  each patternProperties pattern once per walk.
+
+- **ts-gen**: Generate locks that pin acl/grant/0.3, and move the consumer apps to it (#1229)
+
+* fix(ts-gen): accept a bare component's numbered intersection parts
+
+  A component whose schema has a type beside an anyOf (acl's Purpose, from
+  acl/_shared/0.3) compiles to Purpose = Purpose1 & Purpose2. A lock that
+  reaches one shape of Purpose names it bare, and the counter-suffixed
+  duplicate check then refused its own parts, so any lock pinning
+  acl/grant/0.3 failed to generate. The package names it Purpose_AclV0_3
+  over the whole registry and never hit it; build-ts-bindings.mjs gets the
+  same exclusion so the two checks stay diffable.
+
+- **ts**: Stop shipping src and source maps in the npm package (#1227)
+
+The tarball carried src/ (the generated .ts sources) alongside dist/, plus a .js.map and .d.ts.map per module pointing into it. Drop src from files and turn off sourceMap/declarationMap for the published build; the test build keeps source maps for stack traces. Part of #1107.
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **dart-https**: Advertise the expiry horizon, and pin all four runtimes' freshness to shared vectors (#1212)
+
+* test(runtime): shared freshness vectors run by all four runtimes
+
+  fixtures/consume/freshness.json pins SPEC §7.2's acceptance window (items 4
+  and 13, *Bounding the record*): now / policy / issuedAt / expiresAt to a
+  verdict and, for an accepted document, the replay record's expiry. It covers
+  a stated expiresAt replacing the maximum age, the 30-day expiry horizon and
+  its clamp on the record, a zero horizon, the half-open edges to the
+  millisecond, skew on both sides, a missing issuedAt with and without
+  requireIssuedAt, offsets, fractions and calendar-invalid timestamps, and
+  holds each runtime's default and consequential policies to the same values.
+
+  Run by trust-tasks-rs (tests/freshness_vectors.rs), @openvtc/trust-tasks
+  (test/freshness-vectors.test.ts), trust-tasks-go
+  (trusttasks/freshness_vectors_test.go) and trust_tasks
+  (test/freshness_vectors_test.dart). The Rust workflow now runs on a change
+  under fixtures/, which its integration tests read.
+
+- **rs,ts,go,dart,proof,ts-proof,go-proof,dart-proof**: Refuse out-of-range timestamp fields instead of rolling them over (#1210)
+
+issuedAt and expiresAt, and a proof's created, are now read with every
+  field range-checked after the shared pattern: month 1-12, a day the month
+  has, hour 0-23, minute and second 0-59 (no leap second), and an offset of
+  at most 23:59 (14:00 for a proof's dateTimeStamp, as for expires).
+
+  Before, the four runtimes disagreed on the same bytes. TypeScript's
+  Date.parse read 2026-02-30 as 2 March and 24:00 as the next day; Dart's
+  DateTime.tryParse rolled 2026-13-45T25:61:61Z over into 2027 and took any
+  offset; Rust's chrono read :60 as a leap second and accepted a space for
+  the T; Go's time.Parse accepted +24:00 and +23:60. In the TypeScript proof
+  verifier a regex-valid but unparseable created (month 13) gave NaN, which
+  never compares later than the clock-skew horizon, so it was accepted.
+
+  New shared vectors: fixtures/consume/timestamps.json, run by all four
+  runtimes, and five correctly signed created-* proof vectors.
+
+- **messaging/mux/ack**: NotPermitted only for a member whose mail the connection reads (0.1) (#1179)
+- **rs,ts,go,dart**: The in-memory replay guard refuses when full instead of dropping live records (#1163)
+
+* fix(runtime): the in-memory replay guard refuses when full instead of dropping live records
+
+  InMemoryReplayGuard (Rust, TypeScript, Go, Dart) made room for a new id by
+  dropping the least-recently-used record, whether or not that record was
+  still inside its retention window. A document whose record was dropped that
+  way was then accepted again inside its window, with nothing logged.
+
+  - When every slot holds a live record, a claim for a new id now fails
+    (Rust ReplayGuardError, TS ReplayGuardFullError, Go ErrReplayGuardFull,
+    Dart ReplayGuardFullException), which the pipeline answers `unavailable`
+    (retryable). Records whose window has closed are reclaimed first; a
+    record is never dropped to make room. Duplicates and conflicts are still
+    recognised while full.
+  - The default capacity is 100 000 live records (was 10 000), documented as
+    a ceiling on distinct documents per retention window, and exported as
+    DEFAULT_REPLAY_CAPACITY / DefaultReplayCapacity / defaultReplayCapacity.
+  - TypeScript, Go and Dart gain the expiry horizon Rust already had
+    (`expiryHorizonMs` / `ExpiryHorizon` / `expiryHorizon`, 30 days in the
+    consequential policy): a stated expiresAt bounds the acceptance window in
+    place of the maximum age, up to issuedAt + horizon, and the retained
+    record's expiry is clamped to the same instant, so a producer can no
+    longer pin a record indefinitely with a distant expiresAt.
+
+- **messaging/mux/ack**: An id held for a DID off the connection is notFound (0.1) (#1176)
+- **rs,ts,go,dart**: Refuse a document whose type is not the spec it is consumed under (#1162)
+
+* fix(runtime): refuse a document whose type is not the spec it is consumed under
+
+  The typed consume functions took the document's payload type, or a spec
+  policy, as given and never compared the document's `type` with it. A
+  document of another specification whose payload happened to fit was run
+  under the consumed spec's policy and handler, and answered as its own type.
+  SPEC §7.2 item 3 assigns that check to the consumer.
+
+  Each runtime's typed path now checks it before any other step, so a refused
+  document never reaches the item-11 record:
+
+  - accepted: the spec's own Type URI (`#request` and no fragment alike), or a
+    later version of the same specification and variant whose declared
+    `extends` chain reaches it (SPEC §5.2);
+  - `unsupportedVersion`: the same specification and variant at any other
+    version;
+  - `unsupportedType`: anything else — another slug, the same slug under
+    another authority or form, the `#response` variant, or a `type` that is not
+    a Type URI.
+
+- **runtime**: Release the item-11 claim when a handler does not return, and end the acceptance window where the record does (#1175)
+
+* fix(runtime): release the item-11 claim when a handler does not return, and close the window where the record expires
+
+  A handler that panicked (Rust, Go) or whose future was dropped mid-await
+  (Rust: a request timeout, a client disconnect) left its item-11 claim in
+  flight until the record expired, so every resend of the document was
+  absorbed as an in-flight duplicate and never ran. The claim is now
+  released on those paths exactly once:
+
+  - Rust: `consume_core` holds the claim in a drop guard across the handler
+    await. A panic or cancellation releases it through the new defaulted
+    `ReplayGuard::release_abandoned` (synchronous, as it runs from a
+    destructor); a returned handler settles it as before. The default polls
+    `release` once; `InMemoryReplayGuard` releases directly.
+  - Go: a deferred release covers a panicking handler without recovering, so
+    the panic continues unchanged. Release and settle run on a context
+    detached from the request's cancellation (bounded at five seconds), so a
+    store-backed guard is not handed an already-cancelled context.
+  - Dart: when the response encoder throws after the handler returned, the
+    claim is settled with no cached response before the error is rethrown,
+    rather than left in flight. The effect happened, so a resend is absorbed.
+  - TypeScript already released the claim on a throwing handler.
+
+  The acceptance window over `issuedAt` (and the expiry horizon in Rust) now
+  ends exclusively, at the instant `recordExpiry` returns, in all four
+  runtimes. A guard drops a record once `retainUntil <= now`, while a
+  document was still accepted at exactly `retainUntil`, so at that instant
+  it could be accepted with no record and executed again. The window is now
+  half-open, as `expiresAt` already was.
+
+  The shared `fixtures/consume/item11-digest.json` vectors gain an optional
+  per-case `secondAt` and two boundary cases, run by all four runtimes.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth (#1171)
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+- **vta/webs/_shared**: A template's resolvedMethods is ignored, not refused (0.2 §9.2) (#1170)
+
+VTI-KEY-008 (dtgwg-vti-spec#121) puts a top-level resolvedMethods member
+  in every VTI node's own DID document, and VTI's built-in node templates
+  carry it. §9.2 refused it as documentMember, so none of them could be
+  used with vta/webs/dids/create/0.2. A did:webs document cannot render
+  the member anyway: a did:webs node declares did:webs by using it (the
+  open issue under VTI-KEY-009), so refusing the template protected
+  nothing. It is now ignored, as @context is.
+
+  Also notes that a post-quantum second signing key (vtc-host's ML-DSA-44
+  pq-signing slot) has no did:webs representation at level 1 or under the
+  key-role designation.
+
+- **messaging/mux**: Revoke-all ends session attaches; accountBlocked covers ACLs narrowed below scope (#1165)
+
+messaging/mux/revoke-all 0.1 (draft) now ends the member DID's session
+  attaches admitted before it, on every connection, before answering, with
+  reason epochBumped; a principal that carried the DID only through an
+  attach gets the live detached event and no notice. The attach spec lists
+  revoke-all and a blocked or removed account among the ways an attach
+  ends. DetachReason's description says accountBlocked also covers ACLs
+  that no longer cover the member's scope. Bindings regenerated
+  (descriptions only).
+
+## 0.28.28 — 2026-11-11
+
+
+### Added
+
+- **vta/webs/dids**: Level-1 did:webs identities for personas, relationships and integrations (0.1) (#1082)
+
+create, get, list, update, rotate-keys and delete at 0.1, with the family's
+  conventions and shared record under vta/webs/_shared/0.1. KERI v2 with JSON
+  bodies; one Ed25519 signing key (kt 1) and one pre-rotated successor (nt 1),
+  both derived by the VTA; aliases, key agreement and services as designations
+  anchored by interaction events; hosted only, through a did-hosting server with
+  method webs; remote first, rotations staged. Never a node's service DID
+  (VTI-KEY-001). Draft; the did:webs integration is alpha.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+
+
+### Specifications
+
+- **vtc/rooms/community/update**: Item 10 carries every profile member the community does not manage, recordMembers included (#1080)
+
+Item 10 listed the members to carry over on a re-write as `tags`, `emoji`,
+  `ext`, a list written before the room profile gained `recordMembers`. A
+  community following it to the letter drops `recordMembers` on the next
+  label or description edit, and the room's writers lose replies and
+  reactions (`kind`, `inReplyTo`, `writtenAt`).
+
+  Item 10 (0.2 and 0.3, identically) now names the rule rather than a list:
+  carry over every member but `name` and `description`, naming the four
+  there are today and any a later profile version adds. And a community that
+  cannot read the current profile SHOULD NOT write one without them; the
+  write is then pending under item 11, so it is retried rather than written
+  blind.
+
+  Prose only: no schema, bundle or generated type changes.
+
+## 0.28.27 — 2026-11-10
+
+
+### Added
+
+- **messaging/mux**: ConnectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket (#1078)
+
+* feat(messaging/mux): connectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket
+
+## 0.28.26 — 2026-11-10
+
+
+### Added
+
+- **acl**: Purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2) (#1074)
+
+* feat(acl): purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2)
+
+  An access-control entry says who may do what, where and until when, but not
+  what for. An agent granted a read of its principal's memory can use the content
+  for anything, and nothing records the use it intended. The VTI specification
+  now requires the purpose (VTI-ACL-100 – 110, trustoverip/dtgwg-vti-spec#115);
+  these are the wire shapes.
+
+  acl/_shared/0.3 — AclEntry 0.3 adds one REQUIRED axis, `purposes`:
+  `{"scope": "any"}` or `{"scope": "listed", "purposes": [...]}` with at least
+  one `Purpose` — a lowerCamelCase name registered in the VTI purpose registry
+  (personalisation, taskExecution, analytics, modelTraining) or an absolute IRI
+  such as a DPV purpose. `any` never grants `modelTraining`. Delegated purposes
+  are a subset of the granter's. CONVENTIONS.md §8a maps a 0.2 entry onto 0.3
+  (`any`, the authority it already held, now stated) and §12 states the rules.
+
+  acl tasks on AclEntry 0.3: grant/0.3, update/0.3, show/0.3, revoke/0.3,
+  change-role/0.3, list/0.4. New errors on grant and update: `purposeOutsideDelegator`
+  (purposes wider than the granter's) and `purposeRefused` (policy will not grant
+  a purpose, refused by name, never dropped). update/0.3 replaces `purposes`
+  wholesale; narrowing it is an audited privilege reduction. `purposes` is never
+  redacted by show or list. No `extends`: a REQUIRED member on the entry cannot
+  be added to a version a 0.2 consumer still reads.
+
+  vta/memory put/0.3, delete/0.3, list/0.3, get/0.2 (each `extends` its
+  predecessor) add an optional `purpose` (`MemoryPurpose`, new in
+  vta/_shared/0.1/memory-record, a reference to acl's `Purpose`) and a
+  `purposeNotGranted` error that discloses nothing and is distinct from
+  `contextForbidden`. A recall, and a listing with values, is purpose-bound:
+  refused for a purpose the entry does not grant, or for none under an entry
+  listing several, and audited with its purpose either way. A write is not
+  purpose-bound, but a conflict that returns `currentValue` is: the value is
+  withheld unless the request's purpose is granted.
+
+  Data rooms (a room authority credential's `purposes`, VTI-ACL-110) are a
+  follow-up.
+
+  Samples in other specs that named the superseded acl versions now name the new
+  ones, with `purposes` on every embedded entry; prose links were moved by
+  `npm run fix-stale-references`.
+
+
+
+### Fixed
+
+- **mux/grant**: Unknown-key rule fails closed on direct authentication; no exemption for a grant without recorded keys (#1075)
+
+A grant that recorded no key-agreement keys exempted every grant on its DID from the DIDComm direct-authentication rule. A grant is now refused (didUnresolvable) when its keys cannot be read, an empty set means the DID listed none, and the rule is applied before a direct authentication succeeds, refusing it when it cannot be applied.
+
+- **messaging/mux**: Compare a direct authentication with keys of its own relationship; send grantsExpiring for every unrenewed grant (#1072)
+
+
+### Specifications
+
+- **rooms**: Purpose of use on room reads and authority credentials (VTI-ACL-102, -110) (#1076)
+
+* spec(rooms): purpose of use on room reads and authority credentials (VTI-ACL-102, -110)
+
+  Room content a key holder releases to its caller is purpose-bound, as agent
+  memory is (vta/memory/get 0.2), and a room's authority credential may state
+  the purposes it grants.
+
+  - rooms/keys/open 0.3, rooms/keys/read 0.3: optional `purpose`; refused with
+    `purposeNotGranted` where the caller's entry, or the principal's authority
+    over the room, does not grant it. read passes it to the host.
+  - rooms/keys/file-key 0.3: the same as `purposeOfUse` (`purpose` already
+    says seal or open), bound only on `open`.
+  - rooms/records/get 0.4: the host holds a read to the purposes the presented
+    chain states; a chain stating none grants `any`.
+  - rooms/owner/issue-authority 0.3: optional `purposes` (AclEntry 0.3's
+    PurposeScope), stated in the credential; absent grants `any`.
+  - rooms/_shared 0.2: `RecordPurpose`, and AuthorityPresentation's rule for
+    purposes along a chain: a link stating none takes its parent's, a link
+    stating wider is refused whole (VTI-ACL-107).
+
+  Each new version `extends` its predecessor.
+
+## 0.28.25 — 2026-11-09
+
+
+### Documentation
+
+- **vta/dids**: Did:webs is eligible with the key-role designation extension (#1070)
+
+* docs(vta/dids): did:webs is eligible with the key-role designation extension
+
+  The did:webs method profile declared the method ineligible as published
+  (criteria 4 and 6: no controller-chosen relationships, no room for
+  keyRoles or revoked) and recommended an extension A: role keys anchored in
+  the KEL, rendered into their roles' relationships with keyRoles and
+  revoked, key-state keys in no relationship. affinidi-did-webs 0.9.1
+  implements it as a key-role designation (an anchored ACDC), proposed to
+  the did:webs specification.
+
+  The profile now states the status as eligible with that extension and
+  ineligible without it, and renders §4 as built: the record's schema and
+  attributes, one standing record, accumulated revocations, the document's
+  members, the fail-closed checks. It states the interop caveat: a resolver
+  without the extension refuses the published did.json.
+
+## 0.28.24 — 2026-11-09
+
+
+### Added
+
+- **messaging/mux**: DID multiplexing at a mediator (messaging/mux/*/0.1) (#1068)
+
+* feat(messaging/mux): DID multiplexing at a mediator (messaging/mux/*/0.1)
+
+  One authenticated connection (the principal) carries live delivery and
+  pickup for many member DIDs: session attaches bound to one connection's
+  sessionId/muxNonce, and stored grants a member DID signs once. Members
+  sign closed statements (muxAttach, muxGrant, muxRevokeAll) with an
+  embedded Data Integrity proof (proofPurpose authentication), verified in a
+  normative order before any state changes.
+
+  Adds attach, detach, grant, list, update (narrow only), revoke,
+  revoke-all (epoch advance), event (live: ready/attached/detached/refused,
+  incl. the tsp-mux subprotocol) and notice (durable: grantsSuspended,
+  grantsRevoked, grantsExpiring, grantsPresent), with shared definitions in
+  messaging/mux/_shared/0.1/mux.schema.json, stable per-statement refusal
+  codes, the unknown-key suspension rule and replay floors.
+
+  Allowlists eddsa-rdfc-2022 as W3C Data Integrity vocabulary for the
+  casing lint.
+
+- **vta/memory**: Versioned writes, tombstones, a change feed and named reads (put/delete/list 0.2, get 0.1) (#1067)
+
+vta/memory 0.1 is an unconditional upsert key/value store: put overwrites
+  with no version, so two writers clobber each other undetected; delete is a
+  hard delete, so another device's cached copy never learns the item is gone;
+  and list returns the whole context with no prefix, paging or change feed.
+
+  The new versions apply vta/app-state's semantics to memory, restated per
+  spec so each can be implemented on its own:
+
+  - A per-context write counter (`MemoryRecord.version`, in the new shared
+    definition vta/_shared/0.1/memory-record) serves both as the
+    optimistic-concurrency token and the sync watermark.
+  - put/0.2: optional `expectedVersion` (0 = create only). A failed
+    precondition is `versionConflict`, with the current version and value
+    in its details so the loser need not re-read. The response returns
+    `version`, `wasCreated`, `updatedAt` and `valueBytes`. `valueTooLarge`
+    carries `limitBytes` / `actualBytes`. `currentValue` is withheld from a
+    caller that may write the context but not read it.
+  - delete/0.2: leaves a tombstone, takes an optional positive
+    `expectedVersion`, and treats deleting nothing as success
+    (`existed: false`).
+  - list/0.2: a snapshot (prefix, cursor/limit, values by default as in
+    0.1) or a change feed from `sinceVersion` that includes tombstones,
+    with `highWatermark`, `watermarkTooOld` and `cursorInvalid`.
+  - get/0.1 (new): up to 256 named keys, each answered once in `items`,
+    `missing` or `deferred`. It is the read whose audit can name exactly
+    which items an agent saw.
+
+  The 0.1 versions stay published and are not superseded; a VTA serving
+  both writes one store, and the 0.2 prose says how 0.1 writes and deletes
+  take versions and leave tombstones there.
+
+  Requested in OpenVTC/verifiable-trust-infrastructure#2115. The
+  item-level read audit in #2116 builds on get/0.1.
+
+## 0.28.23 — 2026-11-09
+
+
+### Documentation
+
+- **vtc/badges**: Declare the known implementation of every badges task (#1061)
+
+
+### Fixed
+
+- **vtc/members/rotate**: A rotation onto did:scid or did:webs can be reported (#1064)
+
+`vtc/members/rotate/0.1`'s response `method` allowed only `did:key` and
+  `did:webvh`, but a community verifies a rotation onto a `did:scid:vh:1`
+  identifier (VTI-KEY-161) and, in VTI, onto a `did:webs` (VTI-KEY-003,
+  VTI-LNK-052): a successful rotation onto either had no conforming response.
+  Appends `did:scid` and `did:webs` to the enum, in place (an appended enum
+  value is an additive change), and says what `method` is.
+
+
+
+### Other
+
+- The community issues the badge credential (#1063)
+
+## 0.28.22 — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027) (#1059)
+
+* feat(vtc/badges): claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027)
+
+## 0.28.21 — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Show answers the caller's own awards (myAwards), so a holder can share one (#1057)
+
+* feat(vtc/badges): show answers the caller's own awards (myAwards), so a holder can share one
+
+  vtc/badges/awards/share and unshare (#1054) name an award, but no read answered a holder their own accepted award identifiers for a community badge: mine/list carries badges, show only myCount. vtc/badges/show/0.1#response gains the optional myAwards - the caller's own accepted awards of the badge, newest first, each with its shared - and conformance item 4 says so. Additive, on a draft.
+
+- **auth/step-up**: Requests/show — the subject's wallet fetches a step-up refused to a delegated producer (auth/step-up/requests/show/0.1) (#1056)
+
+A relying party that refuses an operation until its subject steps up carries
+  the request inline in the refusal (approve-request/0.5, Inline delivery). That
+  only works when the producer of the operation can gather the evidence itself.
+  A process acting with a key the subject delegated to it — an assistant, an
+  automation — can redeem a recorded step-up but never make one. It cannot
+  forward the inline request to the subject's wallet either, because the inline
+  request carries no proof.
+
+  This adds a hand-off by reference. Beside the inline request, the relying
+  party MAY carry `details.stepUpHandoff` (`$defs.Handoff`): a single-use handle
+  of at least 128 bits, its expiry and this task's Type URI. The person's
+  approver agent sends the handle and receives two things:
+
+  - the relying party's own signed approve-request/0.5, addressed to the
+    subject, with the same challenge and binding as the inline request;
+  - the operation the step-up is bound to, exactly as received.
+
+  The agent verifies the proof and shows the operation itself. It recomputes the
+  binding where it knows the construction. It then answers with approve-response
+  0.7, signed by the subject's own DID, directly to the relying party. The
+  producer resends the identical operation, and the recorded step-up is redeemed.
+
+  A handle is answered at most once, atomically. Unknown, spent, expired and
+  settled handles all return `notFound`. Reading a handle is never part of an
+  approval, so a party that sees the handle can spend the read but cannot
+  approve.
+
+## 0.28.20 — 2026-11-07
+
+
+### Added
+
+- **vtc/badges**: Awards/share and awards/unshare — a holder shows an award outside the community (vtc/badges/awards/{share,unshare}/0.1) (#1054)
+
+* feat(vtc/badges): awards/share and awards/unshare — a holder shows an award outside the community (vtc/badges/awards/{share,unshare}/0.1)
+
+  The two tasks the VTC badges design note lists for showing a badge outside
+  the community (VTI-BDG-070 – 072), completing the vtc/badges/* 0.1 family.
+
+  - `vtc/badges/awards/share/0.1`: the holder of an accepted award of a badge
+    the community marked `shareableOutside` asks, and the community answers the
+    public locations it serves the award at — a verification location that
+    answers the credential exactly as issued with its status, and a baked image
+    where it serves one. Locations are the community's, unguessable (≥ 128
+    bits, never derived from the award), idempotent on a repeat, and disclose
+    no other holder nor a count (VTI-BDG-071). They stop serving on unshare,
+    take-back, retire and departure. Codes: badgesOff, notFound (unknown,
+    another member's, not accepted — alike), notShareable (insideOnly | kudos
+    | retired), publicLocationUnavailable.
+  - `vtc/badges/awards/unshare/0.1`: stops it; the locations answer as ones
+    that never existed; idempotent; not a revocation. Codes: badgesOff,
+    notFound.
+  - `_shared/0.1/badge.schema.json`: `AwardShare` and the optional
+    `Award.shared` (verificationUrl, bakedImageUrl?, since) — additive.
+
+  Both are acts of the member: a portal key the member authorized for
+  `vtc/badges` under auth/oob/grant/0.3 may sign them (VTI-BDG-095).
+
+## 0.28.19 — 2026-11-06
+
+
+### Added
+
+- **vtc/badges**: Member badges — community badges backed by groups, awards accepted by the member, kudos, Open Badges credentials (vtc/badges/*/0.1) (#1052)
+
+* feat(vtc/badges): member badges — community badges backed by groups, awards accepted by the member, kudos, Open Badges credentials (vtc/badges/*/0.1)
+
+  A new family for the VTI Community Badges chapter (VTI-BDG-001 – 095): pictures
+  with a name a member earns, holds and shows on their directory card.
+
+  - A community badge is backed by a community group: `create` creates the group
+    as vtc/groups/create does, its managers are the badge's owners, its members
+    the holders; requests reuse vtc/groups/join and requests/decide, owners reuse
+    managers/add and remove. The shared Group record gains an optional `badgeId`
+    (additive).
+  - An award is an offer until its recipient accepts (awards/offer → mine/accept
+    or mine/decline); mine/accept issues the badge credential as the group's DID
+    first and records the membership after. mine/accept states the credential
+    profile: an Open Badges 3.0 OpenBadgeCredential with the community as the
+    Achievement's creator and endorser, one evidence entry per award; short-lived
+    with no status inside the community, long-lived with a slot in the community's
+    own status set where holders may show it outside.
+  - Hidden is portal-only (mine/hide, mine/show): walls, holders/list and counts
+    leave a hidden holder out; awards/list shows owners the hidden mark.
+  - Kudos badges (kudos/give, kudos/list): given by any member to any other within
+    per-giver limits, each giving an award of its own; promote turns one into a
+    community badge.
+  - settings/show and settings/update hold the community's switches and limits.
+  - images/upload and images/get mirror the directory's picture pipeline.
+
+## 0.28.18 — 2026-11-05
+
+
+### Added
+
+- **vtn/registry**: Check a party against the network's trust registry through the network, and the registry status for administrators (#1050)
+
+vtn/registry/check/0.1 lets anyone ask a network to ask its trust registry whether a party is published as its member, returning the registry's own signed answer verbatim, so a verifier with no DIDComm or TSP session (a browser, or a registry that serves no HTTPS) can still check the registry rather than take the network's word for it. Unreachable is indeterminate, never not a member.
+
+  vtn/registry/status/0.1 lets an administrator read the registry, the writer and whether it is connected, the last reconcile, and every record compared with what the entries project (ok, missing, stale, wrong).
+
+- **vta/collection**: Settings/show and settings/set — collection by default per trust context, stored and changed at run time (#1049)
+
+Collection by default was one operator setting, off unless enabled
+  (VTI-NTF-093). The VTI specification withdraws that in favour of a setting of
+  each trust context, enabled unless disabled there (VTI-NTF-094 – VTI-NTF-098):
+
+  - vta/collection/settings/show/0.1: a party with standing in a context reads
+    its setting, who last changed it and when, and whether the VTA's operator
+    has suspended collection by default everywhere (VTI-NTF-096).
+  - vta/collection/settings/set/0.1: a party with administrative authority over
+    the context (VTI-ACL-022) enables or disables it; stored, audited, applied
+    before the answer — disabling closes the VTA's connections first
+    (VTI-NTF-095). Answers the setting and whether it changed.
+  - _shared/0.1 gains a CollectionSetting definition (new $defs entry), and the
+    `disabled` reason is re-described: the context's own setting, or the
+    operator's suspension (VTI-NTF-097, VTI-NTF-098). No enum value changes.
+  - claim/list/release 0.1 prose and an error-code meaning now cite the
+    per-context setting instead of VTI-NTF-093 (description edits only).
+
+  The setting is not folded into list's response: it belongs to the context,
+  not an identifier, and an added member in that released response would be
+  refused by every existing client's additionalProperties: false.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+## 0.28.17 — 2026-11-05
+
+
+### Added
+
+- **vtc/networks/preview**: Read a network before joining it — its profile, required roles, and whether it lists the community (#1047)
+
+## 0.28.16 — 2026-11-05
+
+
+### Added
+
+- **vta/pcs/voter**: Check a receipt after close — receipts/list 0.1, read 0.7 signs a tombstone read (#1045)
+
+vta/pcs/voter/receipts/list/0.1 returns the receipts a VTA keeps for one
+  election, whole and exactly as received, with the ballot box recorded at
+  registration — so after voting closes a client can fetch each cast's
+  voting/board/inclusion proof from the ballot box over its own connection and
+  hand it, with the head the community kept at close, to vta/pcs/voter/receipt
+  (VTI-VOT-053). The client need keep nothing between the cast and the check.
+
+  vta/pcs/voter/read/0.7 adds read: tombstone, signing a
+  vtc/elections/tombstones/show/0.1 request as the member: once a community
+  deletes the board an election was opened on, the heads it kept are in the
+  tombstone, which it shows only to an active member (VTI-BRD-009). Only a show
+  still carries a presentation. Two text references to read/0.6 move to 0.7.
+
+  Rust, TypeScript, Go and Dart bindings regenerated; check-bindings agrees.
+
+- **vtc/boards**: Appoint, remove and list a board's facilitators (#1044)
+
+## 0.28.15 — 2026-11-05
+
+
+### Added
+
+- **rooms/keys**: Rooms/keys/watch and rooms/keys/changed — a key holder watches rooms for its member's wallet; act 0.12 lists rooms/watch (#1040)
+
+A wallet whose member keys are held by its key holder cannot present as
+  the member and has no address a host can reach, so it could not use
+  rooms/watch (#1036).
+
+- **did-management/stats/set-resolution**: Choose a slot's statistics resolution (#1041)
+
+An owner can keep less statistical detail over time for their own DID (coarse, or totals only), or return it to the service's own choice; an administrator can set any level for any slot, including always keeping the finest series. Bindings regenerated.
+
+
+
+### Specifications
+
+- **vtc/elections**: A deleted group's DID is never a member party (VTI-VOT-029) (#1039)
+
+vtc/elections/show/0.6, vtc/elections/list/0.5 and
+  vtc/elections/tickets/issue/0.3 defined a member party as a
+  `roll.memberOf` that is "neither the community's own DID nor one of its
+  groups". Once a group is deleted its DID is no longer one of the
+  community's groups, so read literally the definition let the election
+  fall onto the member-party presentation path, where a holder of an
+  unexpired credential the deleted group issued could read it.
+  VTI-VOT-029 forbids exactly that: such an election is shown, and
+  confirmed to exist, only to a holder of `vtc.elections.manage`, and
+  the deleted group's identifier is never treated as a party outside
+  the community.
+
+  The member-party test is now decided by what `roll.memberOf` was when
+  the election was created; show item 1 and list item 1 say a deleted
+  group's election is seen only by a manager; show item 8.3 says a
+  presentation of the group's credential shows it to nobody. The
+  payload descriptions of show and list say the same.
+
+  Description and prose only: every schema is otherwise unchanged, as
+  CONTRIBUTING-SPECS "Version rules" allows in place for a released
+  draft version.
+
 ## 0.28.14 — 2026-11-04
 
 

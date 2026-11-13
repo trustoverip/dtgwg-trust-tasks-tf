@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1",
+  "title": "VTC Badges — Claims — Withdraw — payload",
+  "description": "Withdraw a claim code: it admits no one from now on; claims already made stand. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claimId"
+  ],
+  "properties": {
+    "claimId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/ClaimId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Claims — Withdraw — response payload",
+      "description": "The success response to a vtc/badges/claims/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/claims/withdraw/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim"
+      ],
+      "properties": {
+        "claim": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/ClaimCode",
+          "description": "The code's record as it now stands, `withdrawn`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

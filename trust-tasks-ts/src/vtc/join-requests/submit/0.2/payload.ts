@@ -101,8 +101,13 @@ export type Response = VTCJoinRequestsSubmitResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/submit/0.2",
   "title": "VTC Join-Requests Submit — payload",
@@ -272,10 +277,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -397,7 +402,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -1,0 +1,54 @@
+[
+  {
+    "note": "An arrange names at least one of `order`, `pinned` and `visibility`; an empty request changes nothing and is refused as malformed rather than answered as a no-op.",
+    "payload": {}
+  },
+  {
+    "note": "A badge appears once in `order`: a wall position is one place per badge.",
+    "payload": {
+      "order": ["bdg_Kd0sCl4mpWh1sp3r", "bdg_Kd0sCl4mpWh1sp3r"]
+    }
+  },
+  {
+    "note": "`pinned` never exceeds 8, the ceiling of `limits.maxPinned`; the community's own limit (default 2) is enforced beneath that as `tooManyPinned`.",
+    "payload": {
+      "pinned": [
+        "bdg_A1b2C3d4E5f6G7h8",
+        "bdg_B1b2C3d4E5f6G7h8",
+        "bdg_C1b2C3d4E5f6G7h8",
+        "bdg_D1b2C3d4E5f6G7h8",
+        "bdg_E1b2C3d4E5f6G7h8",
+        "bdg_F1b2C3d4E5f6G7h8",
+        "bdg_G1b2C3d4E5f6G7h8",
+        "bdg_H1b2C3d4E5f6G7h8",
+        "bdg_I1b2C3d4E5f6G7h8"
+      ]
+    }
+  },
+  {
+    "note": "`visibility` is a `WallVisibility`, `members` or `nobody`; a wall is never wider than the directory shows the card, so `public` is not a value.",
+    "payload": {
+      "visibility": "public"
+    }
+  },
+  {
+    "note": "Hiding is not arranging: `hidden` is set with vtc/badges/mine/hide and vtc/badges/mine/show.",
+    "payload": {
+      "hidden": ["bdg_Kd0sCl4mpWh1sp3r"]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "visibility": "nobody",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: `visibility` is REQUIRED; the answer states the wall as it now stands in full.",
+    "variant": "response",
+    "payload": {
+      "badges": []
+    }
+  }
+]

@@ -75,8 +75,13 @@ export type Response = AuthStepUpApproverRedeemFinishResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/step-up/approver/redeem/finish/0.1",
   "title": "Auth — Step-up Approver Redeem (finish) — payload",
@@ -213,10 +218,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -321,7 +326,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
