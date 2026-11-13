@@ -40,14 +40,14 @@
     {
       "description": "The first revision of a message or reaction: `revision` 1, a non-empty `body`, no `editedAt`, and a reaction names its target in `inReplyTo`.",
       "properties": {
-        "revision": { "type": "integer", "const": 1 },
-        "body": { "type": "string", "minLength": 1, "maxLength": 16384 }
+        "revision": { "description": "Revision 1: the first document sent for a `messageId`.", "type": "integer", "const": 1 },
+        "body": { "description": "Non-empty: an empty `body` withdraws a message, and only a rewrite can withdraw one.", "type": "string", "minLength": 1, "maxLength": 16384 }
       },
       "not": {
         "anyOf": [
           { "required": ["editedAt"] },
           {
-            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "properties": { "kind": { "description": "Matches a reaction, which must name the message it reacts to in `inReplyTo`.", "type": "string", "const": "reaction" } },
             "required": ["kind"],
             "not": { "required": ["inReplyTo"] }
           }
@@ -57,13 +57,13 @@
     {
       "description": "A rewrite (an edit, a withdrawal, a changed or withdrawn reaction): `revision` greater than 1, `editedAt` present, and a reaction names its target in `inReplyTo`.",
       "properties": {
-        "revision": { "type": "integer", "minimum": 2 }
+        "revision": { "description": "A rewrite: any revision after the first.", "type": "integer", "minimum": 2 }
       },
       "required": ["editedAt"],
       "not": {
         "anyOf": [
           {
-            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "properties": { "kind": { "description": "Matches a reaction, which must name the message it reacts to in `inReplyTo`.", "type": "string", "const": "reaction" } },
             "required": ["kind"],
             "not": { "required": ["inReplyTo"] }
           }

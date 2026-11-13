@@ -32,10 +32,19 @@ export type ChatDirectMessagePayload = {
   ext?: Ext;
 } & (
   | {
+      /**
+       * Revision 1: the first document sent for a `messageId`.
+       */
       revision?: 1;
+      /**
+       * Non-empty: an empty `body` withdraws a message, and only a rewrite can withdraw one.
+       */
       body?: string;
     }
   | {
+      /**
+       * A rewrite: any revision after the first.
+       */
       revision?: number;
     }
 );
@@ -73,8 +82,13 @@ export type Payload = ChatDirectMessagePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/chat/direct/message/0.1",
   "title": "Chat — Direct message — payload",
@@ -123,10 +137,12 @@ export const PAYLOAD_SCHEMA = {
       "description": "The first revision of a message or reaction: `revision` 1, a non-empty `body`, no `editedAt`, and a reaction names its target in `inReplyTo`.",
       "properties": {
         "revision": {
+          "description": "Revision 1: the first document sent for a `messageId`.",
           "type": "integer",
           "const": 1
         },
         "body": {
+          "description": "Non-empty: an empty `body` withdraws a message, and only a rewrite can withdraw one.",
           "type": "string",
           "minLength": 1,
           "maxLength": 16384
@@ -142,6 +158,7 @@ export const PAYLOAD_SCHEMA = {
           {
             "properties": {
               "kind": {
+                "description": "Matches a reaction, which must name the message it reacts to in `inReplyTo`.",
                 "type": "string",
                 "const": "reaction"
               }
@@ -162,6 +179,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "A rewrite (an edit, a withdrawal, a changed or withdrawn reaction): `revision` greater than 1, `editedAt` present, and a reaction names its target in `inReplyTo`.",
       "properties": {
         "revision": {
+          "description": "A rewrite: any revision after the first.",
           "type": "integer",
           "minimum": 2
         }
@@ -174,6 +192,7 @@ export const PAYLOAD_SCHEMA = {
           {
             "properties": {
               "kind": {
+                "description": "Matches a reaction, which must name the message it reacts to in `inReplyTo`.",
                 "type": "string",
                 "const": "reaction"
               }
@@ -257,7 +276,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "The author's revision number for a `messageId`: `1` on the first document written for it, and a strictly greater integer on each rewrite. Gaps are allowed, since every revision carries the whole message. The only key a reader orders rewrites by; `editedAt` never orders. Never shown."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -272,4 +291,5 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 262144,
 } as const;
