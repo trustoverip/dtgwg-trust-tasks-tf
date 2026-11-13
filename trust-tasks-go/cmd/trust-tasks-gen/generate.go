@@ -38,6 +38,13 @@ const officialPrefix = "https://trusttasks.org/"
 // specification.
 var frameworkSlug = regexp.MustCompile(`^trust-(task|ceremony)($|-|/)`)
 
+// lifecycleNote is every bundle `deprecation` the registry writes (SPEC
+// "Superseded and Withdrawn Versions"): `retired`, `retired; use <S>` or
+// `superseded by <S>`, where <S> is `<slug>/<M.N>`.
+var lifecycleNote = regexp.MustCompile(`^(retired|retired; use ` + noteTarget + `|superseded by ` + noteTarget + `)$`)
+
+const noteTarget = `[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)`
+
 // bundle is a registry bundle, `bundleVersion` 1
 // (docs/design/consumer-side-generation.md, "Milestone 1").
 type bundle struct {
@@ -155,6 +162,12 @@ func loadAndGenerate(opts options) (*result, error) {
 		}
 		if b.BundleVersion != "1" {
 			return nil, fmt.Errorf("%s: bundleVersion %s; this trust-tasks-gen reads bundleVersion 1 — upgrade the trust-tasks-go module", label, b.BundleVersion)
+		}
+		// The note is written into a `// Deprecated:` comment line, so it is
+		// held to the notes the registry writes, none of which can start a
+		// new line of code.
+		if b.Deprecation != nil && !lifecycleNote.MatchString(*b.Deprecation) {
+			return nil, fmt.Errorf("%s: bundle member deprecation %q is not a lifecycle note (`retired`, `retired; use <slug>/<M.N>` or `superseded by <slug>/<M.N>`)", label, *b.Deprecation)
 		}
 		if b.Slug != entry.Slug || b.Version != entry.Version || b.TypeURI != entry.TypeURI {
 			return nil, fmt.Errorf("%s: the vendored bundle is %s %s (%s), not what trust-tasks.lock names", label, b.Slug, b.Version, b.TypeURI)
