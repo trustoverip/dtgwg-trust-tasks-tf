@@ -309,8 +309,8 @@ families; a second lock under `index-equivalence/` covers request and response
 size bounds, a response-only bound, a task with no response and superseded
 versions.
 
-**Example.** `examples/consumer-app` pins `acl/grant/0.2`, `keys/list/0.2` and
-`vault/get/0.3`, builds with `trust-tasks-rs` `default-features = false`, and
+**Example.** `examples/consumer-app` pins `acl/grant/0.3`, `keys/list` at
+`latest` and `vault/get/0.3` (and `vault/get/0.3` from a third-party source), builds with `trust-tasks-rs` `default-features = false`, and
 runs a round trip through a `Dispatcher` (a response, a declared error code, a
 policy refusal, and an unlocked type refused). `rust.yml`'s `consumer-app` job
 builds and runs it.
