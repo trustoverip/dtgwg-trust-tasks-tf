@@ -228,109 +228,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Correlation Analyze — response payload",
-      "description": "Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "findings"
-      ],
-      "properties": {
-        "findings": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "severity",
-              "why",
-              "remedies"
-            ],
-            "properties": {
-              "attributeId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "severity": {
-                "type": "string",
-                "enum": [
-                  "low",
-                  "high"
-                ]
-              },
-              "sharedWith": {
-                "type": "array",
-                "maxItems": 128,
-                "description": "Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "profileId": {
-                      "$ref": "#/$defs/Ulid"
-                    },
-                    "contextId": {
-                      "type": "string"
-                    },
-                    "personaDid": {
-                      "type": "string"
-                    },
-                    "disclosedTo": {
-                      "type": "array",
-                      "maxItems": 64,
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "facetId": {
-                      "$ref": "#/$defs/Ulid",
-                      "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own."
-                    }
-                  }
-                }
-              },
-              "why": {
-                "type": "string",
-                "maxLength": 1024,
-                "description": "Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss."
-              },
-              "remedies": {
-                "type": "array",
-                "maxItems": 8,
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "useDifferentValue",
-                    "reissueCredentialToThisDid",
-                    "correlateDeliberately",
-                    "proceedAndRecord"
-                  ]
-                },
-                "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it."
-              },
-              "crossesFacets": {
-                "type": "boolean",
-                "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets."
-              },
-              "facetIds": {
-                "type": "array",
-                "maxItems": 64,
-                "uniqueItems": true,
-                "items": {
-                  "$ref": "#/$defs/Ulid"
-                },
-                "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -493,26 +390,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ValueType": {
-      "title": "ValueType",
-      "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-      "type": "string",
-      "enum": [
-        "string",
-        "number",
-        "boolean",
-        "date",
-        "object"
-      ]
-    },
-    "ClaimType": {
-      "title": "ClaimType",
-      "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
 };

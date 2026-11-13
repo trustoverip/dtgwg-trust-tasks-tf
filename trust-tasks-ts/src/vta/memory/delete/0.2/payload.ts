@@ -138,45 +138,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Delete — response payload",
-      "description": "Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "existed"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "existed": {
-          "type": "boolean",
-          "description": "True when a live item was removed by this request. False when the key already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way."
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the key held nothing and no tombstone was written."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the deletion was recorded. Absent on the same terms as `version`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

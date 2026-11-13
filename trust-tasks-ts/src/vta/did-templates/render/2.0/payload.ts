@@ -121,26 +121,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA DID-Template Render — response payload",
-      "description": "The rendered DID document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "document"
-      ],
-      "properties": {
-        "document": {
-          "type": "object",
-          "description": "The rendered DID document with all placeholders substituted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -140,45 +140,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Task Consent Decision — response payload",
-      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status",
-        "payloadDigest"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "granted",
-            "pending",
-            "denied"
-          ],
-          "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
-        },
-        "payloadDigest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it."
-        },
-        "approvals": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct approvals recorded so far."
-        },
-        "needed": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Distinct approvals required. Present when status is `pending`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -274,15 +235,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "Decision": {
-      "title": "Decision",
-      "type": "string",
-      "enum": [
-        "approve",
-        "deny"
-      ],
-      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
     }
   }
 };

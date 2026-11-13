@@ -109,40 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Archive — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "lifecycle"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256
-        },
-        "lifecycle": {
-          "$ref": "#/$defs/VaultLifecycle",
-          "description": "State after the transition, echoed rather than left to be inferred from the verb."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
-    "VaultLifecycle": {
-      "type": "string",
-      "enum": [
-        "active",
-        "archived",
-        "deleted"
-      ],
-      "description": "Archival state. Orthogonal to validity."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

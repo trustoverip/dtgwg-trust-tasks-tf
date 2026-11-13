@@ -106,39 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "DID Management Check Agent Name — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "domain",
-        "available",
-        "reserved"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The probed name's local part, echoed in canonical bare form (leading `@` stripped)."
-        },
-        "domain": {
-          "type": "string",
-          "description": "The hosting domain the probe was evaluated against, after domain resolution."
-        },
-        "available": {
-          "type": "boolean",
-          "description": "Free to claim: neither reserved by the host nor already bound to a DID on this domain."
-        },
-        "reserved": {
-          "type": "boolean",
-          "description": "On the host's reserved list (`admin`, `support`, …) — unavailable but well-formed, distinct from a grammar error (which is rejected as invalid_name)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

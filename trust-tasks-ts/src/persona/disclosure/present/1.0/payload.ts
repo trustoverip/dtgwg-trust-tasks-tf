@@ -142,46 +142,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Disclosure Present — response payload",
-      "description": "Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "disclosureId",
-        "artifact",
-        "subject",
-        "disclosedAt"
-      ],
-      "properties": {
-        "disclosureId": {
-          "$ref": "#/$defs/Ulid",
-          "description": "Names the append-only record this disclosure wrote, so the holder can find it again in their history."
-        },
-        "artifact": {
-          "type": "string",
-          "description": "The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone."
-        },
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it."
-        },
-        "disclosedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

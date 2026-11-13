@@ -207,34 +207,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Contact Lists Put — response payload",
-      "description": "Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.0#response. The list as it now stands.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "list",
-        "created",
-        "changed"
-      ],
-      "properties": {
-        "list": {
-          "$ref": "#/$defs/ContactList"
-        },
-        "created": {
-          "type": "boolean",
-          "description": "True when this request created the list."
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "True when this request created the list or changed any detail of it. False when every detail given already matched."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -243,48 +215,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContactList": {
-      "title": "ContactList",
-      "description": "One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "listId",
-        "name",
-        "order",
-        "contactCount",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "listId": {
-          "$ref": "#/$defs/ListId"
-        },
-        "name": {
-          "$ref": "#/$defs/ListName"
-        },
-        "colour": {
-          "$ref": "#/$defs/ListColour"
-        },
-        "order": {
-          "$ref": "#/$defs/ListOrder"
-        },
-        "contactCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many of the context's contacts are on the list now."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it."
-        }
       }
     },
     "ListOrder": {

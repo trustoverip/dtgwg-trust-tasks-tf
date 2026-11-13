@@ -98,40 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Rotate-Challenge — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "rotationId",
-        "expiresAt",
-        "signingPayloadHex",
-        "canonicalTemplate"
-      ],
-      "properties": {
-        "rotationId": {
-          "type": "string",
-          "description": "A UUID identifying this rotation ceremony."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "signingPayloadHex": {
-          "type": "string",
-          "pattern": "^[0-9a-f]+$",
-          "description": "Hex bytes the member signs with both the old and new keys to prove control of each."
-        },
-        "canonicalTemplate": {
-          "type": "object",
-          "description": "The canonical rotation template the signatures cover (opaque here)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -182,79 +182,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "ReadDocument": {
-      "title": "ReadDocument",
-      "description": "A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.",
-      "type": "object",
-      "required": [
-        "id",
-        "type",
-        "issuer",
-        "recipient",
-        "issuedAt",
-        "payload",
-        "proof"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "https://trusttasks.org/spec/voting/trustees/status/0.1",
-            "https://trusttasks.org/spec/voting/election/show/0.2"
-          ]
-        },
-        "issuer": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The request's `trustee`."
-        },
-        "recipient": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The request's `ballotBox`."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "payload": {
-          "type": "object",
-          "description": "`{ community, electionId }` from the request, exactly."
-        },
-        "proof": {
-          "type": "object",
-          "description": "A Data Integrity proof by an `authentication` key of `issuer`."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Trustee Read — response payload",
-      "description": "The signed read, to send to the ballot box.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "document"
-      ],
-      "properties": {
-        "document": {
-          "$ref": "#/$defs/ReadDocument"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -361,12 +288,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
 };

@@ -116,34 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys Sign — response payload",
-      "description": "The success response to a keys/sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "signature",
-        "algorithm"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable."
-        },
-        "signature": {
-          "type": "string",
-          "description": "Signature bytes, base64url-encoded without padding."
-        },
-        "algorithm": {
-          "$ref": "#/$defs/SignAlgorithm"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

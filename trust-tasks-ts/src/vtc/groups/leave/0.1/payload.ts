@@ -93,43 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Groups — Leave — response payload",
-      "description": "The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "groupId",
-        "state"
-      ],
-      "properties": {
-        "groupId": {
-          "$ref": "#/$defs/GroupId"
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "left",
-            "optedOut",
-            "requestWithdrawn",
-            "pending"
-          ],
-          "description": "`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms."
-        },
-        "credentialValidUntil": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When the member's last group credential lapses; renewal has stopped. Null when they held none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

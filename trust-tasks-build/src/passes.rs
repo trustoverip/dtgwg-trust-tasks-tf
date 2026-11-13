@@ -3,6 +3,72 @@
 use anyhow::{anyhow, Result};
 use serde_json::{json, Value};
 
+/// Drop every root `$defs` entry the document does not reach from its root
+/// (#1098), keeping the survivors in their order.
+///
+/// A bundle's request `schema` carries `$defs.Response` and everything only
+/// the response uses, and its `responseSchema` carries a copy of the whole
+/// request `$defs`; emitted as-is, each `PAYLOAD_SCHEMA` literal holds the
+/// other side's definitions too. Only the emitted *text* is pruned — typify
+/// still sees the whole schema, so no type changes — and the bundle is left
+/// byte-for-byte as published (its digest is what a lockfile pins).
+///
+/// Reachability follows every `$ref` of the form `#/$defs/<name>[/...]` from
+/// the root object without its `$defs` — including the root's own `$ref`,
+/// which is all a response document has — then from each reached definition
+/// in full. A local `$ref` of any other form (`#`, an anchor) keeps every
+/// definition, so a reference this walk cannot read never loses its target.
+pub(crate) fn prune_unreachable_defs(doc: &Value) -> Value {
+    let (Value::Object(root), Some(Value::Object(defs))) = (doc, doc.get("$defs")) else {
+        return doc.clone();
+    };
+    let mut root_view = root.clone();
+    root_view.remove("$defs");
+    let root_view = Value::Object(root_view);
+    let mut reached: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    let mut frontier: Vec<&Value> = vec![&root_view];
+    let mut opaque = false;
+    while let Some(node) = frontier.pop() {
+        match node {
+            Value::Object(map) => {
+                if let Some(Value::String(r)) = map.get("$ref") {
+                    if let Some(rest) = r.strip_prefix("#/$defs/") {
+                        let name = rest
+                            .split('/')
+                            .next()
+                            .unwrap_or_default()
+                            .replace("~1", "/")
+                            .replace("~0", "~");
+                        if let Some(def) = defs.get(&name) {
+                            if reached.insert(name) {
+                                frontier.push(def);
+                            }
+                        }
+                    } else if r.starts_with('#') {
+                        opaque = true;
+                    }
+                }
+                frontier.extend(map.values());
+            }
+            Value::Array(items) => frontier.extend(items.iter()),
+            _ => {}
+        }
+    }
+    if opaque {
+        return doc.clone();
+    }
+    let mut out = doc.clone();
+    if let Some(Value::Object(out_defs)) = out.get_mut("$defs") {
+        out_defs.retain(|name, _| reached.contains(name));
+        if out_defs.is_empty() {
+            if let Value::Object(root) = &mut out {
+                root.remove("$defs");
+            }
+        }
+    }
+    out
+}
+
 /// Rename the 2020-12 `$defs` keyword to the Draft-07 `definitions` keyword
 /// recursively, and rewrite every `$ref` of the form `#/$defs/X` to
 /// `#/definitions/X`. typify 0.5 only honors the older keyword; the two are
@@ -720,5 +786,72 @@ mod drop_anyof_tests {
             }
         });
         assert_eq!(dropped(input.clone()), input);
+    }
+}
+
+#[cfg(test)]
+mod prune_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn request() -> Value {
+        json!({
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": { "a": { "$ref": "#/$defs/A" } },
+            "$defs": {
+                "A": { "items": { "$ref": "#/$defs/B/properties/x" } },
+                "B": { "properties": { "x": { "type": "string" } } },
+                "Response": {
+                    "$anchor": "response",
+                    "properties": { "c": { "$ref": "#/$defs/C" } }
+                },
+                "C": { "type": "integer" },
+                "Unused": { "type": "null" }
+            }
+        })
+    }
+
+    fn def_names(doc: &Value) -> Vec<String> {
+        let mut names: Vec<String> = doc
+            .get("$defs")
+            .and_then(Value::as_object)
+            .map(|d| d.keys().cloned().collect())
+            .unwrap_or_default();
+        names.sort_unstable();
+        names
+    }
+
+    #[test]
+    fn the_request_keeps_what_its_root_reaches() {
+        assert_eq!(def_names(&prune_unreachable_defs(&request())), ["A", "B"]);
+    }
+
+    #[test]
+    fn the_response_keeps_what_response_reaches() {
+        let doc = json!({ "$ref": "#/$defs/Response", "$defs": request()["$defs"] });
+        assert_eq!(def_names(&prune_unreachable_defs(&doc)), ["C", "Response"]);
+    }
+
+    #[test]
+    fn nothing_reached_drops_defs() {
+        let doc = json!({ "type": "object", "$defs": { "Response": { "type": "object" } } });
+        assert_eq!(prune_unreachable_defs(&doc), json!({ "type": "object" }));
+    }
+
+    #[test]
+    fn an_unreadable_local_ref_keeps_everything() {
+        let mut doc = request();
+        doc["properties"]["self"] = json!({ "$ref": "#" });
+        assert_eq!(prune_unreachable_defs(&doc), doc);
+    }
+
+    #[test]
+    fn an_escaped_name_is_unescaped() {
+        let doc = json!({
+            "$ref": "#/$defs/a~1b",
+            "$defs": { "a/b": { "type": "string" }, "c": {} }
+        });
+        assert_eq!(def_names(&prune_unreachable_defs(&doc)), ["a/b"]);
     }
 }

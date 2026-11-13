@@ -81,26 +81,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Outbox — Retry — response payload",
-      "description": "How many deliveries were attempted.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "attempted"
-      ],
-      "properties": {
-        "attempted": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Queued deliveries attempted by this request. Deliveries that had already expired are settled as failed and not counted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

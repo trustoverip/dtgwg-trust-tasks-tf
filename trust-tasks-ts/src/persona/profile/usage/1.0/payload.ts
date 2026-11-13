@@ -110,61 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Profile Usage — response payload",
-      "description": "Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "usage"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "reach": {
-          "$ref": "#/$defs/FaceReach",
-          "description": "The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face."
-        },
-        "usage": {
-          "type": "array",
-          "maxItems": 1024,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "contextId",
-              "personaDid",
-              "boundAt"
-            ],
-            "properties": {
-              "contextId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "personaDid": {
-                "type": "string",
-                "minLength": 1
-              },
-              "boundAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "until": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When wearing it here ends on its own. Absent when it lasts until changed."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -174,47 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "FaceReach": {
-      "title": "FaceReach",
-      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind"
-          ],
-          "properties": {
-            "kind": {
-              "const": "anywhere"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "contextIds"
-          ],
-          "properties": {
-            "kind": {
-              "const": "only"
-            },
-            "contextIds": {
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 256,
-              "uniqueItems": true,
-              "items": {
-                "type": "string",
-                "minLength": 1
-              }
-            }
-          }
-        }
-      ]
     },
     "Ulid": {
       "title": "Ulid",

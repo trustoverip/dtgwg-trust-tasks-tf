@@ -94,23 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Auto-Grant — Update — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "autoGrant"
-      ],
-      "properties": {
-        "autoGrant": {
-          "$ref": "#/$defs/AutoGrantStatus"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -119,66 +102,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AutoGrantStatus": {
-      "title": "AutoGrantStatus",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "enabled",
-        "sweepMinutes",
-        "validitySeconds"
-      ],
-      "description": "The effective configuration — defaults filled in — and the last sweep.",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the sweep runs."
-        },
-        "sweepMinutes": {
-          "$ref": "#/$defs/SweepMinutes"
-        },
-        "validitySeconds": {
-          "$ref": "#/$defs/GrantValiditySeconds"
-        },
-        "lastSweep": {
-          "$ref": "#/$defs/AutoGrantSweep"
-        }
-      }
-    },
-    "AutoGrantSweep": {
-      "title": "AutoGrantSweep",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ranAt",
-        "granted",
-        "revoked",
-        "errors"
-      ],
-      "description": "What one sweep did.",
-      "properties": {
-        "ranAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the sweep finished."
-        },
-        "granted": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Grants issued."
-        },
-        "revoked": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Automatic grants revoked. The sweep revokes only grants it issued."
-        },
-        "errors": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Members the sweep could not decide or act on."
-        }
       }
     },
     "GrantValiditySeconds": {

@@ -119,35 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VRC Relationships Propose — response payload",
-      "description": "The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accept",
-        "relationshipDid"
-      ],
-      "properties": {
-        "accept": {
-          "const": true,
-          "description": "Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence."
-        },
-        "relationshipDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's."
-        },
-        "witnessed": {
-          "type": "boolean",
-          "description": "The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

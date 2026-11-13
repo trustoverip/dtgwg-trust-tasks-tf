@@ -119,32 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — List Rights — response payload",
-      "description": "The matching rows, ordered by resource then subject.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "rights"
-      ],
-      "properties": {
-        "rights": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AdminRightRow"
-          },
-          "description": "Rows matching `resource` and `subject`, ordered by `resource` then `subject`. A break-glass record waiting out a policy delay is included — it is exactly the one other administrators have a window to revoke."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -155,109 +129,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "AdminRightRow": {
-      "title": "AdminRightRow",
-      "description": "One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "right",
-        "resource",
-        "origin",
-        "subjectMember",
-        "granterDeparted"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Who holds the right."
-        },
-        "right": {
-          "$ref": "#/$defs/Right"
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "origin": {
-          "$ref": "#/$defs/RightOrigin"
-        },
-        "grantedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present exactly when `origin` is `recorded`."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right lapses. Absent: no expiry, or `origin` is `roleDerived` (a role-derived grant never expires on its own — it is withdrawn by editing `[hooks.git-trust] grant_on_role`)."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none."
-        },
-        "subjectMember": {
-          "type": "boolean",
-          "description": "Whether `subject` is a current member of the community. `false` marks a right held by someone who has since left, or by an external signer the community never enrolled."
-        },
-        "granterDeparted": {
-          "type": "boolean",
-          "description": "Whether `grantedBy` was a member at the time of the grant and has since left. Always `false` when `origin` is `roleDerived`, or when the record's granter was never itself a member (the VTC's own DID, for a right it derives from configuration)."
-        },
-        "breakGlass": {
-          "$ref": "#/$defs/BreakGlass",
-          "description": "Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass."
-        }
-      }
-    },
-    "BreakGlass": {
-      "title": "BreakGlass",
-      "description": "How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "by",
-        "recordedAt",
-        "justification"
-      ],
-      "properties": {
-        "by": {
-          "$ref": "#/$defs/Did",
-          "description": "Who broke the glass: always the record's `subject`, restated so the flag reads on its own."
-        },
-        "recordedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC recorded the break-glass."
-        },
-        "justification": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "\\S",
-          "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published."
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so."
-        },
-        "ratifiedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The administrator who ratified the record — never its subject. Absent while unratified."
-        },
-        "ratifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was ratified. Present exactly when `ratifiedBy` is."
-        }
-      }
-    },
     "Did": {
       "title": "Did",
       "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
@@ -265,33 +136,12 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 2048,
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     },
-    "RightOrigin": {
-      "title": "RightOrigin",
-      "description": "Where a right an administrator sees came from. `recorded` — a `git-ns/*` record, governed by the rights model and returned nowhere the subject cannot eventually see it through `git-ns/view`. `roleDerived` — a v0.1 `[hooks.git-trust] grant_on_role` grant: published by the hook relay from the community's own role configuration, never written by any `git-ns/*` task, and not itself a `RightRecord` — it has no `grantedAt`, no `expiresAt` and no `reason`, only a subject, a right and a resource.",
-      "type": "string",
-      "enum": [
-        "recorded",
-        "roleDerived"
-      ]
-    },
     "Resource": {
       "title": "Resource",
       "description": "A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
       "type": "string",
       "maxLength": 5885,
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$"
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
     }
   }
 };

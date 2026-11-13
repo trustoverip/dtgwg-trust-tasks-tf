@@ -98,38 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Hidden — Withdraw — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "criterionId",
-        "withdrawn",
-        "requirementsDigest"
-      ],
-      "properties": {
-        "criterionId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The criterion that no longer accepts a hidden proof."
-        },
-        "withdrawn": {
-          "type": "boolean",
-          "description": "True when the criterion carried hidden-vetting parameters and they were removed. False when it carried none, so there was nothing to withdraw — a success, not a refusal."
-        },
-        "requirementsDigest": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The criterion's requirementsDigest after the change. It moves when withdrawn is true, because the digest covers the published parameters; it is unchanged when withdrawn is false. Null only when the criterion's manifest entry carries none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

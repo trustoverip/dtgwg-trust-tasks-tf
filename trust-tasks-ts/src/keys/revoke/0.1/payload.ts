@@ -114,36 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys Revoke — response payload",
-      "description": "The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "status",
-        "updatedAt"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The key that was retired."
-        },
-        "status": {
-          "$ref": "#/$defs/KeyStatus",
-          "description": "The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -153,15 +123,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "KeyStatus": {
-      "title": "KeyStatus",
-      "type": "string",
-      "enum": [
-        "active",
-        "revoked"
-      ],
-      "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated."
     }
   }
 };

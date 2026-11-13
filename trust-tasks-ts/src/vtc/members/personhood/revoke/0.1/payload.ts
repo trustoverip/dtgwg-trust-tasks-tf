@@ -95,38 +95,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Personhood-Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "personhood"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1
-        },
-        "personhood": {
-          "type": "boolean",
-          "const": false,
-          "description": "Always false on success."
-        },
-        "vmc": {
-          "type": "object",
-          "description": "Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

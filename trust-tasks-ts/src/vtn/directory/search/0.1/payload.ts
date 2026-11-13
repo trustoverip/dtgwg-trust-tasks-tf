@@ -114,28 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Directory — Search — response payload",
-      "description": "The matching published entries, members first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entries"
-      ],
-      "properties": {
-        "entries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DirectoryEntry"
-          },
-          "description": "The results, each stating its own state and whether it is a member."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -144,68 +122,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "DirectoryEntry": {
-      "description": "One directory result.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "kind",
-        "state",
-        "acknowledged"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Did"
-        },
-        "kind": {
-          "$ref": "#/$defs/EntryKind"
-        },
-        "state": {
-          "$ref": "#/$defs/EntryState"
-        },
-        "acknowledged": {
-          "type": "boolean",
-          "description": "Whether the party is a member. Every result states it (VTI-VTN-013)."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "The name shown."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 2000,
-          "description": "What the party is."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "The party's public address."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "description": "Tags.",
-          "maxItems": 32
-        },
-        "listingId": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The listing credential's `id`, to fetch it."
-        },
-        "grantId": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The grant's `id`, once acknowledged."
-        }
       }
     },
     "EntryState": {
@@ -227,12 +143,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "network"
       ],
       "description": "What the entry lists (VTI-VTN-031): a community, whose entries are its members, or a network, whose entries are further listings. A listing credential carries the same fact as `nodeType` `VTC` or `VTN`."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     },
     "Membership": {
       "type": "object",
@@ -375,20 +285,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "pattern": "^did:[a-z0-9]+:.+$",
       "maxLength": 2048,
       "description": "A DID."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
-    },
-    "MembersOnly": {
-      "type": "boolean",
-      "description": "Only members (`acknowledged: true`). Absent means false."
-    },
-    "SearchText": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "Free text. Every whitespace-separated term must match, case-insensitively, the entry's DID, label, description or a tag."
     }
   }
 };

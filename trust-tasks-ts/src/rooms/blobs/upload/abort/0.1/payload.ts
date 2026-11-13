@@ -101,29 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Blobs — Upload — Abort — response payload",
-      "description": "Success response to rooms/blobs/upload/abort. Type https://trusttasks.org/spec/rooms/blobs/upload/abort/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "uploadId",
-        "aborted"
-      ],
-      "properties": {
-        "uploadId": {
-          "$ref": "#/$defs/TransferId"
-        },
-        "aborted": {
-          "type": "boolean",
-          "description": "Whether this request ended the upload. False means it was already aborted — a success, and why abort can be retried safely."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -101,31 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Backup Abort — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundleId",
-        "aborted"
-      ],
-      "properties": {
-        "bundleId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Echoed so the response stands alone as a record."
-        },
-        "aborted": {
-          "type": "boolean",
-          "description": "Whether this request is what moved the bundle to a terminal state. False means it was already terminal — a success, not a failure, and the reason abort can be retried safely. Required rather than optional: an absent member on an idempotent no-op would be indistinguishable from a cancellation that happened."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
