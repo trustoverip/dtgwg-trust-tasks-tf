@@ -130,6 +130,15 @@ jobs:
       - name: Sync SPEC.md into website/
         run: cp SPEC.md website/SPEC.md
 
+      # The built site in a real browser (#1157): serves website/ through the
+      # production routing function (scripts/serve-website.mjs) and loads the
+      # home page, a spec, a binding, /schema and /implementations/rust in the
+      # runner's preinstalled Chrome over the DevTools protocol — no npm
+      # dependency. Fails on a console error, an uncaught exception, a failed
+      # or 4xx/5xx request, a page with no <h1>, or a wrong canonical link.
+      - name: Smoke-test the built site in headless Chrome
+        run: npm run smoke:website
+
       - name: Upload website artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -219,18 +228,22 @@ jobs:
           --size-only
           --cache-control "public, max-age=31536000, immutable"
 
-      # The site in five syncs, each with its own object metadata (#1145,
-      # #1148, #1152, #1147). `aws s3 sync` applies `--exclude`/`--include`
-      # to `--delete` too, so each sync deletes only within its own slice, and
-      # the by-digest prefix (above) is in none of them.
+      # The site in a series of syncs, each with its own object metadata
+      # (#1145, #1148, #1152, #1147). `aws s3 sync` applies
+      # `--exclude`/`--include` to `--delete` too, so each sync deletes only
+      # within its own slice, and the by-digest prefix (above) is in none of
+      # them.
       #
-      # Cache-Control: the page bundle, assets/app.<hash>.js, is named by its
-      # content hash (scripts/build-website.mjs), so it is `immutable`. Every
-      # other asset URL is not content-hashed: pages and assets are `no-cache`
+      # Cache-Control: every script the page loads — the page bundle, the
+      # hand-kept data files and tasks.generated.js — is served from
+      # assets/hashed/ under a name carrying its content hash
+      # (scripts/build-website.mjs), so it is `immutable`. Every other URL is
+      # not content-hashed: pages and the remaining assets are `no-cache`
       # (always revalidated — a cheap 304 when unchanged), so a new index.html
-      # never runs against stale data. The specs tree is read by tools as well
-      # as the page, and tolerates a few minutes' staleness: a short max-age
-      # with stale-while-revalidate.
+      # never runs against stale data. The specs tree and registry.json keep
+      # their fixed URLs, because tools fetch them by those; the specs tree
+      # tolerates a few minutes' staleness: a short max-age with
+      # stale-while-revalidate.
       #
       # 1. Payload and shared schemas, with the media type a Type URI is
       #    negotiated for (SPEC §6.2) — S3 would otherwise guess
@@ -255,58 +268,88 @@ jobs:
           --exclude "by-digest/*"
           --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
-      # 3. tasks.generated.js, gzip-encoded at rest. It is ~10 MB minified, at
-      #    CloudFront's 10,000,000-byte ceiling for on-the-fly compression, and
-      #    over it the file went out uncompressed (13 MB). Only the page loads
-      #    it, from a <script> tag, and every browser accepts gzip, so storing
-      #    it encoded is safe; CloudFront passes an encoded object through
-      #    as-is. registry.json is deliberately NOT stored encoded: machine
-      #    consumers fetch it, not all of them decode an encoding they did not
-      #    ask for, and minified it is under the ceiling, so CloudFront
-      #    compresses it per request (build-registry.mjs warns as it nears it).
-      - name: Deploy the generated registry script (gzip-encoded)
+      # 3. tasks.generated.js's content-hashed copy, gzip-encoded at rest. It
+      #    is ~10 MB minified, at CloudFront's 10,000,000-byte ceiling for
+      #    on-the-fly compression, and over it the file went out uncompressed
+      #    (13 MB). Only the page loads it, from a <script> tag, and every
+      #    browser accepts gzip, so storing it encoded is safe; CloudFront
+      #    passes an encoded object through as-is. registry.json is
+      #    deliberately NOT stored encoded: machine consumers fetch it, not all
+      #    of them decode an encoding they did not ask for, and minified it is
+      #    under the ceiling, so CloudFront compresses it per request
+      #    (build-registry.mjs warns as it nears it).
+      #
+      #    The encoded copy is written to its own directory under the same
+      #    name, so this sync and step 6's compare gzip with gzip: a sync from
+      #    website/assets/hashed/ would see a size mismatch and re-upload it
+      #    unencoded. `--size-only` throughout assets/hashed/, because a
+      #    content-hashed name with a matching size is the same bytes. No
+      #    `--delete` before the new index.html is live (step 5): a visitor
+      #    holding the previous one can still fetch what it names.
+      - name: Deploy the generated registry script to S3 (content-hashed, gzip-encoded)
         if: steps.fresh.outputs.current == 'true'
         run: |
-          gzip -9 -n -c website/assets/tasks.generated.js > "$RUNNER_TEMP/tasks.generated.js.gz"
-          aws s3 cp "$RUNNER_TEMP/tasks.generated.js.gz" \
-            s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/tasks.generated.js \
+          set -euo pipefail
+          gz="$RUNNER_TEMP/hashed-gzip"
+          mkdir -p "$gz"
+          for f in website/assets/hashed/tasks.generated.*.js; do
+            gzip -9 -n -c "$f" > "$gz/$(basename "$f")"
+          done
+          aws s3 sync "$gz/" s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --size-only \
+            --exclude "*" --include "tasks.generated.*.js" \
             --content-encoding gzip \
             --content-type "text/javascript; charset=utf-8" \
-            --cache-control "no-cache"
+            --cache-control "public, max-age=31536000, immutable"
 
-      # 4. The page bundle, before the index.html that names it (step 5), and
-      #    without `--delete`: a visitor holding the previous index.html can
-      #    still fetch the previous bundle. Step 6 removes it afterwards.
-      - name: Deploy the page bundle to S3 (content-hashed)
+      # 4. The other content-hashed scripts — the page bundle, markdown.js,
+      #    routes.js and the hand-kept data files — likewise before the
+      #    index.html that names them, and likewise without `--delete`.
+      - name: Deploy the page scripts to S3 (content-hashed)
         if: steps.fresh.outputs.current == 'true'
         run: >-
-          aws s3 sync website/assets/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/
-          --exclude "*" --include "app.*.js"
+          aws s3 sync website/assets/hashed/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/
+          --size-only
+          --exclude "tasks.generated.*.js"
           --content-type "text/javascript; charset=utf-8"
           --cache-control "public, max-age=31536000, immutable"
 
-      # 5. Everything else — index.html, the JSX sources, the hand-kept data files,
-      #    registry.json, robots.txt, sitemap.xml, bindings/, ceremonies/.
+      # 5. Everything else — index.html, the JSX sources, the unhashed data
+      #    files, registry.json, robots.txt, sitemap.xml, bindings/,
+      #    ceremonies/. The unhashed tasks.generated.js is removed first rather
+      #    than excluded, so `--delete` takes down the fixed-name copy earlier
+      #    deploys uploaded (nothing names it now, and uploading it here would
+      #    store 10 MB unencoded); likewise the bundles #1257 kept at
+      #    assets/app.<hash>.js, which now live under assets/hashed/.
       - name: Deploy to S3
         if: steps.fresh.outputs.current == 'true'
-        run: >-
-          aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/
-          --delete
-          --exclude "specs/*"
-          --exclude "assets/tasks.generated.js"
-          --exclude "assets/app.*.js"
-          --exclude "index.template.html"
-          --cache-control "no-cache"
+        run: |
+          set -euo pipefail
+          rm -f website/assets/tasks.generated.js
+          aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ \
+            --delete \
+            --exclude "specs/*" \
+            --exclude "assets/hashed/*" \
+            --exclude "index.template.html" \
+            --cache-control "no-cache"
 
-      # 6. Remove the bundles no index.html names any more, now the new one is live.
-      - name: Remove superseded page bundles from S3
+      # 6. Remove the content-hashed files no index.html names any more, now
+      #    the new one is live: steps 3 and 4 again, with `--delete`.
+      - name: Remove superseded content-hashed scripts from S3
         if: steps.fresh.outputs.current == 'true'
-        run: >-
-          aws s3 sync website/assets/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/
-          --delete
-          --exclude "*" --include "app.*.js"
-          --content-type "text/javascript; charset=utf-8"
-          --cache-control "public, max-age=31536000, immutable"
+        run: |
+          set -euo pipefail
+          aws s3 sync "$RUNNER_TEMP/hashed-gzip/" s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --delete --size-only \
+            --exclude "*" --include "tasks.generated.*.js" \
+            --content-encoding gzip \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
+          aws s3 sync website/assets/hashed/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --delete --size-only \
+            --exclude "tasks.generated.*.js" \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
 
       - name: Invalidate CloudFront Cache
         if: steps.fresh.outputs.current == 'true' && env.CLOUDFRONT_DISTRIBUTION_ID != ''
