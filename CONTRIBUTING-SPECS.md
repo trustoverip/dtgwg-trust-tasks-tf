@@ -29,7 +29,7 @@ specs/<slug>/<version>/
 3. Fill in the prose: Abstract, Definitions, Request/Response, and the Security & Privacy sub-headings. Every `TODO` in the scaffold marks something only you can write.
 4. Check `payload.schema.json` describes your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
-6. Open a PR. CODEOWNERS will route review to the right people.
+6. Open a PR. `.github/CODEOWNERS` requests review from the maintainers; today that is one person for nearly every path.
 
 You don't touch `website/` — the build copies your folder into the website tree automatically.
 
@@ -144,7 +144,7 @@ related: []                        # slugs of related Trust Tasks (full slugs in
 
 Notes:
 
-- **`authors` and `keywords` are optional, and usually better omitted.** `authors` was identical in 345 of 349 specs and 46% of declared keywords were literally a slug segment or the category name — a required field that says the same thing everywhere carries no information, and asking an author to fill it in is friction that buys nothing. When you omit them the build derives them: `authors` from `CODEOWNERS` (falling back to the spec folder's git history), `keywords` from the slug segments plus the category. **Declare them when the derivation would be wrong** — a spec written by someone other than its CODEOWNER, or a task a searcher would look for under a word that appears nowhere in its slug (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`).
+- **`authors` and `keywords` are optional, and usually better omitted.** `authors` was identical in 345 of 349 specs and 46% of declared keywords were literally a slug segment or the category name — a required field that says the same thing everywhere carries no information, and asking an author to fill it in is friction that buys nothing. When you omit them the build derives them: `authors` from the spec folder's git history, `keywords` from the slug segments plus the category. **Declare them when the derivation would be wrong** — a spec written by someone other than the person who committed it, or a task a searcher would look for under a word that appears nowhere in its slug (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`).
 
 - **The three `rationale` fields are the most-read prose you will write.** `proofRequirement.rationale`, `sideEffects.rationale` and `exposure.rationale` are rendered on the spec detail page under **Why this task is classified as it is**. They are the registry's best security writing; write them as sentences aimed at an implementer deciding whether to accept the task, not as a box to tick.
 
@@ -562,7 +562,7 @@ CI guards all four — `codegen.yml`'s `codegen-drift` job and the `bindings-dri
 
 ## Submitting a PR
 
-- Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.
+- Touch only your own spec folder (or namespace) where possible. A change confined to one namespace is easier to review, and if per-namespace owners are added to `.github/CODEOWNERS` later, a change spanning several will need each of their approvals.
 - Sign-off your commits (`git commit -s`) — this repository requires the DCO trailer.
 - Run `npm run build` once before submitting. CI runs it on every PR; failing the build blocks the merge.
 - If the spec is consequential, check the [`## Authorization`](#the--authorization-section) section is present and names an authority rather than a validation step. No build check covers this one, so it is a review obligation on both the author and the reviewer.

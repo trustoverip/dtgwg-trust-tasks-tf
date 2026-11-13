@@ -1,0 +1,100 @@
+name: Rust toolchain bump
+# The root rust-toolchain.toml pins the Rust release every job builds with
+# (#1142), so a new stable no longer turns every open PR red on release day.
+# This keeps the pin from going stale: once a week it reads the current stable
+# from the Rust release channel and, when that is newer than the pin, opens (or
+# refreshes) one pull request moving the pin. That PR's CI is where a new
+# release's lints and rustfmt changes show up, and it is fixed there.
+#
+# Only curl, git and gh run here, nothing from the repository's dependencies,
+# so the one job holds the token it pushes with.
+
+on:
+  schedule:
+    - cron: "41 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-toolchain-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: propose the current Rust stable
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Open or refresh the bump pull request
+        env:
+          # The PR must trigger CI, which a GITHUB_TOKEN push does not.
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pinned=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          # `[pkg.rustc] version = "1.100.0 (0ef1bc386 2026-11-09)"`
+          # To a file first: awk exits at the first match, and under pipefail
+          # the closed pipe would fail curl.
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/channel.toml" https://static.rust-lang.org/dist/channel-rust-stable.toml
+          latest=$(awk '/^\[pkg\.rustc\]$/ {f=1; next} f && /^version = / {gsub(/"/, "", $3); print $3; exit}' "$RUNNER_TEMP/channel.toml")
+          if ! [[ "$pinned" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::could not read the versions (pinned '$pinned', stable '$latest')"
+            exit 1
+          fi
+          newest=$(printf '%s\n%s\n' "$pinned" "$latest" | sort -V | tail -n1)
+          if [ "$pinned" = "$latest" ] || [ "$newest" = "$pinned" ]; then
+            echo "::notice::rust-toolchain.toml already pins $pinned (stable is $latest)"
+            exit 0
+          fi
+          # Author as the token's owner, not the bot: EasyCLA authorises the
+          # commit author and github-actions[bot] has signed no CLA (as
+          # withdraw.yml and release-pr.sh do).
+          if ! author_json=$(gh api user 2>/dev/null); then
+            echo "::error::Could not resolve the token owner via \`gh api user\`; set RELEASE_PLZ_TOKEN to a user token."
+            exit 1
+          fi
+          git config user.name "$(jq -r '.name // .login' <<<"$author_json")"
+          git config user.email "$(jq -r '.id' <<<"$author_json")+$(jq -r '.login' <<<"$author_json")@users.noreply.github.com"
+          branch="rust-toolchain/$latest"
+          git switch -C "$branch"
+          sed -i "s/^channel *= *\".*\"/channel = \"$latest\"/" rust-toolchain.toml
+          git add rust-toolchain.toml
+          title="ci: build with Rust $latest"
+          {
+            echo "Moves the pinned toolchain in rust-toolchain.toml from $pinned to $latest, the current"
+            echo "stable (https://releases.rs/docs/$latest/)."
+            echo
+            echo "CI denies warnings, so a new lint or a rustfmt change in this release fails here rather"
+            echo "than on every open PR. Fix what it reports on this branch before merging: \`cargo clippy\`"
+            echo "findings, and \`cargo run -p trust-tasks-codegen && cargo fmt --all\` if rustfmt now formats"
+            echo "the generated Rust differently."
+            echo
+            echo "Opened by .github/workflows/rust-toolchain-bump.yml."
+          } > "$RUNNER_TEMP/body.md"
+          { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
+          git commit -s -q -F "$RUNNER_TEMP/message.txt"
+          auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$auth"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git push -f origin "$branch"
+          # A later run for the same release finds its PR open and refreshes it.
+          # REST, not `gh pr edit`, for the reason release-pr.sh gives.
+          existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
+              -f title="$title" -f body="$(cat "$RUNNER_TEMP/body.md")"
+            echo "::notice::updated PR #$existing"
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi
