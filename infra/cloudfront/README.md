@@ -224,46 +224,54 @@ asking for the same URL still gets the SPA and its not-found view. The generated
 response uses the `body: { encoding, data }` form, which needs the
 `cloudfront-js-2.0` runtime the commands below set.
 
-### Response headers: CORS and `Vary: Accept` (not yet configured)
+### Response headers — `response-headers-policy.json`
 
-A viewer-request function cannot add headers to the origin's response, and the
-distribution's configuration is not managed from this repository, so two
-headers the registry needs are a console (or CLI) change — tracked in #1152:
+A viewer-request function cannot add headers to the origin's response, so the
+headers the site sends are a CloudFront **response headers policy**, kept as
+code in `response-headers-policy.json` and applied by
+`apply-response-headers.sh`. One policy covers every cache behaviour:
 
-* **`Access-Control-Allow-Origin: *`** — so a browser-based consumer (the
-  TypeScript runtime targets browsers and workers) can fetch a schema,
-  `bundle.json` or `/specs/index.json` cross-origin.
-* **`Vary: Accept`** — CloudFront keys the two representations of a Type URI
-  apart (see above), but a browser or intermediary cache keys on the URL alone
-  and can hand the HTML back for a schema fetch, or the reverse.
+| Header | Value | Why |
+|---|---|---|
+| `Strict-Transport-Security` | `max-age=31536000` | HTTPS only, after the first visit. `includeSubDomains` and `preload` are left off until every subdomain is known to serve HTTPS. |
+| `Content-Security-Policy` | see the file | Scripts only from this origin and the three pinned unpkg paths the template names; no `'unsafe-eval'` (the page has had no in-browser compiler since #1147) and no inline script; styles from this origin, Google Fonts and inline (React `style` props and rendered prose); `connect-src 'self'`; `frame-ancestors 'none'`; `object-src 'none'`; `base-uri 'self'`. |
+| `X-Content-Type-Options` | `nosniff` | The browser uses the declared type and does not guess one. |
+| `X-Frame-Options` | `DENY` | The page is not framed (with `frame-ancestors` for browsers that only know one). |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Paths are not sent to other origins. |
+| `Permissions-Policy` | camera, microphone, geolocation, payment, … `=()` | The site uses none of them. |
+| `Access-Control-Allow-Origin` | `*` | A browser-based consumer (the TypeScript runtime targets browsers and workers) can fetch a schema, `bundle.json` or `/specs/index.json` cross-origin (#1152). |
+| `Vary` | `Accept, Accept-Encoding` | CloudFront keys the two representations of a Type URI apart (see above), but a browser or intermediary cache keys on the URL alone and could hand the HTML back for a schema fetch, or the reverse (#1152). `Accept-Encoding` because CloudFront's own compression varies on it. |
 
-Both belong in one **response headers policy** attached to the default cache
-behaviour:
+CloudFront's cache key is unaffected — a response headers policy acts on the
+way out.
+
+**Keep the CSP in step with the page.** A new script origin, an inline handler
+or a cross-origin `fetch` is blocked in the browser. Two checks catch that
+before a deploy: `npm run test:infra` (`response-headers-policy.test.mjs`)
+checks the policy against `website/index.template.html` and the page code's
+`fetch` calls, and `scripts/serve-website.mjs` sends the same headers, so
+`npm run smoke:website` loads the built page under the real policy and fails on
+a refused load. Change the policy and the page in the same PR.
+
+#### Applying it
+
+The distribution is not managed from this repository, so the policy reaches it
+by hand — once, and again after each change to the file:
 
 ```sh
-aws cloudfront create-response-headers-policy --response-headers-policy-config '{
-  "Name": "trust-tasks-registry-headers",
-  "Comment": "CORS for registry JSON; Vary: Accept for Type URI negotiation (#1152)",
-  "CorsConfig": {
-    "AccessControlAllowOrigins": { "Quantity": 1, "Items": ["*"] },
-    "AccessControlAllowHeaders": { "Quantity": 1, "Items": ["*"] },
-    "AccessControlAllowMethods": { "Quantity": 3, "Items": ["GET", "HEAD", "OPTIONS"] },
-    "AccessControlAllowCredentials": false,
-    "AccessControlMaxAgeSec": 86400,
-    "OriginOverride": true
-  },
-  "CustomHeadersConfig": {
-    "Quantity": 1,
-    "Items": [{ "Header": "Vary", "Value": "Accept, Accept-Encoding", "Override": true }]
-  }
-}'
-# then set ResponseHeadersPolicyId on the default cache behaviour
-# (get-distribution-config → edit → update-distribution --if-match <ETag>).
+./apply-response-headers.sh <DISTRIBUTION_ID>          # dry run: prints the policy diff and what it would attach
+./apply-response-headers.sh <DISTRIBUTION_ID> --apply  # creates or updates the policy and attaches it
+./verify.sh                                            # the header checks at the end
 ```
 
-`Vary` is overridden with both values because CloudFront's own compression
-varies on `Accept-Encoding`. CloudFront's cache key is unaffected — a response
-headers policy acts on the way out.
+The script creates the policy (named by `Name` in the file) if it does not
+exist, otherwise updates it in place, and attaches it to the default cache
+behaviour and every path-pattern behaviour that has none. It **refuses** if a
+behaviour already uses a different response headers policy: fold that policy's
+headers into the file first, then detach it by hand. The identity it runs as
+needs `cloudfront:ListResponseHeadersPolicies`, `GetResponseHeadersPolicyConfig`,
+`CreateResponseHeadersPolicy`, `UpdateResponseHeadersPolicy`,
+`GetDistributionConfig` and `UpdateDistribution`.
 
 The deploy uploads every `*.schema.json` with `Content-Type:
 application/schema+json` (`.github/workflows/deploy.yml`), so a negotiated

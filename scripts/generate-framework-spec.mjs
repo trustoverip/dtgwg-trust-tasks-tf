@@ -10,14 +10,26 @@
  * lack whole sections of the canonical text. SPEC.md is now an output: nothing
  * in it is edited here.
  *
- *   node scripts/generate-framework-spec.mjs                 # latest canonical main
- *   node scripts/generate-framework-spec.mjs --ref <sha>     # a specific commit
- *   node scripts/generate-framework-spec.mjs --from <dir>    # a local checkout
+ * The canonical commit SPEC.md is generated from is pinned in
+ * framework-spec-source.json, beside this script. The pin moves only in a pull
+ * request — `.github/workflows/framework-spec-bump.yml` opens one when
+ * canonical `main` moves — so the text the site serves is the text reviewed
+ * here, and a canonical change reaches trusttasks.org by a merge to this
+ * repository, never directly.
+ *
+ *   node scripts/generate-framework-spec.mjs                 # the pinned commit
+ *   node scripts/generate-framework-spec.mjs --update        # canonical main: move the pin, regenerate
+ *   node scripts/generate-framework-spec.mjs --update --ref <ref>
+ *   node scripts/generate-framework-spec.mjs --ref <sha>     # a specific commit (pin unchanged)
+ *   node scripts/generate-framework-spec.mjs --from <dir>    # a local checkout (pin unchanged)
  *   node scripts/generate-framework-spec.mjs --check         # exit 1 if SPEC.md differs
  *   node scripts/generate-framework-spec.mjs --check-committed
- *       # exit 1 if SPEC.md differs from what the canonical commit its own banner
- *       # names generates. Unlike --check, the answer does not change when
- *       # canonical main moves, so pull requests run this one (#1138).
+ *       # exit 1 if SPEC.md differs from what the pinned commit generates. The
+ *       # answer does not change when canonical main moves, so pull requests and
+ *       # every deploy run this one (#1138).
+ *
+ * A commit is fetched by its full SHA and the checkout is confirmed to be that
+ * commit, so what is generated is exactly the commit the pin names.
  *
  * What the transformation does, and nothing more:
  *
@@ -45,6 +57,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'SPEC.md');
 const ALIASES = path.join(ROOT, 'scripts', 'framework-spec-legacy-anchors.json');
+const PIN = path.join(ROOT, 'scripts', 'framework-spec-source.json');
+const FULL_SHA = /^[0-9a-f]{40}$/;
 const CANONICAL_REPO = 'https://github.com/trustoverip/dtgwg-trust-tasks-spec';
 
 /* The website's own slug rule (website/assets/pages.jsx `slugifyHeading`), which
@@ -62,16 +76,38 @@ export function slugifyHeading(text) {
 }
 
 function parseArgs(argv) {
-  const args = { ref: 'main', from: null, check: false, committed: false };
+  const args = { ref: null, from: null, check: false, committed: false, update: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--ref') args.ref = argv[++i];
+    else if (a === '--update') args.update = true;
     else if (a === '--from') args.from = argv[++i];
     else if (a === '--check') args.check = true;
     else if (a === '--check-committed') args.check = args.committed = true;
     else throw new Error(`unknown argument '${a}'`);
   }
+  if (args.update && (args.from || args.check)) throw new Error('--update takes neither --from nor --check');
+  if (args.committed && (args.from || args.ref)) throw new Error('--check-committed checks the pinned commit; it takes no --ref or --from');
   return args;
+}
+
+/* The pinned canonical commit, and the ref it was taken from (for the banner). */
+export function readPin(file = PIN) {
+  const pin = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (typeof pin.commit !== 'string' || !FULL_SHA.test(pin.commit)) {
+    throw new Error(`${path.relative(ROOT, file)}: "commit" must be a full 40-character commit SHA`);
+  }
+  if (pin.ref != null && (typeof pin.ref !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(pin.ref))) {
+    throw new Error(`${path.relative(ROOT, file)}: "ref" must be a branch or tag name`);
+  }
+  return { commit: pin.commit, ref: pin.ref ?? null };
+}
+
+function writePin(commit, ref) {
+  const pin = JSON.parse(fs.readFileSync(PIN, 'utf8'));
+  pin.commit = commit;
+  pin.ref = ref;
+  fs.writeFileSync(PIN, JSON.stringify(pin, null, 2) + '\n');
 }
 
 function checkout({ ref, from }) {
@@ -90,6 +126,10 @@ function checkout({ ref, from }) {
   execFileSync('git', ['-C', dir, 'fetch', '-q', '--depth', '1', CANONICAL_REPO, ref]);
   execFileSync('git', ['-C', dir, 'checkout', '-q', 'FETCH_HEAD']);
   const sha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  // Asked for a commit: generate from that commit and nothing else.
+  if (FULL_SHA.test(ref) && sha !== ref) {
+    throw new Error(`fetched ${sha} from ${CANONICAL_REPO}, not the requested commit ${ref}`);
+  }
   return { dir, sha };
 }
 
@@ -287,27 +327,21 @@ function banner(sha, ref) {
   ].join('\n');
 }
 
-/* The canonical commit, and the ref it was generated from, that the committed
- * SPEC.md's banner names — so --check-committed regenerates exactly that text. */
-function committedSource() {
-  const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
-  const m = /\/tree\/([0-9a-f]{40})\)(?: \(`([^`]+)`\))?/.exec(current.split('\n').slice(0, 12).join('\n'));
-  if (!m) {
-    console.error('SPEC.md names no canonical commit in its banner (generated from a local checkout?).');
-    console.error('Run `npm run generate-framework-spec` and commit the result.');
-    process.exit(1);
-  }
-  return { sha: m[1], label: m[2] ?? null };
-}
-
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  let label = args.from ? null : args.ref;
-  if (args.committed) {
-    if (args.from) throw new Error('--check-committed fetches the commit SPEC.md names; it takes no --from');
-    const source = committedSource();
-    args.ref = source.sha;
-    label = source.label;
+  let label;
+  if (args.update) {
+    args.ref = args.ref ?? 'main';
+    label = args.ref;
+  } else if (args.from) {
+    label = null;
+  } else if (args.ref) {
+    label = args.ref;
+  } else {
+    // The default, and what --check-committed checks: the pinned commit.
+    const pin = readPin();
+    args.ref = pin.commit;
+    label = pin.ref;
   }
   const { dir, sha } = checkout(args);
   const { lines, named } = number(assemble(dir));
@@ -335,14 +369,17 @@ function main() {
     const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
     if (current !== text) {
       console.error(`SPEC.md differs from the framework specification generated from ${sha.slice(0, 12)}.`);
-      console.error('Run `npm run generate-framework-spec` and commit the result.');
+      console.error(args.committed
+        ? 'SPEC.md is generated, never edited: run `npm run generate-framework-spec` (the pinned commit) and commit the result.'
+        : 'Run `npm run generate-framework-spec` and commit the result.');
       process.exit(1);
     }
     console.log(`SPEC.md matches the framework specification at ${sha.slice(0, 12)}.`);
     return;
   }
   fs.writeFileSync(OUT, text);
-  console.log(`Generated SPEC.md from ${CANONICAL_REPO} @ ${sha.slice(0, 12)}.`);
+  if (args.update) writePin(sha, label);
+  console.log(`Generated SPEC.md from ${CANONICAL_REPO} @ ${sha.slice(0, 12)}${args.update ? ' and pinned it' : ''}.`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

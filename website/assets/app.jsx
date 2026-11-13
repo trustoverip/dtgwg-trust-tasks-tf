@@ -325,8 +325,24 @@ function App() {
   );
 }
 
+/* The skip link's focus move. It was an inline onclick in index.html, which
+   the site's Content-Security-Policy (no inline script) would not run. Until
+   this bundle runs the link is a plain #main anchor. */
+function ttSkipToMain(event) {
+  const link = event.target && event.target.closest ? event.target.closest(".tt-skip-link") : null;
+  if (!link) return;
+  const main = document.getElementById("main");
+  if (!main) return;
+  event.preventDefault();
+  main.focus();
+  main.scrollIntoView();
+}
+
 /* Mounted only where there is a #root to mount into: the website test
    (scripts/test/website-jsx.test.mjs) runs this bundle with no DOM and renders
    App through React's server renderer instead. */
 const ttRootElement = document.getElementById("root");
-if (ttRootElement) ReactDOM.createRoot(ttRootElement).render(<App />);
+if (ttRootElement) {
+  document.addEventListener("click", ttSkipToMain);
+  ReactDOM.createRoot(ttRootElement).render(<App />);
+}
