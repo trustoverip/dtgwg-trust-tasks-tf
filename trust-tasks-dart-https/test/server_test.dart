@@ -219,6 +219,38 @@ void main() {
       );
       expect(codeOf(reply), 'expired');
     });
+
+    test(
+        'an unattributed sender gets the same answer for a registered and an '
+        'unregistered type', () async {
+      final s = echoServer();
+      final types = [
+        echoType,
+        '$echoType#response',
+        'https://trusttasks.org/spec/example/other/0.1',
+        'https://trusttasks.org/spec/example/echo/9.9',
+      ];
+      for (final type in types) {
+        final reply = await s.handle(post(echoDoc(type: type), token: null));
+        expect(reply.status, 422, reason: type);
+        expect(codeOf(reply), 'proofRequired', reason: type);
+      }
+      // A payload the registered type's decoder would refuse is not read
+      // before the gate either.
+      final malformed = echoDoc()..['payload'] = {'text': 7};
+      expect(
+        codeOf(await s.handle(post(malformed, token: null))),
+        'proofRequired',
+      );
+    });
+
+    test('an authenticated sender still learns the type is unsupported',
+        () async {
+      final reply = await echoServer().handle(
+        post(echoDoc(type: 'https://trusttasks.org/spec/example/other/0.1')),
+      );
+      expect(codeOf(reply), 'unsupportedType');
+    });
   });
 
   group('proofs', () {
