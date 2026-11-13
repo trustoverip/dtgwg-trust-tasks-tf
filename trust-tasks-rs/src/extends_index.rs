@@ -25,6 +25,7 @@ pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/get/0.4" => Some("0.3"),
         "https://trusttasks.org/spec/rooms/records/put/0.4" => Some("0.3"),
         "https://trusttasks.org/spec/rooms/records/put/0.5" => Some("0.4"),
+        "https://trusttasks.org/spec/rooms/records/put/0.6" => Some("0.5"),
         "https://trusttasks.org/spec/rooms/watch/0.2" => Some("0.1"),
         "https://trusttasks.org/spec/vta/did-templates/create/3.2" => Some("3.1"),
         "https://trusttasks.org/spec/vta/did-templates/get/3.2" => Some("3.1"),
