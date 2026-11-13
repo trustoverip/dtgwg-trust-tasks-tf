@@ -116,7 +116,7 @@ are the manifests (for crates) and the package arrays at the top of
 | `trust-tasks-ceremony` | crates.io — Trust Ceremony helpers |
 | `trust-tasks-capability-client` | crates.io |
 | `trust-tasks-build` | crates.io — build-time generator: an application's `build.rs` turns the versions pinned in `trust-tasks.lock` into Rust types; its `publish` feature builds registry bundles. Not in the `core` version group (it does not depend on `trust-tasks-rs`), so it versions on its own. |
-| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). A binary with no library API, so `rs API compatibility` does not check it. Versions on its own. |
+| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). A binary with no library API, so `rs API compatibility` does not check it. Versions on its own. Its release also gets prebuilt binaries (Linux, macOS, Windows) and `SHA256SUMS` on its GitHub Release, from `cli-binaries.yml`, which `publish.yml` calls with the tag release-plz reports — not triggered by the tag, which `GITHUB_TOKEN` pushed. Dispatch `cli-binaries.yml` by hand with a tag to attach them to an earlier release or redo a failed upload; the asset names are also in the crate's `[package.metadata.binstall]`. |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |

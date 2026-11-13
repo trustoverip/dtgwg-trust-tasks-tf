@@ -27,6 +27,29 @@ and implements neither.
 > `cmd/trust-tasks-gen` — see [Generating only the tasks you use](#generating-only-the-tasks-you-use).
 > gopls and staticcheck (SA1019) flag an import of a deprecated package.
 
+## Installing the `trust-tasks` command
+
+Pinning tasks and generating their types uses the `trust-tasks` CLI, one
+binary for every language. **No Rust toolchain is needed** — any one of:
+
+- download the archive for your platform (Linux x86_64/aarch64, macOS
+  x86_64/aarch64, Windows x86_64) from a
+  [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true), check it against its `.sha256`, and
+  put `trust-tasks` on your `PATH`;
+- `cargo binstall trust-tasks-cli` (the same prebuilt archive);
+- `cargo install trust-tasks-cli` (builds from source, Rust 1.95+).
+
+See [GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command) for the
+commands.
+
+## What you bring yourself
+
+| | |
+|---|---|
+| Payload validator (SPEC §7.2 item 2) | yours — any JSON Schema engine behind `PayloadValidator`, fed `PayloadSchemaJSON` |
+| Proof verifier / signer (item 6) | [`trust-tasks-go/proof`](./proof) — `eddsa-jcs-2022`, `ecdsa-jcs-2019`, `did:key`, standard library only |
+| Transport | DIDComm v2.1: [`trust-tasks-go/didcomm`](./didcomm). TSP: [`trust-tasks-go/tsp`](./tsp) (not yet tagged). HTTPS has no package yet — use `net/http` per the [HTTPS binding](../bindings/https) |
+
 ## Layout
 
 | Path | What it is |

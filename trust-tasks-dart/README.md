@@ -28,6 +28,29 @@ and implements neither.
 > [Generating only the tasks you use](#generating-only-the-tasks-you-use). The
 > analyzer reports an import of a deprecated library (`deprecated_member_use`).
 
+## Installing the `trust-tasks` command
+
+Pinning tasks and generating their types uses the `trust-tasks` CLI, one
+binary for every language. **No Rust toolchain is needed** — any one of:
+
+- download the archive for your platform (Linux x86_64/aarch64, macOS
+  x86_64/aarch64, Windows x86_64) from a
+  [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true), check it against its `.sha256`, and
+  put `trust-tasks` on your `PATH`;
+- `cargo binstall trust-tasks-cli` (the same prebuilt archive);
+- `cargo install trust-tasks-cli` (builds from source, Rust 1.95+).
+
+See [GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command) for the
+commands.
+
+## What you bring yourself
+
+| | |
+|---|---|
+| Payload validator (SPEC §7.2 item 2) | yours — e.g. [`json_schema`](https://pub.dev/packages/json_schema) behind `PayloadValidator`, fed `payloadSchemaJson` |
+| Proof verifier / signer (item 6) | [`trust_tasks_proof`](https://pub.dev/packages/trust_tasks_proof) — `eddsa-jcs-2022`, `ecdsa-jcs-2019`, `did:key` |
+| Transport | HTTPS: [`trust_tasks_https`](https://pub.dev/packages/trust_tasks_https). DIDComm v2.1: [`trust_tasks_didcomm`](https://pub.dev/packages/trust_tasks_didcomm). TSP: `trust_tasks_tsp` (in this repository, not yet on pub.dev) |
+
 ## Importing
 
 The package's own library exports the **runtime only**. Dart's `export` is flat

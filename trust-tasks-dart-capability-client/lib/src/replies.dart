@@ -80,7 +80,7 @@ WriteOutcome? classifyGitTrustReply(
   if (!repliesTo(doc, expectedThreadId)) return null;
 
   final slug = slugOf(doc.type);
-  if (slug == 'trust-task-error') {
+  if (isFrameworkError(doc)) {
     final (:code, :message) = _errorCodeAndMessage(doc);
     if (_isIdempotentCode(code)) return const WriteIdempotentSuccess();
     // DEPRECATED: pre-extended-code peers signalled idempotence in the free-text
@@ -97,10 +97,31 @@ WriteOutcome? classifyGitTrustReply(
     return WriteRejected(code, message);
   }
   if (isResponseVariant(doc.type) &&
+      isRegistryType(doc.type) &&
       (slug == 'git-trust/grant' || slug == 'git-trust/revoke')) {
     return const WriteSuccess();
   }
   return null;
+}
+
+/// Classify the reply to the `git-trust/grant` or `git-trust/revoke` document
+/// [request] — the form to use when you hold the request you sent.
+///
+/// `null` unless [reply] answers [request] ([answersRequest]): threaded to it,
+/// from the party it was addressed to, for the party that sent it, and typed as
+/// its own `#response` or as a framework error. So a revoke's response does not
+/// complete a grant, and a refusal typed under another authority completes
+/// nothing. Otherwise as [classifyGitTrustReply].
+WriteOutcome? classifyGitTrustReplyTo(
+  CapabilityDocument reply,
+  CapabilityDocument request, {
+  ReplyPolicy policy = const ReplyPolicy(),
+}) {
+  final slug = slugOf(request.type);
+  if (slug != 'git-trust/grant' && slug != 'git-trust/revoke') return null;
+  if (!answersRequest(reply, request)) return null;
+  return classifyGitTrustReply(reply, correlationThread(request),
+      policy: policy);
 }
 
 // --- governance/capability replies (management UIs) -------------------------
@@ -159,6 +180,8 @@ CapabilitySummary? _summaryOf(Object? entry) {
   if (manifest is! Map) return null;
   final capability = manifest['capability'];
   if (capability is! String) return null;
+  final enabled = entry['enabled'];
+  if (enabled is! bool) return null;
   final version = manifest['version'];
   final title = manifest['title'];
   final enabledAt = entry['enabledAt'];
@@ -167,7 +190,7 @@ CapabilitySummary? _summaryOf(Object? entry) {
     slug: capability,
     title: title is String ? title : null,
     version: version is String ? version : '?',
-    enabled: entry['enabled'] == true,
+    enabled: enabled,
     enabledAt: enabledAt is String ? enabledAt : null,
     delegate: delegate is String ? delegate : null,
     manifest: manifest.cast<String, dynamic>(),
@@ -175,7 +198,11 @@ CapabilitySummary? _summaryOf(Object? entry) {
 }
 
 /// Classify a `governance/capability/*` reply document. `null` when it is not
-/// part of this family, or is not threaded to [expectedThreadId].
+/// part of this family, is not threaded to [expectedThreadId], or does not
+/// carry the members its kind requires (a listing's `capabilities` list, each
+/// entry's `manifest.capability` and boolean `enabled`; a toggle's `capability`
+/// and boolean `enabled`) — a reply that cannot say what it reports is not read
+/// as reporting "disabled".
 CapabilityReply? parseCapabilityReply(
   CapabilityDocument doc,
   String expectedThreadId,
@@ -183,32 +210,44 @@ CapabilityReply? parseCapabilityReply(
   if (!repliesTo(doc, expectedThreadId)) return null;
 
   final slug = slugOf(doc.type);
-  if (slug == 'trust-task-error') {
+  if (isFrameworkError(doc)) {
     final (:code, :message) = _errorCodeAndMessage(doc);
     return CapabilityRejected(code, message);
   }
-  if (!isResponseVariant(doc.type)) return null;
+  if (!isResponseVariant(doc.type) || !isRegistryType(doc.type)) return null;
   switch (slug) {
     case 'governance/capability/list':
       final raw = doc.payload['capabilities'];
+      if (raw is! List) return null;
       final entries = <CapabilitySummary>[];
-      if (raw is List) {
-        for (final e in raw) {
-          final s = _summaryOf(e);
-          if (s != null) entries.add(s);
-        }
+      for (final e in raw) {
+        final s = _summaryOf(e);
+        if (s == null) return null;
+        entries.add(s);
       }
       return CapabilityListing(entries);
     case 'governance/capability/enable':
     case 'governance/capability/disable':
       final capability = doc.payload['capability'];
-      return CapabilityToggled(
-        capability: capability is String ? capability : '',
-        enabled: doc.payload['enabled'] == true,
-      );
+      final enabled = doc.payload['enabled'];
+      if (capability is! String || enabled is! bool) return null;
+      return CapabilityToggled(capability: capability, enabled: enabled);
     default:
       return null;
   }
+}
+
+/// Classify the reply to the `governance/capability/*` document [request] —
+/// the form to use when you hold the request you sent. `null` unless [reply]
+/// answers [request] ([answersRequest]); otherwise as [parseCapabilityReply].
+CapabilityReply? parseCapabilityReplyTo(
+  CapabilityDocument reply,
+  CapabilityDocument request,
+) {
+  final slug = slugOf(request.type);
+  if (slug == null || !slug.startsWith('governance/capability/')) return null;
+  if (!answersRequest(reply, request)) return null;
+  return parseCapabilityReply(reply, correlationThread(request));
 }
 
 /// Parse an inbound envelope body directly into a reply to the request threaded

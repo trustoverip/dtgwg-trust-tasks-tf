@@ -122,7 +122,7 @@ defects three times.
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
-| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; every JSX file and `index.html`'s inline script compiles under the pinned `@babel/standalone`, and (after `npm run build`) the app renders a set of routes through React's server renderer against the real registry (`BABEL_JS`, `REACT_JS`, `REACT_DOM_SERVER_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
+| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.template.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; the page code compiles through the build's esbuild step, the template's production React pins match their files, and (after `npm run build`) the built bundle `index.html` names renders a set of routes through React's development server renderer against the real registry (`REACT_JS`, `REACT_DOM_SERVER_JS`, `REACT_PROD_JS`, `REACT_DOM_PROD_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout (for TS, the newest on npm while the checkout's is unpublished — the Release PR — with a warning) | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
@@ -133,6 +133,8 @@ defects three times.
 | the member/value casing lint (`scripts/lib/member-casing.mjs`) | every schema's member names and enumerated values are lowerCamelCase (SPEC §4.10), or named in `member-casing-allowlist.json` — `external` with the vocabulary that owns it, or `frozen` for its own family's pre-lint deviations | whether an `external` entry's attribution is true |
 | the wire-conventions lint (`scripts/lib/wire-conventions.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — spells instants as RFC 3339 and names them `<event>At` (only a bound such as `since` or `validUntil` keeps a preposition; never a bare `timestamp` or `at`), pages with `cursor` + `limit` → `nextCursor` (never `null`, no `truncated`/`pageSize`/`offset`), uses `since` only as a time filter, never a boolean `created`, and names every integer duration's unit (`…Seconds`, not `…Secs` or a bare `ttl`); deliberate look-alikes are in `wire-conventions-allowlist.json` with a reason | a convention the lint has no rule for, or an instant whose name and description give no hint it is one |
 | the stale-references check (`scripts/lib/stale-references.mjs`) | no current spec names another spec at a superseded version — in a schema, a description, a prose link or mention, or an example — unless it is history (a `Changes from` section), a version run ending at the latest, or listed in `stale-references-allowlist.json` with a reason; `npm run fix-stale-references` rewrites the text references and lists the wire pins, normative values and examples a person must move | whether the newer version is the one the referencing spec should follow, or a version named in prose the heuristics read as history |
+| the member-description ratchet (`scripts/lib/member-descriptions.mjs`) | the latest live version of each slug has no more payload members lacking both `description` and `$ref` than `member-descriptions-baseline.json` allows it (none for a slug not listed); fewer warns to run `--lower`, which never raises an entry | whether a description says anything |
+| `spec lifecycle rules` (`npm run check-spec-lifecycle`, PRs only, against the merge base) and `checkCurrentFramework` | a spec version the PR adds targets `CURRENT_FRAMEWORK_VERSION` (`scripts/lib/spec-lifecycle.mjs`, `0.6.0`) or later; a status the PR raises is on the latest live version of its slug, since promoting an older one un-deprecates it in all four libraries; the build checks the current release is published and equals `DEFAULT_FRAMEWORK_VERSION` in `discovery.rs`, and reports how many latest versions lag it | whether a promotion meets CONTRIBUTING-SPECS.md's criteria (implementations, 90 days) |
 | the spec-examples lint (`scripts/lib/spec-examples.mjs`) | the latest version of every non-retired spec has a fenced JSON example whose `type` is its own Type URI — and a `#response` one when the schema has `$defs.Response` — wherever it sits in `spec.md`, and each example's `payload` validates against the spec's own schema (`$defs.Response` for a response); offenders when it landed are in `spec-examples-allowlist.json`, keyed by version, which only shrinks (a stale entry fails too) | the envelope around the payload (`checkExampleDocuments` checks that); whether the Rust conformance tests round-trip the example — `extract_examples` still harvests only the `## Request` / `## Response` sections |
 | the schema-bounds lint (`scripts/lib/schema-bounds.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — gives every request-side array a `maxItems`, every request `limit` a `maximum` and every request `cursor` a `maxLength`, and every URL-named string member (either side) a scheme constraint (a scheme-anchored `pattern`, an `enum`/`const`, or a URI `format` whose description names the schemes); offenders when it landed are in `schema-bounds-allowlist.json`, keyed by version (or shared file), which only shrinks (a stale entry fails too) | whether a declared bound is the right size, a URL member whose name does not say it is one, or an integer or string bound other than `limit` and `cursor` |
 | `published schemas change only additively` (`checks.yml`, unfiltered; `scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed, deleted or renamed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no dropped error code, no deleted or renamed schema or `spec.md`, and no change to the per-variant policy the front matter derives (`proofRequirement` and `issuedAtRequirement` in either form, `parties[].requirement`, `bearer` — parsed as YAML) | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
@@ -604,20 +606,29 @@ derive a census of declared-vs-emitted codes rather than hand-keep one.
   same comparison so the four agree with each other, not only with the front
   matter.
 
-## `maxDocumentBytes` is generated — Rust and Dart only, so far
+## `maxDocumentBytes` is generated in all four libraries
 
-A spec's `maxDocumentBytes` front matter (per variant; an absent `response`
-never inherits the request's bound) reaches Rust as
-`Payload::MAX_DOCUMENT_BYTES` and Dart as `SpecPolicy.maxDocumentBytes` on
-`spec` / `responseSpec` — emitted by **both** Dart generators
-(`build-dart-bindings.mjs` from front matter, `lib/src/generator/emit.dart`
-from the bundle's `policy.maxDocumentBytes`), independently. `check-bindings`
-compares Rust and Dart against the front matter. The Dart HTTPS server enforces
-it: its pre-parse body limit is the largest registered bound with a 256 KiB
-floor, then each document is held to its route's bound (`malformedRequest`).
-The Rust server still has a flat 256 KiB cap (#1121's Rust half rides with
-#1089); TypeScript and Go emit nothing yet — add them to the same comparison
-when they do.
+A spec's `maxDocumentBytes` front matter (per variant, only where declared; an
+absent `response` never inherits the request's bound) reaches Rust as
+`Payload::MAX_DOCUMENT_BYTES`, TypeScript as `SPEC.maxDocumentBytes` /
+`RESPONSE_SPEC.maxDocumentBytes`, Go as `Spec.MaxDocumentBytes` /
+`ResponseSpec.MaxDocumentBytes` (0: none) and Dart as
+`SpecPolicy.maxDocumentBytes` on `spec` / `responseSpec`. In TypeScript, Go
+and Dart it is emitted by **both** generators — the prebuilt one from front
+matter (`build-{ts,go,dart}-bindings.mjs`) and the consumer-side one from the
+bundle's `policy.maxDocumentBytes` (`trust-tasks-ts-gen/src/emit.ts`,
+`trust-tasks-go/cmd/trust-tasks-gen`, `lib/src/generator/emit.dart`),
+independently. `check-bindings` compares all four against the front matter.
+
+Enforcement: the Rust and Dart HTTPS servers' pre-parse body limit is the
+largest registered bound with a 256 KiB floor, then each document is held to
+its route's bound (`malformedRequest`) — in Rust through
+`ConsumeChecks::received_bytes`, which `consume_inbound` / `consume_dispatched`
+check. Go's `ConsumeInbound` refuses a document of `Spec`'s own version over the
+bound when given its bytes as `ConsumeOptions.Received`. A document read forward
+along `extends` is never held to the implemented version's bound. The Rust
+message bindings do not pass the bytes yet; the TypeScript runtime never sees
+them, so its transport enforces the bound.
 
 ## ⚠️ The Go module — four things that bite
 
@@ -1030,6 +1041,18 @@ The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push 
 `website/specs/` including its `bundle.json`s and `index.json`,
 `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
+
+**`website/index.html` is generated too** (#1147). The page has no in-browser
+compiler: `scripts/build-website.mjs` (run by `npm run build`, or alone as
+`node scripts/build-website.mjs` while editing JSX) compiles
+`components.jsx`, `pages.jsx` and `app.jsx` with esbuild into one
+content-hashed `website/assets/app.<hash>.js`, and writes `index.html` from
+`website/index.template.html` naming it. Edit the template and the `.jsx`
+files. The three are classic scripts sharing one global scope (pages.jsx calls
+components.jsx's functions), so they are compiled one by one and concatenated,
+never bundled as modules; a new `.jsx` file must be added to `JSX_FILES`
+there, and the build fails until it is. React and `marked` stay UMD globals
+from unpkg, pinned by `integrity` in the template.
 
 The libraries publish via `.github/workflows/publish.yml`, but **not on merge** —
 that workflow keeps a Release PR up to date, and merging the Release PR is the

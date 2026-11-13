@@ -340,11 +340,28 @@ function readSpecPolicy(schemaPath) {
           response: (ir.response ?? ir.request) === "REQUIRED",
         };
 
+  // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit appropriate
+  // to the Trust Task specification's payload"), per variant. An absent
+  // variant declares no bound — it does NOT inherit the other's, unlike the
+  // proof and issuedAt requirements above. Re-derived here rather than shared
+  // with the other generators, for the reason the rest of this function is.
+  const size = meta.maxDocumentBytes || {};
+  const bound = (variant) => {
+    const n = size[variant];
+    if (n === undefined || n === null) return null;
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new Error(`front matter maxDocumentBytes.${variant} must be a positive integer, got ${JSON.stringify(n)}`);
+    }
+    return n;
+  };
+
   return {
     // SPEC §5.2 "Declared extension" — the direct declaration only. Read here,
     // independently of build-registry.mjs, for the same reason as the rest.
     extends: meta.extends === undefined || meta.extends === null ? "" : String(meta.extends),
     isBearer: meta.bearer === true,
+    maxDocumentBytes: bound("request"),
+    responseMaxDocumentBytes: bound("response"),
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
     isIssuedAtRequired: issuedAtRequired.request,
@@ -1010,7 +1027,9 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
   }
 
   if (policy) {
-    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst) =>
+    // `MaxDocumentBytes` only where the variant declares one, as Rust emits
+    // MAX_DOCUMENT_BYTES only then: the zero value declares no bound.
+    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst, maxBytes) =>
       [
         "\tTypeURI:             " + uriConst + ",",
         "\tIsBearer:            " + policy.isBearer + ",",
@@ -1018,6 +1037,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
         "\tIsRecipientRequired: " + recipientRequired + ",",
         "\tIsIssuedAtRequired:  " + issuedAtRequired + ",",
         "\tPayloadSchema:       " + schemaConst + ",",
+        ...(maxBytes === null ? [] : ["\tMaxDocumentBytes:    " + maxBytes + ","]),
       ].join("\n");
 
     out.push(
@@ -1033,6 +1053,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
           policy.isRecipientRequired,
           policy.isIssuedAtRequired,
           schemas.request ? "PayloadSchemaJSON" : '""',
+          policy.maxDocumentBytes,
         ),
         "}",
       ].join("\n"),
@@ -1051,6 +1072,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
             policy.responseIsRecipientRequired,
             policy.responseIsIssuedAtRequired,
             schemas.response ? "ResponsePayloadSchemaJSON" : '""',
+            policy.responseMaxDocumentBytes,
           ),
           "}",
         ].join("\n"),

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trust Tasks — Reference registry of trust task specifications</title>
+  <meta name="description" content="An open registry of self-contained, transport-agnostic, JSON-based Trust Task specifications. Developed under the Trust Over IP DTGWG. Linked to the Decentralized Trust Graph, Verifiable Trust Infrastructure, and OpenVTC projects.">
+  <link rel="icon" type="image/svg+xml" href="/assets/trust-tasks-favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..600,30..100,0..1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;450;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/site.css">
+
+  <!-- The template for index.html, which scripts/build-website.mjs writes (run
+       by `npm run build`): it names the content-hashed bundle of
+       components.jsx, pages.jsx and app.jsx in place of __APP_BUNDLE__ below.
+       Edit this file, not index.html. -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+
+  <!-- The site's own scripts are deferred, so the page (and the static
+       message in #root) paints while the large generated registry downloads.
+       Deferred scripts run in document order, so the app bundle, last, runs
+       once every data script has. -->
+  <script defer src="/assets/markdown.js"></script>
+  <script defer src="/assets/routes.js"></script>
+  <script defer src="/assets/data.js"></script>
+  <script defer src="/assets/tasks.generated.js"></script>
+  <script defer src="/assets/ecosystem.js"></script>
+  <script defer src="/assets/bindings.js"></script>
+  <script defer src="/assets/libraries.js"></script>
+  <script defer src="/assets/ceremonies.js"></script>
+  <script defer src="/assets/__APP_BUNDLE__"></script>
+</head>
+<body data-bg="paper" data-density="default" data-type="editorial">
+  <a class="tt-skip-link" href="#main" onclick="var m=document.getElementById('main');if(m){event.preventDefault();m.focus();m.scrollIntoView();}">Skip to content</a>
+  <div id="root">
+    <!-- Replaced when the app renders. Left in place if a script fails to load
+         or compile, so the page says so instead of staying blank (#1153). -->
+    <div class="tt-boot">
+      <p><b>Trust Tasks</b> — the registry of Trust Task specifications.</p>
+      <p>Loading the registry… If this message stays, the page's scripts could not load or run.
+        The site needs JavaScript and access to unpkg.com.</p>
+      <p>Every specification is also on GitHub:
+        <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/specs">trustoverip/dtgwg-trust-tasks-tf/specs</a>,
+        and the framework specification at
+        <a href="/SPEC.md">/SPEC.md</a>.</p>
+    </div>
+  </div>
+</body>
+</html>

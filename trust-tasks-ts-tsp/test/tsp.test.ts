@@ -116,6 +116,31 @@ test("a message sealed to bob does not open for carol", async () => {
   );
 });
 
+test("a message sealed to bob's key but naming another receiver VID is refused", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const other = "did:example:someone-else";
+  const wire = await packTrustTask(echoDoc({ recipient: other }), {
+    senderVid: alice.vid,
+    receiverVid: other,
+    keys: packKeys(alice, bob),
+  });
+  await assert.rejects(
+    unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) }),
+    (e: unknown) =>
+      e instanceof TspEnvelopeError && e.failure === "notForThisReceiver" && e.sender === alice.vid,
+  );
+});
+
+test("the transport recipient is the configured VID", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const wire = await packTrustTask(echoDoc(), { senderVid: alice.vid, receiverVid: bob.vid, keys: packKeys(alice, bob) });
+  const { transport } = await unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) });
+  assert.equal(transport.local, bob.vid);
+  assert.equal(transport.peer, alice.vid);
+});
+
 test("a tampered message does not open", async () => {
   const alice = party("did:example:alice", 1);
   const bob = party("did:example:bob", 2);
@@ -249,4 +274,40 @@ test("consumer: a fire-and-forget success has nothing to reply with", async () =
   assert.equal(r.outcome.kind, "accepted");
   assert.equal(r.reply, undefined);
   await assert.rejects(h.consumer.packReply(r));
+});
+
+// SPEC §5.2 (#1117): a consumer of rooms/records/put/0.4 reads a 0.5 document —
+// which declares extends: "0.4" in the registry — as 0.4, its payload pruned to
+// what 0.4's schema knows, and answers it as 0.5. An undeclared later version
+// of the same slug is unsupportedVersion; another slug is unsupportedType.
+test("consumer: a later version declaring extends is read forward", async () => {
+  const base = "https://trusttasks.org/spec/rooms/records/put/";
+  const spec = {
+    typeUri: `${base}0.4`,
+    isBearer: false,
+    isProofRequired: false,
+    isRecipientRequired: false,
+    payloadSchema: { type: "object", additionalProperties: false, properties: { text: { type: "string" } } },
+  };
+  const run = async (type: string) => {
+    const h = harness();
+    let seen: Record<string, unknown> | undefined;
+    const r = await h.consumer.receive<Record<string, unknown>, Echo>(
+      await h.seal(echoDoc({ type, payload: { text: "hello", extra: "0.5 only" } })),
+      spec,
+      (d) => {
+        seen = d.payload;
+        return respondWith<Record<string, unknown>, Echo>(d, "urn:uuid:resp", { text: "ok" });
+      },
+    );
+    return { r, seen };
+  };
+
+  const forward = await run(`${base}0.5`);
+  assert.equal(forward.r.outcome.kind, "handled");
+  assert.deepEqual(forward.seen, { text: "hello" });
+  assert.equal((forward.r.outcome as { response: TrustTaskDocument<Echo> }).response.type, `${base}0.5#response`);
+
+  assert.equal(codeOf((await run(`${base}0.99`)).r), "unsupportedVersion");
+  assert.equal(codeOf((await run("https://trusttasks.org/spec/rooms/records/get/0.4")).r), "unsupportedType");
 });

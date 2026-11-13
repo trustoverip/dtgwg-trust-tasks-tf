@@ -40,6 +40,12 @@ import 'codes.dart';
 import 'document.dart';
 import 'type_uri.dart';
 
+/// The longest chain [extensionChain] walks: 64 links, in all four libraries
+/// (`docs/runtime-parity.md`). Each link must name a strictly earlier MINOR,
+/// so the walk ends anyway and a real chain is far shorter; the bound is a
+/// backstop on the work one lookup may do.
+const int _maxExtendsChain = 64;
+
 /// The versions [typeUri]'s declared `extends` chain reaches, nearest first,
 /// excluding the version itself.
 ///
@@ -54,7 +60,8 @@ import 'type_uri.dart';
 /// consumer of third-party (§6.5) specifications passes its own, keyed the
 /// same way, by bare request Type URI. A link that is not a strictly earlier
 /// MINOR of the same MAJOR (which the build refuses, and which includes any
-/// cycle) ends the walk, as does a link that is not a `MAJOR.MINOR`.
+/// cycle) ends the walk, as does a link that is not a `MAJOR.MINOR`, and the
+/// walk follows at most [_maxExtendsChain] links.
 List<String> extensionChain(
   String typeUri, {
   Map<String, String> index = generated.extendsIndex,
@@ -62,9 +69,8 @@ List<String> extensionChain(
   final parsed = TypeUri.tryParse(typeUri);
   if (parsed == null) return const <String>[];
   final chain = <String>[];
-  final seen = <String>{parsed.version};
   var current = parsed.bare;
-  while (true) {
+  while (chain.length < _maxExtendsChain) {
     final next = index[current.toString()];
     if (next == null) break;
     final version = parseTypeUriVersion(next);
@@ -73,7 +79,6 @@ List<String> extensionChain(
     // permits; anything else ends the walk, as in Rust and TypeScript.
     if (version.$1 != current.major || version.$2 >= current.minor) break;
     current = current.withVersion(version.$1, version.$2);
-    if (!seen.add(current.version)) break;
     chain.add(current.version);
   }
   return chain;
@@ -384,7 +389,9 @@ class _Pruner {
 
   bool _spend() => --_steps >= 0;
 
-  /// Deep enough for any registered payload; a guard, not a limit anyone meets.
+  /// How deep a prune recurses — through the payload and the schema's `$ref`s
+  /// and branches together — before leaving the rest of the value as it is:
+  /// 128, in all four libraries (`docs/runtime-parity.md`).
   static const int _maxDepth = 128;
 
   Object? prune(Object? value, Object? schema, int depth) {

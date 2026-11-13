@@ -70,6 +70,9 @@ jobs:
       # long-lived registry token is stored in this repo; crates.io mints a
       # short-lived one per run after verifying the workflow's identity.
       id-token: write
+    outputs:
+      # The tag of a trust-tasks-cli release this run made, or empty.
+      cli-tag: ${{ steps.cli.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -101,12 +104,40 @@ jobs:
         # moving major tag, so `@v0` resolves to nothing and the job fails at
         # "Set up job" before running a step. (actions/checkout@v6 works
         # because that repo does publish v6 — the convention is not universal.)
+        id: release-plz
         uses: release-plz/action@66b324fd6c72d05d2a08568492ecdd62bfb8a62b # v0.5.148
         with:
           command: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+      # For `cli-binaries` below. `releases` is release-plz's JSON list of what
+      # it released ({package_name, tag, version, ...}); empty on a no-op run.
+      - name: Find a trust-tasks-cli release
+        id: cli
+        env:
+          RELEASES: ${{ steps.release-plz.outputs.releases }}
+        run: |
+          set -euo pipefail
+          tag=$(jq -r '[.[]? | select(.package_name == "trust-tasks-cli") | .tag][0] // ""' <<< "${RELEASES:-[]}")
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -n "$tag" ]; then echo "::notice::trust-tasks-cli released as $tag; building its binaries"; fi
+
+  # Prebuilt `trust-tasks` binaries for the CLI release just made (#1128).
+  # Called here rather than triggered by the tag: release-plz pushes the tag and
+  # creates the GitHub Release with GITHUB_TOKEN, which starts no workflow. See
+  # cli-binaries.yml, which can also be dispatched by hand for a given tag.
+  cli-binaries:
+    needs: release-plz-release
+    if: github.ref == 'refs/heads/main' && needs.release-plz-release.outputs.cli-tag != ''
+    name: CLI binaries
+    permissions:
+      # The ceiling for the called workflow; only its `upload` job takes write.
+      contents: write
+    uses: ./.github/workflows/cli-binaries.yml
+    with:
+      tag: ${{ needs.release-plz-release.outputs.cli-tag }}
 
   # ── Who holds which token ────────────────────────────────────────────────
   #
