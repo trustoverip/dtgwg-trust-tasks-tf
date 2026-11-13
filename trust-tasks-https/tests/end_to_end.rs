@@ -1897,9 +1897,12 @@ impl ReplayGuard for InFlightGuard {
 enum HandlerBehaviour {
     /// Succeed every time, counting invocations.
     Succeed,
-    /// Refuse the first invocation, succeed thereafter — exercises the
-    /// release-on-refusal path.
+    /// Refuse the first invocation (`permissionDenied`, non-retryable),
+    /// succeed thereafter — exercises the recorded-refusal path.
     RefuseFirst,
+    /// Refuse the first invocation (`unavailable`, retryable), succeed
+    /// thereafter — exercises the release-on-refusal path.
+    RefuseFirstRetryable,
 }
 
 /// Fixture for the replay tests: an `acl/list` handler that counts its own
@@ -1926,7 +1929,10 @@ async fn spawn_replay_server(
                         reason: "first attempt refused".into(),
                     });
                 }
-                HandlerBehaviour::RefuseFirst => {}
+                HandlerBehaviour::RefuseFirstRetryable if n == 0 => {
+                    return Err(RejectReason::Unavailable { retry_after: None });
+                }
+                HandlerBehaviour::RefuseFirst | HandlerBehaviour::RefuseFirstRetryable => {}
             }
             Ok(list_response())
         });
@@ -1944,10 +1950,15 @@ async fn spawn_replay_server(
 /// A bit-for-bit `acl/list` document. Reused verbatim by the resend tests:
 /// §8.4 defines a retry as an identical resend, and §7.2 keys the record on a
 /// digest of the canonical document, so the *same string* is the point.
-fn replay_body(id: &str, issued_at: DateTime<Utc>, page_size: Option<u32>) -> String {
+///
+/// `role`, when given, is an `acl/list` filter: a member the payload type
+/// accepts, so a document carrying it differs in content and still parses —
+/// the pipeline refuses a payload that does not parse before it consults the
+/// record.
+fn replay_body(id: &str, issued_at: DateTime<Utc>, role: Option<&str>) -> String {
     let mut payload = serde_json::Map::new();
-    if let Some(n) = page_size {
-        payload.insert("pageSize".into(), serde_json::json!(n));
+    if let Some(role) = role {
+        payload.insert("role".into(), serde_json::json!(role));
     }
     serde_json::json!({
         "id": id,
@@ -2026,7 +2037,7 @@ async fn different_document_under_a_reused_id_is_an_id_conflict() {
     let issued = Utc::now();
     let original = replay_body("urn:uuid:replay-conflict", issued, None);
     // Same `id`, same instant, different content.
-    let altered = replay_body("urn:uuid:replay-conflict", issued, Some(50));
+    let altered = replay_body("urn:uuid:replay-conflict", issued, Some("admin"));
 
     let (first_status, _) = post_raw(addr, &original).await;
     let (status, body) = post_raw(addr, &altered).await;
@@ -2131,22 +2142,51 @@ async fn in_flight_duplicate_is_accepted_not_re_executed() {
     );
 }
 
-/// A refusal downstream of the claim releases it. Otherwise the `id` would be
-/// burned for the whole retention window and a legitimate resend answered with
-/// silence — a denial of service manufactured out of a rejection.
+/// A **retryable** refusal from the handler releases the claim. SPEC §8.4: the
+/// consumer has just told the producer it MAY re-send the document
+/// bit-for-bit, so the resend must be evaluated afresh — holding the claim
+/// would answer it with the same failure forever.
 #[tokio::test]
-async fn a_refused_dispatch_releases_the_claim() {
-    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::RefuseFirst).await;
+async fn a_retryable_refusal_releases_the_claim() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::RefuseFirstRetryable).await;
     let body = replay_body("urn:uuid:replay-released", Utc::now(), None);
 
     let (first_status, _) = post_raw(addr, &body).await;
     let (second_status, _) = post_raw(addr, &body).await;
 
-    assert_eq!(first_status, 403, "the handler refused this one");
+    assert_eq!(first_status, 503, "the handler refused this one, retryably");
     assert_eq!(
         second_status, 200,
         "the resend must be re-evaluated, not absorbed as a duplicate of a refusal"
     );
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 2);
+}
+
+/// A **non-retryable** refusal is the determination for that document, as it
+/// is in `consume_inbound`: it is recorded, and a bit-for-bit resend is
+/// answered with it — same body, same status — without running the handler
+/// again. (Before the server ran the shared pipeline it released the claim on
+/// every refusal; a new attempt is a new `id`, SPEC §8.4.)
+#[tokio::test]
+async fn a_non_retryable_refusal_is_recorded_and_replayed() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::RefuseFirst).await;
+    let body = replay_body("urn:uuid:replay-refused", Utc::now(), None);
+
+    let (first_status, first) = post_raw(addr, &body).await;
+    let (second_status, second) = post_raw(addr, &body).await;
+
+    assert_eq!(first_status, 403, "the handler refused this one");
+    assert_eq!(second_status, 403, "the recorded refusal keeps its status");
+    assert_eq!(second, first, "the duplicate is answered with the record");
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+
+    // A new attempt under a new `id` is evaluated afresh.
+    let (status, _) = post_raw(
+        addr,
+        &replay_body("urn:uuid:replay-refused-2", Utc::now(), None),
+    )
+    .await;
+    assert_eq!(status, 200);
     assert_eq!(calls.load(AtomicOrdering::SeqCst), 2);
 }
 

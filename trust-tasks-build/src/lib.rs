@@ -396,6 +396,14 @@ mod tests {
         assert!(source.contains("::trust_tasks_rs::DeclaredErrorCode::__from_declaration("));
         assert!(source.contains("(\"https://trusttasks.org/spec/demo/thing/0.2\", \"0.1\")"));
         assert!(source.contains("::trust_tasks_rs::extension::declare_extends(EXTENDS)"));
+        // The runtime contract is named once, at the top, so a mismatched
+        // runtime fails on a line that says what is wrong (#1101).
+        assert_eq!(
+            source
+                .matches("const _: () = ::trust_tasks_rs::__private::ABI_V1;")
+                .count(),
+            1
+        );
         // Every dependency path goes through the runtime's re-exports; none is
         // left for the application to supply.
         for dep in ["serde", "serde_json", "regress", "chrono"] {

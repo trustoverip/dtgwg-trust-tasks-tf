@@ -394,6 +394,7 @@ async fn an_unboundable_document_is_refused_rather_than_executed() {
     let checks = ConsumeChecks {
         freshness: FreshnessPolicy::default().with_max_age(TimeDelta::minutes(5)),
         replay: ReplayPolicy::Guard(&guard),
+        ..ConsumeChecks::not_consequential()
     };
     let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
         &NoopHandler::new(),
@@ -527,15 +528,18 @@ async fn a_panicking_handler_releases_the_claim_so_a_resend_runs() {
 }
 
 /// Dropping the pipeline's future while the handler is awaited — a request
-/// timeout, a client that disconnects — abandons the execution the same way a
-/// panic does, and releases the claim the same way.
+/// timeout, a client that disconnects — leaves the claim **in flight**. The
+/// handler may have committed its effect before the await it was cancelled
+/// at; releasing the claim would let a resend execute it a second time. A
+/// resend is answered as an in-flight duplicate and the handler does not run.
 #[tokio::test]
-async fn a_cancelled_handler_releases_the_claim_so_a_resend_runs() {
+async fn a_handler_cancelled_after_committing_is_not_executed_again() {
     let guard = InMemoryReplayGuard::new(64);
     let executions = Executions::default();
     let now = t("2026-08-26T12:00:00Z");
     let doc = request("req-1", "admin", now);
 
+    let committed = &executions;
     let pending = poll_once(consume_inbound(
         &NoopHandler::new(),
         ProofPolicy::<NoVerifier>::AcceptUnverified,
@@ -546,20 +550,29 @@ async fn a_cancelled_handler_releases_the_claim_so_a_resend_runs() {
         now,
         || "err-1".to_string(),
         |_req: TrustTask<grant::Payload>, _parties| async move {
+            // The effect commits, then the handler awaits something that
+            // never finishes — and is cancelled there.
+            committed.0.fetch_add(1, Ordering::SeqCst);
             std::future::pending::<Result<TrustTask<grant::Response>, ErrorResponse>>().await
         },
     ));
     assert!(pending.is_pending(), "the handler should still be running");
+    assert_eq!(executions.count(), 1);
     // `poll_once` dropped the future on return.
-    assert_eq!(
-        guard.len(),
-        0,
-        "the cancelled handler's claim was left in flight"
-    );
+    assert_eq!(guard.len(), 1, "the cancelled handler's claim was released");
 
     let resend = consume(&guard, &executions, doc, now).await;
-    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
-    assert_eq!(executions.count(), 1);
+    assert!(
+        matches!(
+            resend,
+            ConsumeOutcome::Duplicate {
+                in_flight: true,
+                prior_response: None
+            }
+        ),
+        "{resend:?}"
+    );
+    assert_eq!(executions.count(), 1, "the effect ran a second time");
 }
 
 /// While the claim is held — the handler still running — a resend is an

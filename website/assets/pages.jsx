@@ -1658,7 +1658,6 @@ function SpecDetail({ task, setRoute }) {
           <span><b>Updated</b> &nbsp; {task.updated}</span>
           <span>
             <b>Editors</b> &nbsp; {renderAuthorList(task.authors)}
-            {task.authorsSource === "codeowners" && <span style={{ color: "var(--tt-text-muted)" }}> (CODEOWNERS)</span>}
             {task.authorsSource === "git" && <span style={{ color: "var(--tt-text-muted)" }}> (from history)</span>}
           </span>
         </div>
@@ -1691,7 +1690,7 @@ function SpecDetail({ task, setRoute }) {
             {task.keywords.join(", ")}
             {/* `keywords` and `authors` are optional front matter; when a spec
                 omits them the build derives them (slug + category, and
-                CODEOWNERS/git respectively). Saying which is which keeps a
+                git history respectively). Saying which is which keeps a
                 derived value from reading as an editorial claim. */}
             {task.keywordsSource && task.keywordsSource !== "declared" && (
               <span style={{ color: "var(--tt-text-muted)" }}> — derived from the slug and category</span>
