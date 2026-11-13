@@ -14,6 +14,150 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.11.0 — 2026-11-13
+
+
+### Added
+
+- **messaging/queue/purge**: 0.1 gains storedBefore and selectedAt to pin a confirming purge to its dry run (#1288)
+- **rooms/records/put**: 0.6 declares a 2 MiB document bound (#1252)
+
+* feat(rooms/records/put): 0.6 declares a 64 KiB document bound
+
+  rooms/records/put/0.6 extends 0.5 and changes no member. Its front matter
+  declares maxDocumentBytes.request: 65536, the bound a deployed host already
+  enforces, so hosts stop disagreeing on the largest record and a room can move
+  between them without stranding records; larger content goes through files.
+  Adding the bound to 0.5 in place would have narrowed what a 0.5 host must
+  accept. The response declares no bound.
+
+  Rust, TypeScript, Go and Dart regenerated; earlier versions now carry
+  "superseded by rooms/records/put/0.6".
+
+- **rs,build,ts,ts-gen,go,dart**: Emit only the $defs each schema constant reaches (#1243)
+
+* feat(rs,build,ts,ts-gen,go,dart): emit only the $defs each schema constant reaches
+
+  Each generated request and response schema constant now keeps only the root $defs its root reaches: the request drops Response and what only the response uses, the response document drops what only the request uses. Registry bundles are unchanged, so no pinned digest moves. Types are still generated from the whole schema.
+
+  trust-tasks-rs packages at 10,037,990 bytes (9.57 MiB) against 10,349,753 (9.87 MiB) before.
+
+- **dart,dart-https,dart-didcomm**: JSON priorResponse, observability hook, forward routing and per-type size bounds (#1242)
+
+* feat(dart,dart-https,dart-didcomm)!: JSON priorResponse, observability hook, forward routing and per-type size bounds
+
+- **messaging/mux**: Admin-list, admin-revoke and admin-revoke-all for operators (#1234)
+
+Adds three administrator tasks (0.1, draft) for DID multiplexing, the
+  operator side of the mediator design's §7.8:
+
+  - messaging/mux/admin-list: list stored grants by principal DID, member
+    DID or both (one is required), paged, in every state, without the
+    signed statements; with `member`, the member's current epoch.
+  - messaging/mux/admin-revoke: revoke grants of other accounts by
+    principal, member, both, or member + grantIds; a bounded batch per
+    request (`limit`), with an exact `remaining` count; synchronous detach,
+    replay floors raised, detached events and grantsRevoked notices with
+    reason `admin`.
+  - messaging/mux/admin-revoke-all: advance a member DID's epoch without
+    its signature, naming the current epoch so a replay is inert; same
+    state change as revoke-all, reported with reason `admin`.
+
+  admin-list admits the admin, rootAdmin and mediator account types, as
+  messaging/mux/connections does. The two destructive tasks admit admin and
+  rootAdmin only, and refuse an admin whose target member or principal is a
+  rootAdmin account with <slug>:protectedAccount, as messaging/account/remove
+  protects root admins. No shared-schema change: DetachReason,
+  MemberChangeReason and the grantsRevoked notice already carry `admin`.
+  Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+
+
+### Build & CI
+
+- Catch superseded versions and drifted counts in the docs (#1268)
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+- **cli**: Attach prebuilt trust-tasks binaries to each CLI release (#1260)
+
+publish.yml calls the new cli-binaries.yml with the tag release-plz reports
+  for trust-tasks-cli (a tag pushed by GITHUB_TOKEN starts no workflow). It
+  builds Linux x86_64/aarch64, macOS x86_64/aarch64 and Windows x86_64, and
+  attaches the archives, .sha256 files and SHA256SUMS to the GitHub Release.
+  cargo binstall metadata names the same assets. GETTING-STARTED and the TS,
+  Go and Dart READMEs gain an install section and a what-you-bring table.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector (#1263)
+
+Size bounds (#1121). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends (#1117). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof (#1092). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows (#1251)
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+- **rs,ts,go,dart**: Issue an error response as the consumer, not as the rejected document's recipient (#1249)
+
+SPEC §8.1 makes an error response's issuer the consumer that emitted it. All four runtimes copied the rejected document's in-band recipient into it, which is unchecked for a refusal raised before item 5 and, under wrongRecipient, is by definition another party. The transport-level reject now sets the issuer to the transport's own identity where it has one; with none, it keeps the in-band recipient except under wrongRecipient, where it leaves the issuer out.
+
 ## 0.10.0 — 2026-11-12
 
 

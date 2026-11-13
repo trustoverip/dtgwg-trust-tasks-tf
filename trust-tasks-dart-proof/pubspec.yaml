@@ -4,7 +4,7 @@ name: trust_tasks_proof
 description: >-
   W3C Data Integrity proofs for Trust Tasks: a ProofVerifier for
   package:trust_tasks and the signer that produces what it verifies, on ssi.
-version: 0.2.0
+version: 0.2.1
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
@@ -19,7 +19,7 @@ dependencies:
   # compile against; the `packages` job in dart.yml checks it with
   # `dart pub downgrade`. Raise it when this package starts using newer core API.
   # 0.9.6: `received:`, which the example passes to consumeInbound.
-  trust_tasks: ^0.10.0
+  trust_tasks: ^0.11.0
 
   # A range spanning two majors, deliberately.
   #

@@ -3853,7 +3853,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -4118,7 +4118,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "trust-tasks-capability-client",
  "trust-tasks-ceremony",
@@ -4132,7 +4132,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-build"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "heck",
@@ -4151,7 +4151,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "chrono",
  "serde",
@@ -4176,7 +4176,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-cli"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -4209,7 +4209,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-messaging-didcomm",
@@ -4227,7 +4227,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "async-trait",
@@ -4263,7 +4263,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
@@ -4283,7 +4283,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -4303,7 +4303,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4319,7 +4319,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.38.0"
+version = "0.39.0"
 dependencies = [
  "affinidi-tsp",
  "async-trait",

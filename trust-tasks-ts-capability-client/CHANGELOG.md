@@ -2,6 +2,19 @@
 
 All notable changes to `@openvtc/trust-tasks-capability-client` are documented here.
 
+## 0.2.0 — 2026-11-13
+
+
+### Fixed
+
+- **capability-client,ts-capability-client,go-capabilityclient,dart-capability-client**: Bind a capability reply to the request it answers (#1248)
+
+* fix(capability-client,ts-capability-client,go-capabilityclient,dart-capability-client): bind a capability reply to the request it answers
+
+  The capability clients matched a reply to a request by thread id and slug alone. All four ports gain request-bound classifiers (classify_git_trust_reply_to / parse_capability_reply_to and their TS, Go and Dart counterparts) that also require the reply's issuer to be the request's recipient, its recipient to be the request's issuer, and its type to be the request's own #response or the framework error type, as the HTTPS clients do. The thread-only classifiers now read trust-task-error and family responses only under the registry's authority, and a toggle or listing reply missing a required member is no longer read as reporting defaults. TypeScript parses a body as a document only when its payload is an object. Rust adds try_build_document for a caller-supplied Type URI.
+
+- **ts-proof,ts-tsp,ts-capability-client**: Require @openvtc/trust-tasks 0.29 (#1237)
+
 ## 0.1.4 — 2026-11-12
 
 

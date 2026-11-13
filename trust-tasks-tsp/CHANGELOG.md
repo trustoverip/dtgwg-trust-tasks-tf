@@ -6,6 +6,74 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.38.0...trust-tasks-tsp-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs,tsp,didcomm,didcomm-v1**: One guarded consumer for the binding crates; answer an authenticated unparsable body ([#1241](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1241))
+
+The TSP, DIDComm v2.1 and DIDComm v1 consumers each carried the same wrapper
+  (record, freshness policy, consume/consume_dispatched). It now lives once in
+  trust-tasks-rs as GuardedConsumer; each binding consumer dereferences to it and
+  keeps only its unpack and its envelope check (the DIDComm thread headers).
+
+  receive now answers an authenticated body that fails to deserialise, or fails
+  the thread cross-check, with ConsumeOutcome::Rejected(malformedRequest),
+  addressed to the transport-authenticated sender and refused before the item-11
+  record is written, as binding section 4 requires and the Go and Dart bindings
+  already do. It used to return Err with nothing to answer.
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **tsp,ts-tsp,go-tsp**: Open a TSP message only when it names this consumer's VID ([#1247](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1247))
+
+The receiver VID in a TSP envelope is written by the sender; the HPKE seal only shows the message was encrypted to the recipient's key. The Rust and TypeScript bindings took that VID as the transport recipient, so a message sealed to our key but naming another VID passed the recipient check and was answered as that VID. Both now refuse a message whose receiver VID is set and differs from the configured one, and take the configured VID as the transport recipient. The Go binding's upstream library already refuses it; Go now takes the configured VID as the transport recipient too and keeps its own check. Dart's upstream library already refuses it.
+
+
+
 ## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.37.15...trust-tasks-tsp-v0.38.0) — 2026-11-12
 
 

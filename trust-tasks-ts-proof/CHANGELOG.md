@@ -5,6 +5,22 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the
 `trust-tasks-ts-proof-v<version>` tag; see `RELEASING.md`.
 
+## 0.2.1 — 2026-11-13
+
+
+### Fixed
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows (#1251)
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+- **ts-proof,ts-tsp,ts-capability-client**: Require @openvtc/trust-tasks 0.29 (#1237)
+
 ## 0.2.0 — 2026-11-12
 
 
