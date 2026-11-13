@@ -20,6 +20,7 @@ class Response {
     this.matchedBytes,
     required this.purged,
     required this.dryRun,
+    this.selectedAt,
     this.ext,
   });
 
@@ -29,6 +30,7 @@ class Response {
         matchedBytes: json['matchedBytes'] as int?,
         purged: json['purged'] as int,
         dryRun: json['dryRun'] as bool,
+        selectedAt: json['selectedAt'] as String?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -40,6 +42,10 @@ class Response {
   final int purged;
   final bool dryRun;
 
+  /// The instant at which the mediator took the selection. Returned on a dry run so the
+  /// producer can pin the confirming purge to it with storedBefore.
+  final String? selectedAt;
+
   /// Ecosystem-defined extension members per SPEC.md §4.5.1.
   final Ext? ext;
 
@@ -49,6 +55,7 @@ class Response {
         if (matchedBytes != null) 'matchedBytes': matchedBytes!,
         'purged': purged,
         'dryRun': dryRun,
+        if (selectedAt != null) 'selectedAt': selectedAt!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -85,6 +92,7 @@ class Payload {
     required this.queue,
     this.peer,
     this.olderThanSeconds,
+    this.storedBefore,
     this.dryRun,
     this.ext,
   });
@@ -95,6 +103,7 @@ class Payload {
         queue: Queue(json['queue'] as String),
         peer: json['peer'] as String?,
         olderThanSeconds: json['olderThanSeconds'] as int?,
+        storedBefore: json['storedBefore'] as String?,
         dryRun: json['dryRun'] as bool?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
@@ -111,6 +120,11 @@ class Payload {
   /// Only messages queued at least this long.
   final int? olderThanSeconds;
 
+  /// Only messages stored at or before this instant. A producer confirming a dry run
+  /// sends that dry run's selectedAt here, so the purge removes nothing stored after the
+  /// preview.
+  final String? storedBefore;
+
   /// Report what would be purged and purge nothing. Default false.
   final bool? dryRun;
 
@@ -123,6 +137,7 @@ class Payload {
         'queue': queue.value,
         if (peer != null) 'peer': peer!,
         if (olderThanSeconds != null) 'olderThanSeconds': olderThanSeconds!,
+        if (storedBefore != null) 'storedBefore': storedBefore!,
         if (dryRun != null) 'dryRun': dryRun!,
         if (ext != null) 'ext': ext!,
       };
@@ -161,11 +176,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/messaging/queue/purge/0.1","title":"Messaging — Purge Queue — payload","type":"object","additionalProperties":false,"required":["queue"],"properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account whose queue to purge. Omitted = the requester\'s own account. A requester without administrative standing may name only itself."},"queue":{"\$ref":"#/\$defs/Queue"},"peer":{"\$ref":"#/\$defs/Vid","description":"Only messages exchanged with this counterparty: in a send queue, the recipient; in a receive queue, the sender."},"olderThanSeconds":{"type":"integer","minimum":0,"description":"Only messages queued at least this long."},"dryRun":{"type":"boolean","description":"Report what would be purged and purge nothing. Default false."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."},"Queue":{"title":"Queue","type":"string","enum":["receive","send"],"description":"Which of an account\'s two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders\' send queues."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/messaging/queue/purge/0.1","title":"Messaging — Purge Queue — payload","type":"object","additionalProperties":false,"required":["queue"],"properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account whose queue to purge. Omitted = the requester\'s own account. A requester without administrative standing may name only itself."},"queue":{"\$ref":"#/\$defs/Queue"},"peer":{"\$ref":"#/\$defs/Vid","description":"Only messages exchanged with this counterparty: in a send queue, the recipient; in a receive queue, the sender."},"olderThanSeconds":{"type":"integer","minimum":0,"description":"Only messages queued at least this long."},"storedBefore":{"type":"string","format":"date-time","description":"Only messages stored at or before this instant. A producer confirming a dry run sends that dry run\'s selectedAt here, so the purge removes nothing stored after the preview."},"dryRun":{"type":"boolean","description":"Report what would be purged and purge nothing. Default false."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."},"Queue":{"title":"Queue","type":"string","enum":["receive","send"],"description":"Which of an account\'s two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders\' send queues."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Messaging — Purge Queue — response payload","description":"The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.","type":"object","additionalProperties":false,"properties":{"matched":{"type":"integer","minimum":0,"description":"Messages that matched the selection."},"matchedBytes":{"type":"integer","minimum":0},"purged":{"type":"integer","minimum":0,"description":"Messages actually removed. 0 on a dry run."},"dryRun":{"type":"boolean"},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"required":["matched","purged","dryRun"]},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Messaging — Purge Queue — response payload","description":"The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.","type":"object","additionalProperties":false,"properties":{"matched":{"type":"integer","minimum":0,"description":"Messages that matched the selection."},"matchedBytes":{"type":"integer","minimum":0},"purged":{"type":"integer","minimum":0,"description":"Messages actually removed. 0 on a dry run."},"dryRun":{"type":"boolean"},"selectedAt":{"type":"string","format":"date-time","description":"The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"required":["matched","purged","dryRun"]},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

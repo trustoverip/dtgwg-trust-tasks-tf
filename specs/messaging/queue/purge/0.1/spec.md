@@ -72,7 +72,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/queue/purge/0.1`, with itself as `issuer` and the mediator as `recipient`, carrying `issuedAt` and a `proof`. An interactive producer — an operator console, a CLI — **SHOULD** first send the same selection with `dryRun: true`, show the `matched` count to its user, and send the real purge only after the user confirms that count.
+A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/queue/purge/0.1`, with itself as `issuer` and the mediator as `recipient`, carrying `issuedAt` and a `proof`. An interactive producer — an operator console, a CLI — **SHOULD** first send the same selection with `dryRun: true`, show the `matched` count to its user, and send the real purge only after the user confirms that count. Such a producer **SHOULD** send the dry run's `selectedAt` as `storedBefore` on the confirming purge, so that the purge cannot remove a message the user was never shown.
 
 A conforming **consumer** (the mediator) **MUST**:
 
@@ -82,11 +82,11 @@ A conforming **consumer** (the mediator) **MUST**:
 4. Where the target is another account, respond with `permissionDenied` unless the requester's account type is `admin`, `rootAdmin`, or `mediator`.
 5. Respond with `messaging/queue/purge:unknownAccount` where the target account does not exist. Rules 3–4 apply first, so a requester without standing learns nothing about another account's existence.
 6. Where the target account's type is `admin`, `rootAdmin`, or `mediator` and is not the requester's own, respond with `messaging/queue/purge:rootAdminRequired` unless the requester is a `rootAdmin`.
-7. Select the messages in the named `queue` of the target account, narrowed by `peer` (in a send queue, the recipient; in a receive queue, the sender) and by `olderThanSeconds` (time since the message was stored) when present.
-8. On `dryRun: true`, remove **nothing** and return `matched`, `matchedBytes`, `purged: 0`, `dryRun: true`.
-9. Otherwise remove every selected message, return the counts, and **MUST** record an audit entry naming the requester, the target account, the queue, the `peer` and `olderThanSeconds` filters if any, and the number of messages removed. A purge that removes nothing is still recorded.
+7. Select the messages in the named `queue` of the target account, narrowed by `peer` (in a send queue, the recipient; in a receive queue, the sender) by `olderThanSeconds` (time since the message was stored) when present, and by `storedBefore` (only messages stored at or before that instant) when present.
+8. On `dryRun: true`, remove **nothing** and return `matched`, `matchedBytes`, `purged: 0`, `dryRun: true`, and **SHOULD** return `selectedAt`, the instant at which it took the selection.
+9. Otherwise remove every selected message, return the counts, and **MUST** record an audit entry naming the requester, the target account, the queue, the `peer`, `olderThanSeconds` and `storedBefore` filters if any, and the number of messages removed. A purge that removes nothing is still recorded.
 
-A purge acts on the selection at the moment it executes. A message that arrives between a dry run and the real purge and matches the selection is removed too; `purged` may therefore exceed the dry run's `matched`, and a producer confirming a count **SHOULD** narrow with `olderThanSeconds` when that matters.
+A purge acts on the selection at the moment it executes. Without `storedBefore`, a message that arrives between a dry run and the real purge and matches the selection is removed too, and `purged` may exceed the dry run's `matched`. With the dry run's `selectedAt` as `storedBefore`, nothing stored after the preview can be removed; `purged` may still be lower than `matched`, because a previewed message may have been delivered or deleted in between.
 
 ## Authorization
 
@@ -104,8 +104,9 @@ The `proof` establishes *who* ordered the purge and makes the order non-repudiab
 - `queue` — the [`Queue`](../../../_shared/0.1/mediator-ops.schema.json#/$defs/Queue) to purge. Required: there is no "both queues" form, so one request never empties more than the requester named.
 - `peer` — only messages exchanged with this counterparty.
 - `olderThanSeconds` — only messages stored at least this long ago.
+- `storedBefore` — only messages stored at or before this instant (RFC 3339). Pins a confirming purge to the selection its dry run previewed.
 - `dryRun` — preview only. Default `false`.
-- `matched`, `matchedBytes` — the size of the selection. `purged` — messages actually removed (`0` on a dry run).
+- `matched`, `matchedBytes` — the size of the selection. `purged` — messages actually removed (`0` on a dry run). `selectedAt` — the instant at which the mediator took the selection (RFC 3339).
 
 ## Request
 
@@ -138,7 +139,33 @@ The requester names the queue and any narrowing; see the top-level schema in [`p
 }
 ```
 
-After the operator confirms the count, the producer sends the same payload with `dryRun: false`.
+After the operator confirms the count, the producer sends the same payload with `dryRun: false` and the dry run's `selectedAt` as `storedBefore`:
+
+```json
+{
+  "id": "urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e03",
+  "type": "https://trusttasks.org/spec/messaging/queue/purge/0.1",
+  "issuer": "did:web:admin.example",
+  "recipient": "did:web:mediator.example",
+  "issuedAt": "2026-09-21T10:11:30Z",
+  "payload": {
+    "did": "did:web:alice.example",
+    "queue": "send",
+    "peer": "did:web:carol.example",
+    "olderThanSeconds": 3600,
+    "storedBefore": "2026-09-21T10:10:00Z",
+    "dryRun": false
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "verificationMethod": "did:web:admin.example#key-1",
+    "created": "2026-09-21T10:11:30Z",
+    "proofPurpose": "authentication",
+    "proofValue": "z5Hk..."
+  }
+}
+```
 
 ## Response
 
@@ -158,7 +185,8 @@ The mediator responds with `https://trusttasks.org/spec/messaging/queue/purge/0.
     "matched": 912,
     "matchedBytes": 1771204,
     "purged": 0,
-    "dryRun": true
+    "dryRun": true,
+    "selectedAt": "2026-09-21T10:10:00Z"
   }
 }
 ```
