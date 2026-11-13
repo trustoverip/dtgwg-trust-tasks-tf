@@ -71,6 +71,10 @@ fn rejects_invalid_examples() {
             "exchangeDigestMultibase that is not a multibase multihash — a bare hex digest hard-codes an algorithm and is non-conforming.",
             "{\n  \"agreement\": {\n    \"effectiveFrom\": \"2026-09-24T10:10:00Z\",\n    \"name\": \"Data retention (12 months)\",\n    \"rosterItems\": [\n      \"data-retention-12mo\"\n    ]\n  },\n  \"exchangeDigestMultibase\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n  \"exchangeId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000002\"\n}",
         ),
+        (
+            "Agreement identified by a JSON `id` — agreements are identified by agreementId or the digestMultibase of their register, never by `id` (several distinct agreements can share one, e.g. \"SD-BASE\"), and the Agreement schema carries no such member.",
+            "{\n  \"agreement\": {\n    \"effectiveFrom\": \"2026-09-24T10:10:00Z\",\n    \"id\": \"SD-BASE\",\n    \"name\": \"Data retention (12 months)\",\n    \"rosterItems\": [\n      \"data-retention-12mo\"\n    ]\n  },\n  \"exchangeId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000002\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

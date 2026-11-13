@@ -118,5 +118,17 @@
         "effectiveFrom": "2026-09-24T10:10:00Z"
       }
     }
+  },
+  {
+    "note": "Agreement identified by a JSON `id` — agreements are identified by agreementId or the digestMultibase of their register, never by `id` (several distinct agreements can share one, e.g. \"SD-BASE\"), and the Agreement schema carries no such member.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "id": "SD-BASE",
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
   }
 ]

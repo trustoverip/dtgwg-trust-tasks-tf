@@ -1323,7 +1323,7 @@ pub mod error_codes {
     };
     /// `understanding/seal:understandingInsufficient`
     ///
-    /// The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
+    /// The exchange named by `exchangeId` recorded outcome "insufficient", or the agreement the request would seal permits something the agreement the party was tested on does not — for example a counter widening purposes beyond the tested terms. A seal cannot be grounded in a failed exchange, nor extend past what the exchange tested. See Authorization, "The sealed agreement may not exceed the tested one".
     ///
     /// Declared `retryable: false`.
     pub const UNDERSTANDING_INSUFFICIENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

@@ -87,7 +87,12 @@ errorCodes:
       Never returned for a request that omits the member.
     retryable: false
   - code: understanding/seal:understandingInsufficient
-    meaning: The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
+    meaning: >-
+      The exchange named by `exchangeId` recorded outcome "insufficient", or the agreement the
+      request would seal permits something the agreement the party was tested on does not — for
+      example a counter widening purposes beyond the tested terms. A seal cannot be grounded in a
+      failed exchange, nor extend past what the exchange tested. See Authorization, "The sealed
+      agreement may not exceed the tested one".
     retryable: false
   - code: understanding/seal:negotiationInProgress
     meaning: >-
@@ -241,8 +246,11 @@ different roster items than the ones an `understanding/exchange` tested, a first
 a counter is agreeing to terms it may not have been tested on; this specification does not
 require a fresh exchange before a follow-up, and a deployment whose threat model requires
 understanding of the *exact* terms accepted, not merely the terms originally offered, should
-account for this gap rather than assume `understanding/exchange` closes it for every possible
-counter.
+account for what remains of this gap. A counter that *widens* the tested terms is closed off: the
+seal is refused with `understanding/seal:understandingInsufficient` (Authorization, "The sealed
+agreement may not exceed the tested one"). What remains is a counter that names different terms
+the tested agreement does permit, which the party was tested on only in the sense of having been
+tested on something at least as broad.
 
 ## Status of this Document
 
@@ -290,6 +298,45 @@ proposer; the host is always the second party and responder — per Relationship
 engagement, and every conforming request under this specification is therefore issued by the
 joining party. There is no case in which the host issues a request under this specification, so
 no refusal code is defined for one.
+
+### The sealed agreement may not exceed the tested one
+
+The **tested agreement** is the agreement the grounding `understanding/exchange` tested the
+joining party on — the terms the grounding `understanding/offer` response's `termsRef` names. The
+**sealed agreement** is the `agreement` of the request being decided; on the follow-up to a
+counter, that is the counter's `counterAgreement`. A recipient **MUST** refuse a request with
+`understanding/seal:understandingInsufficient` unless the tested agreement permits everything the
+sealed agreement permits. A seal therefore never grants more than the party was tested on:
+
+- A counter that **widens** the terms — adds a purpose the tested agreement does not permit — is
+  refused. For example, where agreements form a chain by purposes (each one adding purposes to the
+  one before), a party tested on the base agreement cannot seal a later link in that chain, such as
+  one adding third-party sharing: it was never tested on that.
+- A counter to **narrower** terms — every purpose it permits is also permitted by the tested
+  agreement — remains valid. Narrowing never needs a second exchange.
+
+This is a check that costs no second exchange and does not change the single-round limit: the
+host **SHOULD NOT** offer a widening `counterAgreement` in the first place, since the first party
+cannot then accept it, and the recipient enforces the rule on whichever request would seal it. The
+comparison is of what each agreement *permits*, taken from the agreements' resolved registers
+(`machineReadableRef` in preference to `legalRef`, each pinned by its `digestMultibase`), never of
+names, labels or roster item strings. A recipient that cannot resolve either agreement's register,
+or cannot compare what the two permit, **MUST** treat the sealed agreement as not permitted by the
+tested one and refuse; it does not guess.
+
+**Agreements are identified by `agreementId` or `digestMultibase`, never by the JSON `id`.** The
+`id` a published agreement document carries is a label the publisher chose, not an identifier:
+several distinct agreements with different purposes can carry the same `id` (for instance, a family
+of variants all published as `SD-BASE`). A document naming or comparing agreements — and a recipient
+applying the rule above — **MUST** identify each by the `agreementId` its register publishes for it,
+or by the `digestMultibase` of the register document itself, and **MUST NOT** treat two agreements
+as the same because their `id` or `name` match, or as comparable because they share an `id`
+prefix. This payload carries no `id` member for an agreement, and its schema refuses one.
+
+> Draft note: that the issuer of a countering response must be the party the counter is offered to
+> (the first party who proposed) follows from the party mapping above; the clause of IEEE 7012-2025
+> that supports it has not yet been checked against the standard's text, and this specification
+> makes no claim under SPEC §9.4 rule 6 for it.
 
 Roster items in `agreement`, and in any counter's `counterAgreement`, **MUST** be drawn from the
 roster the grounding `understanding/offer` response's `termsRef` names — a party proposing or
@@ -561,6 +608,38 @@ The host's response to this second request **MUST** be `decision: "accepted"` (`
 naming this request's `id`) or `decision: "refused"` — a conforming host does not counter a
 request that carries `respondsTo`, and a first party **MUST** treat such a counter as a protocol
 violation rather than as an offer it may answer.
+
+### A counter that widens the tested terms is refused
+
+Suppose the joining party was tested on a base agreement, and the host's counter proposes a later
+link in the same chain of agreements, one that adds purposes the base does not permit. The
+follow-up that would seal it names each agreement by the `digestMultibase` of its register, not by
+any `id`. The recipient refuses it, because the tested agreement does not permit everything the
+sealed one does:
+
+```json
+{
+  "id": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000005",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6",
+  "threadId": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000004",
+  "parentThreadId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
+  "issuer": "did:example:host",
+  "recipient": "did:example:alice",
+  "issuedAt": "2026-09-24T10:10:06Z",
+  "payload": {
+    "code": "understanding/seal:understandingInsufficient",
+    "inResponseTo": {
+      "typeUri": "https://trusttasks.org/spec/understanding/seal/0.1",
+      "id": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000004"
+    },
+    "message": "The sealed agreement (machine-readable register zQmb9x2u1Nf1Xg2C8mZeK7v3s6D4tL5aP9qR1sT2uV3wXy4) permits third-party sharing, which the tested agreement (zQmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbd) does not.",
+    "retryable": false
+  }
+}
+```
+
+The counter shown earlier in this section is the valid shape: it narrows the retention period of terms the
+party was tested on, adds no purpose, and is sealed as shown.
 
 ## Security & Privacy
 
