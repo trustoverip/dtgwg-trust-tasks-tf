@@ -1428,9 +1428,14 @@ fn serialises_to_received(
     let Value::Object(received) = received else {
         return false;
     };
-    // An unmodelled member named `payload` would stand in for the payload in
-    // the serialisation; leave that oddity to the full comparison.
-    if doc.extra.contains_key("payload") {
+    // An "unmodelled" member spelled like a modelled one — possible only in a
+    // document built by hand — collides with it in the serialisation, which a
+    // re-read would resolve differently; leave that to the full comparison.
+    if doc
+        .extra
+        .keys()
+        .any(|name| modelled_member_names().contains(name.as_str()))
+    {
         return false;
     }
     let Some(received_payload) = received.get("payload") else {
@@ -1461,6 +1466,44 @@ fn serialises_to_received(
             .iter()
             .all(|(name, value)| name == "payload" || received.get(name) == Some(value))
         && same_payload(received_payload, &doc.payload)
+}
+
+/// The member names `TrustTask` serialises its own fields under, read off a
+/// document with every field present rather than listed by hand, so a field
+/// added to the struct is covered without touching this. The struct literal
+/// fails to compile until a new field is named here; give it a value that
+/// serialises (`Some`, for an optional one).
+fn modelled_member_names() -> &'static BTreeSet<String> {
+    static NAMES: std::sync::OnceLock<BTreeSet<String>> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let instant = DateTime::<Utc>::UNIX_EPOCH;
+        let full = TrustTask {
+            id: String::new(),
+            thread_id: Some(String::new()),
+            parent_thread_id: Some(String::new()),
+            ceremony: serde_json::from_value(serde_json::json!({
+                "enactment": "", "step": ""
+            }))
+            .ok(),
+            type_uri: crate::TypeUri::canonical("x", 0, 1).expect("a valid Type URI"),
+            issuer: Some(String::new()),
+            recipient: Some(String::new()),
+            issued_at: Some(instant),
+            expires_at: Some(instant),
+            payload: (),
+            context: serde_json::from_value(serde_json::json!("https://example.test/ctx")).ok(),
+            proof: serde_json::from_value(serde_json::json!({
+                "type": "", "cryptosuite": "", "verificationMethod": "",
+                "proofPurpose": "", "proofValue": "", "created": "1970-01-01T00:00:00Z"
+            }))
+            .ok(),
+            extra: Default::default(),
+        };
+        match serde_json::to_value(&full) {
+            Ok(Value::Object(members)) => members.into_iter().map(|(name, _)| name).collect(),
+            _ => BTreeSet::new(),
+        }
+    })
 }
 
 /// Whether `received` parses to the same document as `doc`, compared through
@@ -1606,6 +1649,51 @@ mod received_form_tests {
                 "{issued_at}"
             );
         }
+    }
+
+    #[test]
+    fn every_modelled_member_name_is_known() {
+        let names: Vec<&str> = modelled_member_names().iter().map(String::as_str).collect();
+        assert_eq!(
+            names,
+            [
+                "@context",
+                "ceremony",
+                "expiresAt",
+                "id",
+                "issuedAt",
+                "issuer",
+                "parentThreadId",
+                "payload",
+                "proof",
+                "recipient",
+                "threadId",
+                "type"
+            ]
+        );
+    }
+
+    /// A hand-built document whose unmodelled members shadow modelled ones
+    /// misses the shortcut; the full comparison decides, as it did before.
+    #[test]
+    fn an_unmodelled_member_named_like_a_modelled_one_falls_through() {
+        let received = full();
+        let mut doc = read(&received, false);
+        doc.expires_at = None;
+        doc.extra
+            .insert("expiresAt".to_string(), json!("2026-11-13T10:30:00Z"));
+        let (shortcut, full_comparison, verdict) = verdicts(&received, &doc, false);
+        assert!(!shortcut);
+        assert_eq!(verdict, full_comparison);
+
+        let mut garbage = read(&received, false);
+        garbage.expires_at = None;
+        garbage
+            .extra
+            .insert("expiresAt".to_string(), json!("garbage"));
+        let mut received = received;
+        received["expiresAt"] = json!("garbage");
+        assert_eq!(verdicts(&received, &garbage, false), (false, false, false));
     }
 
     #[test]
