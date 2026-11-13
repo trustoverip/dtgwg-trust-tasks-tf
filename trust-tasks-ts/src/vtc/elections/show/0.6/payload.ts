@@ -1132,6 +1132,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: false,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 98304,
 } as const;
 
 /**

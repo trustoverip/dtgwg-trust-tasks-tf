@@ -283,6 +283,10 @@ const (
 
 	// ReplayRecordUnavailable is the message for a replay-record outage.
 	ReplayRecordUnavailable = "temporarily unavailable"
+
+	// DocumentTooLargeWireMessage is the message for a document larger than its
+	// specification's declared maxDocumentBytes (SPEC §12.4).
+	DocumentTooLargeWireMessage = "document exceeds the size bound for its type (SPEC §12.4)"
 )
 
 // Handler is the business handler, called only once every framework check has
@@ -456,6 +460,15 @@ func ConsumeInbound[P, R any](
 	// document never burns its id.
 	if reason := typeRefusalFor(doc.Type, opts.Spec, opts.Extends); reason != nil {
 		return route(reason), nil
+	}
+
+	// SPEC §12.4 — the specification's declared maxDocumentBytes, over the bytes
+	// as received, when the caller has them. Only for a document of Spec's own
+	// version: a later version read forward along extends may declare a larger
+	// bound of its own, which a consumer MUST NOT refuse a document within.
+	if opts.Spec.MaxDocumentBytes > 0 && len(opts.Received) > opts.Spec.MaxDocumentBytes &&
+		sameVersion(doc.Type, opts.Spec.TypeURI) {
+		return route(&RejectReason{Code: CodeMalformedRequest, Message: DocumentTooLargeWireMessage}), nil
 	}
 
 	// §7.2 item 2 — payload schema. Runs first, in the spec's own order, and

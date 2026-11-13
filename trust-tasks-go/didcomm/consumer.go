@@ -186,7 +186,32 @@ func Consume[P, R any](
 		}), nil
 	}
 
-	payload, err := decode(raw.Payload)
+	// SPEC §5.2 "Declared extension": a later version whose registry extends
+	// chain reaches spec's is read as spec's version, its payload pruned to the
+	// members spec's schema knows, as the Rust dispatcher and the Dart bindings
+	// read it (#1117). Another specification is unsupportedType, an unreached
+	// version of this one unsupportedVersion, and a payload too complex to prune
+	// malformedRequest — each routed to the authenticated sender. The proof and
+	// the item-11 digest stay over the document as received (Received below).
+	reading, reason, err := tt.ReadForSpec(unpacked.Document, spec)
+	if err != nil {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "envelope body is not a Trust Task document",
+		}), nil
+	}
+	if reason != nil {
+		return refused(&raw, *reason), nil
+	}
+	var read tt.Document[json.RawMessage]
+	if err := json.Unmarshal(reading, &read); err != nil {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "envelope body is not a Trust Task document",
+		}), nil
+	}
+
+	payload, err := decode(read.Payload)
 	if err != nil {
 		return refused(&raw, tt.RejectReason{
 			Code:    tt.CodeMalformedRequest,

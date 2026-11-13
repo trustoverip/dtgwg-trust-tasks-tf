@@ -80,6 +80,32 @@ jobs:
           VERSION_BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: npm run check-version-edits
 
+  # #1132: a spec version the PR adds targets the current framework version,
+  # and a status the PR raises (draft → candidate → standard) is on the latest
+  # live version of its slug — promoting an older one would un-deprecate it in
+  # all four libraries. Both are rules about the change, so they compare with
+  # the merge base (scripts/lib/spec-lifecycle.mjs).
+  spec-lifecycle:
+    name: spec lifecycle rules
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The merge base with the PR's base branch.
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund
+      - name: New versions target the current framework; only the latest version is promoted
+        env:
+          VERSION_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: npm run check-spec-lifecycle
+
   # The node tests of the checks above and of check-release-lists.mjs
   # (scripts/test-checks/).
   test-checks:

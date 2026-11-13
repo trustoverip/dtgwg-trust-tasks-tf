@@ -367,6 +367,20 @@ type SpecPolicy struct {
 	// carried so a consumer has something to validate against. Empty only for a
 	// hand-written policy that omits it.
 	PayloadSchema string
+
+	// MaxDocumentBytes is the specification's front-matter maxDocumentBytes for
+	// this variant, in bytes of the serialized document as received (the JSON
+	// text, proof included, no transport envelope), or 0 when it declares none.
+	//
+	// Two-sided (SPEC §12.4, as CONTRIBUTING-SPECS.md states it): a consumer
+	// serving the task MUST NOT refuse a document within it on grounds of size
+	// alone, and SHOULD refuse a larger one with malformedRequest —
+	// [ConsumeInbound] does, when it is given the bytes as
+	// [ConsumeOptions.Received]. Zero declares nothing: the receiving party's own
+	// transport limit applies. The two variants are independent: a response
+	// never inherits the request's bound. The counterpart of Rust's
+	// Payload::MAX_DOCUMENT_BYTES.
+	MaxDocumentBytes int
 }
 
 // RejectReason records why a consumer rejected a document, and the §8.3 code it

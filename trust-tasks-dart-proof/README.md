@@ -146,6 +146,19 @@ It builds the proof itself instead of calling `ssi`'s generators. Before ssi
 4.3.0 those wrote `created` with no zone designator, which this verifier and
 the Rust one both refuse, and this package still supports ssi 3.9.
 
+## `created` is required
+
+VC Data Integrity makes a proof's `created` optional, and the framework schema
+leaves `proof` unconstrained. The four Trust Tasks libraries deliberately
+treat it as present: every signer, this one included, writes it, and the core
+`Proof` types require it — Rust's `created: DateTime<Utc>`, TypeScript's
+`created: string` and Dart's `Proof.created` (Go's `Created` is a plain
+`string`, which reads an absent one as `""`). No known producer omits it, and making it optional would cost a
+breaking release in three of the four libraries to accept documents nobody
+sends (#1119). The verifier still reads it as "when present", so this is a
+statement about the document types, not an extra verification step. Revisit
+if a generic Data Integrity signer that omits it appears.
+
 ## License
 
 Apache-2.0.

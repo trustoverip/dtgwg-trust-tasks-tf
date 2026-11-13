@@ -1,23 +1,26 @@
-// Tests for the website's page code — website/index.html and assets/*.jsx —
-// which nothing else checks: the site has no build step, so a syntax error in
-// pages.jsx was first found by visitors, and a data shape the JSX did not
-// expect blanked the whole site (#1153, #1157).
+// Tests for the website's page code — website/index.template.html and
+// assets/*.jsx, compiled by scripts/build-website.mjs into the bundle the page
+// loads (#1147). A syntax error in pages.jsx used to be found by visitors, and
+// a data shape the JSX did not expect blanked the whole site (#1153, #1157).
 //
 //   node --test scripts/test/website-jsx.test.mjs   (npm run test:website)
 //
-// 1. Compile: every JSX file, and the inline <script type="text/babel"> in
-//    index.html, through the @babel/standalone build index.html pins — the
-//    compiler visitors actually run — refused unless its SHA-384 matches the
-//    pinned integrity hash.
-// 2. Render: after `npm run build` (skipped when tasks.generated.js is absent),
-//    the app is rendered to a string with React's server renderer for a set of
-//    routes, against the real generated registry and the hand-kept data files.
-//    A render exception, a missing global or a wrong load order fails here
-//    rather than in a browser.
+// 1. Compile: the page code compiles through the build's own esbuild step, and
+//    the template loads React by pinned integrity hashes that match the files.
+// 2. Render: after `npm run build` (skipped when tasks.generated.js or the
+//    bundle is absent), the BUILT bundle that website/index.html names is
+//    loaded with the real generated registry and the hand-kept data files, and
+//    App is rendered to a string with React's server renderer for a set of
+//    routes. A render exception, a missing global or a wrong load order fails
+//    here rather than in a browser.
 //
-// The CDN files are fetched like marked in website-markdown.test.mjs. To run
-// offline, point BABEL_JS, REACT_JS and REACT_DOM_SERVER_JS at local copies;
-// the hashes are checked either way.
+// The render runs React's DEVELOPMENT build, not the production build the page
+// loads, so React's own warnings (bad keys, invalid props) fail the test; its
+// version is held to the page's. The CDN files are fetched like marked in
+// website-markdown.test.mjs. To run offline, point REACT_JS and
+// REACT_DOM_SERVER_JS at local copies of the development builds, and
+// REACT_PROD_JS and REACT_DOM_PROD_JS at the production ones; the hashes are
+// checked either way.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -25,22 +28,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { compileApp, JSX_FILES, BUNDLE_RE } from '../build-website.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const website = path.join(here, '..', '..', 'website');
 const assets = path.join(website, 'assets');
-const indexHtml = fs.readFileSync(path.join(website, 'index.html'), 'utf8');
+const template = fs.readFileSync(path.join(website, 'index.template.html'), 'utf8');
 
-// react-dom/server is not loaded by the page, so it has no pin there. It is
-// pinned here, at the React version index.html loads (checked below).
+// Neither is loaded by the page, so neither has a pin there. They are pinned
+// here, at the React version the page loads (checked below).
+const REACT_DEV = {
+  url: 'https://unpkg.com/react@18.3.1/umd/react.development.js',
+  integrity: 'sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L',
+};
 const REACT_DOM_SERVER = {
   url: 'https://unpkg.com/react-dom@18.3.1/umd/react-dom-server-legacy.browser.development.js',
   integrity: 'sha384-nXyubuGul9KsZKd274KDJE9YAWJPKFZ8O6kLSluMaAQlgKFE7AAUZcqGS/+Y2qyL',
 };
 
-function pinFromIndex(re, what) {
-  const m = re.exec(indexHtml);
-  assert.ok(m, `index.html pins ${what} with an integrity hash`);
+function pinFromTemplate(re, what) {
+  const m = re.exec(template);
+  assert.ok(m, `index.template.html pins ${what} with an integrity hash`);
   return { url: m[1], integrity: m[2] };
 }
 
@@ -58,50 +66,57 @@ async function loadPinned({ url, integrity }, envVar) {
   return bytes.toString('utf8');
 }
 
-const babelPin = pinFromIndex(/<script src="(https:\/\/[^"]*\/@babel\/standalone@[^"]+)" integrity="(sha384-[^"]+)"/, '@babel/standalone');
-const reactPin = pinFromIndex(/<script src="(https:\/\/[^"]*\/react@[^"]+\/umd\/react\.development\.js)" integrity="(sha384-[^"]+)"/, 'react');
+const reactPin = pinFromTemplate(/<script src="(https:\/\/[^"]*\/react@[^"]+\/umd\/react\.production\.min\.js)" integrity="(sha384-[^"]+)"/, 'production react');
+const reactDomPin = pinFromTemplate(/<script src="(https:\/\/[^"]*\/react-dom@[^"]+\/umd\/react-dom\.production\.min\.js)" integrity="(sha384-[^"]+)"/, 'production react-dom');
+const pageReactVersion = /\/react@([^/]+)\//.exec(reactPin.url)[1];
 
-const babelCtx = { console };
-vm.createContext(babelCtx);
-vm.runInContext(await loadPinned(babelPin, 'BABEL_JS'), babelCtx);
-const Babel = babelCtx.Babel;
-
-/** Compile JSX as the page does; throws with a location on a syntax error. */
-function compile(source, filename) {
-  return Babel.transform(source, { presets: ['react'], filename, sourceType: 'script' }).code;
-}
-
-const INLINE_RE = /<script type="text\/babel" data-presets="react">([\s\S]*?)<\/script>/;
-const jsxFiles = fs.readdirSync(assets).filter((f) => f.endsWith('.jsx')).sort();
-
-test('every JSX file compiles', () => {
-  assert.ok(jsxFiles.length > 0, 'found JSX files');
-  for (const f of jsxFiles) {
-    assert.doesNotThrow(() => compile(fs.readFileSync(path.join(assets, f), 'utf8'), f), `${f} compiles`);
-  }
+test('the page code compiles', () => {
+  assert.doesNotThrow(() => compileApp());
 });
 
-test("index.html's inline app script compiles", () => {
-  const m = INLINE_RE.exec(indexHtml);
-  assert.ok(m, 'index.html has an inline text/babel script');
-  assert.doesNotThrow(() => compile(m[1], 'index.html'));
+test('every JSX file is in the bundle', () => {
+  const onDisk = fs.readdirSync(assets).filter((f) => f.endsWith('.jsx')).sort();
+  assert.deepEqual([...JSX_FILES].sort(), onDisk);
 });
 
-test('index.html loads every JSX file and the scripts the JSX needs', () => {
-  for (const f of jsxFiles) {
-    assert.match(indexHtml, new RegExp(`src="/assets/${f.replace('.', '\\.')}"`), `index.html loads ${f}`);
+test('the page loads production React, pinned, and no in-browser compiler', async () => {
+  assert.doesNotMatch(template, /text\/babel|@babel\/standalone|\.development\.js/);
+  assert.match(reactDomPin.url, new RegExp(`/react-dom@${pageReactVersion}/`), 'react and react-dom are the same version');
+  for (const pin of [REACT_DEV, REACT_DOM_SERVER]) {
+    assert.match(pin.url, new RegExp(`@${pageReactVersion}/`), `${pin.url} is the React version the page loads`);
   }
-  // routes.js must run before tasks.generated.js, whose TT_STATS footer uses it.
-  const order = ['routes.js', 'data.js', 'tasks.generated.js'].map((f) => indexHtml.indexOf(`/assets/${f}`));
-  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], 'routes.js, data.js, tasks.generated.js load in that order');
+  // The integrity attributes are what the browser checks: a wrong one blanks the site.
+  await loadPinned(reactPin, 'REACT_PROD_JS');
+  await loadPinned(reactDomPin, 'REACT_DOM_PROD_JS');
+});
+
+test('the template loads the data scripts, then the bundle', () => {
+  // routes.js must run before tasks.generated.js, whose TT_STATS footer uses
+  // it, and every data script before the bundle that reads them.
+  const order = ['routes.js', 'data.js', 'tasks.generated.js', 'ceremonies.js', '__APP_BUNDLE__'].map((f) => template.indexOf(`/assets/${f}`));
+  assert.ok(order.every((i) => i > 0), 'each script is loaded');
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'in that order');
+  assert.match(template, /<script defer src="\/assets\/__APP_BUNDLE__"><\/script>/);
 });
 
 // ---------------------------------------------------------------------------
-// Server-side render smoke test
+// Server-side render smoke test, against the built bundle
 // ---------------------------------------------------------------------------
 
-const generated = path.join(assets, 'tasks.generated.js');
-const haveBuild = fs.existsSync(generated);
+const builtIndex = path.join(website, 'index.html');
+const bundleName = fs.existsSync(builtIndex)
+  ? (/<script defer src="\/assets\/(app\.[0-9a-f]+\.js)"><\/script>/.exec(fs.readFileSync(builtIndex, 'utf8')) || [])[1]
+  : undefined;
+const haveBuild = fs.existsSync(path.join(assets, 'tasks.generated.js')) && !!bundleName && fs.existsSync(path.join(assets, bundleName));
+
+test('the built index.html names the bundle the build wrote', { skip: !haveBuild && 'run `npm run build` first' }, () => {
+  assert.match(bundleName, BUNDLE_RE);
+  const bundles = fs.readdirSync(assets).filter((f) => BUNDLE_RE.test(f));
+  assert.deepEqual(bundles, [bundleName], 'one bundle, the one index.html names');
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(assets, bundleName))).digest('hex').slice(0, 16);
+  assert.equal(bundleName, `app.${hash}.js`, 'the name is its content hash, so it can be cached as immutable');
+  assert.equal(fs.readFileSync(path.join(assets, bundleName), 'utf8'), compileApp(), 'the bundle is current: rerun `npm run build`');
+});
 
 /** A browser-ish global for the page scripts, with React and the data loaded. */
 async function pageContext() {
@@ -121,35 +136,31 @@ async function pageContext() {
   ctx.document = {
     title: '',
     querySelector: () => meta,
-    getElementById: () => null,
+    getElementById: () => null, // no #root, so the bundle does not mount
     body: { dataset: {} },
     documentElement: { style: { setProperty() {} } },
   };
   ctx.window = ctx;
   ctx.self = ctx;
   vm.createContext(ctx);
-  vm.runInContext(await loadPinned(reactPin, 'REACT_JS'), ctx, { filename: 'react.development.js' });
-  assert.match(REACT_DOM_SERVER.url, new RegExp(`@${ctx.React.version}/`), 'react-dom/server pin matches the React version index.html loads');
+  vm.runInContext(await loadPinned(REACT_DEV, 'REACT_JS'), ctx, { filename: 'react.development.js' });
+  assert.equal(ctx.React.version, pageReactVersion);
   vm.runInContext(await loadPinned(REACT_DOM_SERVER, 'REACT_DOM_SERVER_JS'), ctx, { filename: 'react-dom-server.js' });
 
-  // The deferred data scripts, in index.html's order (markdown.js needs marked
-  // and is only called from effects, which a server render does not run).
-  const scripts = [...indexHtml.matchAll(/<script defer src="\/assets\/([^"]+)"><\/script>/g)].map((m) => m[1]);
-  assert.ok(scripts.includes('tasks.generated.js'), 'index.html loads tasks.generated.js');
+  // The deferred scripts, in the template's order, with the built bundle in
+  // its placeholder's place. markdown.js is skipped: it needs marked and is
+  // only called from effects, which a server render does not run.
+  const scripts = [...template.matchAll(/<script defer src="\/assets\/([^"]+)"><\/script>/g)].map((m) => m[1]);
+  assert.ok(scripts.includes('tasks.generated.js'), 'the template loads tasks.generated.js');
   for (const f of scripts) {
     if (f === 'markdown.js') continue;
-    vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), ctx, { filename: f });
+    const file = f === '__APP_BUNDLE__' ? bundleName : f;
+    vm.runInContext(fs.readFileSync(path.join(assets, file), 'utf8'), ctx, { filename: file });
   }
-  for (const f of ['components.jsx', 'pages.jsx']) {
-    vm.runInContext(compile(fs.readFileSync(path.join(assets, f), 'utf8'), f), ctx, { filename: f });
-  }
-  // The inline app, minus its mount: expose App instead.
-  const inline = INLINE_RE.exec(indexHtml)[1].replace(
-    /ReactDOM\.createRoot\([^;]*;/,
-    'window.__App = App; window.__parsePath = parsePath;'
-  );
-  vm.runInContext(compile(inline, 'index.html'), ctx, { filename: 'index.html (inline)' });
-  assert.equal(typeof ctx.__App, 'function', 'the inline script defines App');
+  // The bundle's top-level declarations are globals, as they are in the page.
+  ctx.__App = vm.runInContext('App', ctx);
+  ctx.__parsePath = vm.runInContext('parsePath', ctx);
+  assert.equal(typeof ctx.__App, 'function', 'the bundle defines App');
   return ctx;
 }
 

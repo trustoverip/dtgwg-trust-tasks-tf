@@ -5,6 +5,10 @@ import {
   GIT_TRUST_NOT_GRANTED_CODE_CAMEL,
 } from "./constants.js";
 import {
+  answersRequest,
+  correlationThread,
+  isFrameworkError,
+  isRegistryType,
   parseEnvelopeDocumentFor,
   repliesTo,
   typeUriParts,
@@ -43,7 +47,7 @@ export interface ReplyPolicy {
 }
 
 function errorCodeAndMessage(doc: CapabilityDocument): { code: string; message?: string } {
-  const payload = doc.payload;
+  const payload = asRecord(doc.payload) ?? {};
   const code = typeof payload.code === "string" ? payload.code : "unknown";
   const message = typeof payload.message === "string" ? payload.message : undefined;
   return { code, message };
@@ -82,7 +86,7 @@ export function classifyGitTrustReply(
   if (!repliesTo(doc, expectedThreadId)) return undefined;
 
   const { slug, isResponse } = typeUriParts(doc.type);
-  if (slug === "trust-task-error") {
+  if (isFrameworkError(doc)) {
     const { code, message } = errorCodeAndMessage(doc);
     if (isIdempotentCode(code)) return { kind: "idempotentSuccess" };
     // DEPRECATED: pre-extended-code peers signalled idempotence in the free-text
@@ -97,10 +101,31 @@ export function classifyGitTrustReply(
     }
     return { kind: "rejected", code, message };
   }
-  if (isResponse && (slug === "git-trust/grant" || slug === "git-trust/revoke")) {
+  if (isResponse && isRegistryType(doc.type) && (slug === "git-trust/grant" || slug === "git-trust/revoke")) {
     return { kind: "success" };
   }
   return undefined;
+}
+
+/**
+ * Classify the reply to the `git-trust/grant` or `git-trust/revoke` document
+ * `request` — the form to use when you hold the request you sent.
+ *
+ * `undefined` unless `reply` {@link answersRequest answers} `request`: threaded
+ * to it, from the party it was addressed to, for the party that sent it, and
+ * typed as its own `#response` or as a framework error. So a revoke's response
+ * does not complete a grant, and a refusal typed under another authority
+ * completes nothing. Otherwise as {@link classifyGitTrustReply}.
+ */
+export function classifyGitTrustReplyTo(
+  reply: CapabilityDocument,
+  request: CapabilityDocument,
+  policy: ReplyPolicy = {},
+): WriteOutcome | undefined {
+  const { slug } = typeUriParts(request.type);
+  if (slug !== "git-trust/grant" && slug !== "git-trust/revoke") return undefined;
+  if (!answersRequest(reply, request)) return undefined;
+  return classifyGitTrustReply(reply, correlationThread(request), policy);
 }
 
 // --- governance/capability replies (management UIs) -------------------------
@@ -132,11 +157,13 @@ function summaryOf(entry: unknown): CapabilitySummary | undefined {
   const manifest = rec && asRecord(rec.manifest);
   if (!rec || !manifest) return undefined;
   if (typeof manifest.capability !== "string") return undefined;
+  const enabled = rec.enabled;
+  if (typeof enabled !== "boolean") return undefined;
   return {
     slug: manifest.capability,
     title: typeof manifest.title === "string" ? manifest.title : undefined,
     version: typeof manifest.version === "string" ? manifest.version : "?",
-    enabled: rec.enabled === true,
+    enabled,
     enabledAt: typeof rec.enabledAt === "string" ? rec.enabledAt : undefined,
     delegate: typeof rec.delegate === "string" ? rec.delegate : undefined,
     manifest,
@@ -145,7 +172,11 @@ function summaryOf(entry: unknown): CapabilitySummary | undefined {
 
 /**
  * Classify a `governance/capability/*` reply document. `undefined` when it is
- * not part of this family, or is not threaded to `expectedThreadId`.
+ * not part of this family, is not threaded to `expectedThreadId`, or does not
+ * carry the members its kind requires (a listing's `capabilities` array, each
+ * entry's `manifest.capability` and boolean `enabled`; a toggle's `capability`
+ * and boolean `enabled`) — a reply that cannot say what it reports is not read
+ * as reporting "disabled".
  */
 export function parseCapabilityReply(
   doc: CapabilityDocument,
@@ -154,29 +185,49 @@ export function parseCapabilityReply(
   if (!repliesTo(doc, expectedThreadId)) return undefined;
 
   const { slug, isResponse } = typeUriParts(doc.type);
-  if (slug === "trust-task-error") {
+  if (isFrameworkError(doc)) {
     const { code, message } = errorCodeAndMessage(doc);
     return { kind: "rejected", code, message };
   }
-  if (!isResponse) return undefined;
+  if (!isResponse || !isRegistryType(doc.type)) return undefined;
+  const payload = asRecord(doc.payload);
+  if (payload === undefined) return undefined;
   switch (slug) {
     case "governance/capability/list": {
-      const raw = doc.payload.capabilities;
-      const entries = Array.isArray(raw)
-        ? raw.map(summaryOf).filter((s): s is CapabilitySummary => s !== undefined)
-        : [];
+      const raw = payload.capabilities;
+      if (!Array.isArray(raw)) return undefined;
+      const entries: CapabilitySummary[] = [];
+      for (const entry of raw) {
+        const summary = summaryOf(entry);
+        if (summary === undefined) return undefined;
+        entries.push(summary);
+      }
       return { kind: "listing", entries };
     }
     case "governance/capability/enable":
-    case "governance/capability/disable":
-      return {
-        kind: "toggled",
-        capability: typeof doc.payload.capability === "string" ? doc.payload.capability : "",
-        enabled: doc.payload.enabled === true,
-      };
+    case "governance/capability/disable": {
+      const { capability, enabled } = payload;
+      if (typeof capability !== "string" || typeof enabled !== "boolean") return undefined;
+      return { kind: "toggled", capability, enabled };
+    }
     default:
       return undefined;
   }
+}
+
+/**
+ * Classify the reply to the `governance/capability/*` document `request` — the
+ * form to use when you hold the request you sent. `undefined` unless `reply`
+ * {@link answersRequest answers} `request`; otherwise as
+ * {@link parseCapabilityReply}.
+ */
+export function parseCapabilityReplyTo(
+  reply: CapabilityDocument,
+  request: CapabilityDocument,
+): CapabilityReply | undefined {
+  if (!typeUriParts(request.type).slug.startsWith("governance/capability/")) return undefined;
+  if (!answersRequest(reply, request)) return undefined;
+  return parseCapabilityReply(reply, correlationThread(request));
 }
 
 /**

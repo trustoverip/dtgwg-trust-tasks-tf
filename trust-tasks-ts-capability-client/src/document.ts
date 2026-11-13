@@ -148,14 +148,68 @@ export function repliesTo(reply: { threadId?: string }, expectedThreadId: string
   return reply.threadId !== undefined && reply.threadId === expectedThreadId;
 }
 
-/** True when `body` has the shape of a Trust Task document. */
+/** True when `body` has the shape of a Trust Task document: a string `id` and
+ * `type`, and a `payload` that is a JSON object — what every classifier here
+ * reads members from. */
 function isDocument(body: unknown): body is CapabilityDocument {
+  if (typeof body !== "object" || body === null) return false;
+  const rec = body as Record<string, unknown>;
+  const payload = rec.payload;
   return (
-    typeof body === "object" &&
-    body !== null &&
-    typeof (body as Record<string, unknown>).id === "string" &&
-    typeof (body as Record<string, unknown>).type === "string"
+    typeof rec.id === "string" &&
+    typeof rec.type === "string" &&
+    typeof payload === "object" &&
+    payload !== null &&
+    !Array.isArray(payload)
   );
+}
+
+/** The registry's authority: where the framework's own specifications, and the
+ * capability families this package builds, are published. */
+const REGISTRY_SPEC_PREFIX = "https://trusttasks.org/spec/";
+
+/** Whether `typeUri` is under the registry's authority. */
+export function isRegistryType(typeUri: string): boolean {
+  return typeUri.startsWith(REGISTRY_SPEC_PREFIX);
+}
+
+/** Whether `doc` is a framework error document: `trust-task-error` under the
+ * registry's authority. The same slug under another authority is some other
+ * publisher's specification, not a refusal. */
+export function isFrameworkError(doc: { type: string }): boolean {
+  const { slug, isResponse } = typeUriParts(doc.type);
+  return slug === "trust-task-error" && !isResponse && isRegistryType(doc.type);
+}
+
+/** `typeUri` without its fragment. */
+function bareType(typeUri: string): string {
+  const hash = typeUri.indexOf("#");
+  return hash >= 0 ? typeUri.slice(0, hash) : typeUri;
+}
+
+/**
+ * Whether `reply` answers `request` — the four equalities the HTTPS clients
+ * apply to a response (SPEC §4.9, §8.1), for a client that holds the request it
+ * sent:
+ *
+ * - `threadId` is {@link correlationThread} of `request`;
+ * - `issuer` is `request.recipient`, where the request named one;
+ * - `recipient` is `request.issuer`, where the request named one;
+ * - `type` is `request.type` with `#response`, or the framework's
+ *   `trust-task-error` under the registry's authority — and then a payload
+ *   `inResponseTo.id`, where present, is `request.id`.
+ */
+export function answersRequest(reply: CapabilityDocument, request: CapabilityDocument): boolean {
+  if (!repliesTo(reply, correlationThread(request))) return false;
+  if (request.recipient !== undefined && reply.issuer !== request.recipient) return false;
+  if (request.issuer !== undefined && reply.recipient !== request.issuer) return false;
+  if (isFrameworkError(reply)) {
+    const inResponseTo = (reply.payload as Record<string, unknown> | undefined)?.inResponseTo;
+    if (typeof inResponseTo !== "object" || inResponseTo === null) return true;
+    const id = (inResponseTo as Record<string, unknown>).id;
+    return id === undefined || id === request.id;
+  }
+  return reply.type === `${bareType(request.type)}#response`;
 }
 
 /**

@@ -17,8 +17,12 @@
 //! - **Builders**: [`build_document`] plus the family-specific
 //!   [`build_list_document`], [`build_toggle_document`],
 //!   [`build_git_trust_grant`], [`build_git_trust_revoke`].
-//! - **Replies**: [`classify_git_trust_reply`] (for grant/revoke writers) and
-//!   [`parse_capability_reply`] (for governance management UIs).
+//! - **Replies**: [`classify_git_trust_reply_to`] (for grant/revoke writers) and
+//!   [`parse_capability_reply_to`] (for governance management UIs), which take
+//!   the request you sent and accept only a reply that answers it
+//!   ([`answers_request`]). The older forms that take only a thread id
+//!   ([`classify_git_trust_reply`], [`parse_capability_reply`]) remain; they
+//!   cannot check who answered or for which request type.
 //!
 //! ## Retries versus fresh attempts
 //!
@@ -117,6 +121,10 @@ pub enum CapabilityClientError {
     Document(String),
 }
 
+/// The registry's authority: where the framework's own specifications, and the
+/// capability families this crate builds, are published.
+const REGISTRY_SPEC_PREFIX: &str = "https://trusttasks.org/spec/";
+
 // --- builders ----------------------------------------------------------------
 
 /// A fresh document `id`. One per *attempt* — never reused across attempts;
@@ -133,20 +141,42 @@ fn fresh_id() -> String {
 /// [Retries versus fresh attempts](self#retries-versus-fresh-attempts) first,
 /// because the choice between resending the identical document and minting a
 /// new one is now enforced by the consumer.
+///
+/// # Panics
+///
+/// When `type_uri` is not a Trust Task Type URI (SPEC §6.1). Every builder in
+/// this crate passes one of its own constants, which always parse; a caller
+/// passing its own Type URI should use [`try_build_document`].
 pub fn build_document(
     issuer_did: &str,
     recipient_did: &str,
     type_uri: &str,
     payload: Value,
 ) -> TrustTask<Value> {
-    let type_uri = type_uri
-        .parse()
-        .unwrap_or_else(|_| unreachable!("static capability type URIs are valid"));
+    match try_build_document(issuer_did, recipient_did, type_uri, payload) {
+        Ok(doc) => doc,
+        Err(e) => {
+            panic!("build_document: {e}; use try_build_document for a caller-supplied Type URI")
+        }
+    }
+}
+
+/// [`build_document`] for a Type URI that may not parse: an error rather than a
+/// panic when `type_uri` is not a Trust Task Type URI (SPEC §6.1).
+pub fn try_build_document(
+    issuer_did: &str,
+    recipient_did: &str,
+    type_uri: &str,
+    payload: Value,
+) -> Result<TrustTask<Value>, CapabilityClientError> {
+    let type_uri = type_uri.parse().map_err(|e| {
+        CapabilityClientError::Document(format!("`{type_uri}` is not a Trust Task Type URI: {e}"))
+    })?;
     let mut doc = TrustTask::new(fresh_id(), type_uri, payload);
     doc.issuer = Some(issuer_did.to_string());
     doc.recipient = Some(recipient_did.to_string());
     doc.issued_at = Some(trust_tasks_rs::issued_at_now());
-    doc
+    Ok(doc)
 }
 
 /// A **new attempt** at the request `previous` carried: the same addressing,
@@ -314,6 +344,56 @@ pub fn replies_to<P>(reply: &TrustTask<P>, expected_thread_id: &str) -> bool {
     reply.thread_id.as_deref() == Some(expected_thread_id)
 }
 
+/// Whether `reply` answers `request` — the four equalities the HTTPS client
+/// applies to a response (SPEC §4.9, §8.1), for a client that holds the
+/// request it sent:
+///
+/// | Member | Must be |
+/// |---|---|
+/// | `threadId` | [`correlation_thread`] of `request` |
+/// | `issuer` | `request`'s `recipient`, where the request named one |
+/// | `recipient` | `request`'s `issuer`, where the request named one |
+/// | `type` | `request`'s `type` with `#response`, or the framework's `trust-task-error` under the registry's authority |
+///
+/// An error reply whose payload names `inResponseTo.id` must name `request`'s
+/// `id` (SPEC §8.1 lets it be absent).
+pub fn answers_request(reply: &TrustTask<Value>, request: &TrustTask<Value>) -> bool {
+    if !replies_to(reply, correlation_thread(request)) {
+        return false;
+    }
+    if let Some(expected) = request.recipient.as_deref() {
+        if reply.issuer.as_deref() != Some(expected) {
+            return false;
+        }
+    }
+    if let Some(expected) = request.issuer.as_deref() {
+        if reply.recipient.as_deref() != Some(expected) {
+            return false;
+        }
+    }
+    if is_framework_error(reply) {
+        return match reply.payload.get("inResponseTo").and_then(|r| r.get("id")) {
+            None => true,
+            Some(id) => id.as_str() == Some(request.id.as_str()),
+        };
+    }
+    reply.type_uri == request.type_uri.with_response()
+}
+
+/// Whether `doc`'s type is under the registry's authority.
+fn is_registry_type<P>(doc: &TrustTask<P>) -> bool {
+    doc.type_uri.to_string().starts_with(REGISTRY_SPEC_PREFIX)
+}
+
+/// Whether `doc` is a framework error document: `trust-task-error` under the
+/// registry's authority. The same slug under any other authority is some
+/// other publisher's specification, not a refusal.
+fn is_framework_error<P>(doc: &TrustTask<P>) -> bool {
+    doc.type_uri.slug() == "trust-task-error"
+        && !doc.type_uri.is_response()
+        && is_registry_type(doc)
+}
+
 // --- git-trust write replies (grant/revoke producers) ------------------------
 
 /// The classification of a `git-trust` write reply.
@@ -418,7 +498,7 @@ pub fn classify_git_trust_reply_with_policy(
     }
 
     let slug = doc.type_uri.slug();
-    if slug == "trust-task-error" {
+    if is_framework_error(doc) {
         let (code, message) = error_code_and_message(doc);
         if is_idempotent_code(&code) {
             return Some(WriteOutcome::IdempotentSuccess);
@@ -436,10 +516,36 @@ pub fn classify_git_trust_reply_with_policy(
         }
         return Some(WriteOutcome::Rejected { code, message });
     }
-    if doc.type_uri.is_response() && matches!(slug, "git-trust/grant" | "git-trust/revoke") {
+    if doc.type_uri.is_response()
+        && is_registry_type(doc)
+        && matches!(slug, "git-trust/grant" | "git-trust/revoke")
+    {
         return Some(WriteOutcome::Success);
     }
     None
+}
+
+/// Classify the reply to the `git-trust/grant` or `git-trust/revoke` document
+/// `request` — the form to use when you hold the request you sent.
+///
+/// `None` unless `reply` [answers](answers_request) `request`: threaded to it,
+/// from the party it was addressed to, for the party that sent it, and typed as
+/// its own `#response` or as a framework error. So a revoke's response does not
+/// complete a grant, and a refusal typed under another authority completes
+/// nothing. Otherwise as [`classify_git_trust_reply_with_policy`].
+pub fn classify_git_trust_reply_to(
+    reply: &TrustTask<Value>,
+    request: &TrustTask<Value>,
+    policy: ReplyPolicy,
+) -> Option<WriteOutcome> {
+    if !matches!(
+        request.type_uri.slug(),
+        "git-trust/grant" | "git-trust/revoke"
+    ) || !answers_request(reply, request)
+    {
+        return None;
+    }
+    classify_git_trust_reply_with_policy(reply, correlation_thread(request), policy)
 }
 
 /// Whether `code` is one of the extended codes that mean "the end state you
@@ -495,8 +601,32 @@ pub fn parse_envelope_reply(body: &Value, expected_thread_id: &str) -> Option<Ca
     parse_capability_reply(&doc, expected_thread_id)
 }
 
+/// Classify the reply to the `governance/capability/*` document `request` —
+/// the form to use when you hold the request you sent.
+///
+/// `None` unless `reply` [answers](answers_request) `request`; otherwise as
+/// [`parse_capability_reply`].
+pub fn parse_capability_reply_to(
+    reply: &TrustTask<Value>,
+    request: &TrustTask<Value>,
+) -> Option<CapabilityReply> {
+    if !request
+        .type_uri
+        .slug()
+        .starts_with("governance/capability/")
+        || !answers_request(reply, request)
+    {
+        return None;
+    }
+    parse_capability_reply(reply, correlation_thread(request))
+}
+
 /// Classify a `governance/capability/*` reply document. `None` when it is not
-/// part of this family, or is not threaded to `expected_thread_id`.
+/// part of this family, is not threaded to `expected_thread_id`, or does not
+/// carry the members its kind requires (a listing's `capabilities` array, each
+/// entry's `manifest.capability` and `enabled`; a toggle's `capability` and
+/// `enabled`) — a reply that cannot say what it reports is not read as
+/// reporting "disabled".
 pub fn parse_capability_reply(
     doc: &TrustTask<Value>,
     expected_thread_id: &str,
@@ -507,36 +637,23 @@ pub fn parse_capability_reply(
         return None;
     }
     let slug = doc.type_uri.slug();
-    if slug == "trust-task-error" {
+    if is_framework_error(doc) {
         let (code, message) = error_code_and_message(doc);
         return Some(CapabilityReply::Rejected { code, message });
     }
-    if !doc.type_uri.is_response() {
+    if !doc.type_uri.is_response() || !is_registry_type(doc) {
         return None;
     }
     match slug {
         "governance/capability/list" => {
-            let entries = doc
-                .payload
-                .get("capabilities")
-                .and_then(Value::as_array)
-                .map(|entries| entries.iter().filter_map(summary_of).collect())
-                .unwrap_or_default();
+            let entries = doc.payload.get("capabilities")?.as_array()?;
+            let entries = entries.iter().map(summary_of).collect::<Option<Vec<_>>>()?;
             Some(CapabilityReply::Listing(entries))
         }
         "governance/capability/enable" | "governance/capability/disable" => {
             Some(CapabilityReply::Toggled {
-                capability: doc
-                    .payload
-                    .get("capability")
-                    .and_then(Value::as_str)
-                    .unwrap_or_default()
-                    .to_string(),
-                enabled: doc
-                    .payload
-                    .get("enabled")
-                    .and_then(Value::as_bool)
-                    .unwrap_or(false),
+                capability: doc.payload.get("capability")?.as_str()?.to_string(),
+                enabled: doc.payload.get("enabled")?.as_bool()?,
             })
         }
         _ => None,
@@ -571,10 +688,7 @@ fn summary_of(entry: &Value) -> Option<CapabilitySummary> {
             .and_then(Value::as_str)
             .unwrap_or("?")
             .to_string(),
-        enabled: entry
-            .get("enabled")
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
+        enabled: entry.get("enabled")?.as_bool()?,
         enabled_at: entry
             .get("enabledAt")
             .and_then(Value::as_str)
@@ -867,6 +981,178 @@ mod tests {
         // The correlating form takes the same body only for the right thread.
         assert!(parse_envelope_document_for(&body, &grant.id).is_some());
         assert!(parse_envelope_document_for(&body, "urn:uuid:someone-else").is_none());
+    }
+
+    // --- binding a reply to the request it answers ---------------------------
+
+    /// `reply` re-addressed as a different party would send it.
+    fn from_party(mut reply: TrustTask<Value>, issuer: &str) -> TrustTask<Value> {
+        reply.issuer = Some(issuer.to_string());
+        reply
+    }
+
+    #[test]
+    fn a_reply_answers_only_the_request_it_was_made_for() {
+        let grant = build_git_trust_grant("did:a", "did:r", "did:s", "org");
+        let strict = ReplyPolicy::strict();
+
+        let ok = grant.respond_with("urn:uuid:r".to_string(), serde_json::json!({}));
+        assert!(answers_request(&ok, &grant));
+        assert_eq!(
+            classify_git_trust_reply_to(&ok, &grant, strict),
+            Some(WriteOutcome::Success)
+        );
+
+        // From someone other than the registry it was sent to.
+        let elsewhere = from_party(ok.clone(), "did:someone-else");
+        assert!(!answers_request(&elsewhere, &grant));
+        assert_eq!(
+            classify_git_trust_reply_to(&elsewhere, &grant, strict),
+            None
+        );
+
+        // For someone other than the sender.
+        let mut misaddressed = ok.clone();
+        misaddressed.recipient = Some("did:someone-else".to_string());
+        assert_eq!(
+            classify_git_trust_reply_to(&misaddressed, &grant, strict),
+            None
+        );
+
+        // A revoke's response on the grant's thread does not complete the
+        // grant, though the thread-only form cannot tell.
+        let mut revoke_ack = ok.clone();
+        revoke_ack.type_uri = format!("{GIT_TRUST_REVOKE_TYPE}#response").parse().unwrap();
+        assert_eq!(
+            classify_git_trust_reply_to(&revoke_ack, &grant, strict),
+            None
+        );
+
+        // An idempotent refusal from the registry, naming this request, is
+        // still an idempotent success.
+        let mut already = error_reply(&grant, GIT_TRUST_ALREADY_GRANTED_CODE, None);
+        already.issuer = grant.recipient.clone();
+        already.recipient = grant.issuer.clone();
+        assert_eq!(
+            classify_git_trust_reply_to(&already, &grant, strict),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+        // ... but not when it names another request.
+        let mut other = already.clone();
+        other.payload["inResponseTo"] = serde_json::json!({ "id": "urn:uuid:another" });
+        assert_eq!(classify_git_trust_reply_to(&other, &grant, strict), None);
+        other.payload["inResponseTo"] = serde_json::json!({ "id": grant.id });
+        assert_eq!(
+            classify_git_trust_reply_to(&other, &grant, strict),
+            Some(WriteOutcome::IdempotentSuccess)
+        );
+
+        // The governance family is bound the same way.
+        let toggle = build_toggle_document("did:me", "did:vtc", "git-trust", "0.1", true);
+        let ack = toggle.respond_with(
+            "urn:uuid:t".to_string(),
+            serde_json::json!({ "capability": "git-trust", "enabled": true }),
+        );
+        assert!(parse_capability_reply_to(&ack, &toggle).is_some());
+        assert_eq!(
+            parse_capability_reply_to(&from_party(ack, "did:someone-else"), &toggle),
+            None
+        );
+        // A git-trust request is not classified as a governance one, nor the
+        // reverse.
+        assert_eq!(parse_capability_reply_to(&already, &grant), None);
+        let list = build_list_document("did:me", "did:vtc");
+        let listing = list.respond_with(
+            "urn:uuid:l".to_string(),
+            serde_json::json!({ "capabilities": [] }),
+        );
+        assert_eq!(classify_git_trust_reply_to(&listing, &list, strict), None);
+    }
+
+    /// `trust-task-error` under another authority is another publisher's
+    /// specification, not a framework refusal, and a `#response` under another
+    /// authority is not this family's.
+    #[test]
+    fn only_the_registry_authority_is_read_as_this_family_or_an_error() {
+        let grant = build_git_trust_grant("did:a", "did:r", "did:s", "org");
+        let thread = correlation_thread(&grant).to_string();
+
+        let mut foreign_error = error_reply(&grant, GIT_TRUST_ALREADY_GRANTED_CODE, None);
+        foreign_error.type_uri = "https://elsewhere.example/spec/trust-task-error/9.9"
+            .parse()
+            .unwrap();
+        assert_eq!(classify_git_trust_reply(&foreign_error, &thread), None);
+
+        let mut foreign_ack = grant.respond_with("urn:uuid:r".to_string(), serde_json::json!({}));
+        foreign_ack.type_uri = "https://elsewhere.example/spec/git-trust/grant/0.1#response"
+            .parse()
+            .unwrap();
+        assert_eq!(classify_git_trust_reply(&foreign_ack, &thread), None);
+
+        let list = build_list_document("did:me", "did:vtc");
+        let mut foreign_rejection = error_reply(&list, "permissionDenied", None);
+        foreign_rejection.type_uri = "https://elsewhere.example/spec/trust-task-error/0.5"
+            .parse()
+            .unwrap();
+        assert_eq!(
+            parse_capability_reply(&foreign_rejection, correlation_thread(&list)),
+            None
+        );
+    }
+
+    /// A reply that does not carry what its kind reports is not read as
+    /// reporting a default ("disabled", "no capabilities").
+    #[test]
+    fn a_malformed_governance_reply_reports_nothing() {
+        let toggle = build_toggle_document("did:me", "did:vtc", "git-trust", "0.1", true);
+        let thread = correlation_thread(&toggle).to_string();
+        for payload in [
+            serde_json::json!({ "capability": "git-trust" }),
+            serde_json::json!({ "capability": "git-trust", "enabled": "yes" }),
+            serde_json::json!({ "enabled": true }),
+            serde_json::json!({ "capability": 7, "enabled": false }),
+        ] {
+            let reply = toggle.respond_with("urn:uuid:t".to_string(), payload.clone());
+            assert_eq!(parse_capability_reply(&reply, &thread), None, "{payload}");
+        }
+
+        let list = build_list_document("did:me", "did:vtc");
+        let thread = correlation_thread(&list).to_string();
+        for payload in [
+            serde_json::json!({}),
+            serde_json::json!({ "capabilities": {} }),
+            serde_json::json!({ "capabilities": [{ "manifest": { "capability": "x" } }] }),
+            serde_json::json!({ "capabilities": [{ "enabled": true }] }),
+        ] {
+            let reply = list.respond_with("urn:uuid:l".to_string(), payload.clone());
+            assert_eq!(parse_capability_reply(&reply, &thread), None, "{payload}");
+        }
+        let empty = list.respond_with(
+            "urn:uuid:l".to_string(),
+            serde_json::json!({ "capabilities": [] }),
+        );
+        assert_eq!(
+            parse_capability_reply(&empty, &thread),
+            Some(CapabilityReply::Listing(vec![]))
+        );
+    }
+
+    #[test]
+    fn a_caller_supplied_type_uri_is_an_error_not_a_panic() {
+        let err = try_build_document("did:a", "did:b", "not a type uri", serde_json::json!({}))
+            .unwrap_err();
+        assert!(
+            err.to_string().contains("not a Trust Task Type URI"),
+            "{err}"
+        );
+        let doc = try_build_document(
+            "did:a",
+            "did:b",
+            GIT_TRUST_GRANT_TYPE,
+            serde_json::json!({}),
+        )
+        .unwrap();
+        assert_eq!(doc.type_uri.slug(), "git-trust/grant");
     }
 
     // --- SPEC §8.4: retries versus fresh attempts ---------------------------
