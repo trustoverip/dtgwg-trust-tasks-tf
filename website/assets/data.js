@@ -43,7 +43,7 @@ window.TT_CATEGORIES = [
     id: "chat",
     name: "Chat",
     color: "teal",
-    blurb: "Conversational messaging between AI agents and messaging-platform bridges — author-signed, hash-linked messages forming a verifiable per-conversation chain for audit and dispute resolution (chat/*).",
+    blurb: "Conversational messaging: person-to-person direct messages (chat/direct/*), and author-signed, hash-linked agent/bridge messages for audit (chat/message).",
     icon: "message"
   },
   {

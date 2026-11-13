@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/chat/direct/_shared/0.1/direct.schema.json",
+  "title": "Chat — Direct — shared definitions for the chat/direct/* spec family",
+  "description": "Definitions shared by the person-to-person direct-message tasks (chat/direct/*). Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nTHE CONTAINER IS THE PAIRWISE RELATIONSHIP. A direct conversation is the exchange between two pairwise identifiers, the document's `issuer` and `recipient`. There is no conversation identifier: the relationship is the conversation.\n\nTHE CONTENT VOCABULARY IS THE ROOMS ONE. `kind`, `body`, `inReplyTo`, `writtenAt` and `editedAt` mean what they mean in `rooms/_shared/0.1` (`SealedRecordBody`), so one renderer serves a direct message and a room message. The payloads `$ref` the rooms `RecordKind`, `RecordWrittenAt` and `RecordEditedAt` directly; the definitions here are the ones whose container differs: a direct message is named by an author-minted `messageId` rather than a host-located record `key`, and ordered by an author-set `revision` rather than a host-assigned `version`.",
+  "$defs": {
+    "MessageId": {
+      "title": "MessageId",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$",
+      "description": "Names one message, or one reaction, across all of its revisions: 32 random bytes, base64url without padding (43 characters), the same convention as the rooms `FileManifest.fileId`. Minted by the message's author for its first revision and carried unchanged on every rewrite. It MUST be fresh and unguessable and MUST NOT be derived from the content, the counterparty, the time or any other identifier (SPEC §13.1 item 2). It is not the document `id`: a document `id` is used once per document, while a `messageId` names one message across every document that writes it. Opaque: a reader MUST NOT read meaning into it."
+    },
+    "MessageRevision": {
+      "title": "MessageRevision",
+      "type": "integer",
+      "minimum": 1,
+      "description": "The author's revision number for a `messageId`: `1` on the first document written for it, and a strictly greater integer on each rewrite. Gaps are allowed, since every revision carries the whole message. The only key a reader orders rewrites by; `editedAt` never orders. Never shown."
+    },
+    "MessageReference": {
+      "title": "MessageReference",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId"],
+      "description": "Names another message of the same direct conversation: the message a reply answers, or the message a reaction responds to. Never a message of another conversation. A reader resolves it only against messages it already holds for this conversation and MUST NOT fetch anything because of it. It MUST NOT name a message of kind `reaction`. The counterpart of the rooms `RecordReference`, with `messageId` in place of `key`.",
+      "properties": {
+        "messageId": {
+          "$ref": "#/$defs/MessageId"
+        }
+      }
+    },
+    "MessageBody": {
+      "title": "MessageBody",
+      "type": "string",
+      "maxLength": 16384,
+      "description": "The words of the message. On `kind: message`, plain text: a reader MUST NOT render it as markup (not markdown, not HTML, not a link it follows) and never follows a URL in it by itself. On `kind: reaction`, the reaction's value: normalised to NFC with every U+FE0E and U+FE0F removed before it is measured or compared, at most 64 code points after that normalisation, and one line (no U+000A, U+000B, U+000C, U+000D, U+0085, U+2028 or U+2029), as the rooms *A reaction's value* rule says. Empty means the message or reaction is withdrawn, which only a rewrite (`revision` greater than 1) may say."
+    }
+  }
+}
