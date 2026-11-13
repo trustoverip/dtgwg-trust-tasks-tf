@@ -242,7 +242,10 @@ jobs:
           --content-type "application/schema+json"
           --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
-      # 2. The rest of the specs tree.
+      # 2. The rest of the specs tree — including each version's detail.json
+      #    and each shared schema's <name>.detail.json, which the spec and
+      #    schema pages fetch on demand (#1145). Before index.html (step 5),
+      #    so a new index never names a version whose detail is not up yet.
       - name: Deploy the specs tree to S3
         if: steps.fresh.outputs.current == 'true'
         run: >-
@@ -253,11 +256,14 @@ jobs:
           --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
       # 3. tasks.generated.js's content-hashed copy, gzip-encoded at rest. It
-      #    is ~10 MB minified, at CloudFront's 10,000,000-byte ceiling for
-      #    on-the-fly compression, and over it the file went out uncompressed
-      #    (13 MB). Only the page loads it, from a <script> tag, and every
-      #    browser accepts gzip, so storing it encoded is safe; CloudFront
-      #    passes an encoded object through as-is. registry.json is
+      #    is the registry index only (~0.9 MB minified, ~130 KB gzipped) since
+      #    #1145 moved each version's detail into /specs/; when it carried every
+      #    record it was ~10 MB, at CloudFront's 10,000,000-byte ceiling for
+      #    on-the-fly compression, and went out uncompressed (13 MB). Storing
+      #    it encoded keeps it compressed whatever it grows to. Only the page
+      #    loads it, from a <script> tag, and every browser accepts gzip, so
+      #    that is safe; CloudFront passes an encoded object through as-is.
+      #    registry.json is
       #    deliberately NOT stored encoded: machine consumers fetch it, not all
       #    of them decode an encoding they did not ask for, and minified it is
       #    under the ceiling, so CloudFront compresses it per request
@@ -303,7 +309,7 @@ jobs:
       #    ceremonies/. The unhashed tasks.generated.js is removed first rather
       #    than excluded, so `--delete` takes down the fixed-name copy earlier
       #    deploys uploaded (nothing names it now, and uploading it here would
-      #    store 10 MB unencoded); likewise the bundles #1257 kept at
+      #    store it unencoded); likewise the bundles #1257 kept at
       #    assets/app.<hash>.js, which now live under assets/hashed/.
       - name: Deploy to S3
         if: steps.fresh.outputs.current == 'true'
