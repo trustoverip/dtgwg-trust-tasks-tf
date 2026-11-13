@@ -85,6 +85,135 @@ function flags(v: unknown, what: string): VariantFlags {
   return { request: v.request, response: v.response };
 }
 
+/* ── Text a bundle contributes to generated code ─────────────────────────────
+ *
+ * A generated module is a pure function of the bundle's schema *data*: every
+ * bundle string the generator writes into the module is either a JSON string
+ * literal, or text checked here first. The Type URI is written into the banner
+ * comment and the lifecycle note into `@deprecated` doc comments, so both are
+ * held to their grammars, which cannot end a comment or start a line. The
+ * schemas are compiled by json-schema-to-typescript, which reads two keywords
+ * of its own (`tsType`, `tsEnumNames`) as TypeScript source; they are not JSON
+ * Schema and no registry schema carries them, so a bundle that does is refused
+ * — the generator adds `tsType` itself, after this check. A member named
+ * `__proto__` is refused too: written into an object literal it sets the
+ * literal's prototype instead of defining the member.
+ */
+
+const SCHEME_RE = /^[A-Za-z][A-Za-z0-9+.-]*$/;
+const SLUG_SEGMENT = "[a-z][a-z0-9]*(?:-[a-z0-9]+)*";
+const SLUG = `${SLUG_SEGMENT}(?:/${SLUG_SEGMENT})*`;
+const VERSION = "(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)";
+// RFC 3986 unreserved, sub-delims except `*`, and `:`, `@`, `/`, `%`.
+const AUTHORITY_CHARS = /^[A-Za-z0-9\-._~!$&'()+,;=:@/%]+$/;
+const PATH_FORM_TAIL = new RegExp(`^/spec/${SLUG}/${VERSION}$`);
+const URN_FORM_TAIL = new RegExp(`^:spec:${SLUG_SEGMENT}(?::${SLUG_SEGMENT})*:${VERSION}$`);
+const LIFECYCLE_NOTE = new RegExp(`^(?:retired|retired; use ${SLUG}/${VERSION}|superseded by ${SLUG}/${VERSION})$`);
+
+/** Generator-specific keywords json-schema-to-typescript emits as code. */
+const GENERATOR_KEYWORDS = ["tsType", "tsEnumNames"] as const;
+/** Keywords whose value maps names to subschemas. */
+const SCHEMA_MAP_KEYWORDS = new Set(["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"]);
+/** Keywords whose value is a subschema, or an array of them. */
+const SCHEMA_KEYWORDS = new Set([
+  "items",
+  "prefixItems",
+  "additionalItems",
+  "additionalProperties",
+  "unevaluatedItems",
+  "unevaluatedProperties",
+  "contains",
+  "propertyNames",
+  "not",
+  "if",
+  "then",
+  "else",
+  "allOf",
+  "anyOf",
+  "oneOf",
+]);
+
+/**
+ * Throws unless `typeUri` is a bare SPEC §6.1 Type URI — path form
+ * `<prefix>/spec/<slug>/<M.N>` or URN form `urn:<nid>:<prefix>:spec:<seg>:…:<M.N>`
+ * — whose prefix is made of URI characters other than `*`.
+ */
+export function checkBundleTypeUri(typeUri: string): void {
+  const fail = (why: string): never => {
+    throw new Error(`bundle member typeUri ${JSON.stringify(typeUri)} is not a Type URI: ${why}`);
+  };
+  const colon = typeUri.indexOf(":");
+  const scheme = colon < 0 ? "" : typeUri.slice(0, colon);
+  if (!SCHEME_RE.test(scheme) || scheme.toLowerCase() === "http") fail("it needs a scheme other than http");
+  const urn = scheme.toLowerCase() === "urn";
+  const at = typeUri.indexOf(urn ? ":spec:" : "/spec/");
+  if (at < 0) fail(urn ? "a urn Type URI is urn:<nid>:<prefix>:spec:<slug>:<M.N>" : "it is not <prefix>/spec/<slug>/<M.N>");
+  const prefix = typeUri.slice(0, at);
+  if (!AUTHORITY_CHARS.test(prefix)) fail("its prefix holds a character outside the URI character set");
+  if (!(urn ? URN_FORM_TAIL : PATH_FORM_TAIL).test(typeUri.slice(at))) fail("its slug or MAJOR.MINOR version is malformed");
+}
+
+/** Throws unless `note` is one of the lifecycle notes the registry writes. */
+export function checkLifecycleNote(note: string): void {
+  if (!LIFECYCLE_NOTE.test(note)) {
+    throw new Error(
+      `bundle member deprecation ${JSON.stringify(note)} is not a lifecycle note ` +
+        "(`retired`, `retired; use <slug>/<M.N>` or `superseded by <slug>/<M.N>`)",
+    );
+  }
+}
+
+const escapePointerToken = (t: string): string => t.replace(/~/g, "~0").replace(/\//g, "~1");
+
+/** Throws if any object under `node` has a member named `__proto__`. */
+function refuseProtoKeys(node: unknown, pointer: string): void {
+  if (Array.isArray(node)) {
+    node.forEach((n, i) => refuseProtoKeys(n, `${pointer}/${i}`));
+  } else if (isObject(node)) {
+    for (const key of Object.keys(node)) {
+      if (key === "__proto__") throw new Error(`bundle ${pointer || "/"} has a member named __proto__`);
+      refuseProtoKeys(node[key], `${pointer}/${escapePointerToken(key)}`);
+    }
+  }
+}
+
+/** Throws if a schema object under `schema` carries a generator-specific keyword. */
+function refuseGeneratorKeywords(schema: unknown, pointer: string): void {
+  if (Array.isArray(schema)) {
+    schema.forEach((s, i) => refuseGeneratorKeywords(s, `${pointer}/${i}`));
+    return;
+  }
+  if (!isObject(schema)) return;
+  for (const keyword of GENERATOR_KEYWORDS) {
+    if (Object.prototype.hasOwnProperty.call(schema, keyword)) {
+      throw new Error(`bundle ${pointer}: \`${keyword}\` is a json-schema-to-typescript keyword, not JSON Schema; a bundle must not carry it`);
+    }
+  }
+  for (const [keyword, value] of Object.entries(schema)) {
+    const at = `${pointer}/${escapePointerToken(keyword)}`;
+    if (SCHEMA_MAP_KEYWORDS.has(keyword) && isObject(value)) {
+      for (const [name, sub] of Object.entries(value)) refuseGeneratorKeywords(sub, `${at}/${escapePointerToken(name)}`);
+    } else if (SCHEMA_KEYWORDS.has(keyword)) {
+      refuseGeneratorKeywords(value, at);
+    }
+  }
+}
+
+/**
+ * Throws unless every part of `bundle` the generator writes into a module as
+ * text — the Type URI, the lifecycle note, the schemas' member names and
+ * keywords — is held to the grammar that keeps it data. {@link parseBundle}
+ * runs it; `generateModule` runs it again for a bundle built by hand.
+ */
+export function checkGeneratedText(bundle: Pick<Bundle, "typeUri" | "deprecation"> & { schema: unknown; responseSchema: unknown }): void {
+  checkBundleTypeUri(bundle.typeUri);
+  if (bundle.deprecation !== null) checkLifecycleNote(bundle.deprecation);
+  refuseProtoKeys(bundle.schema, "/schema");
+  refuseProtoKeys(bundle.responseSchema, "/responseSchema");
+  refuseGeneratorKeywords(bundle.schema, "/schema");
+  refuseGeneratorKeywords(bundle.responseSchema, "/responseSchema");
+}
+
 /** Check a parsed bundle's shape, returning it typed. */
 export function parseBundle(value: unknown): Bundle {
   if (!isObject(value)) throw new Error("a bundle must be a JSON object");
@@ -99,6 +228,12 @@ export function parseBundle(value: unknown): Bundle {
   for (const key of ["deprecation", "extends"] as const) {
     if (value[key] !== null && typeof value[key] !== "string") throw new Error(`bundle member ${key} must be a string or null`);
   }
+  checkGeneratedText({
+    typeUri: value.typeUri as string,
+    deprecation: value.deprecation as string | null,
+    schema: value.schema,
+    responseSchema: value.responseSchema,
+  });
   const policy = value.policy;
   if (!isObject(policy) || typeof policy.bearer !== "boolean") throw new Error("bundle member policy is malformed");
   if (!isObject(value.schema)) throw new Error("bundle member schema must be an object");

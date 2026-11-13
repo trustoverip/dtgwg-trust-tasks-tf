@@ -204,6 +204,24 @@ func TestRefusesAnUnknownBundleVersion(t *testing.T) {
 	}
 }
 
+func TestRefusesADeprecationThatIsNotALifecycleNote(t *testing.T) {
+	for _, note := range []string{`retired\nfunc init() { panic(1) }`, `superseded by vault/get/0.4\r\nvar x = 1`, `use something else`} {
+		app := copyApp(t)
+		rewriteBundle(t, app, "vault/get", "0.3", func(b []byte) []byte {
+			return bytes.Replace(b, []byte(`"deprecation":null`), []byte(`"deprecation":"`+note+`"`), 1)
+		})
+		err := run(options{Lock: filepath.Join(app, "trust-tasks.lock"), Out: filepath.Join(app, "gen")})
+		if err == nil || !strings.Contains(err.Error(), "is not a lifecycle note") {
+			t.Fatalf("%q: got %v", note, err)
+		}
+	}
+	for _, note := range []string{"retired", "retired; use vault/get/0.4", "superseded by vault/get/0.4"} {
+		if !lifecycleNote.MatchString(note) {
+			t.Errorf("%q should be a lifecycle note", note)
+		}
+	}
+}
+
 func TestSkipsWithdrawnAndFrameworkVersions(t *testing.T) {
 	app := copyApp(t)
 	rewriteBundle(t, app, "vault/get", "0.3", func(b []byte) []byte {
