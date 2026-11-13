@@ -737,6 +737,54 @@ mod tests {
         TrustTask::new(id, TypeUri::canonical("acl/grant", 0, 1).unwrap(), payload)
     }
 
+    /// The item-11 digest is persisted by a [`ReplayGuard`] backed by a store,
+    /// so the bytes it hashes may never move: a guard restarted on a new
+    /// build would otherwise call every retry of a recorded document an
+    /// `idConflict`. These values were computed before the digest was
+    /// streamed into the hasher (#1092) and pin that it still hashes the same
+    /// canonical form — escapes, non-ASCII and astral text, numbers in every
+    /// spelling, nesting, members the typed reading does not model, and a
+    /// document long enough to span many SHA-256 blocks.
+    #[test]
+    fn digest_values_are_pinned() {
+        let received: Value = serde_json::from_str(
+            r#"{
+                "type": "https://trusttasks.org/spec/acl/grant/0.1",
+                "id": "urn:uuid:pinned-1",
+                "issuedAt": "2026-11-13T09:30:00.250+02:00",
+                "issuer": "did:web:alice.example",
+                "unmodelled": {"z": [3, 2.5, -0.0, 1e2, 1E21, 12345678901234567890], "a": null},
+                "payload": {
+                    "text": "quote \" backslash \\ newline \n tab \t bell \u0007 del \u007f",
+                    "unicode": "é€😀 😀",
+                    "flags": [true, false, null],
+                    "nested": {"b": {"d": 1, "c": [{}, []]}, "a": ""}
+                }
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(
+            received_document_digest(&received).as_str(),
+            "06b97bd0d6a2ac414e3a8d7dcf889a6c41b455626d97d02d38b8e98dba1f5240"
+        );
+
+        let long = doc(
+            "req-long",
+            json!({ "entries": (0..200).map(|i| json!({ "n": i, "s": "x".repeat(i % 70) })).collect::<Vec<_>>() }),
+        );
+        assert_eq!(
+            document_digest(&long).unwrap().as_str(),
+            "d69575d1012effb87f5846fc0901aaf41b2474ce0293a9e53caa9d5ae332d715"
+        );
+
+        let mut typed = doc("req-1", json!({"role": "admin", "subject": "alice"}));
+        typed.issued_at = Some(t("2026-11-13T09:30:00Z"));
+        assert_eq!(
+            document_digest(&typed).unwrap().as_str(),
+            "45ca5177bccd3b1fa8105d34bce52b2011aa538b7c021b5bf9441cbba5add48c"
+        );
+    }
+
     #[test]
     fn digest_ignores_member_order_but_not_content() {
         let a = doc("req-1", json!({"role": "admin", "subject": "alice"}));
