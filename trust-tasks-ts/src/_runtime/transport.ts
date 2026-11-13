@@ -93,6 +93,11 @@ export function resolveParties<P>(
 /**
  * Build the error response for `doc`, applying the §8.1 routing rules.
  *
+ * The response's `issuer` is the consumer that emits it (§8.1): the transport's
+ * own identity (`deriveParties().recipient`) where it has one, else the
+ * rejected document's in-band `recipient` — left out under `wrongRecipient`,
+ * where that value is by definition not this consumer.
+ *
  * Returns `undefined` when the rejection is `identityMismatch` and the
  * transport authenticated no sender. §8.1 is explicit that the consumer SHOULD
  * NOT emit a response in that case: the in-band `issuer` is by definition the
@@ -107,14 +112,24 @@ export function reject<P>(
   reason: RejectReason,
   now?: () => string,
 ): ErrorResponse | undefined {
+  const parties = handler.deriveParties();
   let recipient: string | undefined;
   if (reason.code === "identityMismatch") {
-    recipient = handler.deriveParties().issuer;
+    recipient = parties.issuer;
     if (recipient === undefined) return undefined;
   } else {
     recipient = doc.issuer;
   }
-  return rejectWithRecipient(doc, id, toErrorPayload(reason), recipient, now);
+  const response = rejectWithRecipient(doc, id, toErrorPayload(reason), recipient, now);
+  // §8.1: the error's `issuer` is the consumer that emits it — the transport's
+  // own identity where it has one. Otherwise the in-band `recipient` stands,
+  // except under `wrongRecipient`, where it is by definition not this consumer.
+  if (parties.recipient !== undefined) {
+    response.issuer = parties.recipient;
+  } else if (reason.code === "wrongRecipient") {
+    delete response.issuer;
+  }
+  return response;
 }
 
 /**
