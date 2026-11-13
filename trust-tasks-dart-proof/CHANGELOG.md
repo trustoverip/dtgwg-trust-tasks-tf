@@ -10,6 +10,32 @@ Publishing is triggered by the `trust-tasks-dart-proof-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.1 — 2026-11-13
+
+
+### Added
+
+- **dart,dart-https,dart-didcomm**: JSON priorResponse, observability hook, forward routing and per-type size bounds (#1242)
+
+* feat(dart,dart-https,dart-didcomm)!: JSON priorResponse, observability hook, forward routing and per-type size bounds
+
+
+
+### Fixed
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows (#1251)
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.11.0 (was ^0.10.0), the core released beside it.
+
 ## 0.2.0 — 2026-11-12
 
 

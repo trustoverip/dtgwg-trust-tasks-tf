@@ -526,3 +526,26 @@ jobs:
         run: |
           go vet ./...
           go run .
+      # examples/getting-started-go: the application behind GETTING-STARTED.md
+      # §3a, a signed acl/grant round trip over HTTP that asserts its own
+      # output. Same generate / drift / vet / run as above, and its snippets
+      # held to the document (the Go counterpart of
+      # trust-tasks/tests/getting_started_snippets.rs).
+      - name: "Getting started: go generate"
+        working-directory: examples/getting-started-go
+        run: go generate ./...
+      - name: "Getting started: check the committed generated tree"
+        run: |
+          if [ -n "$(git status --porcelain examples/getting-started-go)" ]; then
+            echo "::error::examples/getting-started-go/internal/tasks is stale. Run \`go generate ./...\` there and commit the result."
+            git status --porcelain examples/getting-started-go
+            git diff examples/getting-started-go | head -100
+            exit 1
+          fi
+      - name: "Getting started: vet and run"
+        working-directory: examples/getting-started-go
+        run: |
+          go vet ./...
+          go run .
+      - name: "Getting started: GETTING-STARTED.md §3a matches the example"
+        run: node scripts/check-getting-started-snippets.mjs examples/getting-started-go/main.go

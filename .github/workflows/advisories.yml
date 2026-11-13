@@ -49,6 +49,7 @@ jobs:
           # Not published: the repository's build tooling and the example app.
           - { dir: ., published: false }
           - { dir: examples/consumer-app-ts, published: false }
+          - { dir: examples/getting-started-ts, published: false }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

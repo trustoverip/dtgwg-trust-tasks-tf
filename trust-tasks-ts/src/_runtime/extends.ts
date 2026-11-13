@@ -249,12 +249,22 @@ export function readForSpec<P>(
 
   const got = tryParseTypeUri(doc.type);
   const want = tryParseTypeUri(spec.typeUri);
-  if (got === null || want === null || !sameSpecification(got, want) || got.variant !== want.variant) {
+  // `#request` and no fragment are one variant (§4.4.1), as typeRefusalFor and
+  // the other three runtimes read them.
+  if (
+    got === null ||
+    want === null ||
+    !sameSpecification(got, want) ||
+    (got.variant ?? "request") !== (want.variant ?? "request")
+  ) {
     return refused("unsupportedType", `unsupported Trust Task type ${JSON.stringify(doc.type)}`);
   }
   const gotVersion = versionOf(got);
   const wantVersion = versionOf(want);
-  if (gotVersion === wantVersion || !extendsChain(doc.type, index).includes(wantVersion)) {
+  if (gotVersion === wantVersion) {
+    return { kind: "accepted", doc: doc as TrustTaskDocument<P>, received: doc, extended: false };
+  }
+  if (!extendsChain(doc.type, index).includes(wantVersion)) {
     return refused(
       "unsupportedVersion",
       `version ${gotVersion} of ${got.slug} is not supported; this consumer implements ${wantVersion}`,

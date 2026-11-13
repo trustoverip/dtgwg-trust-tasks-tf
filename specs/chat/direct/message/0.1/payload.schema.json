@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/chat/direct/message/0.1",
+  "title": "Chat — Direct message — payload",
+  "description": "One person writes, rewrites or withdraws a message, or a reaction, in their direct conversation with another. A message is named by its author-minted `messageId` and carries its whole content on every revision; the author edits it by sending the same `messageId` with a greater `revision` and an `editedAt`, withdraws it by sending a rewrite with an empty `body`, and reacts to another message with a message of `kind: reaction` whose `body` is the reaction's value. The content vocabulary is the rooms one (`rooms/_shared/0.1`, `SealedRecordBody`). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["messageId", "revision", "kind", "body", "writtenAt"],
+  "properties": {
+    "messageId": {
+      "$ref": "../../_shared/0.1/direct.schema.json#/$defs/MessageId"
+    },
+    "revision": {
+      "$ref": "../../_shared/0.1/direct.schema.json#/$defs/MessageRevision"
+    },
+    "kind": {
+      "$ref": "../../../../rooms/_shared/0.1/room.schema.json#/$defs/RecordKind",
+      "description": "What a reader shows the message as: `message`, a turn in the conversation, or `reaction`, a short response to another message. REQUIRED here, where rooms makes it optional only for readers that predate it. An open set: a reader MUST present a kind it does not know as rooms says (as a note, its `body` inert) and MUST NOT refuse a document for its kind. A rewrite MUST keep it."
+    },
+    "body": {
+      "$ref": "../../_shared/0.1/direct.schema.json#/$defs/MessageBody"
+    },
+    "inReplyTo": {
+      "$ref": "../../_shared/0.1/direct.schema.json#/$defs/MessageReference",
+      "description": "OPTIONAL on a `message`: the message this one answers. REQUIRED on a `reaction`: the message it responds to, which a rewrite of the reaction MUST keep."
+    },
+    "writtenAt": {
+      "$ref": "../../../../rooms/_shared/0.1/room.schema.json#/$defs/RecordWrittenAt",
+      "description": "The instant the author wrote the message, RFC 3339 in UTC (`Z`). REQUIRED. Set on revision 1 and carried unchanged on every rewrite; what marks an edit is `editedAt`. The author's claim: a reader orders the conversation by it and treats an implausible or backdated one as the specification's *Ordering in the conversation* says."
+    },
+    "editedAt": {
+      "$ref": "../../../../rooms/_shared/0.1/room.schema.json#/$defs/RecordEditedAt",
+      "description": "The instant the author made the edit that produced this revision, RFC 3339 in UTC (`Z`). Absent on revision 1 and REQUIRED on every later revision, so a reader seeing a message for the first time can tell whether it was edited. Display only: it never orders rewrites."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "oneOf": [
+    {
+      "description": "The first revision of a message or reaction: `revision` 1, a non-empty `body`, no `editedAt`, and a reaction names its target in `inReplyTo`.",
+      "properties": {
+        "revision": { "type": "integer", "const": 1 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 16384 }
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["editedAt"] },
+          {
+            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "required": ["kind"],
+            "not": { "required": ["inReplyTo"] }
+          }
+        ]
+      }
+    },
+    {
+      "description": "A rewrite (an edit, a withdrawal, a changed or withdrawn reaction): `revision` greater than 1, `editedAt` present, and a reaction names its target in `inReplyTo`.",
+      "properties": {
+        "revision": { "type": "integer", "minimum": 2 }
+      },
+      "required": ["editedAt"],
+      "not": {
+        "anyOf": [
+          {
+            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "required": ["kind"],
+            "not": { "required": ["inReplyTo"] }
+          }
+        ]
+      }
+    }
+  ]
+}

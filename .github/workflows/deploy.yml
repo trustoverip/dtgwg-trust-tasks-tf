@@ -6,15 +6,12 @@ on:
   pull_request:
     branches:
       - main
-  # SPEC.md is generated from the canonical framework repository, which this
-  # repository does not see change. The schedule redeploys so trusttasks.org
-  # picks up canonical changes without waiting for a push here; dispatch lets
-  # the canonical repository (or a maintainer) trigger it at once.
-  schedule:
-    - cron: '17 3 * * *'
+  # SPEC.md is generated from the canonical framework repository at the commit
+  # scripts/framework-spec-source.json pins, and the site serves the committed
+  # copy. A canonical change reaches the site through a pull request that
+  # moves the pin (framework-spec-bump.yml opens it), and so through a push
+  # here, not through a scheduled rebuild.
   workflow_dispatch:
-  repository_dispatch:
-    types: [framework-spec-updated]
 
 # A newer push to the same PR supersedes the run in flight, so cancel it rather
 # than let it hold a runner. Keyed on the commit for every other event, so a run
@@ -47,28 +44,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # A pull request builds from the committed SPEC.md, so its result depends
-      # only on the PR (#1138): regenerating from canonical main here failed
-      # every open PR the day canonical renamed an anchor, and the same commit
-      # could pass one day and fail the next. The check regenerates from the
-      # canonical commit SPEC.md's own banner names, which never moves, and
-      # fails if the committed copy is not what that commit generates (a hand
-      # edit, or a changed legacy-anchors file left unregenerated).
+      # Every run builds from the committed SPEC.md, so what deploys is what
+      # was reviewed, and a PR's result depends only on the PR (#1138). The
+      # check regenerates from the canonical commit
+      # scripts/framework-spec-source.json pins — fetched by full SHA, and
+      # confirmed to be that commit — and fails if the committed copy is not
+      # what that commit generates (a hand edit, a pin moved without
+      # regenerating, or a changed legacy-anchors file left unregenerated).
       - name: Check the committed SPEC.md
-        if: github.event_name == 'pull_request'
         run: npm run check-framework-spec
-
-      # Everything that deploys — a push to main, the nightly run, a dispatch
-      # from the canonical repository — regenerates from canonical main before
-      # the build, so the build validates every `/SPEC.md#…` link against the
-      # text that will actually be served.
-      - name: Generate SPEC.md from the canonical framework specification
-        if: github.event_name != 'pull_request'
-        run: |
-          npm run generate-framework-spec
-          if ! git diff --quiet -- SPEC.md; then
-            echo "::warning file=SPEC.md::The committed SPEC.md is behind canonical main. The site serves the regenerated copy; run 'npm run generate-framework-spec' and commit it to refresh the repository copy."
-          fi
 
       - name: Build registry (validate + generate)
         # Strict Security & Privacy: fail on a spec that carries neither the
@@ -258,7 +242,10 @@ jobs:
           --content-type "application/schema+json"
           --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
-      # 2. The rest of the specs tree.
+      # 2. The rest of the specs tree — including each version's detail.json
+      #    and each shared schema's <name>.detail.json, which the spec and
+      #    schema pages fetch on demand (#1145). Before index.html (step 5),
+      #    so a new index never names a version whose detail is not up yet.
       - name: Deploy the specs tree to S3
         if: steps.fresh.outputs.current == 'true'
         run: >-
@@ -269,11 +256,14 @@ jobs:
           --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
       # 3. tasks.generated.js's content-hashed copy, gzip-encoded at rest. It
-      #    is ~10 MB minified, at CloudFront's 10,000,000-byte ceiling for
-      #    on-the-fly compression, and over it the file went out uncompressed
-      #    (13 MB). Only the page loads it, from a <script> tag, and every
-      #    browser accepts gzip, so storing it encoded is safe; CloudFront
-      #    passes an encoded object through as-is. registry.json is
+      #    is the registry index only (~0.9 MB minified, ~130 KB gzipped) since
+      #    #1145 moved each version's detail into /specs/; when it carried every
+      #    record it was ~10 MB, at CloudFront's 10,000,000-byte ceiling for
+      #    on-the-fly compression, and went out uncompressed (13 MB). Storing
+      #    it encoded keeps it compressed whatever it grows to. Only the page
+      #    loads it, from a <script> tag, and every browser accepts gzip, so
+      #    that is safe; CloudFront passes an encoded object through as-is.
+      #    registry.json is
       #    deliberately NOT stored encoded: machine consumers fetch it, not all
       #    of them decode an encoding they did not ask for, and minified it is
       #    under the ceiling, so CloudFront compresses it per request
@@ -319,7 +309,7 @@ jobs:
       #    ceremonies/. The unhashed tasks.generated.js is removed first rather
       #    than excluded, so `--delete` takes down the fixed-name copy earlier
       #    deploys uploaded (nothing names it now, and uploading it here would
-      #    store 10 MB unencoded); likewise the bundles #1257 kept at
+      #    store it unencoded); likewise the bundles #1257 kept at
       #    assets/app.<hash>.js, which now live under assets/hashed/.
       - name: Deploy to S3
         if: steps.fresh.outputs.current == 'true'
@@ -356,37 +346,3 @@ jobs:
         env:
           CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*"
-
-  # Nobody watches a scheduled run: when the nightly rebuild (or a dispatch
-  # from the canonical repository) fails, the site silently keeps serving the
-  # previous build, and only the workflow's last editor gets GitHub's email
-  # (#1138). Open an issue instead, or comment on the one already open, so the
-  # failure is visible to every maintainer. A later green run does not close
-  # it; whoever fixes the cause does.
-  report-failure:
-    needs: [build, deploy]
-    if: failure() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions:
-      issues: write
-    steps:
-      - name: Open or update the failure issue
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          EVENT: ${{ github.event_name }}
-        run: |
-          set -euo pipefail
-          title="Scheduled website deploy is failing"
-          body="The \`$EVENT\` run of the website deploy failed: $RUN_URL
-
-          trusttasks.org keeps serving the previous build until a run succeeds. The usual cause is a change in the canonical framework repository (an anchor that a \`/SPEC.md#…\` link here names, or a heading the legacy-anchors file maps to); see CLAUDE.md, \"SPEC.md is generated\"."
-          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
-            --jq "[.[] | select(.title == \"$title\")][0].number // empty")
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body "Failed again: $RUN_URL"
-          else
-            gh issue create --title "$title" --body "$body"
-          fi

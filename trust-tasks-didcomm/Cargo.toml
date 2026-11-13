@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm"
-version = "0.38.0"
+version = "0.39.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -14,9 +14,9 @@ publish = true
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.38", default-features = false }
-affinidi-messaging-didcomm = "0.15.9"
-base64 = "0.22"
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.39", default-features = false }
+affinidi-messaging-didcomm = "0.15.14"
+base64 = "0.23"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -30,17 +30,16 @@ async-trait = "0.1"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 uuid = { version = "1", features = ["v4"] }
-# Heavy: pulls in the full mediator + SDK + TDK. The mediator
-# integration test that depends on these is gated `#[ignore]` so a
-# default `cargo test` skips it (and the compile cost falls only on
-# developers who opt in with `cargo test -- --ignored`).
-affinidi-messaging-test-mediator = "0.16"
-affinidi-messaging-sdk = "0.32"
-affinidi-tdk = "0.22"
-affinidi-tdk-common = "0.7"
-affinidi-messaging-didcomm = "0.15.9"
-affinidi-secrets-resolver = "0.5"
+# The mediator integration test (`tests/mediator_e2e.rs`) and its dev
+# dependencies (affinidi-messaging-test-mediator, -sdk, affinidi-tdk) are out
+# of the tree while the messaging stack moves to affinidi-crypto 0.3: the
+# published test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto
+# 0.2 and pass its key types to affinidi-messaging-didcomm and
+# affinidi-secrets-resolver, which now build on 0.3. They return with a
+# test-mediator release on affinidi-crypto 0.3.
+affinidi-messaging-didcomm = "0.15.14"
+affinidi-secrets-resolver = "0.5.18"
 # For the Go-interop test: construct affinidi key-agreement types from raw
 # X25519 bytes and call the low-level jwe::decrypt_bound on a Go-produced JWE.
-affinidi-crypto = "0.2"
+affinidi-crypto = "0.3"
 serde_json = "1"

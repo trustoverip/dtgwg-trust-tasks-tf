@@ -24,7 +24,7 @@ The framework that governs Trust Task documents — versioning, namespace, confo
 
 ## Submitting a new Trust Task specification
 
-The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.1` ↔ `specs/acl/grant/0.1/`). Each folder contains two files:
+The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.3` ↔ `specs/acl/grant/0.3/`). Each folder contains two files:
 
 - `spec.md` — YAML front matter (the spec's normative declarations) followed by the human-readable specification.
 - `payload.schema.json` — a JSON Schema 2020-12 document describing the `payload` member of conforming Trust Task documents.
@@ -61,11 +61,12 @@ CI runs the build on every pull request (validation only) and on every push to `
 
 Contributions are governed by the ToIP Foundation's contribution process:
 
+- Participation is governed by the LF Decentralized Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct), which the ToIP community follows.
 - Every commit **MUST** carry a DCO `Signed-off-by` trailer. Use `git commit -s`.
 - By opening a pull request, contributors agree to the Open Web Foundation **Contributor License Agreement** in [`CONTRIBUTING.md`](CONTRIBUTING.md). That agreement grants the patent and copyright rights necessary to incorporate contributions into the published specification.
 - Source code in this repository — the client libraries, `scripts/`, `website/` and build tooling — is contributed under the license in [`SOURCE_CODE.md`](SOURCE_CODE.md) (Apache-2.0).
 
-The framework specification is maintained in [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec); `SPEC.md` here is generated from it. For changes to the build pipeline or the registry website the contributor guide is the present file plus [`CONTRIBUTING.md`](CONTRIBUTING.md). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
+The framework specification is maintained in [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec); `SPEC.md` here is generated from it. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to contribute. For changes to the build pipeline, the registry website or the client libraries, the developer guide — with a map of the repository — is [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and the per-library notes are in [`docs/packages/`](docs/packages/). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
 
 ## Licensing
 

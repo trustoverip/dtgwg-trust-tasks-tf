@@ -79,7 +79,7 @@ Each generated library exports a uniform surface:
 | `spec`, `responseSpec` | `SpecPolicy` values carrying the §7.2 policy flags and the schema above |
 
 Paths are snake_cased for Dart's `file_names` lint, so the slug `acl/change-role`
-becomes `specs/acl/change_role/v0_2/payload.dart`.
+becomes `specs/acl/change_role/v0_3/payload.dart`.
 
 ## Consuming a document
 

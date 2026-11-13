@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:affinidi_tsp/affinidi_tsp.dart';
@@ -242,8 +243,25 @@ final class TspConsumer {
     switch (read) {
       case VersionRefused(:final document, :final reason):
         return refused(document, reason);
-      case VersionAccepted(doc: final accepted):
+      case VersionAccepted(doc: final accepted, :final forward):
         doc = accepted;
+        // SPEC §12.4: above its specification's declared `maxDocumentBytes` a
+        // document SHOULD be refused `malformedRequest`; within it, it MUST
+        // NOT be refused for its size. Checked once the type is known and the
+        // sender authenticated, before the record is written. A document read
+        // forward along `extends` is not held to the implemented version's
+        // bound: its own (later) version may declare a larger one. A
+        // specification that declares no bound sets none here.
+        final bound = spec.maxDocumentBytes;
+        if (!forward && bound != null && _documentSize(json) > bound) {
+          return refused(
+            envelopeDoc,
+            const RejectReason(
+              code: StandardCode.malformedRequest,
+              message: _documentTooLargeWireMessage,
+            ),
+          );
+        }
     }
 
     final verifier = proofVerifier;
@@ -369,6 +387,24 @@ final class TspConsumer {
     return packTrustTask(reply, sender: recipient, receiver: receiver);
   }
 }
+
+/// The size, in bytes, of [document]'s JSON text — the measure SPEC §12.4's
+/// `maxDocumentBytes` bounds, as the consumer holds a document to it.
+///
+/// The envelope layer hands the consumer the document already decoded, so the
+/// bytes as received are not at hand. The compact encoding stands in for them,
+/// as it does in the Rust bindings: it is what a conforming producer emits, and
+/// it exceeds the received text only by a reformatted number (`1e2` read back
+/// as `100.0`); whitespace and escapes never count for more than they did on
+/// the wire.
+int _documentSize(Map<String, dynamic> document) =>
+    utf8.encode(jsonEncode(document)).length;
+
+/// What a document larger than its specification's bound is refused with —
+/// the text `trust_tasks_https` sends. Names no number: the bound is in the
+/// registry for anyone entitled to it.
+const String _documentTooLargeWireMessage =
+    'document exceeds the size bound for its type (SPEC §12.4)';
 
 /// Verifies the document as it arrived rather than as the typed decode would
 /// re-encode it, which drops members the generated type does not model and so

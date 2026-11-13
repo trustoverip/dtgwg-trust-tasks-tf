@@ -3,7 +3,7 @@ name = "trust-tasks-cli"
 # A new crate's first version. From here on release-plz assigns it, as it does
 # for every other crate (RELEASING.md). The first crates.io publish is manual:
 # trusted publishing cannot create a crate that does not exist yet.
-version = "0.2.0"
+version = "0.2.1"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -29,7 +29,7 @@ anyhow = "1"
 # CLI writes is one the generator accepts) and, with `publish`, the bundle
 # builder behind `trust-tasks registry build` — the one the official registry
 # is built with.
-trust-tasks-build = { path = "../trust-tasks-build", version = "0.1", features = ["publish"] }
+trust-tasks-build = { path = "../trust-tasks-build", version = "0.2", features = ["publish"] }
 clap = { version = "4", features = ["derive", "env"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

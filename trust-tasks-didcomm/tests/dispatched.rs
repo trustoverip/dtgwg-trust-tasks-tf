@@ -180,3 +180,62 @@ async fn an_unknown_type_is_unsupported_type_and_the_error_seals() {
         unpack_trust_task::<ErrorPayload>(&reply, &p.alice_agent, Some(&p.bob_did)).unwrap();
     assert_eq!(reply.type_uri.to_string(), ErrorPayload::TYPE_URI);
 }
+
+/// A payload whose specification declares a 512-byte document bound.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+struct BoundedPayload {
+    subject: String,
+    note: String,
+}
+
+impl Payload for BoundedPayload {
+    const TYPE_URI: &'static str = "https://example.com/spec/bounded/0.1";
+    const MAX_DOCUMENT_BYTES: Option<usize> = Some(512);
+}
+
+/// SPEC §12.4: a document larger than its specification's declared
+/// `maxDocumentBytes` is refused `malformedRequest` — to the
+/// transport-authenticated sender, before the record is written and without
+/// running the handler (#1121).
+#[tokio::test]
+async fn a_document_over_its_declared_bound_is_refused_to_the_sender() {
+    let p = setup();
+    let count = Arc::new(AtomicUsize::new(0));
+    let guard = Arc::new(InMemoryReplayGuard::default());
+    let inbound = DidcommConsumer::with_replay_guard(guard.clone());
+    let runs = count.clone();
+    let dispatcher: AsyncDispatcher<ResolvedParties, Answer> = AsyncDispatcher::new()
+        .on_async::<BoundedPayload, _, _>(move |doc, _parties| {
+            let runs = runs.clone();
+            async move {
+                runs.fetch_add(1, Ordering::SeqCst);
+                Ok(doc.respond_with("urn:uuid:resp-1", json!({})))
+            }
+        });
+
+    for (note, over) in [("x".repeat(16), false), ("x".repeat(1024), true)] {
+        let id = format!("urn:uuid:b-{over}");
+        let bounded = doc(
+            &p,
+            &id,
+            BoundedPayload::TYPE_URI,
+            json!({ "subject": "did:example:carol", "note": note }),
+        );
+        let wire = pack_trust_task(&bounded, &p.alice_agent, &p.alice_did, &p.bob_did).unwrap();
+        let outcome = deliver(&inbound, &p, &wire, &dispatcher).await;
+        if over {
+            let ConsumeOutcome::Rejected(error) = outcome else {
+                panic!("expected a rejection, got {outcome:?}");
+            };
+            assert_eq!(
+                error.payload.code,
+                TrustTaskCode::Standard(StandardCode::MalformedRequest)
+            );
+            assert_eq!(error.recipient.as_deref(), Some(p.alice_did.as_str()));
+        } else {
+            assert!(matches!(outcome, ConsumeOutcome::Handled(_)), "{outcome:?}");
+        }
+    }
+    assert_eq!(count.load(Ordering::SeqCst), 1, "only the in-bound one ran");
+    assert_eq!(guard.len(), 1, "the refused document burned no id");
+}

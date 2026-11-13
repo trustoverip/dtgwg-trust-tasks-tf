@@ -3,6 +3,20 @@
 All notable changes to `trust-tasks-go/proof` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.2.1 — 2026-11-13
+
+
+### Fixed
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows (#1251)
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
 ## 0.2.0 — 2026-11-12
 
 

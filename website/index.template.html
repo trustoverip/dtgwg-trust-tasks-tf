@@ -51,7 +51,9 @@
   <script defer src="/assets/__APP_BUNDLE__"></script>
 </head>
 <body data-bg="paper" data-density="default" data-type="editorial">
-  <a class="tt-skip-link" href="#main" onclick="var m=document.getElementById('main');if(m){event.preventDefault();m.focus();m.scrollIntoView();}">Skip to content</a>
+  <!-- No inline handler: the Content-Security-Policy does not allow inline
+       script. app.jsx moves focus to #main on a click. -->
+  <a class="tt-skip-link" href="#main">Skip to content</a>
   <div id="root">
     <!-- Replaced when the app renders. Left in place if a script fails to load
          or compile, so the page says so instead of staying blank (#1153). -->

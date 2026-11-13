@@ -41,7 +41,7 @@
  * adopt this rule too — the Rust one by porting it, since it cannot import
  * JavaScript. Both are owned elsewhere and are deliberately left untouched here.
  *
- * Note this is *not* the `expectedPolicy()` situation that CLAUDE.md warns
+ * Note this is *not* the `expectedPolicy()` situation that docs/DEVELOPMENT.md warns
  * against DRY-ing up. That duplication is load-bearing: it makes
  * `check-bindings-conformance.mjs` an independent derivation of the §7.2 policy
  * rather than a restatement of the generator's. Discovery carries no such

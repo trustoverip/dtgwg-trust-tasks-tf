@@ -44,7 +44,8 @@ use affinidi_data_integrity::{
     DataIntegrityError, DataIntegrityProof, DidKeyResolver, SignatureFailure, VerifyOptions,
 };
 use async_trait::async_trait;
-use serde::Serialize;
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 use trust_tasks_rs::{ProofVerifier, TrustTask, VerificationError};
 
@@ -158,15 +159,15 @@ impl Verifier {
     /// verifies over the document minus its `proof`.
     pub async fn verify_raw(&self, doc: &Value) -> Result<(), VerificationError> {
         // ─── 1. Extract the proof.
-        let proof_value = doc.get("proof").cloned().ok_or_else(|| {
+        let proof_value = doc.get("proof").ok_or_else(|| {
             VerificationError::MalformedProof("document carries no proof member".to_string())
         })?;
         // `expires` is read from the proof as received: the upstream proof
         // type has no member for it and drops it when parsing. A malformed or
         // passed one is refused as such; any other is refused as unsupported,
         // because the signature checked below would not cover it.
-        check_expires(&proof_value, (self.clock)())?;
-        check_created(&proof_value)?;
+        check_expires(proof_value, (self.clock)())?;
+        check_created(proof_value)?;
         if proof_value.get("expires").is_some() {
             return Err(VerificationError::MalformedProof(
                 UNSUPPORTED_EXPIRES.to_string(),
@@ -183,14 +184,13 @@ impl Verifier {
                 UNSUPPORTED_CONTEXT.to_string(),
             ));
         }
-        let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
+        let parsed_proof = DataIntegrityProof::deserialize(proof_value)
             .map_err(|e| VerificationError::MalformedProof(format!("parse proof: {e}")))?;
 
-        // ─── 2. The document minus its proof, exactly as given.
-        let mut doc_value = doc.clone();
-        if let Some(obj) = doc_value.as_object_mut() {
-            obj.remove("proof");
-        }
+        // ─── 2. The document minus its proof, exactly as given — a view that
+        //        serialises every member but `proof`, so the document is not
+        //        copied just to drop one member.
+        let doc_value = WithoutProof(doc);
 
         // ─── 3. Bind the proof to the in-band issuer (SPEC §4.7 / §4.8 /
         //        §7.2 item 7). A valid signature proves only that *some* key
@@ -200,7 +200,7 @@ impl Verifier {
         //        to `issuer` by exact string equality — no normalization, per
         //        §4.8.
         let vm = &parsed_proof.verification_method;
-        match doc_value.get("issuer").and_then(|v| v.as_str()) {
+        match doc.get("issuer").and_then(|v| v.as_str()) {
             None => {
                 return Err(VerificationError::IssuerMismatch(
                     "document carries a proof but no in-band issuer to bind it to".to_string(),
@@ -222,7 +222,7 @@ impl Verifier {
         check_proof_bounds(&parsed_proof)?;
 
         // ─── 3b. The proof's `@context`, if any, must equal the document's.
-        check_proof_context(&doc_value, doc.get("proof").unwrap_or(&Value::Null))?;
+        check_proof_context(doc, proof_value)?;
 
         // ─── 4. The key must be one the issuer authorised for the purpose
         //        the proof declares: `keyAgreement` and unknown purposes are
@@ -236,6 +236,26 @@ impl Verifier {
             .await
             .map_err(map_error)?;
         Ok(())
+    }
+}
+
+/// A received document seen without its `proof` member — what the signature
+/// covers (Data Integrity §4.2: the unsecured document). Serialises the
+/// members of the document it borrows, `proof` skipped, in their order; a
+/// document that is not an object serialises as it is.
+struct WithoutProof<'a>(&'a Value);
+
+impl Serialize for WithoutProof<'_> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let Some(members) = self.0.as_object() else {
+            return self.0.serialize(serializer);
+        };
+        let len = members.len() - usize::from(members.contains_key("proof"));
+        let mut map = serializer.serialize_map(Some(len))?;
+        for (name, value) in members.iter().filter(|(name, _)| *name != "proof") {
+            map.serialize_entry(name, value)?;
+        }
+        map.end()
     }
 }
 

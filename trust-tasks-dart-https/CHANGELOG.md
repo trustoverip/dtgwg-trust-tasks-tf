@@ -10,6 +10,31 @@ Publishing is triggered by the `trust-tasks-dart-https-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.0 — 2026-11-13
+
+
+### Added
+
+- **dart,dart-https,dart-didcomm**: JSON priorResponse, observability hook, forward routing and per-type size bounds (#1242)
+
+* feat(dart,dart-https,dart-didcomm)!: JSON priorResponse, observability hook, forward routing and per-type size bounds
+
+
+
+### Fixed
+
+- **rs,https,dart-https**: Run the attribution gate before the route lookup (#1246)
+
+Both HTTPS servers looked the route up before the attribution gate, so a sender with neither a bearer token nor a proof could tell a registered type (proofRequired) from an unregistered one (unsupportedType).
+
+  The Rust server now runs on consume_dispatched_answer, so the reorder is made there: the checks that read only the envelope (expiry, recipient, freshness, identity) and the attribution gate move out of consume_core into envelope_checks, which consume_inbound and consume_dispatched_answer both run ahead of their item-3 type check. The route lookup still precedes the DID-method screen and proof verification, so an unregistered type never reaches a resolver.
+
+  The Dart server runs the same checks before the route lookup and before decoding the payload.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.11.0 (was ^0.10.0), the core released beside it.
+
 ## 0.2.0 — 2026-11-12
 
 

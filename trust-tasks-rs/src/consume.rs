@@ -76,6 +76,7 @@
 //! what the parse step had established, so the residue is now a policy the
 //! caller chooses: see [`PayloadPolicy`].
 
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::future::Future;
 use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
@@ -150,7 +151,9 @@ pub struct ConsumeChecks<'a> {
     /// specification that declares none, than
     /// [`default_max_document_bytes`](Self::default_max_document_bytes) — is
     /// refused `malformedRequest` as soon as the type is known, before anything
-    /// else reads it. See [`Self::with_received_bytes`].
+    /// else reads it. A document read forward along `extends` (SPEC §5.2) is
+    /// not held to the implemented version's bound, since its own version may
+    /// declare a larger one. See [`Self::with_received_bytes`].
     pub received_bytes: Option<usize>,
     /// The bound [`received_bytes`](Self::received_bytes) is held to for a
     /// specification that declares no `maxDocumentBytes`: the binding's own
@@ -594,13 +597,18 @@ where
     // Type URI, or a later version whose declared extension chain reaches it
     // (SPEC §5.2, as `extension::read_as` reads one); refuse anything else
     // before the record is written, as the dispatched path does.
-    if let Err(reason) = crate::extension::reading_of::<P>(&doc.type_uri) {
-        return route_rejection(transport, &doc, reason, error_id_factory).into();
-    }
+    let reading = match crate::extension::reading_of::<P>(&doc.type_uri) {
+        Ok(reading) => reading,
+        Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory).into(),
+    };
     // SPEC §12.4 — the size bound the specification declares, now that the
-    // type is known.
-    if let Some(reason) = checks.size_rejection(P::MAX_DOCUMENT_BYTES) {
-        return route_rejection(transport, &doc, reason, error_id_factory).into();
+    // type is known. Only for a document of `P`'s own version: a later version
+    // read forward along `extends` may declare a larger bound of its own, and
+    // a document within that MUST NOT be refused for its size.
+    if matches!(reading, crate::extension::Reading::Same) {
+        if let Some(reason) = checks.size_rejection(P::MAX_DOCUMENT_BYTES) {
+            return route_rejection(transport, &doc, reason, error_id_factory).into();
+        }
     }
     consume_core(
         transport,
@@ -614,6 +622,7 @@ where
         SpecFacts {
             policy: SpecPolicy::of::<P>(),
             schema: P::PAYLOAD_SCHEMA,
+            payload_value: |payload| serde_json::to_value(payload).map(Cow::Owned),
         },
         is_received_form_of::<P>,
         handler,
@@ -649,8 +658,10 @@ where
 ///    pruned to what the implemented version knows, as
 ///    [`AsyncDispatcher::dispatch`] does.
 /// 2. **The size bound** — with [`ConsumeChecks::received_bytes`], a document
-///    larger than the registered `P`'s `MAX_DOCUMENT_BYTES` (or the default
-///    bound, for one that declares none) is `malformedRequest`.
+///    of the registered `P`'s own version larger than its `MAX_DOCUMENT_BYTES`
+///    (or the default bound, for one that declares none) is
+///    `malformedRequest`. A document routed forward along `extends` is not
+///    held to `P`'s bound: its own version may declare a larger one.
 /// 3. **The payload deserializes** into the registered `P` — the part of item
 ///    2 the typed path performs by parsing — or the document is
 ///    `malformedRequest`.
@@ -803,11 +814,17 @@ where
         Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
     };
     let facts = dispatcher.facts(&target);
+    let target = target.as_str();
 
     // SPEC §12.4 — the size bound the implemented specification declares, the
     // moment the type is known and before anything else reads the document.
-    if let Some(reason) = checks.size_rejection(facts.max_document_bytes) {
-        return route_rejection(transport, &doc, reason, error_id_factory);
+    // A document read forward along `extends` is not held to it: its own
+    // (later) version may declare a larger bound, and a document within that
+    // MUST NOT be refused for its size.
+    if !forwarded {
+        if let Some(reason) = checks.size_rejection(facts.max_document_bytes) {
+            return route_rejection(transport, &doc, reason, error_id_factory);
+        }
     }
 
     let prune = |payload: &mut Value| -> Result<(), RejectReason> {
@@ -850,27 +867,20 @@ where
         SpecFacts {
             policy: facts.policy,
             schema: facts.schema,
+            // Already a `Value`: validated where it is, not copied.
+            payload_value: |payload| Ok(Cow::Borrowed(payload)),
         },
         // The proof was made over the document as received; the document being
         // consumed is that one with its payload pruned along a forward route.
         |received: &Value, doc: &TrustTask<Value>| {
-            let Ok(mut parsed) = serde_json::from_value::<TrustTask<Value>>(received.clone())
-            else {
-                return false;
-            };
-            if prune(&mut parsed.payload).is_err() {
-                return false;
-            }
-            match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
-                (Ok(a), Ok(b)) => a == b,
-                _ => false,
-            }
+            is_received_routed_form(received, doc, forwarded, &prune)
         },
         |doc: TrustTask<Value>, parties: ResolvedParties| {
             let origin = RequestOrigin::of(&doc);
             let ctx = context(parties);
             async move {
-                match dispatcher.dispatch(doc, ctx).await {
+                // Routed, pruned and checked above: dispatched as it is.
+                match dispatcher.dispatch_routed(target, doc, ctx).await {
                     Ok(answer) => answer,
                     // Unreachable in practice: routing, the payload parse and
                     // the policy were all checked above, against the same
@@ -958,10 +968,15 @@ where
 /// What the per-specification checks of the pipeline read off the type being
 /// consumed: from `P` on the typed path, from the dispatcher's registration on
 /// the dispatched one. One struct, so the two paths run one body.
-struct SpecFacts {
+struct SpecFacts<P> {
     policy: SpecPolicy,
     schema: Option<&'static str>,
+    /// The payload as the JSON the validator reads: serialised from `P` on
+    /// the typed path, borrowed as it is on the dispatched one.
+    payload_value: PayloadValueFn<P>,
 }
+
+type PayloadValueFn<P> = for<'p> fn(&'p P) -> Result<Cow<'p, Value>, serde_json::Error>;
 
 /// The body of [`consume_inbound`] and [`consume_dispatched`]. Everything that
 /// differs between a typed and a routed document is in `spec` and
@@ -977,7 +992,7 @@ async fn consume_core<P, S, T, V, W, F, Fut>(
     parties: ResolvedParties,
     now: DateTime<Utc>,
     error_id_factory: impl FnOnce() -> String,
-    spec: SpecFacts,
+    spec: SpecFacts<P>,
     is_received_form: impl FnOnce(&Value, &TrustTask<P>) -> bool,
     handler: F,
 ) -> AnswerOutcome<S>
@@ -1009,7 +1024,7 @@ where
     // carried most of this; see `PayloadPolicy` for what is left.
     if let PayloadPolicy::Validate(validator) = payload_policy {
         if let Some(schema) = spec.schema {
-            match serde_json::to_value(&doc.payload) {
+            match (spec.payload_value)(&doc.payload) {
                 Ok(value) => {
                     if let Err(reason) = validator.validate(schema, &value) {
                         return route_rejection(
@@ -1439,6 +1454,147 @@ fn did_method_allowed(verification_method: &str, allowed: &BTreeSet<String>) -> 
     allowed.contains(method)
 }
 
+/// [`is_received_form_of`] for a routed document: whether `received`, read
+/// as a `TrustTask<Value>` and pruned along a forward route as `doc` was,
+/// is the same document as `doc`, compared through the form both serialise
+/// to.
+///
+/// [`serialises_to_received`] answers the common case — `doc` was read from
+/// `received` and nothing re-rendered a member — without the deep copy,
+/// re-read and two re-serialisations the full comparison costs (#1092). It
+/// only ever answers *yes* where the full comparison does: anything else
+/// falls through to it.
+fn is_received_routed_form(
+    received: &Value,
+    doc: &TrustTask<Value>,
+    forwarded: bool,
+    prune: &dyn Fn(&mut Value) -> Result<(), RejectReason>,
+) -> bool {
+    let same_payload = |theirs: &Value, ours: &Value| {
+        if !forwarded {
+            return theirs == ours;
+        }
+        let mut theirs = theirs.clone();
+        prune(&mut theirs).is_ok() && theirs == *ours
+    };
+    serialises_to_received(received, doc, same_payload)
+        || reparses_to_routed_form(received, doc, prune)
+}
+
+/// The full comparison behind [`is_received_routed_form`].
+fn reparses_to_routed_form(
+    received: &Value,
+    doc: &TrustTask<Value>,
+    prune: &dyn Fn(&mut Value) -> Result<(), RejectReason>,
+) -> bool {
+    let Ok(mut parsed) = serde_json::from_value::<TrustTask<Value>>(received.clone()) else {
+        return false;
+    };
+    if prune(&mut parsed.payload).is_err() {
+        return false;
+    }
+    match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false,
+    }
+}
+
+/// Whether `received` is `doc` serialised: every member but `payload` equal
+/// to `doc`'s serialisation of it, and the payloads equal under
+/// `same_payload`.
+///
+/// A sufficient condition for the full comparison. `TrustTask`'s
+/// serialisation reads back to the same document, so a `received` that *is*
+/// that serialisation re-reads to `doc` and re-serialises to it. A document
+/// whose headers were re-rendered in the reading — a timestamp spelled with
+/// an offset or fractional zeros — fails here and is left to the full
+/// comparison.
+fn serialises_to_received(
+    received: &Value,
+    doc: &TrustTask<Value>,
+    same_payload: impl FnOnce(&Value, &Value) -> bool,
+) -> bool {
+    let Value::Object(received) = received else {
+        return false;
+    };
+    // An "unmodelled" member spelled like a modelled one — possible only in a
+    // document built by hand — collides with it in the serialisation, which a
+    // re-read would resolve differently; leave that to the full comparison.
+    if doc
+        .extra
+        .keys()
+        .any(|name| modelled_member_names().contains(name.as_str()))
+    {
+        return false;
+    }
+    let Some(received_payload) = received.get("payload") else {
+        return false;
+    };
+    // The headers alone — `()` serialises as `null` in the payload's place —
+    // so the payload is compared where it is rather than copied.
+    let head = TrustTask {
+        id: doc.id.clone(),
+        thread_id: doc.thread_id.clone(),
+        parent_thread_id: doc.parent_thread_id.clone(),
+        ceremony: doc.ceremony.clone(),
+        type_uri: doc.type_uri.clone(),
+        issuer: doc.issuer.clone(),
+        recipient: doc.recipient.clone(),
+        issued_at: doc.issued_at,
+        expires_at: doc.expires_at,
+        payload: (),
+        context: doc.context.clone(),
+        proof: doc.proof.clone(),
+        extra: doc.extra.clone(),
+    };
+    let Ok(Value::Object(head)) = serde_json::to_value(&head) else {
+        return false;
+    };
+    head.len() == received.len()
+        && head
+            .iter()
+            .all(|(name, value)| name == "payload" || received.get(name) == Some(value))
+        && same_payload(received_payload, &doc.payload)
+}
+
+/// The member names `TrustTask` serialises its own fields under, read off a
+/// document with every field present rather than listed by hand, so a field
+/// added to the struct is covered without touching this. The struct literal
+/// fails to compile until a new field is named here; give it a value that
+/// serialises (`Some`, for an optional one).
+fn modelled_member_names() -> &'static BTreeSet<String> {
+    static NAMES: std::sync::OnceLock<BTreeSet<String>> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let instant = DateTime::<Utc>::UNIX_EPOCH;
+        let full = TrustTask {
+            id: String::new(),
+            thread_id: Some(String::new()),
+            parent_thread_id: Some(String::new()),
+            ceremony: serde_json::from_value(serde_json::json!({
+                "enactment": "", "step": ""
+            }))
+            .ok(),
+            type_uri: crate::TypeUri::canonical("x", 0, 1).expect("a valid Type URI"),
+            issuer: Some(String::new()),
+            recipient: Some(String::new()),
+            issued_at: Some(instant),
+            expires_at: Some(instant),
+            payload: (),
+            context: serde_json::from_value(serde_json::json!("https://example.test/ctx")).ok(),
+            proof: serde_json::from_value(serde_json::json!({
+                "type": "", "cryptosuite": "", "verificationMethod": "",
+                "proofPurpose": "", "proofValue": "", "created": "1970-01-01T00:00:00Z"
+            }))
+            .ok(),
+            extra: Default::default(),
+        };
+        match serde_json::to_value(&full) {
+            Ok(Value::Object(members)) => members.into_iter().map(|(name, _)| name).collect(),
+            _ => BTreeSet::new(),
+        }
+    })
+}
+
 /// Whether `received` parses to the same document as `doc`, compared through
 /// the typed form both pass through — so a proof checked over `received`
 /// covers the document the handler is given.
@@ -1472,6 +1628,194 @@ fn proof_error_to_reject(err: VerificationError) -> RejectReason {
     // per SPEC §8.3 + the ProofVerifier module's documented mapping.
     RejectReason::ProofInvalid {
         reason: err.to_string(),
+    }
+}
+
+/// The shortcut in [`is_received_routed_form`] answers *yes* only where the
+/// full comparison does (#1092).
+#[cfg(test)]
+mod received_form_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn drop_added(payload: &mut Value) -> Result<(), RejectReason> {
+        if let Value::Object(members) = payload {
+            members.remove("added");
+        }
+        Ok(())
+    }
+
+    fn no_prune(_: &mut Value) -> Result<(), RejectReason> {
+        Ok(())
+    }
+
+    /// For `received` and `doc`: the shortcut, the full comparison, and what
+    /// the pipeline answers.
+    fn verdicts(received: &Value, doc: &TrustTask<Value>, forwarded: bool) -> (bool, bool, bool) {
+        let prune: &dyn Fn(&mut Value) -> Result<(), RejectReason> =
+            if forwarded { &drop_added } else { &no_prune };
+        let shortcut = serialises_to_received(received, doc, |theirs, ours| {
+            let mut theirs = theirs.clone();
+            prune(&mut theirs).is_ok() && theirs == *ours
+        });
+        (
+            shortcut,
+            reparses_to_routed_form(received, doc, prune),
+            is_received_routed_form(received, doc, forwarded, prune),
+        )
+    }
+
+    fn read(received: &Value, forwarded: bool) -> TrustTask<Value> {
+        let mut doc: TrustTask<Value> = serde_json::from_value(received.clone()).unwrap();
+        if forwarded {
+            drop_added(&mut doc.payload).unwrap();
+        }
+        doc
+    }
+
+    fn full() -> Value {
+        json!({
+            "id": "urn:uuid:full",
+            "threadId": "urn:uuid:thread",
+            "parentThreadId": "urn:uuid:parent",
+            "ceremony": {"enactment": "urn:uuid:e", "step": "one", "definition": "d"},
+            "type": "https://trusttasks.org/spec/acl/grant/0.2",
+            "issuer": "did:web:alice.example",
+            "recipient": "did:web:bob.example",
+            "issuedAt": "2026-11-13T09:30:00Z",
+            "expiresAt": "2026-11-13T10:30:00Z",
+            "@context": ["https://example.test/ctx"],
+            "unmodelled": {"b": [1, 2.5], "a": null},
+            "payload": {"role": "admin", "nested": {"list": [true, "x"]}},
+            "proof": {
+                "type": "DataIntegrityProof",
+                "cryptosuite": "eddsa-jcs-2022",
+                "verificationMethod": "did:web:alice.example#key-1",
+                "proofPurpose": "assertionMethod",
+                "proofValue": "z123",
+                "created": "2026-11-13T09:30:00Z",
+                "nonce": "unmodelled"
+            }
+        })
+    }
+
+    #[test]
+    fn a_document_read_as_received_is_its_received_form_by_the_shortcut() {
+        let minimal = json!({
+            "id": "urn:uuid:min",
+            "type": "https://trusttasks.org/spec/acl/grant/0.2",
+            "payload": {}
+        });
+        for received in [minimal, full()] {
+            let doc = read(&received, false);
+            assert_eq!(verdicts(&received, &doc, false), (true, true, true));
+        }
+    }
+
+    #[test]
+    fn a_forward_routed_document_is_its_received_form_by_the_shortcut() {
+        let mut received = full();
+        received["payload"]["added"] = json!({"in": "0.3"});
+        let doc = read(&received, true);
+        assert_eq!(verdicts(&received, &doc, true), (true, true, true));
+    }
+
+    /// A header the reading re-renders misses the shortcut and is still the
+    /// received form, by the full comparison.
+    #[test]
+    fn a_re_rendered_header_falls_through_to_the_full_comparison() {
+        for issued_at in [
+            "2026-11-13T11:30:00+02:00",
+            "2026-11-13T09:30:00.000Z",
+            "2026-11-13t09:30:00z",
+        ] {
+            let mut received = full();
+            received["issuedAt"] = json!(issued_at);
+            let doc = read(&received, false);
+            assert_eq!(
+                verdicts(&received, &doc, false),
+                (false, true, true),
+                "{issued_at}"
+            );
+        }
+    }
+
+    #[test]
+    fn every_modelled_member_name_is_known() {
+        let names: Vec<&str> = modelled_member_names().iter().map(String::as_str).collect();
+        assert_eq!(
+            names,
+            [
+                "@context",
+                "ceremony",
+                "expiresAt",
+                "id",
+                "issuedAt",
+                "issuer",
+                "parentThreadId",
+                "payload",
+                "proof",
+                "recipient",
+                "threadId",
+                "type"
+            ]
+        );
+    }
+
+    /// A hand-built document whose unmodelled members shadow modelled ones
+    /// misses the shortcut; the full comparison decides, as it did before.
+    #[test]
+    fn an_unmodelled_member_named_like_a_modelled_one_falls_through() {
+        let received = full();
+        let mut doc = read(&received, false);
+        doc.expires_at = None;
+        doc.extra
+            .insert("expiresAt".to_string(), json!("2026-11-13T10:30:00Z"));
+        let (shortcut, full_comparison, verdict) = verdicts(&received, &doc, false);
+        assert!(!shortcut);
+        assert_eq!(verdict, full_comparison);
+
+        let mut garbage = read(&received, false);
+        garbage.expires_at = None;
+        garbage
+            .extra
+            .insert("expiresAt".to_string(), json!("garbage"));
+        let mut received = received;
+        received["expiresAt"] = json!("garbage");
+        assert_eq!(verdicts(&received, &garbage, false), (false, false, false));
+    }
+
+    #[test]
+    fn a_different_document_is_not_the_received_form() {
+        let received = full();
+        let doc = read(&received, false);
+        for change in [
+            json!({"payload": {"role": "owner", "nested": {"list": [true, "x"]}}}),
+            json!({"issuer": "did:web:mallory.example"}),
+            json!({"extraMember": 1}),
+            json!({"unmodelled": {"b": [1, 2.5]}}),
+        ] {
+            let mut other = received.clone();
+            for (name, value) in change.as_object().unwrap() {
+                other[name] = value.clone();
+            }
+            assert_eq!(
+                verdicts(&other, &doc, false),
+                (false, false, false),
+                "{change}"
+            );
+        }
+        let mut missing = received.clone();
+        missing.as_object_mut().unwrap().remove("threadId");
+        assert_eq!(verdicts(&missing, &doc, false), (false, false, false));
+
+        // Along a forward route, a payload that differs in more than what
+        // pruning removes is still a different document.
+        let mut extended = received.clone();
+        extended["payload"]["added"] = json!(1);
+        extended["payload"]["role"] = json!("owner");
+        let forwarded = read(&received, true);
+        assert_eq!(verdicts(&extended, &forwarded, true), (false, false, false));
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-gen",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Generate TypeScript modules for exactly the Trust Tasks an application pins in trust-tasks.lock, from the vendored registry bundles. The modules import the runtime from @openvtc/trust-tasks.",
   "type": "module",
   "license": "Apache-2.0",
@@ -38,7 +38,7 @@
     "prettier": "3.9.10"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.6",
     "typescript": "^7.0.2"
   }
 }
