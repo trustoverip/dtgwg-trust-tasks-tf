@@ -24,9 +24,12 @@ Trust Task specifications are versioned documents published at trusttasks.org.
 An application names the versions it speaks, and generates their types:
 
 ```sh
-cargo install trust-tasks-cli
 trust-tasks add acl/grant/0.3      # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
 ```
+
+`trust-tasks` is one command for every language. You do **not** need a Rust
+toolchain to get it — see [Installing the `trust-tasks` command](#installing-the-trust-tasks-command)
+below.
 
 Commit all three. The lock pins each version by digest and the bundles under
 `trust-tasks/` are verified against it; `trust-tasks check` does that offline,
@@ -129,6 +132,55 @@ An ecosystem's own tasks, published outside trusttasks.org, are pinned with
 See [`trust-tasks-cli`](./trust-tasks-cli/README.md),
 [`trust-tasks-build`](./trust-tasks-build/README.md) and
 [consumer-side generation](./docs/design/consumer-side-generation.md).
+
+### Installing the `trust-tasks` command
+
+Pick one; each puts the same `trust-tasks` binary on your `PATH`.
+
+- **Download a prebuilt binary** (no Rust needed). Every
+  [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true)
+  carries `trust-tasks-cli-<version>-<target>.tar.gz` (`.zip` for Windows) for
+  `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` (glibc 2.35 or
+  newer), `x86_64-apple-darwin`, `aarch64-apple-darwin` and
+  `x86_64-pc-windows-msvc`, each with a `.sha256` file and a combined
+  `SHA256SUMS`. The archive holds the binary alone:
+
+  ```sh
+  v=X.Y.Z t=aarch64-apple-darwin   # set: the CLI version, your platform
+  curl -fsSLO "https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/download/trust-tasks-cli-v$v/trust-tasks-cli-$v-$t.tar.gz"
+  curl -fsSL "https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/download/trust-tasks-cli-v$v/trust-tasks-cli-$v-$t.tar.gz.sha256" | shasum -a 256 -c
+  tar -xzf "trust-tasks-cli-$v-$t.tar.gz" && sudo mv trust-tasks /usr/local/bin/
+  ```
+
+  On macOS a binary downloaded by a browser is quarantined; one fetched with
+  `curl` as above is not.
+- **[`cargo binstall`](https://github.com/cargo-bins/cargo-binstall)
+  `trust-tasks-cli`** — fetches the same prebuilt archive, if you already have
+  cargo but not the time to compile.
+- **`cargo install trust-tasks-cli`** — builds from source; needs Rust 1.95 or
+  later.
+
+Releases from before the binaries were published (`0.2.0` and earlier) may
+carry none, and `cargo binstall` builds those from source.
+
+### What you bring yourself
+
+The runtime in each language runs the SPEC §7.2 pipeline, but leaves three
+pieces pluggable: the JSON Schema **validator** for item 2, the proof
+**verifier** for item 6 (and a signer to produce), and the **transport**. This
+is where each comes from:
+
+| | Validator | Proof verifier / signer | Transport |
+|---|---|---|---|
+| **Rust** | built in: `SchemaValidator`, the `validate` feature | [`trust-tasks-proof`](./trust-tasks-proof/) (`proof-affinidi` on the facade) | [`trust-tasks-https`](./trust-tasks-https/), [`-didcomm`](./trust-tasks-didcomm/), [`-didcomm-v1`](./trust-tasks-didcomm-v1/), [`-tsp`](./trust-tasks-tsp/) |
+| **TypeScript** | yours: a function over [`ajv`](https://www.npmjs.com/package/ajv) (Draft 2020-12) or any engine | [`@openvtc/trust-tasks-proof`](./trust-tasks-ts-proof/) | [`@openvtc/trust-tasks-tsp`](./trust-tasks-ts-tsp/); HTTPS and DIDComm are yours (e.g. `fetch` with the [HTTPS binding](./bindings/https/)'s wire format) |
+| **Go** | yours: any JSON Schema engine behind `PayloadValidator` | [`trust-tasks-go/proof`](./trust-tasks-go/proof/) | [`trust-tasks-go/didcomm`](./trust-tasks-go/didcomm/), [`trust-tasks-go/tsp`](./trust-tasks-go/tsp/) (not yet tagged); HTTPS is yours (`net/http`) |
+| **Dart** | yours: e.g. [`json_schema`](https://pub.dev/packages/json_schema) behind `PayloadValidator` | [`trust_tasks_proof`](./trust-tasks-dart-proof/) | [`trust_tasks_https`](./trust-tasks-dart-https/), [`trust_tasks_didcomm`](./trust-tasks-dart-didcomm/), [`trust_tasks_tsp`](./trust-tasks-dart-tsp/) (not yet on pub.dev) |
+
+The cores bundle no validator on purpose, to stay dependency-light;
+`{ kind: "acceptUnvalidated" }` (and its Go and Dart equivalents) says so
+explicitly instead. In §3–§3b below, `myValidator`, `myVerifier` and `send`
+are these three pieces.
 
 ---
 
@@ -653,7 +705,7 @@ the facade alone avoids that by construction.
 |---|---|
 | The normative framework | [`SPEC.md`](./SPEC.md) — §4.8.1 identity precedence, §7.2 the consumer pipeline, §8 errors |
 | The task registry | <https://trusttasks.org/> — every published spec and its schema |
-| Transport bindings | [`bindings/`](./bindings/) — the wire format for https, didcomm, didcomm-v1, tsp |
+| Transport bindings | [`bindings/`](./bindings/) — the wire format for https, didcomm, didcomm-v1, tsp, push |
 | Writing a spec | [`CONTRIBUTING-SPECS.md`](./CONTRIBUTING-SPECS.md) |
 | Rust API docs | <https://docs.rs/trust-tasks> (facade) · <https://docs.rs/trust-tasks-rs> (core) |
 | More Rust examples | [`trust-tasks-https/examples/`](./trust-tasks-https/examples/) — the two-process version of the round trip above |

@@ -606,20 +606,29 @@ derive a census of declared-vs-emitted codes rather than hand-keep one.
   same comparison so the four agree with each other, not only with the front
   matter.
 
-## `maxDocumentBytes` is generated — Rust and Dart only, so far
+## `maxDocumentBytes` is generated in all four libraries
 
-A spec's `maxDocumentBytes` front matter (per variant; an absent `response`
-never inherits the request's bound) reaches Rust as
-`Payload::MAX_DOCUMENT_BYTES` and Dart as `SpecPolicy.maxDocumentBytes` on
-`spec` / `responseSpec` — emitted by **both** Dart generators
-(`build-dart-bindings.mjs` from front matter, `lib/src/generator/emit.dart`
-from the bundle's `policy.maxDocumentBytes`), independently. `check-bindings`
-compares Rust and Dart against the front matter. The Dart HTTPS server enforces
-it: its pre-parse body limit is the largest registered bound with a 256 KiB
-floor, then each document is held to its route's bound (`malformedRequest`).
-The Rust server still has a flat 256 KiB cap (#1121's Rust half rides with
-#1089); TypeScript and Go emit nothing yet — add them to the same comparison
-when they do.
+A spec's `maxDocumentBytes` front matter (per variant, only where declared; an
+absent `response` never inherits the request's bound) reaches Rust as
+`Payload::MAX_DOCUMENT_BYTES`, TypeScript as `SPEC.maxDocumentBytes` /
+`RESPONSE_SPEC.maxDocumentBytes`, Go as `Spec.MaxDocumentBytes` /
+`ResponseSpec.MaxDocumentBytes` (0: none) and Dart as
+`SpecPolicy.maxDocumentBytes` on `spec` / `responseSpec`. In TypeScript, Go
+and Dart it is emitted by **both** generators — the prebuilt one from front
+matter (`build-{ts,go,dart}-bindings.mjs`) and the consumer-side one from the
+bundle's `policy.maxDocumentBytes` (`trust-tasks-ts-gen/src/emit.ts`,
+`trust-tasks-go/cmd/trust-tasks-gen`, `lib/src/generator/emit.dart`),
+independently. `check-bindings` compares all four against the front matter.
+
+Enforcement: the Rust and Dart HTTPS servers' pre-parse body limit is the
+largest registered bound with a 256 KiB floor, then each document is held to
+its route's bound (`malformedRequest`) — in Rust through
+`ConsumeChecks::received_bytes`, which `consume_inbound` / `consume_dispatched`
+check. Go's `ConsumeInbound` refuses a document of `Spec`'s own version over the
+bound when given its bytes as `ConsumeOptions.Received`. A document read forward
+along `extends` is never held to the implemented version's bound. The Rust
+message bindings do not pass the bytes yet; the TypeScript runtime never sees
+them, so its transport enforces the bound.
 
 ## ⚠️ The Go module — four things that bite
 

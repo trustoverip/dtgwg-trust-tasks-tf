@@ -5,8 +5,16 @@ specifications an application uses, vendor each pinned version's registry
 bundle, verified by digest, and check them in CI.
 
 ```sh
-cargo install trust-tasks-cli     # installs the `trust-tasks` binary
+cargo binstall trust-tasks-cli    # prebuilt binary, no compile
+cargo install trust-tasks-cli     # or build it (Rust 1.95+)
 ```
+
+No Rust at all? Each [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true) carries
+prebuilt archives — `trust-tasks-cli-<version>-<target>.tar.gz` (`.zip` on
+Windows) for Linux x86_64/aarch64 (glibc 2.35+), macOS x86_64/aarch64 and
+Windows x86_64, with `.sha256` files and a `SHA256SUMS`. The archive holds the
+`trust-tasks` binary alone. See
+[GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command).
 
 An application records what it uses; the registry says what that resolves to;
 the build reads only the vendored files — no network at build time. See

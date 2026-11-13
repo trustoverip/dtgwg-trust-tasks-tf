@@ -118,6 +118,14 @@ export function extendsOf(typeUri: string, index: ExtendsLookup = defaultLookup)
 }
 
 /**
+ * The longest chain {@link extendsChain} walks: 64 links, in all four libraries
+ * (`docs/runtime-parity.md`). Each link must name a strictly earlier MINOR, so
+ * the walk ends anyway and a real chain is far shorter; the bound is a backstop
+ * on the work one lookup may do.
+ */
+const MAX_EXTENDS_CHAIN = 64;
+
+/**
  * Every version `typeUri` extends, transitively, nearest first: for 0.3
  * extends 0.2 extends 0.1, `["0.2", "0.1"]`.
  *
@@ -128,15 +136,15 @@ export function extendsOf(typeUri: string, index: ExtendsLookup = defaultLookup)
  * to share its slug.
  *
  * Defensive against a malformed index: the walk stops at a declaration that is
- * not strictly earlier within the same MAJOR (the build refuses those), and at
- * a cycle.
+ * not strictly earlier within the same MAJOR (the build refuses those, and
+ * that rule excludes a cycle), and after {@link MAX_EXTENDS_CHAIN} links.
  */
 export function extendsChain(typeUri: string, index: ExtendsLookup = defaultLookup): string[] {
   const start = tryParseTypeUri(typeUri);
   if (start === null) return [];
   const chain: string[] = [];
   let current = start;
-  for (;;) {
+  while (chain.length < MAX_EXTENDS_CHAIN) {
     const next = lookup(index, bareKey(current));
     if (next === null) break;
     const m = VERSION_RE.exec(next)!;
@@ -322,7 +330,13 @@ function refused(code: RejectReason["code"], message: string): ReadForSpecResult
 
 type Obj = Record<string, unknown>;
 
-const MAX_DEPTH = 64;
+/**
+ * How deep a prune recurses — through the payload and the schema's `$ref`s and
+ * branches together — before leaving the rest of the value as it is: 128, in
+ * all four libraries (`docs/runtime-parity.md`), so a payload one library
+ * prunes is pruned by the others too.
+ */
+const MAX_DEPTH = 128;
 
 /**
  * The work one prune may do, in schema steps (a value visited against a

@@ -248,16 +248,17 @@ export class InMemoryReplayGuard implements ReplayGuard {
   #earliestExpiry = Number.POSITIVE_INFINITY;
 
   /**
-   * @param capacity Maximum live records retained. Must be positive: a guard
-   * that retains nothing answers `fresh` to everything, which is a silent total
-   * defeat of item 11 rather than a visible misconfiguration.
+   * @param capacity Maximum live records retained. A capacity below 1 (or one
+   * that is not a finite number) takes {@link DEFAULT_REPLAY_CAPACITY}; a
+   * fractional one is rounded down. It is not treated as "retain nothing": a
+   * guard that retains nothing answers `fresh` to everything, which is a silent
+   * total defeat of item 11. All four libraries read a capacity below one this
+   * way (`docs/runtime-parity.md`).
    * @param perIssuerLimit Most live records one issuer may hold; defaults to a
    * tenth of `capacity`, rounded up, and is clamped to `1..capacity`.
    */
   constructor(capacity = DEFAULT_REPLAY_CAPACITY, perIssuerLimit?: number) {
-    if (!Number.isInteger(capacity) || capacity < 1) {
-      throw new RangeError("InMemoryReplayGuard capacity must be a positive integer");
-    }
+    capacity = Number.isFinite(capacity) && capacity >= 1 ? Math.floor(capacity) : DEFAULT_REPLAY_CAPACITY;
     this.#capacity = capacity;
     const limit = perIssuerLimit ?? Math.ceil(capacity / 10);
     this.#perIssuer = Math.min(capacity, Math.max(1, Math.floor(limit)));

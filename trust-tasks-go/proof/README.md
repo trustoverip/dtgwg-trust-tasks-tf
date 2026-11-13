@@ -104,3 +104,15 @@ Proof algorithm requires.
 exactly 32 bytes (P-256) or 48 bytes (P-384) in the range [1, n-1]. Any other
 key is refused with an error rather than producing a signer. `Sign` also
 refuses a document the verifier would refuse as non-I-JSON.
+
+## `created` is required
+
+VC Data Integrity makes a proof's `created` optional, and the framework schema
+leaves `proof` unconstrained. The four Trust Tasks libraries deliberately treat
+it as present: every signer, `Sign` included, writes it, and the Rust,
+TypeScript and Dart core `Proof` types require it. Go's `trusttasks.Proof.Created`
+is a plain `string`, so a proof without it decodes as `""` rather than failing;
+the verifier reads it as "when present" and checks the bytes as received. No
+known producer omits it, and making it optional would cost a breaking release in
+three of the four libraries to accept documents nobody sends (#1119). Revisit if
+a generic Data Integrity signer that omits it appears.

@@ -464,17 +464,17 @@ impl InMemoryReplayGuard {
     /// A guard retaining at most `capacity` live records; see
     /// [*When it is full*](InMemoryReplayGuard#when-it-is-full).
     ///
-    /// # Panics
-    ///
-    /// If `capacity` is zero. A guard that retains nothing answers `Fresh` to
-    /// every arrival, which is indistinguishable from having no guard at all —
-    /// and would be a silent, total defeat of item 11 rather than a visible
-    /// misconfiguration.
+    /// A `capacity` of zero takes [`DEFAULT_REPLAY_CAPACITY`]. It is not
+    /// treated as "retain nothing": a guard that retains nothing answers
+    /// `Fresh` to every arrival, which is indistinguishable from having no
+    /// guard at all — a silent, total defeat of item 11. All four libraries
+    /// read a capacity below one this way (`docs/runtime-parity.md`).
     pub fn new(capacity: usize) -> Self {
-        assert!(
-            capacity > 0,
-            "InMemoryReplayGuard capacity must be non-zero"
-        );
+        let capacity = if capacity == 0 {
+            DEFAULT_REPLAY_CAPACITY
+        } else {
+            capacity
+        };
         Self {
             capacity,
             per_issuer: capacity.div_ceil(10),
@@ -781,6 +781,15 @@ mod tests {
             document_digest(&typed).unwrap().as_str(),
             "45ca5177bccd3b1fa8105d34bce52b2011aa538b7c021b5bf9441cbba5add48c"
         );
+    }
+
+    /// A capacity of zero takes the default rather than retaining nothing,
+    /// as in the TypeScript, Go and Dart guards (`docs/runtime-parity.md`).
+    #[test]
+    fn a_zero_capacity_takes_the_default() {
+        let guard = InMemoryReplayGuard::new(0);
+        assert_eq!(guard.capacity, DEFAULT_REPLAY_CAPACITY);
+        assert_eq!(guard.per_issuer, DEFAULT_REPLAY_CAPACITY.div_ceil(10));
     }
 
     #[test]

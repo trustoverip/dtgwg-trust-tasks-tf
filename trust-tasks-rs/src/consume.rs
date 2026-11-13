@@ -564,6 +564,12 @@ where
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    // The checks that read only the envelope, and the attribution gate, ahead
+    // of the type check (see `envelope_checks`).
+    let parties = match envelope_checks(transport, &checks, &doc, my_vid, now) {
+        Ok(parties) => parties,
+        Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory).into(),
+    };
     // §7.2 item 3. Deserializing into `TrustTask<P>` does not look at `type`,
     // so a document of another specification whose payload happens to fit
     // `P` would otherwise be consumed under `P`'s policy. Accept `P`'s own
@@ -584,7 +590,7 @@ where
         payload_policy,
         checks,
         doc,
-        my_vid,
+        parties,
         now,
         error_id_factory,
         SpecFacts {
@@ -613,6 +619,12 @@ where
 ///
 /// # Order
 ///
+/// 0. **The envelope checks and the attribution gate** — expiry and recipient
+///    (items 4, 5a), freshness (item 13), identity (item 6) and
+///    [`ConsumeChecks::require_attribution`], in [`consume_inbound`]'s order.
+///    None of them depends on the route, so they run ahead of it: a sender
+///    the gate refuses gets one answer whether or not its `type` is
+///    registered.
 /// 1. **Item 3 — routing.** A `type` whose slug no handler is registered for
 ///    is refused `unsupportedType`; a registered slug at a `MAJOR.MINOR` that
 ///    neither has a handler nor reaches one along its declared extension chain
@@ -625,12 +637,14 @@ where
 /// 3. **The payload deserializes** into the registered `P` — the part of item
 ///    2 the typed path performs by parsing — or the document is
 ///    `malformedRequest`.
-/// 4. Everything [`consume_inbound`] does, with the registered `P`'s schema
-///    and policy.
+/// 4. The rest of [`consume_inbound`]'s pipeline — schema, DID-method screen,
+///    proof, per-spec policy, the item-11 record — with the registered `P`'s
+///    schema and policy. The DID-method screen and the proof, the only steps
+///    that may egress, therefore never see an unregistered `type`.
 /// 5. The handler, through [`AsyncDispatcher::dispatch`], with the context
 ///    `context` builds from the resolved parties.
 ///
-/// Every refusal in 1–4 happens **before** the record is written, so an
+/// Every refusal in 0–4 happens **before** the record is written, so an
 /// unrouteable or malformed document never burns its `id`.
 ///
 /// # Handlers
@@ -756,8 +770,17 @@ where
     V: ProofVerifier + ?Sized,
     W: PayloadValidator + ?Sized,
 {
-    // §7.2 item 3. Answered before anything else: there is no specification
-    // to apply the remaining checks under.
+    // The checks that read only the envelope, and the attribution gate, ahead
+    // of the route lookup (see `envelope_checks`): a sender the gate refuses
+    // gets the same answer whether or not its `type` is registered.
+    let parties = match envelope_checks(transport, &checks, &doc, my_vid, now) {
+        Ok(parties) => parties,
+        Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
+    };
+
+    // §7.2 item 3. Answered before every check that needs the specification,
+    // and before anything that may egress: an unregistered `type` never
+    // reaches the DID-method screen or a verifier.
     let (target, forwarded) = match dispatcher.route(&doc.type_uri) {
         Ok(route) => route,
         Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
@@ -805,7 +828,7 @@ where
         payload_policy,
         checks,
         doc,
-        my_vid,
+        parties,
         now,
         take_id,
         SpecFacts {
@@ -841,6 +864,74 @@ where
     .await
 }
 
+/// The checks that read nothing but the envelope, and the attribution gate:
+/// §7.2 items 4, 5a, 6 and 13, then [`ConsumeChecks::require_attribution`].
+/// Returns the SPEC §4.8.1-resolved parties.
+///
+/// Both entry points run these **before** their item-3 type check. None of
+/// them depends on anything a route holds, so running them first means a
+/// sender the attribution gate refuses gets one answer whether or not its
+/// `type` is registered: the route table is not readable without
+/// attribution, just as discovery keeps it unreadable without
+/// authentication. Everything that may egress (the DID-method screen and the
+/// proof) still runs after the type check, so an unregistered `type` never
+/// reaches a resolver.
+fn envelope_checks<P, T>(
+    transport: &T,
+    checks: &ConsumeChecks<'_>,
+    doc: &TrustTask<P>,
+    my_vid: &str,
+    now: DateTime<Utc>,
+) -> Result<ResolvedParties, RejectReason>
+where
+    T: TransportHandler + Sync + ?Sized,
+{
+    // §7.2 item 6 first, when the transport authenticated no sender. The only
+    // identity that can then disagree is the recipient, and §8.1 suppresses
+    // that refusal: there is nobody to address it to, and a `wrongRecipient`
+    // answer (item 5a, below) would tell an unauthenticated prober which VIDs
+    // this consumer is not. Run first, a misaddressed document stays
+    // indistinguishable from any other suppressed one. With an authenticated
+    // sender the checks run in §7.2 order.
+    let authenticated = transport.derive_parties().issuer.is_some();
+    let mut parties = None;
+    if !authenticated {
+        parties = Some(
+            transport
+                .resolve_parties(doc)
+                .map_err(RejectReason::IdentityMismatch)?,
+        );
+    }
+
+    // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
+    doc.validate_basic(now, my_vid)?;
+
+    // §7.2 item 13 — the freshness bound over `issuedAt`.
+    // `validate_basic` honours `expiresAt`, which is optional and which a
+    // producer sets for its own reasons; on its own it leaves a document
+    // stamped years ago, or years hence, indefinitely acceptable. It is also
+    // what bounds the item-11 record: §7.2 (*Bounding the record*) makes the
+    // acceptance window and the record's retention one bound.
+    doc.validate_freshness(now, &checks.freshness)?;
+
+    // §7.2 item 6 — in-band vs transport-derived identity cross-check, unless
+    // it ran first above.
+    let parties = match parties {
+        Some(p) => p,
+        None => transport
+            .resolve_parties(doc)
+            .map_err(RejectReason::IdentityMismatch)?,
+    };
+
+    // Attribution (`ConsumeChecks::require_attribution`): with neither an
+    // authenticated sender nor a proof, the issuer §4.8.1 resolved is a string
+    // the sender typed.
+    if checks.require_attribution && !authenticated && doc.proof.is_none() {
+        return Err(RejectReason::ProofRequired);
+    }
+    Ok(parties)
+}
+
 /// What the per-specification checks of the pipeline read off the type being
 /// consumed: from `P` on the typed path, from the dispatcher's registration on
 /// the dispatched one. One struct, so the two paths run one body.
@@ -865,7 +956,7 @@ async fn consume_core<P, S, T, V, W, F, Fut>(
     payload_policy: PayloadPolicy<'_, W>,
     checks: ConsumeChecks<'_>,
     doc: TrustTask<P>,
-    my_vid: &str,
+    parties: ResolvedParties,
     now: DateTime<Utc>,
     error_id_factory: impl FnOnce() -> String,
     spec: SpecFacts<P>,
@@ -884,13 +975,15 @@ where
     let ConsumeChecks {
         freshness,
         replay,
-        require_attribution,
         proof_did_methods,
+        // Applied by `envelope_checks`, before the type is looked at.
+        require_attribution: _,
         // Applied by the callers, which know the specification's bound.
         received_bytes: _,
         default_max_document_bytes: _,
     } = checks;
-    // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
+    // §7.2 item 2 — payload schema. Runs first here (the envelope checks and
+    // the attribution gate ran in the caller, ahead of the type check), and
     // before any check that consults the payload's meaning: a document whose
     // payload is not the shape the specification declares should be refused as
     // malformed rather than reasoned about. Deserialization into `P` already
@@ -923,73 +1016,6 @@ where
                 }
             }
         }
-    }
-
-    // §7.2 item 6 first, when the transport authenticated no sender. The only
-    // identity that can then disagree is the recipient, and §8.1 suppresses
-    // that refusal: there is nobody to address it to, and a `wrongRecipient`
-    // answer (item 5a, below) would tell an unauthenticated prober which VIDs
-    // this consumer is not. Run first, a misaddressed document stays
-    // indistinguishable from any other suppressed one. With an authenticated
-    // sender the checks run in §7.2 order.
-    let authenticated = transport.derive_parties().issuer.is_some();
-    let mut parties = None;
-    if !authenticated {
-        match transport.resolve_parties(&doc) {
-            Ok(p) => parties = Some(p),
-            Err(mismatch) => {
-                return route_rejection(
-                    transport,
-                    &doc,
-                    RejectReason::IdentityMismatch(mismatch),
-                    error_id_factory,
-                );
-            }
-        }
-    }
-
-    // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
-    if let Err(reason) = doc.validate_basic(now, my_vid) {
-        return route_rejection(transport, &doc, reason, error_id_factory);
-    }
-
-    // §7.2 item 13 — the freshness bound over `issuedAt`.
-    // `validate_basic` honours `expiresAt`, which is optional and which a
-    // producer sets for its own reasons; on its own it leaves a document
-    // stamped years ago, or years hence, indefinitely acceptable. It is also
-    // what bounds the replay record below: §7.2 (*Bounding the record*) makes
-    // the acceptance window and the record's retention one bound.
-    if let Err(reason) = doc.validate_freshness(now, &freshness) {
-        return route_rejection(transport, &doc, reason, error_id_factory);
-    }
-
-    // §7.2 item 6 — in-band vs transport-derived identity cross-check, unless
-    // it ran first above.
-    let parties = match parties {
-        Some(p) => p,
-        None => match transport.resolve_parties(&doc) {
-            Ok(p) => p,
-            Err(mismatch) => {
-                return route_rejection(
-                    transport,
-                    &doc,
-                    RejectReason::IdentityMismatch(mismatch),
-                    error_id_factory,
-                );
-            }
-        },
-    };
-
-    // Attribution (`ConsumeChecks::require_attribution`): with neither an
-    // authenticated sender nor a proof, the issuer §4.8.1 resolved is a string
-    // the sender typed.
-    if require_attribution && !authenticated && doc.proof.is_none() {
-        return route_rejection(
-            transport,
-            &doc,
-            RejectReason::ProofRequired,
-            error_id_factory,
-        );
     }
 
     // The DID-method screen (`ConsumeChecks::proof_did_methods`), ahead of the
@@ -2631,6 +2657,63 @@ mod tests {
         )
         .await;
         assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// On the dispatched path the attribution gate runs before the route
+    /// lookup: a document attributable to nobody is `proofRequired` whether
+    /// its `type` is registered or not, while an authenticated sender is still
+    /// told `unsupportedType`.
+    #[tokio::test]
+    async fn dispatched_attribution_gate_runs_before_the_route_lookup() {
+        use crate::handlers::InMemoryHandler;
+        use crate::specs::acl::list::v0_3 as list;
+        let dispatcher = AsyncDispatcher::<(), Result<Option<Value>, ErrorResponse>>::new()
+            .on_async::<list::Payload, _, _>(|_req, ()| async { Ok(None) });
+        let as_value = |doc: TrustTask<list::Payload>| -> TrustTask<Value> {
+            serde_json::from_value(serde_json::to_value(doc).unwrap()).unwrap()
+        };
+        let unregistered = |id: &str| {
+            let mut doc = as_value(list_doc(id));
+            doc.type_uri = "https://trusttasks.org/spec/chat/message/1.0"
+                .parse()
+                .unwrap();
+            doc
+        };
+        let consume = |transport: InMemoryHandler, doc: TrustTask<Value>| {
+            let dispatcher = &dispatcher;
+            async move {
+                consume_dispatched_answer(
+                    &transport,
+                    ProofPolicy::<StubVerifier>::RejectIfPresent,
+                    PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                    ConsumeChecks::not_consequential().require_attribution(true),
+                    dispatcher,
+                    doc,
+                    "did:web:maintainer.example",
+                    Utc::now(),
+                    || "err".to_string(),
+                    |_| (),
+                )
+                .await
+            }
+        };
+        let code = |outcome: AnswerOutcome<Option<Value>>| match outcome {
+            AnswerOutcome::Rejected(err) => err.payload.code,
+            other => panic!("expected Rejected, got {other:?}"),
+        };
+        let anonymous = || InMemoryHandler::new().with_local("did:web:maintainer.example");
+        let authenticated = || anonymous().with_peer("did:web:org.example");
+
+        for doc in [as_value(list_doc("r-1")), unregistered("r-2")] {
+            assert_eq!(
+                code(consume(anonymous(), doc).await),
+                StandardCode::ProofRequired.into()
+            );
+        }
+        assert_eq!(
+            code(consume(authenticated(), unregistered("r-3")).await),
+            StandardCode::UnsupportedType.into()
+        );
     }
 
     /// `proof_did_methods` refuses an unlisted method before the verifier is

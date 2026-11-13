@@ -177,7 +177,7 @@ func (h harness) receive(t *testing.T, wire []byte) *Received[echo] {
 	return got
 }
 
-func codeOf(t *testing.T, r *Received[echo]) string {
+func codeOf[R any](t *testing.T, r *Received[R]) string {
 	t.Helper()
 	if r.Reply == nil {
 		return ""
@@ -415,5 +415,61 @@ func TestConsumerCaseFoldedDuplicateMembers(t *testing.T) {
 	})))
 	if r.Outcome.Kind != tt.OutcomeHandled {
 		t.Fatalf("outcome = %s, reply=%s", r.Outcome.Kind, r.Reply)
+	}
+}
+
+// SPEC §5.2 (#1117): a consumer of rooms/records/put/0.4 reads a 0.5 document —
+// which declares extends: "0.4" in the registry — as 0.4, its payload pruned to
+// what 0.4's schema knows, and answers it as 0.5. An undeclared later version
+// of the same slug is unsupportedVersion; another slug is unsupportedType.
+func TestConsumerReadsAnExtendingVersionForward(t *testing.T) {
+	const base = "https://trusttasks.org/spec/rooms/records/put/"
+	spec := tt.SpecPolicy{
+		TypeURI:       base + "0.4",
+		PayloadSchema: `{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}}}`,
+	}
+	type note struct {
+		Text  string  `json:"text"`
+		Extra *string `json:"extra,omitempty"`
+	}
+	run := func(typeURI string) (*Received[note], *note) {
+		h := newHarness(t)
+		var seen *note
+		handler := func(_ context.Context, doc *tt.Document[note], _ tt.ResolvedParties) (*tt.Document[note], error) {
+			seen = &doc.Payload
+			return tt.RespondWith[note, note](doc, NewMessageID(), note{Text: "ok"}, nil), nil
+		}
+		wire := h.seal(t, echoDoc(defaultID, "hello", func(d map[string]any) {
+			d["type"] = typeURI
+			d["payload"] = map[string]any{"text": "hello", "extra": "0.5 only"}
+		}))
+		decode := func(raw json.RawMessage) (note, error) {
+			var n note
+			err := json.Unmarshal(raw, &n)
+			return n, err
+		}
+		got, err := Receive(context.Background(), h.consumer, wire, h.resolve, spec, decode, handler)
+		if err != nil {
+			t.Fatalf("receive: %v", err)
+		}
+		return got, seen
+	}
+
+	got, seen := run(base + "0.5")
+	if got.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("0.5 outcome = %s, reply=%s", got.Outcome.Kind, got.Reply)
+	}
+	if seen == nil || seen.Text != "hello" || seen.Extra != nil {
+		t.Fatalf("the handler saw %+v, want the payload pruned to 0.4's members", seen)
+	}
+	if want := base + "0.5#response"; got.Outcome.Response.Type != want {
+		t.Fatalf("response typed %s, want %s", got.Outcome.Response.Type, want)
+	}
+
+	if got, _ := run(base + "0.99"); codeOf(t, got) != string(tt.CodeUnsupportedVersion) {
+		t.Fatalf("undeclared later version: reply=%s", got.Reply)
+	}
+	if got, _ := run("https://trusttasks.org/spec/rooms/records/get/0.4"); codeOf(t, got) != string(tt.CodeUnsupportedType) {
+		t.Fatalf("another slug: reply=%s", got.Reply)
 	}
 }

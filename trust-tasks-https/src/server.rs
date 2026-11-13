@@ -30,23 +30,28 @@
 //! 2. `Content-Type` must be `application/json` (binding spec §2), else 415.
 //! 3. Body parses as a Trust Task document.
 //! 4. Bearer token → transport-authenticated peer ([`AsyncAuth`]).
-//! 5. **Route lookup** (§7.2 item 3) — an unregistered slug is
-//!    `unsupportedType`, a registered slug at a version that neither has a
-//!    handler nor reaches one along its declared `extends` chain is
-//!    `unsupportedVersion`, and a version that does reach one is routed to it
-//!    with its payload pruned (SPEC §5.2). Before anything touches the network.
-//! 6. The **per-type size bound**: a document larger than the `maxDocumentBytes`
-//!    its specification declares — [`MAX_BODY_BYTES`] for one that declares
-//!    none — is `malformedRequest`.
-//! 7. The payload deserializes into the registered type, and, with
-//!    [`HttpsServerBuilder::with_payload_validator`], passes its schema
-//!    (§7.2 item 2).
-//! 8. `validate_basic` (expiry, recipient), the **freshness bound** over
+//! 5. `validate_basic` (expiry, recipient), the **freshness bound** over
 //!    `issuedAt` / `expiresAt` (§7.2 item 13) — see
 //!    [`HttpsServerBuilder::freshness`] — and `resolve_parties` (§4.8.1). With
 //!    no authenticated peer, `resolve_parties` runs first, so a misaddressed
 //!    document is suppressed (§8.1).
-//! 9. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
+//! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
+//! 7. **Route lookup** (§7.2 item 3) — an unregistered slug is
+//!    `unsupportedType`, a registered slug at a version that neither has a
+//!    handler nor reaches one along its declared `extends` chain is
+//!    `unsupportedVersion`, and a version that does reach one is routed to it
+//!    with its payload pruned (SPEC §5.2). Steps 5 and 6 depend on nothing a
+//!    route holds and run first, so a sender the attribution gate refuses
+//!    gets the same answer whether or not its `type` is registered: the route
+//!    table is not readable without attribution, just as discovery keeps it
+//!    unreadable without authentication. The lookup still precedes everything
+//!    that touches the network.
+//! 8. The **per-type size bound**: a document larger than the `maxDocumentBytes`
+//!    its specification declares — [`MAX_BODY_BYTES`] for one that declares
+//!    none — is `malformedRequest`.
+//! 9. The payload deserializes into the registered type, and, with
+//!    [`HttpsServerBuilder::with_payload_validator`], passes its schema
+//!    (§7.2 item 2).
 //! 10. `proof.verificationMethod` DID-method pre-screen — see
 //!     [`HttpsServerBuilder::allowed_did_methods`]. With a verifier
 //!     configured and no explicit choice, only `did:key` passes.

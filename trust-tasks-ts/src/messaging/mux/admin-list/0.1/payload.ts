@@ -373,4 +373,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 2097152,
 } as const;
