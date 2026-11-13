@@ -1,0 +1,33 @@
+name: trust_tasks_example_getting_started
+description: >-
+  The worked example behind GETTING-STARTED.md section 3b: a signed
+  acl/grant/0.3 round trip over HTTPS, with the task generated from
+  trust-tasks.lock.
+publish_to: none
+
+environment:
+  # trust_tasks_proof's floor (ssi 3.9 needs 3.6); the core's is 3.3.
+  sdk: ^3.6.0
+
+# The runtime, the HTTPS binding and the proof backend. The task's library is
+# generated into lib/trust_tasks/ from trust-tasks.lock and the bundle vendored
+# beside it.
+dependencies:
+  trust_tasks:
+    path: ../../trust-tasks-dart
+  trust_tasks_https:
+    path: ../../trust-tasks-dart-https
+  trust_tasks_proof:
+    path: ../../trust-tasks-dart-proof
+  # The key type a signer is built from. trust_tasks_proof depends on it
+  # already, so this adds nothing to the graph; the range is the one
+  # trust_tasks_proof declares.
+  ssi: ">=3.9.6 <5.0.0"
+
+# The two siblings name the published core; build all three against this
+# checkout's, so the example tests them before they are released. An
+# application outside this repository depends on published versions and needs
+# no override.
+dependency_overrides:
+  trust_tasks:
+    path: ../../trust-tasks-dart
