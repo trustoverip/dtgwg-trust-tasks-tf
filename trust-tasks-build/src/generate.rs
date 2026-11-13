@@ -489,6 +489,17 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
          //     }}\n\n",
         env!("CARGO_PKG_VERSION")
     ));
+    if let Some(private) = &target.dependencies {
+        source.push_str(&format!(
+            "// The runtime contract this file was generated for. An unresolved\n\
+             // `{abi}` on the next line means the trust-tasks-rs in this build does not\n\
+             // provide it — it predates trust-tasks-build {build}, or has moved to a\n\
+             // newer contract. Upgrade whichever of the two is behind.\n\
+             const _: () = {private}::{abi};\n\n",
+            abi = RUNTIME_ABI,
+            build = env!("CARGO_PKG_VERSION"),
+        ));
+    }
     for (name, node) in &root.children {
         source.push_str(ALLOWS);
         write_node(&mut source, name, node);
@@ -522,6 +533,14 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
 
 /// The module [`Target::index`] writes, beside the families.
 const INDEX_MODULE: &str = "schema_index";
+
+/// The runtime contract a generated file names: an item of the runtime's
+/// `__private` module (`trust_tasks_rs::__private::ABI_V1`) that exists in
+/// every `trust-tasks-rs` able to compile this generator's output (#1101). A
+/// mismatched pair then fails to compile on the line naming it. Move it
+/// together with the runtime's item when generated code comes to need
+/// something an older runtime lacks.
+pub(crate) const RUNTIME_ABI: &str = "ABI_V1";
 
 /// One locked version, as the index names it.
 struct IndexEntry {
