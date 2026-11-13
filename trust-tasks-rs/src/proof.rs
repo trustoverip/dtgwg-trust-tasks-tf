@@ -209,6 +209,29 @@ impl<V: ProofVerifier + Send + Sync> DynProofVerifier for ErasedVerifier<V> {
     }
 }
 
+/// A type-erased verifier is a [`ProofVerifier`], so one held as
+/// `Arc<dyn DynProofVerifier>` can be handed to
+/// [`ProofPolicy`](crate::ProofPolicy) — `ProofPolicy::VerifyReceived(&*arc,
+/// &received)`.
+#[async_trait::async_trait]
+impl ProofVerifier for dyn DynProofVerifier {
+    async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
+    where
+        P: serde::Serialize + Send + Sync,
+    {
+        let doc: TrustTask<Value> = serde_json::to_value(doc)
+            .and_then(serde_json::from_value)
+            .map_err(|e| {
+                VerificationError::MalformedProof(format!("document is not a Trust Task: {e}"))
+            })?;
+        self.verify_json(&doc).await
+    }
+
+    async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+        DynProofVerifier::verify_received(self, received).await
+    }
+}
+
 /// Wrap a concrete [`ProofVerifier`] in an `Arc<dyn DynProofVerifier>`
 /// so it can be stored on shared state — typically on a transport
 /// binding's server-builder. The single-line version of:

@@ -41,7 +41,7 @@ To propose a new spec:
    npm run build      # parses front matter, validates schemas, regenerates the website registry
    ```
    `npm run validate` runs the same checks without touching the website tree.
-6. **Commit with DCO sign-off** (`git commit -s`) and **open a pull request** against `main`. `CODEOWNERS` routes review to the editors responsible for your slug's namespace.
+6. **Commit with DCO sign-off** (`git commit -s`) and **open a pull request** against `main`. `.github/CODEOWNERS` requests review from the maintainers.
 
 See [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md) for the full authoring guide — slug grammar, version rules, the meta-schema, request/response schemas, error-code namespacing, and how a spec graduates from `draft` to `candidate` to `standard`.
 

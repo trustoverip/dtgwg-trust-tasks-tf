@@ -388,3 +388,52 @@ fn caller_supplied_in_response_to_is_preserved() {
     assert_eq!(about.type_uri, "https://trusttasks.org/spec/acl/revoke/0.1");
     assert_eq!(about.id, None);
 }
+
+/// SPEC §8.1: an error response's `issuer` is the consumer that emitted it. A
+/// document misaddressed to another VID is refused `wrongRecipient`, and the
+/// refusal must not claim to come from that VID: it is issued as the
+/// transport's own identity where there is one, and with no `issuer` where
+/// there is not.
+#[test]
+fn handler_reject_issues_the_error_as_the_consumer() {
+    let req = request(
+        Some("did:web:verifier.example"),
+        Some("did:web:someone-else.example"),
+    );
+    let reason = RejectReason::WrongRecipient {
+        in_band: "did:web:someone-else.example".into(),
+        expected: "did:web:bank.example".into(),
+    };
+
+    let handler = InMemoryHandler::new()
+        .with_local("did:web:bank.example")
+        .with_peer("did:web:verifier.example");
+    let response = handler.reject(&req, "err-1", reason.clone()).unwrap();
+    assert_eq!(response.issuer.as_deref(), Some("did:web:bank.example"));
+    assert_eq!(
+        response.recipient.as_deref(),
+        Some("did:web:verifier.example")
+    );
+
+    // Another refusal of the same document is issued by the consumer too, not
+    // by the unchecked in-band recipient.
+    let other = handler
+        .reject(&req, "err-2", RejectReason::ProofRequired)
+        .unwrap();
+    assert_eq!(other.issuer.as_deref(), Some("did:web:bank.example"));
+
+    // No transport identity: the in-band recipient is not this consumer under
+    // wrongRecipient, so the error names no issuer at all.
+    let anonymous = InMemoryHandler::new();
+    let response = anonymous.reject(&req, "err-3", reason).unwrap();
+    assert_eq!(response.issuer, None);
+    // For other refusals the in-band recipient still stands.
+    let ok_req = request(
+        Some("did:web:verifier.example"),
+        Some("did:web:bank.example"),
+    );
+    let response = anonymous
+        .reject(&ok_req, "err-4", RejectReason::ProofRequired)
+        .unwrap();
+    assert_eq!(response.issuer.as_deref(), Some("did:web:bank.example"));
+}
