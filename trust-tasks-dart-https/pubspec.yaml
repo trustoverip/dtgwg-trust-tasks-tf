@@ -28,5 +28,5 @@ dependencies:
 
 dev_dependencies:
   # ^4, not ^5: lints 5 requires SDK 3.5, and this package's floor is 3.3.
-  lints: ^4.0.0
+  lints: ">=4.0.0 <7.0.0"
   test: ^1.25.0
