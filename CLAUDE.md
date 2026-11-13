@@ -122,7 +122,7 @@ defects three times.
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
-| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; every JSX file and `index.html`'s inline script compiles under the pinned `@babel/standalone`, and (after `npm run build`) the app renders a set of routes through React's server renderer against the real registry (`BABEL_JS`, `REACT_JS`, `REACT_DOM_SERVER_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
+| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.template.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; the page code compiles through the build's esbuild step, the template's production React pins match their files, and (after `npm run build`) the built bundle `index.html` names renders a set of routes through React's development server renderer against the real registry (`REACT_JS`, `REACT_DOM_SERVER_JS`, `REACT_PROD_JS`, `REACT_DOM_PROD_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout (for TS, the newest on npm while the checkout's is unpublished — the Release PR — with a warning) | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
@@ -1039,6 +1039,18 @@ The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push 
 `website/specs/` including its `bundle.json`s and `index.json`,
 `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
+
+**`website/index.html` is generated too** (#1147). The page has no in-browser
+compiler: `scripts/build-website.mjs` (run by `npm run build`, or alone as
+`node scripts/build-website.mjs` while editing JSX) compiles
+`components.jsx`, `pages.jsx` and `app.jsx` with esbuild into one
+content-hashed `website/assets/app.<hash>.js`, and writes `index.html` from
+`website/index.template.html` naming it. Edit the template and the `.jsx`
+files. The three are classic scripts sharing one global scope (pages.jsx calls
+components.jsx's functions), so they are compiled one by one and concatenated,
+never bundled as modules; a new `.jsx` file must be added to `JSX_FILES`
+there, and the build fails until it is. React and `marked` stay UMD globals
+from unpkg, pinned by `integrity` in the template.
 
 The libraries publish via `.github/workflows/publish.yml`, but **not on merge** —
 that workflow keeps a Release PR up to date, and merging the Release PR is the

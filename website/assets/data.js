@@ -6,7 +6,7 @@
    generated from specs/<slug>/<version>/ by
    scripts/build-registry.mjs and written to
    tasks.generated.js, which is loaded after this file in
-   index.html.
+   index.template.html.
 
    IMPORTANT: keep `id` values in sync with the enum in
    `specs/spec.meta.schema.json#/properties/category`. The build

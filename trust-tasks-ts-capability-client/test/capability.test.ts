@@ -13,8 +13,11 @@ import {
   parseEnvelopeDocument,
   parseEnvelopeDocumentFor,
   classifyGitTrustReply,
+  classifyGitTrustReplyTo,
   parseCapabilityReply,
+  parseCapabilityReplyTo,
   parseEnvelopeReply,
+  answersRequest,
   GIT_TRUST_GRANT_TYPE,
   GIT_TRUST_REVOKE_TYPE,
   GIT_TRUST_ALREADY_GRANTED_CODE,
@@ -154,7 +157,6 @@ test("parseCapabilityReply: a listing", () => {
         manifest: { capability: "git-trust", title: "Git Trust", version: "0.1" },
       },
       { enabled: false, manifest: { capability: "audit", version: "1.0" } },
-      { enabled: true }, // no manifest — dropped
     ],
   });
   const r = parseCapabilityReply(doc, "urn:thread:1");
@@ -200,6 +202,94 @@ test("parseEnvelopeReply: body → reply in one step", () => {
   const listing = reply(`${CAPABILITY_LIST_TYPE}#response`, "urn:thread:9", { capabilities: [] });
   assert.deepEqual(parseEnvelopeReply(listing, "urn:thread:9"), { kind: "listing", entries: [] });
   assert.equal(parseEnvelopeReply(listing, "wrong-thread"), undefined);
+});
+
+// --- binding a reply to the request it answers ------------------------------
+
+/** The reply a conforming consumer sends to `request` (SPEC §4.9, §8.1). */
+function answer(request: CapabilityDocument, type: string, payload: Record<string, unknown>): CapabilityDocument {
+  return {
+    id: "urn:uuid:answer",
+    type,
+    threadId: correlationThread(request),
+    issuer: request.recipient,
+    recipient: request.issuer,
+    payload,
+  };
+}
+
+test("a reply answers only the request it was made for", () => {
+  const grant = buildGitTrustGrant("did:a", "did:r", "did:s", "org");
+  const ok = answer(grant, `${GIT_TRUST_GRANT_TYPE}#response`, {});
+  assert.equal(answersRequest(ok, grant), true);
+  assert.deepEqual(classifyGitTrustReplyTo(ok, grant), { kind: "success" });
+
+  // From someone other than the registry it was sent to, or for someone else.
+  assert.equal(classifyGitTrustReplyTo({ ...ok, issuer: "did:someone-else" }, grant), undefined);
+  assert.equal(classifyGitTrustReplyTo({ ...ok, issuer: undefined }, grant), undefined);
+  assert.equal(classifyGitTrustReplyTo({ ...ok, recipient: "did:someone-else" }, grant), undefined);
+  // A revoke's response on the grant's thread does not complete the grant.
+  assert.equal(classifyGitTrustReplyTo({ ...ok, type: `${GIT_TRUST_REVOKE_TYPE}#response` }, grant), undefined);
+
+  // An idempotent refusal from the registry is still an idempotent success —
+  // unless it names another request.
+  const already = answer(grant, ERROR_TYPE, { code: GIT_TRUST_ALREADY_GRANTED_CODE });
+  assert.deepEqual(classifyGitTrustReplyTo(already, grant), { kind: "idempotentSuccess" });
+  const naming = (id: string) => ({ ...already, payload: { ...already.payload, inResponseTo: { id } } });
+  assert.deepEqual(classifyGitTrustReplyTo(naming(grant.id), grant), { kind: "idempotentSuccess" });
+  assert.equal(classifyGitTrustReplyTo(naming("urn:uuid:another"), grant), undefined);
+
+  // The governance family is bound the same way, and the families do not mix.
+  const toggle = buildToggleDocument("did:me", "did:vtc", "git-trust", "0.1", true);
+  const ack = answer(toggle, `${toggle.type}#response`, { capability: "git-trust", enabled: true });
+  assert.deepEqual(parseCapabilityReplyTo(ack, toggle), { kind: "toggled", capability: "git-trust", enabled: true });
+  assert.equal(parseCapabilityReplyTo({ ...ack, issuer: "did:someone-else" }, toggle), undefined);
+  assert.equal(parseCapabilityReplyTo(already, grant), undefined);
+  const list = buildListDocument("did:me", "did:vtc");
+  assert.equal(classifyGitTrustReplyTo(answer(list, `${CAPABILITY_LIST_TYPE}#response`, { capabilities: [] }), list), undefined);
+});
+
+test("only the registry authority is read as this family or an error", () => {
+  const foreignError = reply("https://elsewhere.example/spec/trust-task-error/9.9", "urn:thread:1", {
+    code: GIT_TRUST_ALREADY_GRANTED_CODE,
+  });
+  assert.equal(classifyGitTrustReply(foreignError, "urn:thread:1"), undefined);
+  assert.equal(parseCapabilityReply(foreignError, "urn:thread:1"), undefined);
+  const foreignAck = reply("https://elsewhere.example/spec/git-trust/grant/0.1#response", "urn:thread:1", {});
+  assert.equal(classifyGitTrustReply(foreignAck, "urn:thread:1"), undefined);
+  const foreignListing = reply("https://elsewhere.example/spec/governance/capability/list/0.1#response", "urn:thread:1", {
+    capabilities: [],
+  });
+  assert.equal(parseCapabilityReply(foreignListing, "urn:thread:1"), undefined);
+});
+
+test("a malformed governance reply reports nothing", () => {
+  const toggleType = "https://trusttasks.org/spec/governance/capability/enable/0.1#response";
+  for (const payload of [
+    { capability: "git-trust" },
+    { capability: "git-trust", enabled: "yes" },
+    { enabled: true },
+    { capability: 7, enabled: false },
+  ]) {
+    assert.equal(parseCapabilityReply(reply(toggleType, "urn:thread:1", payload), "urn:thread:1"), undefined);
+  }
+  for (const payload of [
+    {},
+    { capabilities: {} },
+    { capabilities: [{ manifest: { capability: "x" } }] },
+    { capabilities: [{ enabled: true }] },
+  ]) {
+    const doc = reply(`${CAPABILITY_LIST_TYPE}#response`, "urn:thread:1", payload);
+    assert.equal(parseCapabilityReply(doc, "urn:thread:1"), undefined, JSON.stringify(payload));
+  }
+});
+
+test("a body without an object payload is not a document", () => {
+  for (const payload of [undefined, null, "x", 7, []]) {
+    const body = { id: "urn:uuid:r", type: ERROR_TYPE, threadId: "urn:thread:1", payload };
+    assert.equal(parseEnvelopeDocument(body), undefined, JSON.stringify(payload));
+    assert.equal(parseEnvelopeReply(body, "urn:thread:1"), undefined);
+  }
 });
 
 test("unused import guard", () => {

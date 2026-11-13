@@ -5,7 +5,7 @@
 //
 // `marked` is not an npm dependency here: the page loads it from a CDN. The
 // end-to-end tests load the same file — the URL and `integrity` hash pinned in
-// website/index.html — and refuse it unless its SHA-384 matches that hash. Set
+// website/index.template.html — and refuse it unless its SHA-384 matches that hash. Set
 // MARKED_JS to a local copy to run offline; the hash is checked either way.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,9 +20,9 @@ const website = path.join(here, '..', '..', 'website');
 const source = fs.readFileSync(path.join(website, 'assets', 'markdown.js'), 'utf8');
 
 async function loadMarked() {
-  const index = fs.readFileSync(path.join(website, 'index.html'), 'utf8');
+  const index = fs.readFileSync(path.join(website, 'index.template.html'), 'utf8');
   const tag = /<script src="(https:\/\/[^"]*\/marked@[^"]+)" integrity="(sha384-[^"]+)"/.exec(index);
-  assert.ok(tag, 'index.html pins marked with an integrity hash');
+  assert.ok(tag, 'index.template.html pins marked with an integrity hash');
   const [, url, integrity] = tag;
   let bytes;
   if (process.env.MARKED_JS) {
@@ -33,7 +33,7 @@ async function loadMarked() {
     bytes = Buffer.from(await res.arrayBuffer());
   }
   const actual = 'sha384-' + crypto.createHash('sha384').update(bytes).digest('base64');
-  assert.equal(actual, integrity, `${url} does not match the integrity hash in index.html`);
+  assert.equal(actual, integrity, `${url} does not match the integrity hash in index.template.html`);
   return bytes.toString('utf8');
 }
 

@@ -140,6 +140,25 @@ func TestRefusals(t *testing.T) {
 		_, err := tsp.UnpackTrustTask(seal(t), carol, alice.Public())
 		assertFailure(t, err, tsp.FailNotForThisReceiver)
 	})
+	t.Run("sealed to the receiver's key under another VID", func(t *testing.T) {
+		other := bob.Public()
+		other.VID = "did:example:someone-else"
+		wire, err := tsp.PackTrustTask(echoDoc(defaultID, "hello", nil), alice, other)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = tsp.UnpackTrustTask(wire, bob, alice.Public())
+		assertFailure(t, err, tsp.FailNotForThisReceiver)
+	})
+	t.Run("transport recipient is the opening identity", func(t *testing.T) {
+		u, err := tsp.UnpackTrustTask(seal(t), bob, alice.Public())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if u.Transport.Local != bob.VID || u.Transport.Peer != alice.VID {
+			t.Fatalf("transport = %+v", u.Transport)
+		}
+	})
 	t.Run("wrong sender", func(t *testing.T) {
 		_, err := tsp.UnpackTrustTask(seal(t), bob, carol.Public())
 		assertFailure(t, err, tsp.FailNotForThisReceiver)

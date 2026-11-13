@@ -173,6 +173,19 @@ func UnpackTrustTask(wire []byte, recipient *tsp.PrivateIdentity, sender *tsp.Id
 		}
 	}
 
+	// The receiver VID on the wire is the one the sender wrote: the seal proves
+	// only that the message was encrypted to this recipient's key. A message
+	// naming another VID is not for this consumer, whose identity it would
+	// otherwise become (and so the issuer of every answer). An empty receiver
+	// is the NULL-VID form, opened as recipient.
+	if msg.Receiver != "" && msg.Receiver != recipient.VID {
+		return nil, &EnvelopeError{
+			Failure: FailNotForThisReceiver,
+			Sender:  msg.Sender,
+			Detail:  "the message is not addressed to this receiver",
+		}
+	}
+
 	// §2: the payload MUST be sealed, not merely signed.
 	if !msg.Scheme.Confidential() {
 		return nil, &EnvelopeError{
@@ -220,15 +233,9 @@ func UnpackTrustTask(wire []byte, recipient *tsp.PrivateIdentity, sender *tsp.Id
 		}
 	}
 
-	local := msg.Receiver
-	if local == "" {
-		// The NULL-VID form, which this binding does not send; fall back to the
-		// opening identity.
-		local = recipient.VID
-	}
 	return &Unpacked{
 		Document:  env.Document,
-		Transport: Transport{Local: local, Peer: msg.Sender},
+		Transport: Transport{Local: recipient.VID, Peer: msg.Sender},
 	}, nil
 }
 

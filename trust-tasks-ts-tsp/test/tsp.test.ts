@@ -116,6 +116,31 @@ test("a message sealed to bob does not open for carol", async () => {
   );
 });
 
+test("a message sealed to bob's key but naming another receiver VID is refused", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const other = "did:example:someone-else";
+  const wire = await packTrustTask(echoDoc({ recipient: other }), {
+    senderVid: alice.vid,
+    receiverVid: other,
+    keys: packKeys(alice, bob),
+  });
+  await assert.rejects(
+    unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) }),
+    (e: unknown) =>
+      e instanceof TspEnvelopeError && e.failure === "notForThisReceiver" && e.sender === alice.vid,
+  );
+});
+
+test("the transport recipient is the configured VID", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const wire = await packTrustTask(echoDoc(), { senderVid: alice.vid, receiverVid: bob.vid, keys: packKeys(alice, bob) });
+  const { transport } = await unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) });
+  assert.equal(transport.local, bob.vid);
+  assert.equal(transport.peer, alice.vid);
+});
+
 test("a tampered message does not open", async () => {
   const alice = party("did:example:alice", 1);
   const bob = party("did:example:bob", 2);
