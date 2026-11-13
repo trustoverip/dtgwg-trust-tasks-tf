@@ -376,10 +376,10 @@ status: draft
 targetFrameworkVersion: "${ctx.targetFrameworkVersion}"
 category: ${category}
 # keywords and authors are OPTIONAL, and omitted here on purpose: the build derives
-# keywords from the slug segments + category, and authors from CODEOWNERS (falling
-# back to this folder's git history). Declare them only where the derivation would
-# be wrong \u2014 a term a searcher would use that appears nowhere in the slug, or an
-# editor who is not this slug's CODEOWNER.
+# keywords from the slug segments + category, and authors from this folder's git
+# history. Declare them only where the derivation would be wrong \u2014 a term a
+# searcher would use that appears nowhere in the slug, or an editor who is not the
+# folder's committer.
 #   keywords: [${[...new Set(slug.split('/').flatMap((x) => x.split('-')))].join(', ')}, a-term-a-searcher-would-use]
 #   authors:
 #     - Your Name (https://github.com/your-handle)
