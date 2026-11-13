@@ -159,18 +159,7 @@ fn echo(id: &str, message: &str) -> Value {
 /// POST `body` with `token` as the bearer; the status and the parsed body
 /// (`Value::Null` when there is none).
 async fn post(addr: SocketAddr, token: Option<&str>, body: &Value) -> (u16, Value) {
-    post_with(&reqwest::Client::new(), addr, token, body).await
-}
-
-/// [`post`] through a client the caller built, so a timed request does not
-/// include building the client (which loads the TLS root store).
-async fn post_with(
-    client: &reqwest::Client,
-    addr: SocketAddr,
-    token: Option<&str>,
-    body: &Value,
-) -> (u16, Value) {
-    let mut request = client
+    let mut request = reqwest::Client::new()
         .post(format!("http://{addr}/trust-tasks"))
         .header("content-type", "application/json")
         .body(body.to_string());
@@ -330,33 +319,62 @@ async fn an_async_authenticator_authenticates_the_sender() {
 
 /// A synchronous handler that blocks runs on a multi-threaded runtime (under
 /// `block_in_place`) and the server keeps answering other requests meanwhile.
+///
+/// Ordered by signals, not by the clock: the slow handler blocks until the
+/// test releases it, and the test releases it only after the fast request has
+/// been answered. Had the blocking handler stalled the server, the fast request
+/// could not be answered while the slow one is still held, and the bounded wait
+/// below fails instead of hanging. (It used to assert the fast request took
+/// under 250 ms, which a loaded CI runner can miss with nothing wrong.)
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn a_blocking_sync_handler_runs_on_a_multi_thread_runtime() {
-    let server = base()
-        .on::<Echo, _>(|req, _ctx| {
-            if req.payload.message == "slow" {
-                std::thread::sleep(Duration::from_millis(300));
-            }
-            Ok(EchoResponse {
-                message: req.payload.message.clone(),
+    let entered = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let (release, held) = std::sync::mpsc::channel::<()>();
+    let held = Arc::new(Mutex::new(held));
+    let server = {
+        let entered = entered.clone();
+        let held = held.clone();
+        base()
+            .on::<Echo, _>(move |req, _ctx| {
+                if req.payload.message == "slow" {
+                    entered.store(true, Ordering::SeqCst);
+                    // Bounded so a broken test cannot hang the suite.
+                    let _ = held.lock().unwrap().recv_timeout(Duration::from_secs(30));
+                }
+                Ok(EchoResponse {
+                    message: req.payload.message.clone(),
+                })
             })
-        })
-        .build();
+            .build()
+    };
     let addr = spawn(server).await;
 
     let slow =
         tokio::spawn(
             async move { post(addr, Some("alice"), &echo("urn:uuid:slow", "slow")).await },
         );
-    let client = reqwest::Client::new();
-    tokio::time::sleep(Duration::from_millis(50)).await;
-    let started = std::time::Instant::now();
-    let (status, _) = post_with(&client, addr, Some("alice"), &echo("urn:uuid:fast", "fast")).await;
+    // Wait until the slow handler is inside its blocking section.
+    tokio::time::timeout(Duration::from_secs(10), async {
+        while !entered.load(Ordering::SeqCst) {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("the slow handler never started");
+
+    let (status, _) = tokio::time::timeout(
+        Duration::from_secs(10),
+        post(addr, Some("alice"), &echo("urn:uuid:fast", "fast")),
+    )
+    .await
+    .expect("a blocking handler must not stall the other requests");
     assert_eq!(status, 200);
     assert!(
-        started.elapsed() < Duration::from_millis(250),
-        "a blocking handler must not stall the other requests"
+        !slow.is_finished(),
+        "the slow request must still be held while the fast one is answered"
     );
+
+    release.send(()).unwrap();
     assert_eq!(slow.await.unwrap().0, 200);
 }
 
