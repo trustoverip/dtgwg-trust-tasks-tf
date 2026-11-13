@@ -99,31 +99,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Remove Account — response payload",
-      "description": "The success response to a messaging/account/remove request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/remove/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "removed"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Vid",
-          "description": "The account that was removed."
-        },
-        "removed": {
-          "type": "boolean",
-          "description": "Whether the account was removed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -87,24 +87,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Directory — Summary — response payload",
-      "description": "Counts over the network's published set.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "summary"
-      ],
-      "properties": {
-        "summary": {
-          "$ref": "#/$defs/DirectorySummary"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -113,39 +95,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "DirectorySummary": {
-      "description": "Counts over the published set.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "communities",
-        "networks",
-        "acknowledged",
-        "unacknowledged"
-      ],
-      "properties": {
-        "communities": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Published community entries."
-        },
-        "networks": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Published network entries."
-        },
-        "acknowledged": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Of those, members."
-        },
-        "unacknowledged": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Of those, listed but not members."
-        }
       }
     },
     "Membership": {
@@ -220,10 +169,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Of those, listed but not members."
         }
       }
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
 };

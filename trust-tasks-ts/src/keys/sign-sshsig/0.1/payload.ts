@@ -153,40 +153,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys — Sign SSHSIG — response payload",
-      "description": "The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "algorithm",
-        "signature"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable."
-        },
-        "algorithm": {
-          "type": "string",
-          "enum": [
-            "EdDSA",
-            "ES256"
-          ],
-          "description": "The algorithm the signature was made with — the one the request named."
-        },
-        "signature": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

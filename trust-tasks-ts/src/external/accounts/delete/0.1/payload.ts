@@ -97,28 +97,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "External Accounts — Delete — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "deletedAt"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/AccountId"
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -191,13 +169,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 64,
       "pattern": "^[a-z0-9][a-z0-9-]*$",
       "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist."
-    },
-    "AccountContextId": {
-      "title": "AccountContextId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space."
     }
   }
 };

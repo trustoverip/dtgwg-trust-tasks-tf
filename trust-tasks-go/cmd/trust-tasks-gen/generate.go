@@ -274,13 +274,13 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 		}
 	}
 
-	requestJSON, err := compact(b.Schema)
+	requestJSON, err := compactPruned(b.Schema)
 	if err != nil {
 		return generated{}, err
 	}
 	responseJSON := ""
 	if hasResponse {
-		if responseJSON, err = compact(b.ResponseSchema); err != nil {
+		if responseJSON, err = compactPruned(b.ResponseSchema); err != nil {
 			return generated{}, err
 		}
 	}
@@ -324,6 +324,121 @@ func sourceLabel(source string) string {
 		return ""
 	}
 	return source + ":"
+}
+
+// compactPruned is compact over pruneUnreachableDefs: the text of a schema
+// constant.
+func compactPruned(raw json.RawMessage) (string, error) {
+	pruned, err := pruneUnreachableDefs(raw)
+	if err != nil {
+		return "", err
+	}
+	return compact(pruned)
+}
+
+// pruneUnreachableDefs returns raw with every root `$defs` entry its root does
+// not reach removed (#1098), and `$defs` dropped when none survive.
+//
+// A bundle's request schema carries `$defs.Response` and what only the
+// response uses, and its response schema a copy of every request definition.
+// Only the emitted constants are pruned — never the schema the types come
+// from, and never the bundle. Reachability follows each `$ref` of the form
+// `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the root
+// object without its `$defs` (its own `$ref` included — all a response
+// document has), then each reached definition whole. Any other
+// local `$ref` (`#`, an anchor) keeps every definition. The other generators
+// each implement the same rule independently; check-bindings compares the
+// results.
+//
+// The bundle is canonical (key-sorted), so re-encoding the root and `$defs` as
+// maps keeps their order.
+func pruneUnreachableDefs(raw json.RawMessage) (json.RawMessage, error) {
+	var root map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &root); err != nil {
+		return nil, err
+	}
+	var defs map[string]json.RawMessage
+	if d, ok := root["$defs"]; !ok || json.Unmarshal(d, &defs) != nil || defs == nil {
+		return raw, nil
+	}
+	reached := map[string]bool{}
+	opaque := false
+	var frontier []any
+	push := func(r json.RawMessage) error {
+		var v any
+		if err := json.Unmarshal(r, &v); err != nil {
+			return err
+		}
+		frontier = append(frontier, v)
+		return nil
+	}
+	rootView := make(map[string]json.RawMessage, len(root))
+	for k, v := range root {
+		if k != "$defs" {
+			rootView[k] = v
+		}
+	}
+	if view, err := json.Marshal(rootView); err != nil {
+		return nil, err
+	} else if err := push(view); err != nil {
+		return nil, err
+	}
+	for len(frontier) > 0 {
+		node := frontier[len(frontier)-1]
+		frontier = frontier[:len(frontier)-1]
+		switch t := node.(type) {
+		case []any:
+			frontier = append(frontier, t...)
+		case map[string]any:
+			if ref, ok := t["$ref"].(string); ok {
+				if rest, ok := strings.CutPrefix(ref, "#/$defs/"); ok {
+					name, _, _ := strings.Cut(rest, "/")
+					name = strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")
+					if def, ok := defs[name]; ok && !reached[name] {
+						reached[name] = true
+						if err := push(def); err != nil {
+							return nil, err
+						}
+					}
+				} else if strings.HasPrefix(ref, "#") {
+					opaque = true
+				}
+			}
+			for _, v := range t {
+				frontier = append(frontier, v)
+			}
+		}
+	}
+	if opaque {
+		return raw, nil
+	}
+	for name := range defs {
+		if !reached[name] {
+			delete(defs, name)
+		}
+	}
+	if len(defs) == 0 {
+		delete(root, "$defs")
+	} else {
+		kept, err := marshalNoEscape(defs)
+		if err != nil {
+			return nil, err
+		}
+		root["$defs"] = kept
+	}
+	return marshalNoEscape(root)
+}
+
+// marshalNoEscape is json.Marshal without HTML escaping, so a `<` in a
+// description stays as written.
+func marshalNoEscape(v any) (json.RawMessage, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
 func compact(raw json.RawMessage) (string, error) {

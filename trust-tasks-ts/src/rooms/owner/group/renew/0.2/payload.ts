@@ -119,33 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Group Renew — response payload",
-      "description": "Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "The room epoch after the renewal, as the host recorded it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

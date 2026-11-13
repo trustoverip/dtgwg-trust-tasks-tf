@@ -157,49 +157,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Present — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "presentation",
-        "disclosed"
-      ],
-      "properties": {
-        "presentation": {
-          "anyOf": [
-            {
-              "type": "object",
-              "minProperties": 1,
-              "description": "A W3C Verifiable Presentation carrying `nonce` and `domain` as members its holder's Data Integrity proof signs."
-            },
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 65536,
-              "description": "A compact SD-JWT presentation with a key-binding JWT carrying `nonce` and `aud`."
-            }
-          ],
-          "description": "The presentation, to be carried to the verifier unchanged."
-        },
-        "disclosed": {
-          "type": "array",
-          "uniqueItems": true,
-          "maxItems": 256,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "description": "The names of the subject claims the presentation discloses."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

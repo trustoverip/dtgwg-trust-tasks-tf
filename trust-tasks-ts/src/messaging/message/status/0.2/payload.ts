@@ -118,62 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "MessageState": {
-      "title": "MessageState",
-      "type": "string",
-      "enum": [
-        "queued",
-        "delivered",
-        "collected",
-        "withdrawn",
-        "discarded",
-        "unknown"
-      ],
-      "description": "Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester."
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Message Status — response payload",
-      "description": "The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "statuses": {
-          "type": "array",
-          "description": "One entry per requested msgId, in request order.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "msgId",
-              "state"
-            ],
-            "properties": {
-              "msgId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 256
-              },
-              "state": {
-                "$ref": "#/$defs/MessageState"
-              },
-              "reachedAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "statuses"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

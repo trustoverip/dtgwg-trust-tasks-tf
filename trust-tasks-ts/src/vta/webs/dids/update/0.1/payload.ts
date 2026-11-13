@@ -219,82 +219,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Designation": {
-      "title": "WebsDesignationKind",
-      "description": "A kind of designation an update replaced.",
-      "type": "string",
-      "enum": [
-        "aliases",
-        "keyAgreement",
-        "services"
-      ]
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA did:webs DIDs Update — response payload",
-      "description": "Success response to vta/webs/dids/update. Type https://trusttasks.org/spec/vta/webs/dids/update/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "replaced",
-        "sequenceNumber",
-        "versionId",
-        "keyAgreementKeyId",
-        "keyAgreementKey",
-        "alsoKnownAs",
-        "serviceIds"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "replaced": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Designation"
-          },
-          "description": "The designations this update replaced."
-        },
-        "sequenceNumber": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Sequence number of the interaction event that anchors the replacements."
-        },
-        "versionId": {
-          "type": "string",
-          "pattern": "^[0-9]+:[A-Za-z0-9_-]+$",
-          "description": "That event as `<sequence number>:<SAID>`. A caller intending a further change passes it as `expectedVersionId`."
-        },
-        "keyAgreementKeyId": {
-          "type": "string",
-          "description": "The VTA's id for the key agreement key in force after the update."
-        },
-        "keyAgreementKey": {
-          "type": "string",
-          "description": "The key agreement key in force after the update, in CESR."
-        },
-        "alsoKnownAs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The designated aliases in force after the update, the DID itself first."
-        },
-        "serviceIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Ids of the designated services in force after the update."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -377,34 +301,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "ServiceSet": {
-      "title": "WebsServiceSet",
-      "description": "A whole set of designated services, stated in full so that a replacement never depends on what the caller believes is already there.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mediator",
-        "tsp"
-      ],
-      "properties": {
-        "mediator": {
-          "type": "boolean",
-          "description": "Whether `#didcomm`, typed `DIDCommMessaging`, with the VTA's mediator's DID as its endpoint, is in the set."
-        },
-        "tsp": {
-          "type": "boolean",
-          "description": "Whether `#tsp`, typed `TSPTransport`, with the VTA's mediator's DID as its endpoint, is in the set."
-        },
-        "additional": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/DesignatedService"
-          },
-          "description": "Further services in the set. Absent means none. None may use `#didcomm` or `#tsp`."
-        }
-      }
-    },
     "Designation": {
       "title": "WebsDesignationKind",
       "description": "A kind of designation an update replaced.",
@@ -489,70 +385,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "DesignatedService": {
-      "title": "DesignatedService",
-      "description": "A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.",
-      "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "id",
-        "type",
-        "serviceEndpoint"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^#[A-Za-z0-9._~-]+$",
-          "description": "The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused."
-        },
-        "type": {
-          "description": "The service type, matched by peers on its value, never on `id`.",
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "string",
-                "minLength": 1
-              }
-            }
-          ]
-        },
-        "serviceEndpoint": {
-          "description": "A URI, a map, or a set of either, as the DID document data model allows.",
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "object",
-              "additionalProperties": true
-            },
-            {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "oneOf": [
-                  {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  {
-                    "type": "object",
-                    "additionalProperties": true
-                  }
-                ]
-              }
-            }
-          ]
-        }
       }
     }
   }

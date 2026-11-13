@@ -154,30 +154,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Issue Authority — response payload",
-      "description": "Success response to rooms/owner/issue-authority. Type https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response. The signed VAC, a chain root at the room's scope.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credential",
-        "credentialId"
-      ],
-      "properties": {
-        "credential": {
-          "type": "string",
-          "description": "The signed Verifiable Authority Credential, serialised."
-        },
-        "credentialId": {
-          "type": "string",
-          "description": "Its `id`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -293,71 +269,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "PurposeScope": {
-      "title": "PurposeScope",
-      "description": "An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/PurposeScopeAny"
-        },
-        {
-          "$ref": "#/$defs/PurposeScopeListed"
-        }
-      ]
-    },
-    "PurposeScopeListed": {
-      "title": "PurposeScopeListed",
-      "description": "Exactly the listed purposes. A request naming any other purpose is refused.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "scope",
-        "purposes"
-      ],
-      "properties": {
-        "scope": {
-          "const": "listed"
-        },
-        "purposes": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 32,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Purpose"
-          },
-          "description": "Non-empty set of purposes. An empty array is invalid (it is not `any`)."
-        }
-      }
-    },
-    "Purpose": {
-      "title": "Purpose",
-      "description": "What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.",
-      "type": "string",
-      "maxLength": 2048,
-      "anyOf": [
-        {
-          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
-        },
-        {
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s]+$"
-        }
-      ]
-    },
-    "PurposeScopeAny": {
-      "title": "PurposeScopeAny",
-      "description": "Any purpose except `modelTraining` (training, fine-tuning or evaluating a machine-learning model on the content), which `any` never grants (VTI-ACL-105).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "scope"
-      ],
-      "properties": {
-        "scope": {
-          "const": "any"
-        }
       }
     }
   }

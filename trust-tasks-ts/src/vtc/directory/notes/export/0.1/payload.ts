@@ -103,38 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Notes — Export — response payload",
-      "description": "The success response to a vtc/directory/notes/export/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/export/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entryId",
-        "notes",
-        "exportedAt"
-      ],
-      "properties": {
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "notes": {
-          "type": "array",
-          "maxItems": 10000,
-          "items": {
-            "$ref": "#/$defs/AdminNote"
-          },
-          "description": "Every note about the entry, oldest first, with the text of redacted notes included."
-        },
-        "exportedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -144,65 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "AdminNote": {
-      "title": "AdminNote",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "noteId",
-        "entryId",
-        "author",
-        "createdAt"
-      ],
-      "properties": {
-        "noteId": {
-          "$ref": "#/$defs/NoteId"
-        },
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "author": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "DID of the administrator who wrote the note."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "text": {
-          "$ref": "#/$defs/NoteText",
-          "description": "The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written."
-        },
-        "followUp": {
-          "type": "string",
-          "format": "date",
-          "description": "Optional date by which the note asks for a follow-up."
-        },
-        "redacts": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a redaction: the earlier note this one withdraws."
-        },
-        "redactedBy": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a note that a later note redacted."
-        }
-      }
-    },
-    "NoteId": {
-      "title": "NoteId",
-      "description": "Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.",
-      "type": "string",
-      "pattern": "^note_[A-Za-z0-9_-]{16,64}$"
-    },
-    "NoteText": {
-      "title": "NoteText",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2000,
-      "description": "The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions."
     },
     "EntryId": {
       "title": "EntryId",

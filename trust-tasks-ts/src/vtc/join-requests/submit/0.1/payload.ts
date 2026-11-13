@@ -112,30 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Submit — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "status"
-      ],
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Id of the created join request (a UUID)."
-        },
-        "status": {
-          "type": "string",
-          "const": "pending"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

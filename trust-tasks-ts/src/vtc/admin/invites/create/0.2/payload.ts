@@ -121,52 +121,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Invites Create — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jti",
-        "kind",
-        "installUrl",
-        "claimCode",
-        "expiresAt",
-        "aclEntryCreated"
-      ],
-      "properties": {
-        "jti": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Invite identifier; the revoke target."
-        },
-        "kind": {
-          "$ref": "#/$defs/InviteKind"
-        },
-        "installUrl": {
-          "type": "string",
-          "minLength": 1,
-          "description": "One-shot enrolment URL. Returned once and never retrievable again."
-        },
-        "claimCode": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Secret that authorises the enrolment. Returned once."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the invite lapses."
-        },
-        "aclEntryCreated": {
-          "type": "boolean",
-          "description": "True when this call wrote an administrator entry: a wallet invitation for a DID that held none. Always false for a passkey invitation, whose entry is written when it is claimed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -176,16 +130,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "InviteKind": {
-      "$anchor": "inviteKind",
-      "title": "InviteKind",
-      "type": "string",
-      "enum": [
-        "wallet",
-        "passkey"
-      ],
-      "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
     }
   }
 };

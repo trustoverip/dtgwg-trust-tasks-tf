@@ -95,55 +95,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "HostingServer": {
-      "title": "HostingServer",
-      "description": "A did:webvh hosting server registered at the community's VTA, as that VTA reports it. Carries no credential.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "did"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9._:-]{1,128}$",
-          "description": "The server's id at the VTA: the value that names it in the community's configuration."
-        },
-        "did": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The server's own DID."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Config — DID Hosting — List — response payload",
-      "description": "The success response to a vtc/config/did-hosting/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/config/did-hosting/list/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "servers"
-      ],
-      "properties": {
-        "servers": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/HostingServer"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

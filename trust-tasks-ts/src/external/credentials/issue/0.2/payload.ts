@@ -482,63 +482,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       ]
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "External Credentials — Issue — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sealedCredential",
-        "expiresAt"
-      ],
-      "oneOf": [
-        {
-          "required": [
-            "scope"
-          ],
-          "not": {
-            "required": [
-              "presign"
-            ]
-          }
-        },
-        {
-          "required": [
-            "presign"
-          ],
-          "not": {
-            "required": [
-              "scope"
-            ]
-          }
-        }
-      ],
-      "properties": {
-        "sealedCredential": {
-          "type": "string",
-          "minLength": 64,
-          "maxLength": 262144,
-          "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$",
-          "description": "A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch."
-        },
-        "scope": {
-          "$ref": "#/$defs/CredentialScope",
-          "description": "The scope actually granted, which equals the requested one."
-        },
-        "presign": {
-          "$ref": "#/$defs/PresignBatch",
-          "description": "The batch actually presigned, which equals the requested one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -978,21 +921,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 512,
       "pattern": "^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$",
       "description": "An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation."
-    },
-    "AccountId": {
-      "title": "AccountId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9][a-z0-9-]*$",
-      "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist."
-    },
-    "AccountContextId": {
-      "title": "AccountContextId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space."
     }
   }
 };

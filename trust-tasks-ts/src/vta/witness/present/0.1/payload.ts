@@ -110,29 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Witness — Present — response payload",
-      "description": "The witness/session/submit document to send.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "document"
-      ],
-      "properties": {
-        "sessionId": {
-          "$ref": "#/$defs/SessionId"
-        },
-        "document": {
-          "$ref": "#/$defs/CarriedDocument",
-          "description": "The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -99,23 +99,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "schema"
-      ],
-      "properties": {
-        "schema": {
-          "$ref": "#/$defs/SchemaEntry"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -124,46 +107,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SchemaEntry": {
-      "title": "SchemaEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "typeUri",
-        "kind",
-        "createdAt",
-        "createdByDid"
-      ],
-      "description": "One registered credential type, as the community stores it.",
-      "properties": {
-        "typeUri": {
-          "$ref": "#/$defs/CredentialTypeUri"
-        },
-        "dtgType": {
-          "$ref": "#/$defs/DtgType"
-        },
-        "credentialSchema": {
-          "$ref": "#/$defs/CredentialSchema"
-        },
-        "kind": {
-          "$ref": "#/$defs/SchemaKind"
-        },
-        "description": {
-          "$ref": "#/$defs/SchemaDescription"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the entry."
-        }
       }
     },
     "SchemaDescription": {

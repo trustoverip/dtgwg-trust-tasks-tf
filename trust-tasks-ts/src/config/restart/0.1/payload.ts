@@ -82,31 +82,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Config Restart — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "supervisor",
-        "drainTimeoutSeconds"
-      ],
-      "properties": {
-        "supervisor": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The process supervisor that will bring the maintainer back up, detected by the maintainer. An opaque maintainer-defined label — the framework does not enumerate it (e.g. `systemd`, `kubernetes`, or an explicit operator opt-in). A maintainer that detects no supervisor MUST refuse (see errorCodes) rather than exit unsupervised."
-        },
-        "drainTimeoutSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How long the maintainer will drain in-flight work before exiting, so a caller knows the expected downtime window."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

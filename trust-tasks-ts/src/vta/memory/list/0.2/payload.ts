@@ -177,44 +177,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory List — response payload",
-      "description": "Success response to vta/memory/list. Type https://trusttasks.org/spec/vta/memory/list/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items",
-        "highWatermark"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MemoryRecord"
-          },
-          "description": "Matching items in ascending key order in snapshot mode, and ascending version order in change-feed mode — the latter so that a consumer applying them in order reaches the same state as the maintainer. May be empty."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Opaque continuation token for the next page, sent back as the request's `cursor`. Present when more matching items exist beyond this page; absent on the last page."
-        },
-        "highWatermark": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The context's current counter value; 0 for a context that has never been written. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `items`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page — the one with no `nextCursor` — because the pages of one feed share this value and adopting it early would skip the items still to come."
-        },
-        "tombstoneRetentionSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How long this maintainer retains tombstones before reaping them. Advisory, so a consumer can schedule its syncs to stay inside the window rather than discovering it has fallen out of it via vta/memory/list:watermarkTooOld."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -224,80 +186,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MemoryRecord": {
-      "title": "MemoryRecord",
-      "description": "A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "version",
-        "deleted",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VTA context the item is scoped to; the isolation boundary."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between."
-        },
-        "value": {
-          "$ref": "#/$defs/MemoryValue",
-          "description": "The remembered text. Absent when this is a tombstone or a metadata-only view."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone."
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write that produced this `version` was applied. For a tombstone, when the delete was applied."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
-        }
-      }
-    },
-    "MemoryValue": {
-      "title": "MemoryValue",
-      "description": "The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).",
-      "type": "string"
-    },
-    "MemoryVersion": {
-      "title": "MemoryVersion",
-      "description": "A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "MemoryKey": {
-      "title": "MemoryKey",
-      "description": "Agent-chosen identifier for an item within a context. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `vta/memory/list` is a byte-prefix comparison over the UTF-8 encoding. Agents SHOULD use `/`-delimited hierarchical keys (`contact/billing`, `preference/timezone`) so that `prefix` can address a family of items, but the delimiter is a convention between an agent and itself. A key is content as well as an address: a key naming a person, a condition or a dispute discloses something to anyone who can list the context, even without its value.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 512,
-      "pattern": "^[^\\u0000]+$"
     }
   }
 };

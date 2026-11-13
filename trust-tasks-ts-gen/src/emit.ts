@@ -120,9 +120,68 @@ interface TailInput {
   schemas: { request: JsonObject; response: JsonObject | null };
 }
 
+/**
+ * `doc` with every root `$defs` entry its root does not reach removed (#1098),
+ * the survivors in their order, and `$defs` dropped when none survive.
+ *
+ * The bundle's request schema carries `$defs.Response` and what only the
+ * response uses, and its response schema a copy of every request definition;
+ * only the emitted constants are pruned, never the schema the types are
+ * compiled from, and never the bundle. Reachability follows each `$ref` of the
+ * form `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the
+ * root object without its `$defs` (its own `$ref` included — all a response
+ * document has), then each reached definition whole. Any
+ * other local `$ref` (`#`, an anchor) keeps every definition. Kept in step with
+ * `prune_unreachable_defs` in trust-tasks-build and the other generators'
+ * copies; `check-bindings` compares the results.
+ */
+function pruneUnreachableDefs(doc: JsonObject): JsonObject {
+  if (!isObject(doc.$defs)) return doc;
+  const defs = doc.$defs;
+  const reached = new Set<string>();
+  let opaque = false;
+  const rootView: JsonObject = { ...doc };
+  delete rootView.$defs;
+  const frontier: Json[] = [rootView];
+  while (frontier.length > 0) {
+    const node = frontier.pop();
+    if (Array.isArray(node)) frontier.push(...node);
+    else if (isObject(node)) {
+      const ref = node.$ref;
+      if (typeof ref === "string") {
+        if (ref.startsWith("#/$defs/")) {
+          const name = ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~");
+          if (Object.hasOwn(defs, name) && !reached.has(name)) {
+            reached.add(name);
+            frontier.push(defs[name]);
+          }
+        } else if (ref.startsWith("#")) {
+          opaque = true;
+        }
+      }
+      frontier.push(...Object.values(node));
+    }
+  }
+  if (opaque) return doc;
+  const out: JsonObject = {};
+  for (const [k, v] of Object.entries(doc)) {
+    if (k !== "$defs") {
+      out[k] = v;
+      continue;
+    }
+    const kept = Object.entries(defs).filter(([name]) => reached.has(name));
+    if (kept.length > 0) out[k] = Object.fromEntries(kept);
+  }
+  return out;
+}
+
 /** The constants every module ends with — byte-compatible with the prebuilt modules' tail. */
 function emitTail(ts: string, rootType: string, responseType: string | null, where: string, t: TailInput): string {
-  const { typeUri, deprecation, bundle, schemas } = t;
+  const { typeUri, deprecation, bundle } = t;
+  const schemas = {
+    request: pruneUnreachableDefs(t.schemas.request),
+    response: t.schemas.response === null ? null : pruneUnreachableDefs(t.schemas.response),
+  };
   const policy = bundle.policy;
   const aliasDoc = (what: string): string[] =>
     deprecation

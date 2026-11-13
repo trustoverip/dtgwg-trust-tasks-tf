@@ -105,41 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation — Mnemonic Status — response payload",
-      "description": "The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "windowActive",
-        "alreadyExported",
-        "entropyAvailable",
-        "windowRemainingSecs"
-      ],
-      "properties": {
-        "windowActive": {
-          "type": "boolean",
-          "description": "Whether the export window is currently open."
-        },
-        "alreadyExported": {
-          "type": "boolean",
-          "description": "Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time."
-        },
-        "entropyAvailable": {
-          "type": "boolean",
-          "description": "Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once."
-        },
-        "windowRemainingSecs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Seconds remaining in the export window; 0 once it has expired or was never active."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

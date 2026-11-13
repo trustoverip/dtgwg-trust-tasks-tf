@@ -96,31 +96,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Vetters Resend — response payload",
-      "description": "The credential the community delivered again.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "validUntil"
-      ],
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "That credential's `validUntil`."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -162,16 +137,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "format": "date-time",
           "description": "That credential's `validUntil`."
         }
-      }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     }
   }

@@ -89,24 +89,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Membership — Acknowledge — response payload",
-      "description": "The party's entry as now published, with the network's signed grant and the party's acknowledgement.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entry"
-      ],
-      "properties": {
-        "entry": {
-          "$ref": "#/$defs/IndexEntry"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -117,126 +99,9 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "IndexEntry": {
-      "description": "An entry as the network publishes it, with the credentials a verifier needs.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "kind",
-        "state",
-        "acknowledged",
-        "profile",
-        "listing"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Did",
-          "description": "The listed party's DID."
-        },
-        "kind": {
-          "$ref": "#/$defs/EntryKind"
-        },
-        "state": {
-          "$ref": "#/$defs/EntryState"
-        },
-        "acknowledged": {
-          "type": "boolean",
-          "description": "Whether the party acknowledged: true only for a member. Every published entry states it (VTI-VTN-013)."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "The name the directory shows."
-        },
-        "profile": {
-          "$ref": "#/$defs/EntryProfile"
-        },
-        "listing": {
-          "$ref": "#/$defs/Credential",
-          "description": "The listing credential."
-        },
-        "grant": {
-          "$ref": "#/$defs/Credential",
-          "description": "The membership grant, once acknowledged."
-        },
-        "acknowledgement": {
-          "$ref": "#/$defs/Credential",
-          "description": "The party's acknowledgement."
-        },
-        "repudiation": {
-          "$ref": "#/$defs/Credential",
-          "description": "The party's repudiation."
-        }
-      }
-    },
     "Credential": {
       "type": "object",
       "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "EntryProfile": {
-      "description": "What the directory shows about an entry, set by the network's administrators.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [],
-      "properties": {
-        "description": {
-          "$ref": "#/$defs/Description"
-        },
-        "url": {
-          "$ref": "#/$defs/Url"
-        },
-        "tags": {
-          "$ref": "#/$defs/Tags"
-        }
-      }
-    },
-    "Tags": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      },
-      "description": "Free-text tags the directory searches.",
-      "maxItems": 32
-    },
-    "Url": {
-      "type": "string",
-      "format": "uri",
-      "maxLength": 2048,
-      "description": "The party's public address."
-    },
-    "Description": {
-      "type": "string",
-      "maxLength": 2000,
-      "description": "What the listed party is, for the directory."
-    },
-    "EntryState": {
-      "type": "string",
-      "enum": [
-        "listed",
-        "acknowledged",
-        "repudiated",
-        "suspended",
-        "removed",
-        "departed"
-      ],
-      "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
-    },
-    "EntryKind": {
-      "type": "string",
-      "enum": [
-        "community",
-        "network"
-      ],
-      "description": "What the entry lists (VTI-VTN-031): a community, whose entries are its members, or a network, whose entries are further listings. A listing credential carries the same fact as `nodeType` `VTC` or `VTN`."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     }
   }
 };

@@ -94,36 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Invitations Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "revokedAt",
-        "newlyRevoked"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The revoked invitation's identifier, echoed."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential was revoked. On a repeat call this is the ORIGINAL revocation time, not now."
-        },
-        "newlyRevoked": {
-          "type": "boolean",
-          "description": "True when this call flipped the bit; false when it was already revoked."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -89,50 +89,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Manifest — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "communityDid",
-        "criteria"
-      ],
-      "properties": {
-        "communityDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "criteria": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "id",
-              "presentationDefinition"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "maxLength": 1024
-              },
-              "presentationDefinition": {
-                "type": "object",
-                "description": "The presentation-definition an applicant must satisfy for this criterion (opaque here)."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

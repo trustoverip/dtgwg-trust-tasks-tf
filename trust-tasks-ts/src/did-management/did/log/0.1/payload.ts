@@ -131,68 +131,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "DID Log — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "method",
-        "entries"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is."
-        },
-        "entries": {
-          "type": "array",
-          "description": "The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "state"
-            ],
-            "properties": {
-              "versionId": {
-                "type": "string",
-                "description": "The entry's version identifier. Absent for a method that has none."
-              },
-              "versionTime": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When the entry was made, as the entry states it. Absent for a method that records none."
-              },
-              "state": {
-                "type": "object",
-                "description": "The DID document as of this entry."
-              },
-              "parameters": {
-                "type": "object",
-                "description": "The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none."
-              }
-            }
-          }
-        },
-        "logContent": {
-          "type": "string",
-          "description": "The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true."
-        },
-        "witnessContent": {
-          "type": "string",
-          "description": "The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

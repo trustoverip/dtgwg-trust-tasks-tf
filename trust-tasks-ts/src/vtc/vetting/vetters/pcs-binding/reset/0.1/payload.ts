@@ -113,45 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC — Vetting PCS Binding — Reset — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "memberDid",
-        "resetAt",
-        "waitingOn",
-        "open"
-      ],
-      "description": "The reset as recorded. A repeated reset returns the first one's record.",
-      "properties": {
-        "memberDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "resetAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was reset — the first reset, if this one repeats it."
-        },
-        "waitingOn": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          },
-          "description": "The labels the old identifier enrolled under that are still live now. A new identifier is accepted once none is."
-        },
-        "open": {
-          "type": "boolean",
-          "description": "True when `waitingOn` is empty: the member's next enrolment may present a new identifier."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -106,35 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community — Theme — Update — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "stylesheet",
-        "stored"
-      ],
-      "properties": {
-        "stylesheet": {
-          "type": "string",
-          "maxLength": 32768,
-          "description": "The stylesheet as stored — or, on a dry run, as it would be stored."
-        },
-        "stored": {
-          "type": "boolean",
-          "description": "False on a dry run and when the stylesheet equals the one already stored; true when the stored theme changed."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the stored theme was last replaced. Absent on a dry run, and when the community has never set one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
