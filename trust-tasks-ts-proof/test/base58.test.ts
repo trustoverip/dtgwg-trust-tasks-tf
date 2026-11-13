@@ -88,7 +88,7 @@ test("verifier: an over-long proofValue or did:key is signatureInvalid, quickly"
   const start = performance.now();
   for (const bad of [longProof, longKey]) {
     const r = await verifier.verifyDetailed(bad as TrustTaskDocument<unknown>);
-    assert.equal(r.failure, "signatureInvalid", r.detail);
+    assert.equal(r.failure, "signatureInvalid", r.detail ?? "");
   }
   const elapsed = performance.now() - start;
   assert.ok(elapsed < 1000, `refusing two oversized proofs took ${elapsed.toFixed(0)} ms`);

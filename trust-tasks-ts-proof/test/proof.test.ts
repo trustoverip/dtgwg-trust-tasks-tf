@@ -49,7 +49,7 @@ function grant(issuer: string, role = "admin"): TrustTaskDocument<unknown> {
 
 test("interop: verifies a document signed by the Rust trust-tasks-proof crate", async () => {
   const r = await verifier.verifyDetailed(fixture);
-  assert.equal(r.valid, true, r.detail);
+  assert.equal(r.valid, true, r.detail ?? "");
 });
 
 test("interop: rejects the Rust document once its payload is changed", async () => {
@@ -123,7 +123,7 @@ for (const [name, mutate] of [
     ) as Record<string, unknown>;
     mutate(signed);
     const r = await verifier.verifyDetailed(signed as TrustTaskDocument<unknown>);
-    assert.equal(r.failure, "malformedProof", r.detail);
+    assert.equal(r.failure, "malformedProof", r.detail ?? "");
   });
 }
 
@@ -131,7 +131,7 @@ test("an inline object @context round-trips", async () => {
   const signer = seededSigner("ed25519", 1);
   const doc = { "@context": [{ ex: "https://example.org/#" }], ...grant(signer.did) } as TrustTaskDocument<unknown>;
   const r = await verifier.verifyDetailed(signTrustTask(doc, signer));
-  assert.equal(r.valid, true, r.detail);
+  assert.equal(r.valid, true, r.detail ?? "");
 });
 
 // ecdsa-jcs-2019 against node:crypto, an ECDSA that is not noble: ECDSA with
@@ -190,7 +190,7 @@ for (const curve of ["p256", "p384"] as const) {
       const resigned = structuredClone(doc) as Record<string, unknown>;
       (resigned.proof as Record<string, unknown>).proofValue = toMultibase(form);
       const r = await verifier.verifyDetailed(resigned as TrustTaskDocument<unknown>);
-      assert.equal(r.valid, true, r.detail);
+      assert.equal(r.valid, true, r.detail ?? "");
     }
   });
 }
@@ -205,7 +205,7 @@ const ecdsaFixtures = JSON.parse(
 for (const [name, doc] of Object.entries(ecdsaFixtures)) {
   test(`interop: verifies the ${name} ecdsa-jcs-2019 fixture`, async () => {
     const r = await verifier.verifyDetailed(doc);
-    assert.equal(r.valid, true, r.detail);
+    assert.equal(r.valid, true, r.detail ?? "");
   });
 }
 
@@ -342,7 +342,7 @@ for (const purpose of SIGNING_PURPOSES) {
   test(`proofPurpose ${purpose} verifies`, async () => {
     const doc = signWithConfig(grant(seed1Did), { created: "2026-01-01T00:00:00Z", proofPurpose: purpose });
     const r = await verifier.verifyDetailed(doc);
-    assert.equal(r.valid, true, r.detail);
+    assert.equal(r.valid, true, r.detail ?? "");
   });
 }
 
@@ -379,7 +379,7 @@ test("signTrustTask defaults proofPurpose to authentication and refuses a non-si
   ]) {
     test(`a proof whose expires is ${expires} verifies`, async () => {
       const r = await fixed.verifyDetailed(withExpires(expires));
-      assert.equal(r.valid, true, r.detail);
+      assert.equal(r.valid, true, r.detail ?? "");
     });
   }
 
