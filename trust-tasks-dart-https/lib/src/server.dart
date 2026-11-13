@@ -189,26 +189,34 @@ const Set<String> defaultAllowedDidMethods = {'key'};
 /// 3. Body within [bodyLimitBytes], else `413`; parses as a Trust Task
 ///    document, else `400`.
 /// 4. Bearer token → transport-authenticated sender.
-/// 5. Route lookup. A `type` registered as it is routes to its handler; a
+/// 5. Expiry and recipient; freshness; identity cross-check (§4.8.1) — §7.2
+///    order, as `consumeInbound` runs them, over the envelope. With no
+///    authenticated sender the identity cross-check runs first, so a
+///    misaddressed document is suppressed (§8.1).
+/// 6. Attribution gate — see [requireAttribution].
+/// 7. Route lookup. A `type` registered as it is routes to its handler; a
 ///    later version of a registered specification whose declared `extends`
 ///    chain (SPEC §5.2) reaches a registered version routes to the highest
 ///    such version, read as that version ([readForVersion]). Any other
 ///    version of a registered specification is `unsupportedVersion`; a
 ///    specification with no registered version is `unsupportedType`.
-/// 6. The body against the route's `maxDocumentBytes` (or
+/// 8. The body against the route's `maxDocumentBytes` (or
 ///    [defaultMaxDocumentBytes]), else `malformedRequest`. A document read
 ///    forward along `extends` is held only to [bodyLimitBytes]: its own
 ///    version may declare a larger bound than the one it is read as.
-/// 7. Payload decode; expiry and recipient; freshness; identity cross-check
-///    (§4.8.1) — §7.2 order, as `consumeInbound` runs them. With no
-///    authenticated sender the identity cross-check runs first, so a
-///    misaddressed document is suppressed (§8.1).
-/// 8. Attribution gate — see [requireAttribution].
-/// 9. DID-method pre-screen — see [allowedDidMethods]. With a verifier and no
-///    explicit choice, only `did:key` passes.
+/// 9. Payload decode, then the DID-method pre-screen — see
+///    [allowedDidMethods]. With a verifier and no explicit choice, only
+///    `did:key` passes.
 /// 10. Proof verification, the per-specification policy, the
 ///    duplicate-execution claim (§7.2 item 11), and the handler —
 ///    `consumeInbound`.
+///
+/// Steps 5 and 6 depend on nothing a route holds. They run before the lookup
+/// so that a sender the attribution gate refuses gets the same answer whether
+/// or not its `type` is registered: the route table is not readable without
+/// attribution, just as [enableDiscovery] keeps it unreadable without
+/// authentication. The lookup still precedes every step that can make an
+/// outbound request.
 ///
 /// ## Observability
 ///
@@ -722,8 +730,12 @@ final class HttpsServer {
       _clock(),
     );
 
+    final transport = exchange.transport;
+    final refused = _envelopeChecks(transport, envelope, exchange.now);
+    if (refused != null) return refused;
+
     final (:route, :refusal) = _lookup(envelope.type);
-    if (route == null) return _reject(exchange.transport, envelope, refusal!);
+    if (route == null) return _reject(transport, envelope, refusal!);
 
     // SPEC §12.4, two-sided: within the declared bound a document MUST NOT be
     // refused for its size, and above it SHOULD be refused `malformedRequest`.
@@ -737,7 +749,7 @@ final class HttpsServer {
     final bound = route.spec.maxDocumentBytes ?? defaultMaxDocumentBytes;
     if (!forward && request.body.length > bound) {
       return _reject(
-        exchange.transport,
+        transport,
         envelope,
         const RejectReason(
           code: StandardCode.malformedRequest,
@@ -746,6 +758,65 @@ final class HttpsServer {
       );
     }
     return route.dispatch(json, exchange);
+  }
+
+  /// Steps 5 and 6: the checks that depend on nothing a route holds — expiry,
+  /// recipient, freshness and identity, in §7.2 order, then the attribution
+  /// gate. Null when the document passes them.
+  ///
+  /// They run before the route lookup, so an unattributed sender cannot tell a
+  /// registered `type` from an unregistered one by its answer.
+  HttpsReply? _envelopeChecks(
+    HttpsTransport transport,
+    TrustTaskDocument<Object?> doc,
+    DateTime now,
+  ) {
+    // The cheap, local checks, in §7.2 order, which is consumeInbound's and the
+    // Rust server's: a document that fails two of them is refused for the same
+    // reason by each.
+    //
+    // Except with no authenticated sender. Then the only identity that can
+    // disagree is the recipient, and §8.1 suppresses that refusal: there is
+    // nobody to address it to, and a wrongRecipient answer would tell an
+    // unauthenticated prober which VIDs this server is not. So identity runs
+    // first, and a misaddressed document stays indistinguishable from one that
+    // did not parse.
+    final resolution = resolveParties(transport, doc);
+    HttpsReply? identity() => resolution.error == null
+        ? null
+        : _reject(
+            transport,
+            doc,
+            identityMismatchReason(resolution.error!),
+            consistency: resolution.error,
+          );
+
+    final unattributed = transport.peer == null;
+    if (unattributed) {
+      final refused = identity();
+      if (refused != null) return refused;
+    }
+    final basic = validateBasic(doc, now, localVid ?? '');
+    if (basic != null) return _reject(transport, doc, basic);
+    final fresh = validateFreshness(doc, now, freshness);
+    if (fresh != null) return _reject(transport, doc, fresh);
+    if (!unattributed) {
+      final refused = identity();
+      if (refused != null) return refused;
+    }
+
+    if (requireAttribution && transport.peer == null && doc.proof == null) {
+      return _reject(
+        transport,
+        doc,
+        const RejectReason(
+          code: StandardCode.proofRequired,
+          message: attributionRequiredWireMessage,
+        ),
+      );
+    }
+
+    return null;
   }
 
   Future<HttpsReply> _dispatch<P, R>({
@@ -801,49 +872,18 @@ final class HttpsServer {
         doc = accepted;
     }
 
-    // The cheap, local checks, in §7.2 order, which is consumeInbound's and the
-    // Rust server's: a document that fails two of them is refused for the same
-    // reason by each. consumeInbound repeats them below; they are pure, so the
+    // Steps 5 and 6 ran over the envelope before the route lookup (see
+    // [_envelopeChecks]). The typed read leaves the members they look at as
+    // received, so this identity resolution agrees with that one.
+    // consumeInbound repeats the §7.2 checks below; they are pure, so the
     // repeat changes nothing.
-    //
-    // Except with no authenticated sender. Then the only identity that can
-    // disagree is the recipient, and §8.1 suppresses that refusal: there is
-    // nobody to address it to, and a wrongRecipient answer would tell an
-    // unauthenticated prober which VIDs this server is not. So identity runs
-    // first, and a misaddressed document stays indistinguishable from one that
-    // did not parse.
     final resolution = resolveParties(transport, doc);
-    HttpsReply? identity() => resolution.error == null
-        ? null
-        : _reject(
-            transport,
-            doc,
-            identityMismatchReason(resolution.error!),
-            consistency: resolution.error,
-          );
-
-    final unattributed = transport.peer == null;
-    if (unattributed) {
-      final refused = identity();
-      if (refused != null) return refused;
-    }
-    final basic = validateBasic(doc, now, localVid ?? '');
-    if (basic != null) return _reject(transport, doc, basic);
-    final fresh = validateFreshness(doc, now, freshness);
-    if (fresh != null) return _reject(transport, doc, fresh);
-    if (!unattributed) {
-      final refused = identity();
-      if (refused != null) return refused;
-    }
-
-    if (requireAttribution && transport.peer == null && doc.proof == null) {
+    if (resolution.error != null) {
       return _reject(
         transport,
         doc,
-        const RejectReason(
-          code: StandardCode.proofRequired,
-          message: attributionRequiredWireMessage,
-        ),
+        identityMismatchReason(resolution.error!),
+        consistency: resolution.error,
       );
     }
 
