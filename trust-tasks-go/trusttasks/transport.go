@@ -103,6 +103,11 @@ func ResolveParties[P any](
 
 // Reject builds the error response for doc, applying the §8.1 routing rules.
 //
+// The response's issuer is the consumer that emits it (§8.1): the transport's
+// own identity (DeriveParties().Recipient) where it has one, else the rejected
+// document's in-band recipient — left out under wrongRecipient, where that value
+// is by definition not this consumer.
+//
 // Returns nil when the rejection is identityMismatch and the transport
 // authenticated no sender. §8.1 is explicit that the consumer SHOULD NOT emit a
 // response in that case: the in-band issuer is by definition the contested
@@ -116,16 +121,27 @@ func Reject[P any](
 	reason RejectReason,
 	clock Clock,
 ) *ErrorResponse {
+	parties := handler.DeriveParties()
 	var recipient *string
 	if reason.Code == CodeIdentityMismatch {
-		recipient = handler.DeriveParties().Issuer
+		recipient = parties.Issuer
 		if recipient == nil {
 			return nil
 		}
 	} else {
 		recipient = doc.Issuer
 	}
-	return RejectWithRecipient(doc, id, ToErrorPayload(reason), recipient, clock)
+	response := RejectWithRecipient(doc, id, ToErrorPayload(reason), recipient, clock)
+	// §8.1: the error's issuer is the consumer that emits it — the transport's own
+	// identity where it has one. Otherwise the in-band recipient stands, except
+	// under wrongRecipient, where it is by definition not this consumer.
+	if parties.Recipient != nil {
+		local := *parties.Recipient
+		response.Issuer = &local
+	} else if reason.Code == CodeWrongRecipient {
+		response.Issuer = nil
+	}
+	return response
 }
 
 // IdentityMismatchReason is the identityMismatch reason for a
