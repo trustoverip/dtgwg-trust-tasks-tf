@@ -121,6 +121,19 @@ export async function unpackTrustTask<P = unknown>(
     throw new TspEnvelopeError("notForThisReceiver", String(cause), undefined, { cause });
   }
 
+  // The receiver VID on the wire is the one the sender wrote: the seal proves
+  // only that the message was encrypted to this recipient's key. A message
+  // naming another VID is not for this consumer, whose identity it would
+  // otherwise become (and so the issuer of every answer). An empty receiver is
+  // the NULL-VID form, opened as `recipientVid`.
+  if (message.receiver && message.receiver !== recipientVid) {
+    throw new TspEnvelopeError(
+      "notForThisReceiver",
+      "the message is not addressed to this receiver",
+      message.sender,
+    );
+  }
+
   if (message.messageType !== "direct") {
     // A routed/nested layer this VID only relays, or an inner not addressed here.
     throw new TspEnvelopeError(
@@ -146,7 +159,7 @@ export async function unpackTrustTask<P = unknown>(
 
   return {
     document: document as TrustTaskLike<P>,
-    transport: new TspTransport(message.receiver || recipientVid, message.sender),
+    transport: new TspTransport(recipientVid, message.sender),
   };
 }
 

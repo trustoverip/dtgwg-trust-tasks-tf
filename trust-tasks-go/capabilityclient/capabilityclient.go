@@ -186,6 +186,65 @@ func isResponseVariant(typeURI string) bool {
 	return strings.HasSuffix(typeURI, "#response")
 }
 
+// registrySpecPrefix is the registry's authority: where the framework's own
+// specifications, and the capability families this module builds, are
+// published.
+const registrySpecPrefix = "https://trusttasks.org/spec/"
+
+// isRegistryType reports whether a Type URI is under the registry's authority.
+func isRegistryType(typeURI string) bool {
+	return strings.HasPrefix(typeURI, registrySpecPrefix)
+}
+
+// isFrameworkError reports whether doc is a framework error document:
+// trust-task-error under the registry's authority. The same slug under another
+// authority is some other publisher's specification, not a refusal.
+func isFrameworkError(doc *Document) bool {
+	return slugOf(doc.Type) == "trust-task-error" && !isResponseVariant(doc.Type) && isRegistryType(doc.Type)
+}
+
+// bareType is typeURI without its fragment.
+func bareType(typeURI string) string {
+	if i := strings.IndexByte(typeURI, '#'); i >= 0 {
+		return typeURI[:i]
+	}
+	return typeURI
+}
+
+// AnswersRequest reports whether reply answers request — the four equalities
+// the HTTPS clients apply to a response (SPEC §4.9, §8.1), for a client that
+// holds the request it sent:
+//
+//   - threadId is [CorrelationThread] of request;
+//   - issuer is request's recipient, where the request named one;
+//   - recipient is request's issuer, where the request named one;
+//   - type is request's type with #response, or the framework's
+//     trust-task-error under the registry's authority — and then a payload
+//     inResponseTo.id, where present, is request's id.
+func AnswersRequest(reply, request *Document) bool {
+	if !RepliesTo(reply, CorrelationThread(request)) {
+		return false
+	}
+	if request.Recipient != nil && (reply.Issuer == nil || *reply.Issuer != *request.Recipient) {
+		return false
+	}
+	if request.Issuer != nil && (reply.Recipient == nil || *reply.Recipient != *request.Issuer) {
+		return false
+	}
+	if isFrameworkError(reply) {
+		var p struct {
+			InResponseTo *struct {
+				ID *string `json:"id"`
+			} `json:"inResponseTo"`
+		}
+		if err := json.Unmarshal(reply.Payload, &p); err != nil {
+			return false
+		}
+		return p.InResponseTo == nil || p.InResponseTo.ID == nil || *p.InResponseTo.ID == request.ID
+	}
+	return reply.Type == bareType(request.Type)+"#response"
+}
+
 // CorrelationThread is the thread an exchange started by doc is correlated by:
 // its own threadId, or its id where it opens the exchange (SPEC §4.9's
 // fallback). Hold this from the moment you send a request; every reply-parsing
