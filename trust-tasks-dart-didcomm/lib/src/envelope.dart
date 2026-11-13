@@ -1,9 +1,13 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:didcomm/didcomm.dart';
 import 'package:ssi/ssi.dart';
 import 'package:trust_tasks/trust_tasks.dart';
+
+// One `urn:uuid:` generator for the whole Dart family, in the core (#1118).
+// Re-exported so this package keeps naming it; the element is the core's, so
+// importing both packages is not an ambiguity.
+export 'package:trust_tasks/trust_tasks.dart' show newUrnUuid;
 
 /// The binding's stable identifier (`bindings/didcomm/0.2` §1).
 const String bindingUri = _bindingUri;
@@ -361,17 +365,6 @@ Map<String, dynamic>? _protectedHeader(String protected) {
   }
 }
 
-final Random _random = Random.secure();
-
-String _uuid() {
-  final b = List<int>.generate(16, (_) => _random.nextInt(256));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int from, int to) => [
-        for (var i = from; i < to; i++) b[i].toRadixString(16).padLeft(2, '0'),
-      ].join();
-  return '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}';
-}
-
-/// A fresh `urn:uuid:` identifier, for response and error documents.
-String newUrnUuid() => 'urn:uuid:${_uuid()}';
+/// A fresh UUID v4 for a DIDComm message `id`: the core's [newUrnUuid]
+/// without its `urn:uuid:` prefix, so the family has one generator (#1118).
+String _uuid() => newUrnUuid().substring('urn:uuid:'.length);

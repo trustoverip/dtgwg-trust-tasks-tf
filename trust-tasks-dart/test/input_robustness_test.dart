@@ -63,6 +63,7 @@ Future<ConsumeOutcome<Map<String, dynamic>>> consume(
       newErrorId: () => 'err-1',
       clock: fixedClock,
       payloadToJson: (p) => p.toJson(),
+      responseToJson: (r) => r,
       handler: (accepted, _) async => respondWith(
         accepted,
         'resp-1',
@@ -206,6 +207,7 @@ void main() {
         newErrorId: () => 'err-1',
         clock: fixedClock,
         payloadToJson: (p) => p,
+        responseToJson: (r) => r,
         handler: (accepted, _) async => null,
       );
       expect(validated, isFalse);

@@ -56,6 +56,18 @@ authenticated sender as the transport identity (§3). `received.outcome` is the
 core library's sealed `ConsumeOutcome`; `received.reply` is the document to send
 back, or null when §8.1 or §6.1 says to stay silent.
 
+A later version of the specification whose declared `extends` chain (SPEC
+§5.2) reaches `spec`'s version is read as `spec`'s — pruned to the members its
+schema knows, answered as `<received type>#response`; any other version is
+`unsupportedVersion`, and another specification `unsupportedType`. Pass
+`extendsIndex:` for third-party specifications.
+
+Pass `onEvent:` to see what the reply deliberately does not say — a handler's
+exception (which still propagates to you), why a proof failed, the identity
+disagreement behind a suppressed refusal. It receives a `ServerEvent` from
+`package:trust_tasks`, never changes the outcome, and whatever it throws is
+dropped.
+
 ### What is refused, and how
 
 Before the pipeline, with **no** reply possible — there is no authenticated

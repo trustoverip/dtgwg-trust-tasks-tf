@@ -77,6 +77,7 @@ Future<void> main() async {
       now: DateTime.parse('2026-01-01T00:00:30Z'),
       newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
       payloadToJson: (p) => p,
+      responseToJson: (r) => r,
       handler: (accepted, parties) async => respondWith<Json, Json>(
         accepted,
         'urn:uuid:9b2c1e34-0000-4000-8000-000000000002',
