@@ -11,6 +11,8 @@
  *  - Copies bindings/ tree into website/bindings/ so the SPA's BindingSpecPage
  *    can fetch each binding's spec.md
  *  - Copies SPEC.md to website/SPEC.md so FrameworkSpecPage can fetch it
+ *  - Compiles the page code (website/assets/*.jsx) into a hashed bundle and
+ *    writes website/index.html from index.template.html (build-website.mjs)
  *
  * Run from the repo root: `npm run build` or `npm run validate` (no website writes).
  */
@@ -19,6 +21,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { buildWebsite, compileApp } from './build-website.mjs';
 import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
@@ -2285,7 +2288,7 @@ function checkSiteFrameworkLinks(frameworkAnchors) {
   const files = fs.readdirSync(assetsDir)
     .filter((f) => /\.(jsx|js)$/.test(f) && f !== 'tasks.generated.js')
     .map((f) => path.join(assetsDir, f));
-  files.push(path.join(WEBSITE_DIR, 'index.html'));
+  files.push(path.join(WEBSITE_DIR, 'index.template.html'));
   let checked = 0;
   for (const file of files) {
     const rel = path.relative(ROOT, file);
@@ -2788,6 +2791,9 @@ function main() {
   console.log(`  Framework links: ${frameworkLinks} link(s) into SPEC.md checked against ${frameworkAnchors.size} anchor(s)`);
   checkProseLinksAsRendered(entries, tasks, sharedRecords);
   checkSiteFrameworkLinks(frameworkAnchors);
+  // The page code compiles (#1147) — checked in --validate-only too, so a
+  // syntax error in a .jsx file fails `npm run validate`, not just the build.
+  try { compileApp(); } catch (e) { fail('website/assets', e.message); }
   checkBindingImplementations();
   annotateLifecycle(tasks);
 
@@ -2813,6 +2819,7 @@ function main() {
   syncWebsiteBindings();
   syncWebsiteCeremonies();
   syncWebsiteFrameworkSpec();
+  buildWebsite();
   console.log('Done.');
 }
 
