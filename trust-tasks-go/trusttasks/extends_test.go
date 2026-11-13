@@ -195,6 +195,21 @@ func TestExtendsChainReaches(t *testing.T) {
 	if tt.ExtendsChainReaches(widgetBase+"0.1", widgetBase+"0.3", widgetChain) {
 		t.Fatal("chain walked backwards")
 	}
+	// 0.70 -> 0.69 -> ... -> 0.0: every link strictly earlier. At most 64 are
+	// followed, as in the other three libraries.
+	long := func(typeURI string) string {
+		m, err := strconv.Atoi(strings.TrimPrefix(typeURI, widgetBase+"0."))
+		if err != nil || m == 0 {
+			return ""
+		}
+		return "0." + strconv.Itoa(m-1)
+	}
+	if !tt.ExtendsChainReaches(widgetBase+"0.70", widgetBase+"0.6", long) {
+		t.Fatal("a 64-link chain was not followed")
+	}
+	if tt.ExtendsChainReaches(widgetBase+"0.70", widgetBase+"0.5", long) {
+		t.Fatal("a 65-link chain was followed")
+	}
 	loop := func(string) string { return "0.9" } // 0.9 -> 0.9 -> ... must terminate
 	if tt.ExtendsChainReaches(widgetBase+"0.9", widgetBase+"0.1", loop) {
 		t.Fatal("looping lookup reached")
@@ -254,9 +269,14 @@ func (v digestVerifier) Verify(_ context.Context, doc json.RawMessage) error {
 
 func consumeWidget(t *testing.T, doc *tt.Document[widgetPayload], received json.RawMessage) tt.ConsumeOutcome[widgetResponse] {
 	t.Helper()
+	return consumeWidgetUnder(t, widgetSpec, doc, received)
+}
+
+func consumeWidgetUnder(t *testing.T, spec tt.SpecPolicy, doc *tt.Document[widgetPayload], received json.RawMessage) tt.ConsumeOutcome[widgetResponse] {
+	t.Helper()
 	outcome, err := tt.ConsumeInbound(context.Background(), tt.ConsumeOptions[widgetPayload, widgetResponse]{
 		Transport:     tt.StaticTransport{Context: tt.TransportContext{Issuer: ptr(peer), Recipient: ptr(me)}},
-		Spec:          widgetSpec,
+		Spec:          spec,
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofVerify, Verifier: digestVerifier{t}},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        tt.NotConsequentialChecks(),
@@ -305,6 +325,43 @@ func TestSignedExtendedDocumentIsConsumedAndAnsweredAsReceived(t *testing.T) {
 	if outcome := consumeWidget(t, &doc, nil); outcome.Kind != tt.OutcomeRejected ||
 		outcome.Error.Payload.Code != string(tt.CodeProofInvalid) {
 		t.Fatalf("re-encoded proof check unexpectedly passed: %s", outcome.Kind)
+	}
+}
+
+// SPEC §12.4: a document of the implemented version larger than its declared
+// maxDocumentBytes is malformedRequest; one within it, one read forward from a
+// later version (which may declare a larger bound of its own), and one consumed
+// without its bytes are not refused for size.
+func TestMaxDocumentBytesIsHeldToTheBytesAsReceived(t *testing.T) {
+	decode := func(received json.RawMessage) *tt.Document[widgetPayload] {
+		var doc tt.Document[widgetPayload]
+		if err := json.Unmarshal(received, &doc); err != nil {
+			t.Fatal(err)
+		}
+		return &doc
+	}
+	exact := signedWidget(t, "0.1")
+	bounded := widgetSpec
+	bounded.MaxDocumentBytes = len(exact) - 1
+	outcome := consumeWidgetUnder(t, bounded, decode(exact), exact)
+	if outcome.Kind != tt.OutcomeRejected || outcome.Error.Payload.Code != string(tt.CodeMalformedRequest) ||
+		outcome.Error.Payload.Message == nil || *outcome.Error.Payload.Message != tt.DocumentTooLargeWireMessage {
+		t.Fatalf("a document over its bound was not refused malformedRequest: %s %+v", outcome.Kind, outcome.Error)
+	}
+
+	bounded.MaxDocumentBytes = len(exact)
+	if outcome := consumeWidgetUnder(t, bounded, decode(exact), exact); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("a document within its bound was refused: %s %+v", outcome.Kind, outcome.Error)
+	}
+
+	later := signedWidget(t, "0.3")
+	bounded.MaxDocumentBytes = len(later) - 1
+	reading, refusal, err := tt.ReadForSpecWith(later, bounded, widgetChain)
+	if err != nil || refusal != nil {
+		t.Fatalf("refused: %v %+v", err, refusal)
+	}
+	if outcome := consumeWidgetUnder(t, bounded, decode(reading), later); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("a forward-read document was held to the implemented version's bound: %s %+v", outcome.Kind, outcome.Error)
 	}
 }
 

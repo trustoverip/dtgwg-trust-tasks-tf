@@ -49,13 +49,15 @@ use crate::error::RejectReason;
 use crate::payload::Payload;
 use crate::type_uri::TypeUri;
 
-/// The longest chain walked. The generator only emits links to a strictly
-/// earlier MINOR, so a real chain is far shorter; the bound is what stops a
-/// malformed table from looping.
-const MAX_CHAIN: usize = 256;
+/// The longest chain walked: 64 links, in all four libraries
+/// (`docs/runtime-parity.md`). The walk follows a link only to a strictly
+/// earlier MINOR, so it ends anyway and a real chain is far shorter; the bound
+/// is a backstop on the work one lookup may do.
+const MAX_CHAIN: usize = 64;
 
-/// How deep [`prune_payload`] follows a schema into a value before leaving the
-/// rest as it is.
+/// How deep [`prune_payload`] recurses — through the payload and the schema's
+/// `$ref`s and branches together — before leaving the rest of the value as it
+/// is: 128, in all four libraries (`docs/runtime-parity.md`).
 const MAX_DEPTH: usize = 128;
 
 /// The work one prune may do, in steps (a value visited against a subschema,
@@ -821,6 +823,20 @@ mod tests {
             &v01.with_response()
         ));
         assert!(!extension_reaches(&received.with_response(), &v01));
+    }
+
+    /// At most 64 links are followed, as in the other three libraries.
+    #[test]
+    fn chain_follows_at_most_64_links() {
+        let base = "https://trusttasks.org/spec/test-ext/long";
+        for m in 1..=70u32 {
+            let target: &'static str = Box::leak(format!("0.{}", m - 1).into_boxed_str());
+            test_index::declare(&format!("{base}/0.{m}"), Some(target));
+        }
+        let received: TypeUri = format!("{base}/0.70").parse().unwrap();
+        let links = chain(&received);
+        assert_eq!(links.len(), 64);
+        assert_eq!(links.last().unwrap().to_string(), format!("{base}/0.6"));
     }
 
     /// An application's declarations (what `trust-tasks-build`'s

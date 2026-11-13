@@ -221,4 +221,5 @@ var Spec = trusttasks.SpecPolicy{
 	IsRecipientRequired: true,
 	IsIssuedAtRequired:  true,
 	PayloadSchema:       PayloadSchemaJSON,
+	MaxDocumentBytes:    1048576,
 }

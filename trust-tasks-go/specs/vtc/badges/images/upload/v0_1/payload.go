@@ -131,6 +131,7 @@ var Spec = trusttasks.SpecPolicy{
 	IsRecipientRequired: true,
 	IsIssuedAtRequired:  true,
 	PayloadSchema:       PayloadSchemaJSON,
+	MaxDocumentBytes:    360448,
 }
 
 // ResponseSpec is the SPEC §7.2 policy for the success-response variant.

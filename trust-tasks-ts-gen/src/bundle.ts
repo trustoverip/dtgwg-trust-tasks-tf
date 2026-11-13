@@ -26,6 +26,12 @@ export interface VariantFlags {
   readonly response: boolean;
 }
 
+/** A per-variant document size bound; `null` declares none for that variant. */
+export interface VariantBounds {
+  readonly request: number | null;
+  readonly response: number | null;
+}
+
 /** The members of a bundle this generator uses (others are carried, unread). */
 export interface Bundle {
   readonly bundleVersion: number;
@@ -40,6 +46,11 @@ export interface Bundle {
     readonly proofRequired: VariantFlags;
     readonly issuedAtRequired: VariantFlags;
     readonly recipientRequired: VariantFlags;
+    /**
+     * `policy.maxDocumentBytes`. A bundle older than the member carries none,
+     * which declares nothing; a variant never inherits the other's bound.
+     */
+    readonly maxDocumentBytes?: VariantBounds;
   };
   readonly propertyOrder: Readonly<Record<string, readonly string[]>>;
   /**
@@ -77,6 +88,20 @@ export function bundlePath(bundleDir: string, task: LockedTask): string {
 export const OFFICIAL_AUTHORITY = "https://trusttasks.org/";
 
 const isObject = (v: unknown): v is JsonObject => typeof v === "object" && v !== null && !Array.isArray(v);
+
+function bounds(v: unknown): VariantBounds {
+  if (v === undefined || v === null) return { request: null, response: null };
+  if (!isObject(v)) throw new Error("policy.maxDocumentBytes must be an object");
+  const one = (variant: "request" | "response"): number | null => {
+    const n = v[variant];
+    if (n === undefined || n === null) return null;
+    if (typeof n !== "number" || !Number.isSafeInteger(n) || n < 1) {
+      throw new Error(`policy.maxDocumentBytes.${variant} must be a positive integer or null`);
+    }
+    return n;
+  };
+  return { request: one("request"), response: one("response") };
+}
 
 function flags(v: unknown, what: string): VariantFlags {
   if (!isObject(v) || typeof v.request !== "boolean" || typeof v.response !== "boolean") {
@@ -144,6 +169,7 @@ export function parseBundle(value: unknown): Bundle {
       proofRequired: flags(policy.proofRequired, "proofRequired"),
       issuedAtRequired: flags(policy.issuedAtRequired, "issuedAtRequired"),
       recipientRequired: flags(policy.recipientRequired, "recipientRequired"),
+      maxDocumentBytes: bounds(policy.maxDocumentBytes),
     },
     propertyOrder: order as Record<string, string[]>,
     defsOrder: defsOrder as Record<string, string[]>,

@@ -151,6 +151,15 @@ describe("extends chain lookup", () => {
     assert.deepEqual(extendsChain(`${BASE}/0.3`, (uri) => INDEX[uri as keyof typeof INDEX]), ["0.2", "0.1"]);
   });
 
+  it("follows at most 64 links, as the other three libraries do", () => {
+    // 0.70 → 0.69 → … → 0.0: every link strictly earlier, 70 of them.
+    const index: Record<string, string> = {};
+    for (let m = 70; m > 0; m--) index[`${BASE}/0.${m}`] = `0.${m - 1}`;
+    const chain = extendsChain(`${BASE}/0.70`, index);
+    assert.equal(chain.length, 64);
+    assert.equal(chain[63], "0.6");
+  });
+
   it("stops at a declaration that is not strictly earlier within the MAJOR, or a cycle", () => {
     assert.deepEqual(extendsChain(`${BASE}/0.3`, { [`${BASE}/0.3`]: "0.3" }), []);
     assert.deepEqual(extendsChain(`${BASE}/0.3`, { [`${BASE}/0.3`]: "0.4" }), []);
@@ -487,13 +496,20 @@ describe("prunePayload work limit", () => {
     return v;
   };
 
-  // 25 levels is inside the walk's 64-deep schema limit (each level is two
-  // steps deep), and 4^25 prunes without the memo.
+  // 25 levels is inside the walk's 128-deep limit (each level is two steps
+  // deep), and 4^25 prunes without the memo.
   it("decides each nested oneOf once, so a deep recursive payload prunes in linear-ish time", () => {
     const started = Date.now();
     const pruned = prunePayload(nested(25, true), exprSchema);
     assert.deepEqual(pruned, nested(25, false));
     assert.ok(Date.now() - started < 5_000, "pruning a 25-level expression should not take seconds");
+  });
+
+  // 50 levels is 100 steps deep: beyond the 64 this library once stopped at,
+  // within the 128 all four libraries share, so it is pruned to the bottom as
+  // Rust, Go and Dart prune it.
+  it("prunes as deep as the other three libraries do", () => {
+    assert.deepEqual(prunePayload(nested(50, true), exprSchema), nested(50, false));
   });
 
   // Two applicators naming the same recursive member make every level prune

@@ -766,9 +766,26 @@ function readSpecPolicy(schemaPath) {
     extendsVersion = meta.extends;
   }
 
+  // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit appropriate
+  // to the Trust Task specification's payload"), per variant. An absent
+  // variant declares no bound — it does NOT inherit the other's, unlike the
+  // proof and issuedAt requirements above. Re-derived here rather than shared
+  // with the other generators, for the reason the rest of this function is.
+  const size = meta.maxDocumentBytes || {};
+  const bound = (variant) => {
+    const n = size[variant];
+    if (n === undefined || n === null) return null;
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new Error(`${specPath}: maxDocumentBytes.${variant} must be a positive integer, got ${JSON.stringify(n)}`);
+    }
+    return n;
+  };
+
   return {
     extendsVersion,
     isBearer: meta.bearer === true,
+    maxDocumentBytes: bound("request"),
+    responseMaxDocumentBytes: bound("response"),
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
     isIssuedAtRequired: issuedAtRequired.request,
@@ -1104,7 +1121,9 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
   }
 
   if (policy) {
-    const obj = (uri, isProofRequired, isRecipientRequired, isIssuedAtRequired, schemaConst) =>
+    // `maxDocumentBytes` only where the variant declares one, as Rust emits
+    // MAX_DOCUMENT_BYTES only then: SpecPolicy's member is optional.
+    const obj = (uri, isProofRequired, isRecipientRequired, isIssuedAtRequired, schemaConst, maxBytes) =>
       [
         `{`,
         `  typeUri: ${uri},`,
@@ -1113,6 +1132,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
         `  isRecipientRequired: ${isRecipientRequired},`,
         `  isIssuedAtRequired: ${isIssuedAtRequired},`,
         `  payloadSchema: ${schemaConst},`,
+        ...(maxBytes === null ? [] : [`  maxDocumentBytes: ${maxBytes},`]),
         `} as const;`,
       ].join("\n");
 
@@ -1129,6 +1149,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
         policy.isRecipientRequired,
         policy.isIssuedAtRequired,
         schemas?.request ? "PAYLOAD_SCHEMA" : "undefined",
+        policy.maxDocumentBytes,
       )}`,
       "",
     );
@@ -1146,6 +1167,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
           policy.responseIsRecipientRequired,
           policy.responseIsIssuedAtRequired,
           schemas?.response ? "RESPONSE_PAYLOAD_SCHEMA" : "undefined",
+          policy.responseMaxDocumentBytes,
         )}`,
         "",
       );

@@ -183,6 +183,18 @@ void main() {
       expect(extendsTo('${base}0.3', '${base}0.3', index: chained), isFalse);
     });
 
+    test('follows at most 64 links, as the other three libraries do', () {
+      // 0.70 → 0.69 → … → 0.0: every link strictly earlier, 70 of them.
+      final long = <String, String>{
+        for (var m = 70; m > 0; m--) '${base}0.$m': '0.${m - 1}',
+      };
+      final chain = extensionChain('${base}0.70', index: long);
+      expect(chain, hasLength(64));
+      expect(chain.last, '0.6');
+      expect(extendsTo('${base}0.70', '${base}0.6', index: long), isTrue);
+      expect(extendsTo('${base}0.70', '${base}0.5', index: long), isFalse);
+    });
+
     test('a cycle ends the walk', () {
       const cyclic = <String, String>{'${base}0.4': '0.3', '${base}0.3': '0.4'};
       expect(extensionChain('${base}0.4', index: cyclic), ['0.3']);
