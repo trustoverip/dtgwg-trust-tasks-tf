@@ -92,7 +92,7 @@ func ClassifyGitTrustReplyWithPolicy(doc *Document, expectedThreadID string, pol
 		return WriteOutcome{}, false
 	}
 	slug := slugOf(doc.Type)
-	if slug == "trust-task-error" {
+	if isFrameworkError(doc) {
 		code, message := errorCodeAndMessage(doc.Payload)
 		if isIdempotentCode(code) {
 			return WriteOutcome{Kind: WriteIdempotentSuccess}, true
@@ -108,10 +108,29 @@ func ClassifyGitTrustReplyWithPolicy(doc *Document, expectedThreadID string, pol
 		}
 		return WriteOutcome{Kind: WriteRejected, Code: code, Message: message}, true
 	}
-	if isResponseVariant(doc.Type) && (slug == "git-trust/grant" || slug == "git-trust/revoke") {
+	if isResponseVariant(doc.Type) && isRegistryType(doc.Type) && (slug == "git-trust/grant" || slug == "git-trust/revoke") {
 		return WriteOutcome{Kind: WriteSuccess}, true
 	}
 	return WriteOutcome{}, false
+}
+
+// ClassifyGitTrustReplyTo classifies the reply to the git-trust/grant or
+// git-trust/revoke document request — the form to use when you hold the request
+// you sent.
+//
+// ok is false unless reply answers request ([AnswersRequest]): threaded to it,
+// from the party it was addressed to, for the party that sent it, and typed as
+// its own #response or as a framework error. So a revoke's response does not
+// complete a grant, and a refusal typed under another authority completes
+// nothing. Otherwise as [ClassifyGitTrustReplyWithPolicy].
+func ClassifyGitTrustReplyTo(reply, request *Document, policy ReplyPolicy) (WriteOutcome, bool) {
+	if slug := slugOf(request.Type); slug != "git-trust/grant" && slug != "git-trust/revoke" {
+		return WriteOutcome{}, false
+	}
+	if !AnswersRequest(reply, request) {
+		return WriteOutcome{}, false
+	}
+	return ClassifyGitTrustReplyWithPolicy(reply, CorrelationThread(request), policy)
 }
 
 // --- governance/capability replies (management UIs) -------------------------
@@ -157,12 +176,12 @@ type CapabilityReply struct {
 
 func summaryOf(entry json.RawMessage) (CapabilitySummary, bool) {
 	var e struct {
-		Enabled   bool            `json:"enabled"`
+		Enabled   *bool           `json:"enabled"`
 		EnabledAt string          `json:"enabledAt"`
 		Delegate  string          `json:"delegate"`
 		Manifest  json.RawMessage `json:"manifest"`
 	}
-	if err := json.Unmarshal(entry, &e); err != nil || len(e.Manifest) == 0 {
+	if err := json.Unmarshal(entry, &e); err != nil || len(e.Manifest) == 0 || e.Enabled == nil {
 		return CapabilitySummary{}, false
 	}
 	var m struct {
@@ -181,7 +200,7 @@ func summaryOf(entry json.RawMessage) (CapabilitySummary, bool) {
 		Slug:      m.Capability,
 		Title:     m.Title,
 		Version:   version,
-		Enabled:   e.Enabled,
+		Enabled:   *e.Enabled,
 		EnabledAt: e.EnabledAt,
 		Delegate:  e.Delegate,
 		Manifest:  e.Manifest,
@@ -189,43 +208,66 @@ func summaryOf(entry json.RawMessage) (CapabilitySummary, bool) {
 }
 
 // ParseCapabilityReply classifies a governance/capability/* reply document. ok
-// is false when it is not part of this family, or is not threaded to
-// expectedThreadID.
+// is false when it is not part of this family, is not threaded to
+// expectedThreadID, or does not carry the members its kind requires (a
+// listing's capabilities array, each entry's manifest.capability and boolean
+// enabled; a toggle's capability and boolean enabled) — a reply that cannot say
+// what it reports is not read as reporting "disabled".
 func ParseCapabilityReply(doc *Document, expectedThreadID string) (CapabilityReply, bool) {
 	if !RepliesTo(doc, expectedThreadID) {
 		return CapabilityReply{}, false
 	}
 	slug := slugOf(doc.Type)
-	if slug == "trust-task-error" {
+	if isFrameworkError(doc) {
 		code, message := errorCodeAndMessage(doc.Payload)
 		return CapabilityReply{Kind: ReplyRejected, Code: code, Message: message}, true
 	}
-	if !isResponseVariant(doc.Type) {
+	if !isResponseVariant(doc.Type) || !isRegistryType(doc.Type) {
 		return CapabilityReply{}, false
 	}
 	switch slug {
 	case "governance/capability/list":
 		var p struct {
-			Capabilities []json.RawMessage `json:"capabilities"`
+			Capabilities *[]json.RawMessage `json:"capabilities"`
 		}
-		_ = json.Unmarshal(doc.Payload, &p)
-		entries := make([]CapabilitySummary, 0, len(p.Capabilities))
-		for _, e := range p.Capabilities {
-			if s, ok := summaryOf(e); ok {
-				entries = append(entries, s)
+		if err := json.Unmarshal(doc.Payload, &p); err != nil || p.Capabilities == nil {
+			return CapabilityReply{}, false
+		}
+		entries := make([]CapabilitySummary, 0, len(*p.Capabilities))
+		for _, e := range *p.Capabilities {
+			s, ok := summaryOf(e)
+			if !ok {
+				return CapabilityReply{}, false
 			}
+			entries = append(entries, s)
 		}
 		return CapabilityReply{Kind: ReplyListing, Entries: entries}, true
 	case "governance/capability/enable", "governance/capability/disable":
 		var p struct {
-			Capability string `json:"capability"`
-			Enabled    bool   `json:"enabled"`
+			Capability *string `json:"capability"`
+			Enabled    *bool   `json:"enabled"`
 		}
-		_ = json.Unmarshal(doc.Payload, &p)
-		return CapabilityReply{Kind: ReplyToggled, Capability: p.Capability, Enabled: p.Enabled}, true
+		if err := json.Unmarshal(doc.Payload, &p); err != nil || p.Capability == nil || p.Enabled == nil {
+			return CapabilityReply{}, false
+		}
+		return CapabilityReply{Kind: ReplyToggled, Capability: *p.Capability, Enabled: *p.Enabled}, true
 	default:
 		return CapabilityReply{}, false
 	}
+}
+
+// ParseCapabilityReplyTo classifies the reply to the governance/capability/*
+// document request — the form to use when you hold the request you sent. ok is
+// false unless reply answers request ([AnswersRequest]); otherwise as
+// [ParseCapabilityReply].
+func ParseCapabilityReplyTo(reply, request *Document) (CapabilityReply, bool) {
+	if !strings.HasPrefix(slugOf(request.Type), "governance/capability/") {
+		return CapabilityReply{}, false
+	}
+	if !AnswersRequest(reply, request) {
+		return CapabilityReply{}, false
+	}
+	return ParseCapabilityReply(reply, CorrelationThread(request))
 }
 
 // ParseEnvelopeReply parses an inbound envelope body directly into a reply to
