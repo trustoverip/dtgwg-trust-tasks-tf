@@ -70,7 +70,7 @@ document signed either way is byte-for-byte the same.
 
 ```rust,ignore
 use trust_tasks_proof::{affinidi::{SignOptions, Verifier}, ProofExt};
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_3 as grant, TrustTask};
 
 let mut req = TrustTask::for_payload(new_id(), grant::Payload { /* … */ });
 req.issuer = Some(my_did.clone());          // set every member first …
