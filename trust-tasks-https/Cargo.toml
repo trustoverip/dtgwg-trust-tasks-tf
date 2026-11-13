@@ -96,4 +96,4 @@ async-trait = "0.1"
 trust-tasks-proof = { path = "../trust-tasks-proof", features = [
   "affinidi",
 ] }
-affinidi-secrets-resolver = "0.5"
+affinidi-secrets-resolver = "0.5.18"
