@@ -45,6 +45,29 @@ expose only in a secure context). The package is ESM; its `exports` carry a
 `default` condition, so `require()` also works on a Node.js that can load ESM
 synchronously (20.19+, 22.12+).
 
+## Installing the `trust-tasks` command
+
+Pinning tasks and generating their types uses the `trust-tasks` CLI, one
+binary for every language. **No Rust toolchain is needed** — any one of:
+
+- download the archive for your platform (Linux x86_64/aarch64, macOS
+  x86_64/aarch64, Windows x86_64) from a
+  [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true), check it against its `.sha256`, and
+  put `trust-tasks` on your `PATH`;
+- `cargo binstall trust-tasks-cli` (the same prebuilt archive);
+- `cargo install trust-tasks-cli` (builds from source, Rust 1.95+).
+
+See [GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command) for the
+commands.
+
+## What you bring yourself
+
+| | |
+|---|---|
+| Payload validator (SPEC §7.2 item 2) | yours — a function over [`ajv`](https://www.npmjs.com/package/ajv) or any Draft 2020-12 engine ([below](#validating-payloads-at-runtime)) |
+| Proof verifier / signer (item 6) | [`@openvtc/trust-tasks-proof`](https://www.npmjs.com/package/@openvtc/trust-tasks-proof) — `eddsa-jcs-2022`, `ecdsa-jcs-2019`, `did:key` |
+| Transport | TSP: [`@openvtc/trust-tasks-tsp`](https://www.npmjs.com/package/@openvtc/trust-tasks-tsp). HTTPS and DIDComm have no package yet — carry the document yourself (e.g. `fetch`) per the [binding](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/bindings) |
+
 ## Usage
 
 Import the runtime from `@openvtc/trust-tasks/runtime`, and the tasks you use
