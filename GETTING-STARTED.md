@@ -141,19 +141,18 @@ Pick one; each puts the same `trust-tasks` binary on your `PATH`.
   [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true)
   carries `trust-tasks-cli-<version>-<target>.tar.gz` (`.zip` for Windows) for
   `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` (glibc 2.35 or
-  newer), `x86_64-apple-darwin`, `aarch64-apple-darwin` and
-  `x86_64-pc-windows-msvc`, each with a `.sha256` file and a combined
-  `SHA256SUMS`. The archive holds the binary alone:
+  newer) and `x86_64-pc-windows-msvc`, each with a `.sha256` file and a
+  combined `SHA256SUMS`. There are no macOS builds yet; on macOS use
+  `cargo binstall` or `cargo install` below. The archive holds the binary
+  alone:
 
   ```sh
-  v=X.Y.Z t=aarch64-apple-darwin   # set: the CLI version, your platform
+  v=X.Y.Z t=x86_64-unknown-linux-gnu   # set: the CLI version, your platform
   curl -fsSLO "https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/download/trust-tasks-cli-v$v/trust-tasks-cli-$v-$t.tar.gz"
   curl -fsSL "https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases/download/trust-tasks-cli-v$v/trust-tasks-cli-$v-$t.tar.gz.sha256" | shasum -a 256 -c
   tar -xzf "trust-tasks-cli-$v-$t.tar.gz" && sudo mv trust-tasks /usr/local/bin/
   ```
 
-  On macOS a binary downloaded by a browser is quarantined; one fetched with
-  `curl` as above is not.
 - **[`cargo binstall`](https://github.com/cargo-bins/cargo-binstall)
   `trust-tasks-cli`** — fetches the same prebuilt archive, if you already have
   cargo but not the time to compile.

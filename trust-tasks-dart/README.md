@@ -33,8 +33,8 @@ and implements neither.
 Pinning tasks and generating their types uses the `trust-tasks` CLI, one
 binary for every language. **No Rust toolchain is needed** — any one of:
 
-- download the archive for your platform (Linux x86_64/aarch64, macOS
-  x86_64/aarch64, Windows x86_64) from a
+- download the archive for your platform (Linux x86_64/aarch64, Windows
+  x86_64; on macOS use `cargo binstall` or `cargo install`) from a
   [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true), check it against its `.sha256`, and
   put `trust-tasks` on your `PATH`;
 - `cargo binstall trust-tasks-cli` (the same prebuilt archive);
