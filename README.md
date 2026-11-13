@@ -24,7 +24,7 @@ The framework that governs Trust Task documents — versioning, namespace, confo
 
 ## Submitting a new Trust Task specification
 
-The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.1` ↔ `specs/acl/grant/0.1/`). Each folder contains two files:
+The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.3` ↔ `specs/acl/grant/0.3/`). Each folder contains two files:
 
 - `spec.md` — YAML front matter (the spec's normative declarations) followed by the human-readable specification.
 - `payload.schema.json` — a JSON Schema 2020-12 document describing the `payload` member of conforming Trust Task documents.

@@ -16,7 +16,7 @@ Authorization: Bearer <token>
 
 {
   "id": "...",
-  "type": "https://trusttasks.org/spec/acl/grant/0.1",
+  "type": "https://trusttasks.org/spec/acl/grant/0.3",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-17T10:00:00Z",
