@@ -43,12 +43,12 @@ thiserror = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 # `affinidi` backend deps — gated by the `affinidi` feature.
-affinidi-data-integrity = { version = "0.8", optional = true }
-affinidi-crypto = { version = "0.2", optional = true }
+affinidi-data-integrity = { version = "0.8.7", optional = true }
+affinidi-crypto = { version = "0.3", optional = true }
 affinidi-encoding = { version = "0.1", optional = true }
-affinidi-did-resolver-cache-sdk = { version = "0.8.42", optional = true }
+affinidi-did-resolver-cache-sdk = { version = "0.8.53", optional = true }
 # 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
-affinidi-did-common = { version = "0.4.4", optional = true }
+affinidi-did-common = { version = "0.4.7", optional = true }
 # `CachedDidResolver`'s per-resolution deadline. Already in every graph that
 # enables `affinidi`, through the resolver cache SDK.
 tokio = { version = "1", default-features = false, features = ["time"], optional = true }
@@ -56,8 +56,8 @@ tokio = { version = "1", default-features = false, features = ["time"], optional
 [dev-dependencies]
 # The tests, examples and doc examples build real tasks.
 trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
-affinidi-secrets-resolver = "0.5"
-affinidi-did-common = "0.4.4"
+affinidi-secrets-resolver = "0.5.18"
+affinidi-did-common = "0.4.7"
 base64 = "0.23"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }

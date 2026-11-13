@@ -106,10 +106,18 @@ async fn explicit_cryptosuite_option_is_honored() {
     let (secret, did) = fresh_did_key(13);
     let mut doc = unsigned_doc(&did);
     // RDFC canonicalisation processes the document as JSON-LD and
-    // requires an @context (the JCS default needs none).
+    // requires an @context (the JCS default needs none). It expands in
+    // safe mode (affinidi-data-integrity 0.8.2+), so every member must be
+    // defined by the context: the credentials examples context's `@vocab`
+    // defines the Trust Task members the credentials context does not. (An
+    // inline context object is not an option: the verifier supports only a
+    // proof `@context` of strings.)
     doc.as_object_mut().unwrap().insert(
         "@context".into(),
-        json!(["https://www.w3.org/ns/credentials/v2"]),
+        json!([
+            "https://www.w3.org/ns/credentials/v2",
+            "https://www.w3.org/ns/credentials/examples/v2"
+        ]),
     );
 
     let signed = sign_trust_task(
