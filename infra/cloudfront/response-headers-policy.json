@@ -1,0 +1,50 @@
+{
+  "Name": "trust-tasks-site-headers",
+  "Comment": "Site response headers: CSP HSTS nosniff framing referrer permissions; CORS and Vary for registry JSON",
+  "SecurityHeadersConfig": {
+    "StrictTransportSecurity": {
+      "AccessControlMaxAgeSec": 31536000,
+      "IncludeSubdomains": false,
+      "Preload": false,
+      "Override": true
+    },
+    "ContentTypeOptions": {
+      "Override": true
+    },
+    "FrameOptions": {
+      "FrameOption": "DENY",
+      "Override": true
+    },
+    "ReferrerPolicy": {
+      "ReferrerPolicy": "strict-origin-when-cross-origin",
+      "Override": true
+    },
+    "ContentSecurityPolicy": {
+      "ContentSecurityPolicy": "default-src 'self'; script-src 'self' https://unpkg.com/react@18.3.1/ https://unpkg.com/react-dom@18.3.1/ https://unpkg.com/marked@12.0.2/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "Override": true
+    }
+  },
+  "CorsConfig": {
+    "AccessControlAllowOrigins": { "Quantity": 1, "Items": ["*"] },
+    "AccessControlAllowHeaders": { "Quantity": 1, "Items": ["*"] },
+    "AccessControlAllowMethods": { "Quantity": 3, "Items": ["GET", "HEAD", "OPTIONS"] },
+    "AccessControlAllowCredentials": false,
+    "AccessControlMaxAgeSec": 86400,
+    "OriginOverride": true
+  },
+  "CustomHeadersConfig": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "Header": "Permissions-Policy",
+        "Value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
+        "Override": true
+      },
+      {
+        "Header": "Vary",
+        "Value": "Accept, Accept-Encoding",
+        "Override": true
+      }
+    ]
+  }
+}
