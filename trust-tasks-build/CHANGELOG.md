@@ -3,6 +3,85 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.2.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.4...trust-tasks-build-v0.2.0) — 2026-11-13
+
+
+### Added
+
+- **rs,build**: A generated file names the runtime contract it needs ([#1253](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1253))
+
+trust-tasks-rs gains a hidden __private::ABI_V1, and every file
+  trust-tasks-build generates for an application opens with
+  const _: () = ::trust_tasks_rs::__private::ABI_V1; under a comment naming
+  the trust-tasks-build version. A runtime too old for the generator, or one
+  that has moved to a newer contract, now fails on that line with an error
+  naming the contract, instead of on whichever hidden door the generated code
+  reaches first ([#1101](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1101)). The in-repo prebuilt tree is unchanged.
+
+- **rs,build,ts,ts-gen,go,dart**: Emit only the $defs each schema constant reaches ([#1243](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1243))
+
+* feat(rs,build,ts,ts-gen,go,dart): emit only the $defs each schema constant reaches
+
+  Each generated request and response schema constant now keeps only the root $defs its root reaches: the request drops Response and what only the response uses, the response document drops what only the request uses. Registry bundles are unchanged, so no pinned digest moves. Types are still generated from the whole schema.
+
+  trust-tasks-rs packages at 10,037,990 bytes (9.57 MiB) against 10,349,753 (9.87 MiB) before.
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+
+
+### Fixed
+
+- **build,cli**: Require a spec slug and version for every locked task, and the canonical path for every index entry ([#1245](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1245))
+
+An official lockfile entry's slug and version were checked only against a Type URI built from the same strings, then used as path segments of the vendored bundle's location. Each entry's slug and version must now have their SPEC form, whichever registry it comes from. The CLI now also requires an index entry's path to be <slug>/<version>/bundle.json, the only form the registry publishes.
+
+
+
+## [0.1.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.3...trust-tasks-build-v0.1.4) — 2026-11-12
+
+
+### Documentation
+
+- RELEASING describes the Dart downgrade leg as it now behaves; trust-tasks-build README uses cargo add ([#1225](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1225))
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **rs,build,cli,codegen**: Review fixes — declared guard code, SchemaValidator, keyword slugs, generate --lang rs, registry hints, docs.rs ([#1215](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1215))
+
+* fix(rs): declared acl/revoke code in the guard, a caching SchemaValidator, docs.rs metadata
+
+  - guards::acl::reject_last_authority returns acl/revoke:lastAuthorityProtected,
+    the code every acl/revoke version declares (was snake_case); new
+    LAST_AUTHORITY_PROTECTED constant, pinned to the generated declarations ([#1093](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1093)).
+  - validate::SchemaValidator: a PayloadValidator compiling each schema once,
+    cached by the schema text's address and confirmed against its content;
+    validate_value and check_details use a shared one; prune_payload reuses a
+    parsed-schema cache; PayloadPolicy::accept_unvalidated() ([#1091](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1091)).
+  - docs.rs builds trust-tasks-rs with validate + acl and the facade with its
+    non-spec features, and trust-tasks-rs / trust-tasks-https enable doc_cfg
+    under docsrs, without which the docs.rs build cannot compile ([#1106](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1106)).
+
+
+
 ## [0.1.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.2...trust-tasks-build-v0.1.3) — 2026-10-29
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Verify Type URI content negotiation on the live site (SPEC §6.2).
+# Verify Type URI content negotiation (SPEC §6.2) and the response headers on
+# the live site.
 # Fails until type-uri-negotiation.js is associated with the distribution —
 # see README.md. Run after association to confirm it took effect.
 set -u
@@ -67,8 +68,47 @@ check /ceremonies/vtc/member-onboarding/0.1/ceremony.json application/json json 
 # it failed to parse if both arrive as the site shell under a 200.
 check_status /ceremony/does-not-exist/9.9 application/json 404
 # A Type URI asked for as plain JSON is not a definition — the two subtrees must
-# not leak into each other. The SPA shell is the correct answer here.
-check_status /spec/acl/grant/0.1 application/json 200
+# not leak into each other. It names nothing negotiable, so it is a 404 (#1152);
+# it used to be the SPA shell under a 200.
+check_status /spec/acl/grant/0.1 application/json 404
+# Malformed Type URIs asked for as a schema: outside the slug grammar, and with
+# no version. A browser still gets the shell for both.
+check_status /spec/Nope/0.1 application/schema+json 404
+check_status /spec/acl/grant application/schema+json 404
+check_status /spec/acl/grant 'text/html' 200
+# Root files the build writes (#1150); without a ROOT_FILES entry each is the shell.
+check /robots.txt '*/*' 'text/plain' 'Sitemap:'
+check /sitemap.xml '*/*' 'xml' '<urlset'
+
+# Response headers (response-headers-policy.json, applied by
+# apply-response-headers.sh). Checked on the page and on a negotiated schema,
+# since one policy covers every cache behaviour.
+echo
+echo "Response headers — $BASE"
+check_header() {
+  local uri="$1" accept="$2" header="$3" want="$4"
+  local value
+  value=$(curl -sS -o /dev/null -D - -H "Accept: $accept" "$BASE$uri" \
+            | tr -d '\r' | awk -v h="$(tr '[:upper:]' '[:lower:]' <<<"$header")" \
+                'BEGIN{FS=": "} tolower($1)==h {sub(/^[^:]*: /, ""); print; exit}')
+  if [[ "$value" == *"$want"* ]]; then
+    printf '  ok    %-42s %s\n' "$uri" "$header"
+  else
+    printf '  FAIL  %-42s %s (got: %s; want it to contain: %s)\n' "$uri" "$header" "${value:-<absent>}" "$want"
+    fails=$((fails+1))
+  fi
+}
+for uri in / /spec/acl/grant/0.1; do
+  check_header "$uri" 'text/html' Strict-Transport-Security 'max-age='
+  check_header "$uri" 'text/html' X-Content-Type-Options nosniff
+  check_header "$uri" 'text/html' X-Frame-Options DENY
+  check_header "$uri" 'text/html' Referrer-Policy strict-origin-when-cross-origin
+  check_header "$uri" 'text/html' Content-Security-Policy "frame-ancestors 'none'"
+  check_header "$uri" 'text/html' Permissions-Policy 'camera=()'
+done
+check_header /spec/acl/grant/0.1 application/schema+json Access-Control-Allow-Origin '*'
+check_header /spec/acl/grant/0.1 application/schema+json Vary Accept
+check_header /spec/acl/grant/0.1 application/schema+json X-Content-Type-Options nosniff
 
 if (( fails )); then
   echo "$fails check(s) failed — if the function is not yet associated, that is expected (see README.md)."

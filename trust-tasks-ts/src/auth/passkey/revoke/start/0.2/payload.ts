@@ -80,8 +80,13 @@ export type Response = AuthPasskeyRevokeStartResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/passkey/revoke/start/0.2",
   "title": "Auth — Passkey Revoke (start)",
@@ -108,32 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Revoke Start — response payload",
-      "description": "Server-issued re-authentication options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/start/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revocationId",
-        "uvOptions"
-      ],
-      "properties": {
-        "revocationId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim. The consumer binds it to the target credentialId server-side, so the finish carries no target of its own."
-        },
-        "uvOptions": {
-          "$ref": "#/$defs/CredentialRequestOptions",
-          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get — a fresh user-verification ceremony proving a human with an enrolled authenticator is present right now. userVerification SHOULD be \"required\"."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -143,84 +122,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "CredentialRequestOptions": {
-      "$anchor": "credentialRequestOptions",
-      "title": "PublicKeyCredentialRequestOptions",
-      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge"
-      ],
-      "properties": {
-        "extensions": {
-          "type": "object",
-          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
-        },
-        "challenge": {
-          "type": "string",
-          "description": "base64url-encoded one-time nonce."
-        },
-        "timeout": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "rpId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "allowCredentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CredentialDescriptor"
-          }
-        },
-        "userVerification": {
-          "enum": [
-            "discouraged",
-            "preferred",
-            "required"
-          ]
-        }
-      }
-    },
-    "CredentialDescriptor": {
-      "$anchor": "credentialDescriptor",
-      "title": "PublicKeyCredentialDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "id"
-      ],
-      "properties": {
-        "type": {
-          "const": "public-key"
-        },
-        "id": {
-          "type": "string",
-          "description": "base64url-encoded credential id."
-        },
-        "transports": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "usb",
-              "nfc",
-              "ble",
-              "internal",
-              "hybrid"
-            ]
-          }
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -333,7 +240,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

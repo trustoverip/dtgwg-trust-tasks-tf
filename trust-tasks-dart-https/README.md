@@ -42,15 +42,28 @@ to this request: same thread, the request's type with `#response`, issued by
 | Exception | Meaning |
 |---|---|
 | `TrustTaskErrorException` | The server refused with a `trust-task-error`; the code is authoritative |
+| `UnverifiedErrorResponseException` | With a `responseVerifier`: a `trust-task-error` without a valid proof from `serverVid` to `myVid`. **Untrusted** — kept for diagnostics, not the server's answer; the outcome is unknown |
 | `DuplicateAbsorbedException` | `202`/`204`: the server had already accepted this document. **Not a failure** |
-| `HttpStatusException` | A non-2xx with no error document — a proxy, a `401`. Says nothing about the task |
-| `TransportException` | No answer at all. Retry by re-sending the same bytes (SPEC §8.4) |
+| `HttpStatusException` | A non-2xx with no error document — a proxy, a `401`, a redirect. Says nothing about the task |
+| `TransportException` | No answer at all — connection, TLS, timeout or any other client error. Retry by re-sending the same bytes (SPEC §8.4) |
 | `ResponseMismatchException` | A response, but not to this request, or not from this server |
+| `ResponseTooLargeException` | The body exceeded `maxResponseBytes` (256 KiB by default); reading stopped there |
 | `ResponseDecodeException`, `ResponseProofException` | A response this client cannot accept |
 
 Use `sendAck` for a specification that defines no success response. Pass
-`responseVerifier` to require a verified proof on every response. The client
-uses `package:http`, so it runs on the web and in Flutter.
+`responseVerifier` to require a verified proof on every response; it requires
+`serverVid`. The proof is verified over the body as received, and error
+responses are held to it too: an error without a valid proof from the
+configured server comes back as `UnverifiedErrorResponseException`, not as the
+server's answer. The client uses `package:http`, so it runs on the web and in
+Flutter.
+
+The base must be `https`. A plain `http` base is accepted on loopback, or
+elsewhere with `allowInsecureHttp: true` — but a `token` is never sent over
+non-loopback `http`. Redirects are not followed (the signed document is never
+re-posted to another URL), the response body is capped at `maxResponseBytes`,
+and `timeout` covers reading the body as well as connecting. Exception
+messages do not quote the response body.
 
 ## Server
 
@@ -95,18 +108,33 @@ for the same reason, and so that nothing an unauthenticated sender picks —
 above all resolving a `did:web` during proof verification — runs before the
 cheap local checks:
 
-1. `POST <base>/trust-tasks`, `Content-Type: application/json`, at most 256 KiB.
+1. `POST <base>/trust-tasks`, `Content-Type: application/json`, at most
+   `bodyLimitBytes` (`413` otherwise): the largest `maxDocumentBytes` among
+   the registered specifications, never under `defaultMaxDocumentBytes`
+   (256 KiB unless you pass another).
 2. The bearer token is mapped to the sender's VID.
-3. An unregistered `type` is `unsupportedType`.
-4. The payload decodes; the in-band identity agrees with the token (§4.8.1);
+3. Routing. A registered `type` reaches its handler. A later version whose
+   declared `extends` chain (SPEC §5.2) reaches a registered version is read
+   as the highest such version and answered as `<received type>#response`;
+   any other version of a registered specification is `unsupportedVersion`,
+   and anything else `unsupportedType`.
+4. The document is within its specification's `maxDocumentBytes` — or
+   `defaultMaxDocumentBytes` where it declares none — else `malformedRequest`
+   (SPEC §12.4: never refused within the bound, SHOULD be above it).
+5. The payload decodes; the in-band identity agrees with the token (§4.8.1);
    expiry, recipient and the freshness window hold.
-5. **Attribution:** a request with neither a recognised token nor a `proof` is
+6. **Attribution:** a request with neither a recognised token nor a `proof` is
    refused. §5 of the binding does not let a proof be omitted, and without this
    anyone could claim any `issuer`.
-6. `allowedDidMethods`, if set, screens `proof.verificationMethod`.
-7. The proof verifies — or, with no `proofVerifier`, a proof is refused rather
+7. With a `proofVerifier`, `proof.verificationMethod` is screened by DID
+   method: by default only `did:key` passes (`defaultAllowedDidMethods`),
+   since resolving any other method can mean a fetch from a host the sender
+   names. Widen it with `allowedDidMethods: {'key', 'web'}`, or lift it with
+   `allowAnyDidMethod: true` for a verifier whose resolver bounds its own
+   egress.
+8. The proof verifies — or, with no `proofVerifier`, a proof is refused rather
    than silently ignored.
-8. The specification's own policy, then the **duplicate-execution claim**: a
+9. The specification's own policy, then the **duplicate-execution claim**: a
    byte-identical resend gets the first response back without running the
    handler again, a different document under the same `id` is `idConflict`, and
    a store that cannot be consulted fails closed with `unavailable`.
@@ -118,6 +146,25 @@ exactly like an unparseable body, so none of them works as an oracle.
 
 **Behind a load balancer, pass a shared `replayGuard`.** The default record is
 in-process; two replicas would each accept the same document once (§5.1).
+
+**Pass `onEvent` to see what the wire does not say.** A handler that throws is
+answered `internalError`, a suppressed refusal looks like an unparseable body,
+and a proof failure is a constant `proofInvalid` — on purpose (SPEC §12.4). The
+hook receives a `ServerEvent` (from `package:trust_tasks`) for each: the
+handler's exception and stack, the identity disagreement, what the verifier
+threw, an authenticator that failed. It never changes an answer, and anything
+it throws is dropped:
+
+```dart
+final server = HttpsServer(
+  localVid: 'did:web:maintainer.example',
+  onEvent: (event) => switch (event) {
+    HandlerFailed(:final error, :final stackTrace) =>
+      log.severe('handler threw', error, stackTrace),
+    _ => log.fine(event),
+  },
+);
+```
 
 ## Interoperability
 

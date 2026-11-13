@@ -229,7 +229,7 @@ class MonitorEvent {
 }
 
 /// Messaging — Traffic Monitor Event — payload
-@Deprecated('superseded by messaging/monitor/event/0.2')
+@Deprecated('superseded by messaging/monitor/event/0.3')
 class Payload {
   const Payload({
     required this.subscriptionId,
@@ -289,7 +289,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by messaging/monitor/event/0.2';
+const String? deprecation = 'superseded by messaging/monitor/event/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

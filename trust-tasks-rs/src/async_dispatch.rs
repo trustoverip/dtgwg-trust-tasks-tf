@@ -215,10 +215,23 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         let (target, forwarded) = self.route(&doc.type_uri)?;
         if forwarded {
             if let Some(schema) = self.facts[&target].schema {
-                crate::extension::prune_payload(&mut doc.payload, schema);
+                crate::extension::prune_forward(&mut doc.payload, schema)?;
             }
         }
-        self.handlers[&target](doc, ctx).await
+        self.dispatch_routed(&target, doc, ctx).await
+    }
+
+    /// [`Self::dispatch`] for a document already routed to `target` (a key
+    /// [`Self::route`] returned) and, along a forward route, already pruned —
+    /// as [`consume_dispatched`](crate::consume_dispatched) has done by the
+    /// time it dispatches, so it does not route and prune a second time.
+    pub(crate) async fn dispatch_routed(
+        &self,
+        target: &str,
+        doc: TrustTask<Value>,
+        ctx: Ctx,
+    ) -> Result<R, RejectReason> {
+        self.handlers[target](doc, ctx).await
     }
 
     /// The registered key `type_uri` routes to, and whether it is a forward
@@ -250,7 +263,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
     /// §4.3).
     ///
     /// None of the rejections this method can produce carry the
-    /// `identity_mismatch` transport-routing exception, so the §8.1 safe
+    /// `identityMismatch` transport-routing exception, so the §8.1 safe
     /// default (address the original producer) applies to all of them.
     ///
     /// `ErrorResponse` is intentionally large; boxing it in the `Err`

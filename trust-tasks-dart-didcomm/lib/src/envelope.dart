@@ -1,9 +1,13 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:didcomm/didcomm.dart';
 import 'package:ssi/ssi.dart';
 import 'package:trust_tasks/trust_tasks.dart';
+
+// One `urn:uuid:` generator for the whole Dart family, in the core (#1118).
+// Re-exported so this package keeps naming it; the element is the core's, so
+// importing both packages is not an ambiguity.
+export 'package:trust_tasks/trust_tasks.dart' show newUrnUuid;
 
 /// The binding's stable identifier (`bindings/didcomm/0.2` §1).
 const String bindingUri = _bindingUri;
@@ -201,6 +205,14 @@ Future<UnpackedTrustTask> unpackTrustTask(
     }
   }
 
+  // didcomm resolves the authcrypt `skid` before it decrypts anything, and
+  // ssi's base58 decoding of a did:key costs the square of its length, so an
+  // over-long sender key id is refused before didcomm sees it.
+  final skidError = _senderKidBound(envelope);
+  if (skidError != null) {
+    throw EnvelopeException(EnvelopeFailure.undecryptable, skidError);
+  }
+
   List<DidcommMessage> layers = const [];
   final PlainTextMessage message;
   try {
@@ -313,6 +325,36 @@ RejectReason? checkThreadHeaders(
   return null;
 }
 
+/// The longest sender key id (`skid`) [unpackTrustTask] passes on to be
+/// resolved. Far longer than any `did:key`, `did:web`, `did:webvh` or
+/// `did:peer` key id, while keeping what resolving one costs bounded.
+const int _maxSenderKidChars = 4096;
+
+/// The longest base58btc `did:key` multikey: 175 characters encode 128 bytes,
+/// the bound the proof verifiers in every runtime apply too.
+const int _maxDidKeyChars = 175;
+
+/// Why the claimed sender key id in [envelope]'s protected header is too long
+/// to resolve, or `null` when it is within bounds or absent.
+String? _senderKidBound(Map<String, dynamic> envelope) {
+  final protected = envelope['protected'];
+  if (protected is! String) return null;
+  final skid = _protectedHeader(protected)?['skid'];
+  if (skid is! String) return null;
+  if (skid.length > _maxSenderKidChars) {
+    return 'sender kid is ${skid.length} characters, longer than the '
+        '$_maxSenderKidChars accepted';
+  }
+  final hash = skid.indexOf('#');
+  final did = hash < 0 ? skid : skid.substring(0, hash);
+  if (did.startsWith('did:key:') &&
+      did.length - 'did:key:'.length > _maxDidKeyChars + 1) {
+    return 'sender did:key is longer than the $_maxDidKeyChars base58 '
+        'characters a key needs';
+  }
+  return null;
+}
+
 Map<String, dynamic>? _protectedHeader(String protected) {
   try {
     return jsonDecode(
@@ -323,17 +365,6 @@ Map<String, dynamic>? _protectedHeader(String protected) {
   }
 }
 
-final Random _random = Random.secure();
-
-String _uuid() {
-  final b = List<int>.generate(16, (_) => _random.nextInt(256));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int from, int to) => [
-        for (var i = from; i < to; i++) b[i].toRadixString(16).padLeft(2, '0'),
-      ].join();
-  return '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}';
-}
-
-/// A fresh `urn:uuid:` identifier, for response and error documents.
-String newUrnUuid() => 'urn:uuid:${_uuid()}';
+/// A fresh UUID v4 for a DIDComm message `id`: the core's [newUrnUuid]
+/// without its `urn:uuid:` prefix, so the family has one generator (#1118).
+String _uuid() => newUrnUuid().substring('urn:uuid:'.length);

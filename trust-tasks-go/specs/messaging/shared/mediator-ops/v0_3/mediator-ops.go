@@ -222,6 +222,85 @@ type MonitorFilter struct {
 	FailuresOnly *bool `json:"failuresOnly,omitempty"`
 }
 
+// MembershipChange What happened to a member DID's place on a mux connection, as
+// messaging/mux/event reports it to the connection's principal. `attached`: the member
+// joined the connection, or its scope or expiry there changed. `detached`: the member
+// left the connection, or a stored grant of it was not attached on connect.
+type MembershipChange string
+
+// Values MembershipChange may take, per this specification's schema.
+const (
+	MembershipChangeAttached MembershipChange = "attached"
+	MembershipChangeDetached MembershipChange = "detached"
+)
+
+// MonitorMembershipEvent One change to the membership of one mux connection at the
+// mediator: a member DID attached to or detached from a principal's connection. Not a
+// step in the life of a message, so it is not a MonitorEvent and carries none of its
+// members. Carries metadata only — never a message, a signed statement, a nonce or key
+// material.
+type MonitorMembershipEvent struct {
+	// When the change took effect, with sub-second precision where the mediator has it.
+	OccurredAt string           `json:"occurredAt"`
+	Change     MembershipChange `json:"change"`
+
+	// The DID the connection is authenticated as, in the same form the mediator uses for
+	// accounts.
+	Principal VID `json:"principal"`
+
+	// The member DID that attached or detached, in the same form the mediator uses for
+	// accounts.
+	Member VID     `json:"member"`
+	Wire   MuxWire `json:"wire"`
+
+	// Whether the member rides, or rode, the connection through a stored grant or a session
+	// attach.
+	Source MuxSource `json:"source"`
+
+	// Why, exactly as the messaging/mux/event entry for the change reports it: an
+	// AttachReason value when `change` is `attached`, a DetachReason value when it is
+	// `detached`.
+	Reason MemberChangeReason `json:"reason"`
+
+	// The connection's identifier, as its `ready` event announced it and
+	// messaging/mux/connections lists it. Absent when the mediator does not report it.
+	SessionID *SessionID `json:"sessionId,omitempty"`
+}
+
+// MembershipFilter Opts a monitor subscription in to mux membership events and selects
+// which. Its presence is the opt-in: a subscription without one receives no membership
+// events. Every member present narrows the selection (members are ANDed; values within
+// one member are ORed); an empty object selects every membership event the requester is
+// entitled to see.
+type MembershipFilter struct {
+	// Only events whose `principal` or `member` is one of these accounts.
+	Dids    *[]VID              `json:"dids,omitempty"`
+	Changes *[]MembershipChange `json:"changes,omitempty"`
+	Wires   *[]MuxWire          `json:"wires,omitempty"`
+	Sources *[]MuxSource        `json:"sources,omitempty"`
+}
+
+// MuxSource How a member came to be on a connection: through a stored grant, or through a
+// session attach bound to that connection.
+type MuxSource string
+
+// Values MuxSource may take, per this specification's schema.
+const (
+	MuxSourceGrant  MuxSource = "grant"
+	MuxSourceAttach MuxSource = "attach"
+)
+
+// MuxWire The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that
+// negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated
+// `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`.
+type MuxWire string
+
+// Values MuxWire may take, per this specification's schema.
+const (
+	MuxWireDidcomm MuxWire = "didcomm"
+	MuxWireTsp     MuxWire = "tsp"
+)
+
 // VID A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the
 // account's controlling DID, carried verbatim and compared by exact string equality. For
 // privacy — and because some mediators key accounts by a one-way hash and never hold the
@@ -229,6 +308,39 @@ type MonitorFilter struct {
 // here: producer and consumer simply agree on the same opaque identifier and compare by
 // exact string equality. The field carries whichever form the issuing mediator uses.
 type VID = string
+
+// SessionID The mediator's identifier for one authenticated connection, as announced in
+// that connection's `ready` event.
+type SessionID = string
+
+// MemberChangeReason The reason carried by one member's change in a messaging/mux/event
+// `attached` or `detached` event: exactly the AttachReason values followed by the
+// DetachReason values, with their meanings. An `attached` event carries only AttachReason
+// values and a `detached` event only DetachReason values. One closed set rather than a
+// union, so every generated binding types it as one enumeration; it MUST be kept equal to
+// the two sets it joins.
+type MemberChangeReason string
+
+// Values MemberChangeReason may take, per this specification's schema.
+const (
+	MemberChangeReasonConnect             MemberChangeReason = "connect"
+	MemberChangeReasonGrant               MemberChangeReason = "grant"
+	MemberChangeReasonAttach              MemberChangeReason = "attach"
+	MemberChangeReasonReactivated         MemberChangeReason = "reactivated"
+	MemberChangeReasonRevokedByMember     MemberChangeReason = "revokedByMember"
+	MemberChangeReasonRevokedByPrincipal  MemberChangeReason = "revokedByPrincipal"
+	MemberChangeReasonEpochBumped         MemberChangeReason = "epochBumped"
+	MemberChangeReasonSuspendedUnknownKey MemberChangeReason = "suspendedUnknownKey"
+	MemberChangeReasonKeyRotated          MemberChangeReason = "keyRotated"
+	MemberChangeReasonExpired             MemberChangeReason = "expired"
+	MemberChangeReasonAccountBlocked      MemberChangeReason = "accountBlocked"
+	MemberChangeReasonSuperseded          MemberChangeReason = "superseded"
+	MemberChangeReasonAdmin               MemberChangeReason = "admin"
+	MemberChangeReasonDetachRequested     MemberChangeReason = "detachRequested"
+	MemberChangeReasonAccountRemoved      MemberChangeReason = "accountRemoved"
+	MemberChangeReasonResolutionFailed    MemberChangeReason = "resolutionFailed"
+	MemberChangeReasonConnectionFull      MemberChangeReason = "connectionFull"
+)
 
 // AccountType The account's role at the mediator. `standard` is an ordinary served
 // account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the

@@ -55,17 +55,24 @@ Future<void> main() async {
       // How long this server still accepts a document after its issuedAt — what
       // a producer holding a document needs before it re-sends (discovery 0.3).
       if (window != null) {
-        print('  accepted for ${window.maxAgeSeconds}s '
-            '(+${window.clockSkewSeconds}s skew) after issuedAt');
+        print(
+          '  accepted for ${window.maxAgeSeconds}s '
+          '(+${window.clockSkewSeconds}s skew) after issuedAt',
+        );
       }
     } on HttpsClientException catch (e) {
       // Sealed: a switch over it is exhaustive.
       final summary = switch (e) {
         TrustTaskErrorException(:final error) =>
           'refused: ${error.payload.code}',
+        // An error document the response verifier could not attest: not the
+        // server's answer, so the outcome is unknown.
+        UnverifiedErrorResponseException(:final httpStatus) =>
+          'unattested error (HTTP $httpStatus), outcome unknown',
         DuplicateAbsorbedException() => 'already accepted',
         HttpStatusException(:final httpStatus) => 'HTTP $httpStatus',
         TransportException() => 'no answer',
+        ResponseTooLargeException() ||
         ResponseDecodeException() ||
         ResponseMismatchException() ||
         ResponseProofException() =>

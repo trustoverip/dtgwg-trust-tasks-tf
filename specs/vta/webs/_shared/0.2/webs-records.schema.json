@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webs/_shared/0.2/webs-records",
+  "title": "did:webs records — shared definitions for the vta/webs/dids/* tasks",
+  "description": "A `did:webs` DID ends in a KERI AID and publishes two artifacts under its slot on a hosting server: `keri.cesr`, the key event log that is its authority, and `did.json`, the document the host derives from it. The VTA holds the keys and writes the log; the host verifies and serves it. These definitions describe the DID as the VTA holds it, a designated service, and the slot path a caller chooses. The normative rules that give them meaning are in CONVENTIONS.md beside this file. Version 0.2 adds `WebsDidClass`, the DID class a DID is created in, and records it on `WebsDidRecord`; everything else is 0.1. Shared because the record is returned by create, get and list, and the service shape is taken by create and update. Not itself a Trust Task specification. Alpha: expect breaking changes as the KERI and did:webs specifications settle.",
+  "$defs": {
+    "WebsSlotPath": {
+      "title": "WebsSlotPath",
+      "description": "The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$"
+    },
+    "DesignatedService": {
+      "title": "DesignatedService",
+      "description": "A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "type",
+        "serviceEndpoint"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^#[A-Za-z0-9._~-]+$",
+          "description": "The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused."
+        },
+        "type": {
+          "description": "The service type, matched by peers on its value, never on `id`.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          ]
+        },
+        "serviceEndpoint": {
+          "description": "A URI, a map, or a set of either, as the DID document data model allows.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "WebsDidClass": {
+      "title": "WebsDidClass",
+      "description": "The DID class the DID belongs to (VTI specification, DID classes, VTI-KEY-190 – 193), stated when it is created and fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context, and nothing else. `persona`: a person's own identity. `service`: the durable identity of a node or a service — the VTA itself, a VTC, a VTN, a trust registry, a host service, a mediator, or an integration the VTA provisions — at key assurance level 1. A DID belongs to one class only (VTI-KEY-193): a persona or relationship DID is never adopted as a node's identity, and a service DID is never used as a person's. A service did:webs is alpha: see CONVENTIONS.md §1.",
+      "type": "string",
+      "enum": [
+        "relationship",
+        "persona",
+        "service"
+      ]
+    },
+    "WebsDidRecord": {
+      "title": "WebsDidRecord",
+      "description": "A did:webs DID as the VTA holds it. The DID document is not here: the host derives it from `keri.cesr`, which `vta/webs/dids/get` returns on request. Every key named here is public, and every key id names a key the VTA holds and never returns.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "aid",
+        "contextId",
+        "serverId",
+        "domain",
+        "slot",
+        "keriCesrUrl",
+        "didJsonUrl",
+        "sequenceNumber",
+        "versionId",
+        "signingKeyId",
+        "signingKey",
+        "keyAgreementKeyId",
+        "keyAgreementKey",
+        "alsoKnownAs",
+        "services",
+        "deactivated",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "pattern": "^did:webs:",
+          "description": "The DID: `did:webs:<domain>:<path segments>:<AID>`, a port in the domain written `%3A<port>`."
+        },
+        "aid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The KERI autonomic identifier: the self-addressing digest of the inception event, and the DID's final segment. It never changes: a rotation changes the keys, not the AID."
+        },
+        "contextId": {
+          "type": "string",
+          "description": "Context the DID belongs to. Its keys were derived in it, and deleting that context destroys them."
+        },
+        "didClass": {
+          "$ref": "#/$defs/WebsDidClass",
+          "description": "The DID's class, as created. Absent for a DID created by vta/webs/dids/create/0.1, which is a persona, relationship or integration DID and never a node's service identity."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The VTA's id for the hosting server that serves the slot."
+        },
+        "domain": {
+          "type": "string",
+          "description": "The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read."
+        },
+        "slot": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The slot on the hosting server: the path segments, then the AID, separated by `/`."
+        },
+        "keriCesrUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the key event log is served: `https://<domain>/<slot>/keri.cesr`."
+        },
+        "didJsonUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the derived document is served: `https://<domain>/<slot>/did.json`."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Operator-facing label. Never published."
+        },
+        "primary": {
+          "type": "boolean",
+          "description": "Whether this is its context's primary DID."
+        },
+        "sequenceNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sequence number of the latest event in the key event log."
+        },
+        "versionId": {
+          "type": "string",
+          "pattern": "^[0-9]+:[A-Za-z0-9_-]+$",
+          "description": "The latest event as `<sequence number>:<SAID>`, the form `expectedVersionId` is compared against (vta/dids method profile `webs`, §3). Both parts are compared: a sequence number alone does not distinguish two events at the same position."
+        },
+        "signingKeyId": {
+          "type": "string",
+          "description": "The VTA's id for the current signing key, the one key of the key state (`kt` 1). It signs the DID's key events and what the DID signs as itself. After deactivation, the key the final rotation installed, which the VTA signs nothing more with."
+        },
+        "signingKey": {
+          "type": "string",
+          "description": "The current signing key in CESR (an Ed25519 key, `D…`). The document's verification method for it is `<did>#<signingKey>`."
+        },
+        "nextKeyId": {
+          "type": "string",
+          "description": "The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed."
+        },
+        "keyAgreementKeyId": {
+          "type": "string",
+          "description": "The VTA's id for the designated key agreement key."
+        },
+        "keyAgreementKey": {
+          "type": "string",
+          "description": "The designated key agreement key in CESR (an X25519 key, `C…`). Never the X25519 key converted from a signing key."
+        },
+        "alsoKnownAs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The designated aliases in force, the DID itself first. The did:webs resolution of the DID requires the AID to designate it, so the list is never empty while the DID is live."
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DesignatedService"
+          },
+          "description": "The designated services in force, `#didcomm` and `#tsp` included when present."
+        },
+        "deactivated": {
+          "type": "boolean",
+          "description": "True once `vta/webs/dids/delete` has published the rotation to no next keys. Irreversible."
+        },
+        "deactivatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the deactivating rotation was published. Present exactly when `deactivated` is true."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

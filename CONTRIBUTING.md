@@ -1,3 +1,91 @@
+# Contributing
+
+Thanks for contributing to Trust Tasks. This page covers how to get a change
+merged. The rest of the documentation:
+
+- **A Trust Task specification** — [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
+- **The framework specification** — `SPEC.md` here is generated from
+  [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec);
+  a framework change is a pull request to that repository. Never edit `SPEC.md`
+  here ([why](docs/DEVELOPMENT.md#specmd-is-generated--never-edit-it-here)).
+- **The build, the website, the generators and the four libraries** —
+  [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), with per-library notes in
+  [`docs/packages/`](docs/packages/) ([Rust](docs/packages/rust.md),
+  [TypeScript](docs/packages/typescript.md), [Go](docs/packages/go.md),
+  [Dart](docs/packages/dart.md)).
+- **Releases** — [`RELEASING.md`](RELEASING.md).
+- **Security issues** — [`SECURITY.md`](SECURITY.md); do not open a public issue.
+
+By opening a pull request you agree to the Open Web Foundation Contributor
+License Agreement, reproduced in full [below](#contributor-license-agreement).
+Source code is contributed under the Apache License 2.0 in
+[`SOURCE_CODE.md`](SOURCE_CODE.md).
+
+## Every commit MUST be DCO signed
+
+This repo enforces the **Developer Certificate of Origin**. *Every* commit needs
+a `Signed-off-by: Name <email>` trailer matching the commit author — the DCO CI
+check fails the PR otherwise. Use **`git commit -s`** (and `git commit -s --amend`
+to fix the most recent commit, or an interactive rebase with `--signoff` to fix a
+range). Verify with `git log -1 --format='%(trailers:key=Signed-off-by)'`.
+
+## Before you open the pull request
+
+```sh
+npm install        # one-time, at the repository root (Node 24, see .nvmrc)
+npm run check      # validation and the repository's own consistency checks
+npm run build      # validate specs + regenerate the website registry
+```
+
+- **Changed anything under `specs/`?** Regenerate **all four** libraries in the
+  same PR — Rust, TypeScript, Go and Dart. CI's drift jobs fail otherwise. The
+  commands are in
+  [Changing a spec or payload schema](docs/DEVELOPMENT.md#changing-a-spec-or-payload-schema--regenerate-the-libraries).
+- **Added a category, a framework-reserved slug, a binding or a library?** Each
+  has a hand-maintained list to update as well —
+  [Hand-maintained lists](docs/DEVELOPMENT.md#hand-maintained-lists).
+- **Do not bump a version or write a `CHANGELOG.md` entry.** Versions and
+  changelogs are produced by the Release PR from the merged commits; CI refuses
+  a version change anywhere else. See
+  [Merging is not releasing](docs/DEVELOPMENT.md#merging-is-not-releasing--read-releasingmd-before-touching-a-version).
+
+## The pull request title is the changelog
+
+PRs squash-merge, so the title becomes the commit subject — both the published
+changelog entry and the signal that sizes each package's version bump.
+`.github/workflows/commit-lint.yml` enforces the conventional-commit format:
+
+- `feat(<slug>):` when you **add** a spec family; `spec(<slug>):` for an edit
+  inside one (`spec` is scored as a patch).
+- `fix(…)`, `docs:`, `ci(…)` and the other conventional types as usual.
+- **A `!` is only for a package's public API, scoped to the package**
+  (`feat(rs)!:`, `fix(codegen)!:`) — **never for a spec change.** One `!` makes
+  every crate, and the npm, Go and Dart packages, a breaking release; commit-lint
+  refuses a `!` whose scope is not a package, and a `BREAKING CHANGE` line in a
+  commit message or the PR description.
+
+The commit body is included in the changelog verbatim.
+
+## Code of conduct
+
+Participation in this repository — issues, pull requests, review and
+discussion — is governed by the LF Decentralized Trust
+[Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct), which
+the ToIP community follows.
+
+## Review
+
+- Touch only your own spec folder/namespace where possible. `.github/CODEOWNERS`
+  is effectively single-owner today (one maintainer on every rule but
+  `/specs/process-attestation/`), so it does not route review per slug and there
+  is no second reviewer of record (#1144); don't write prose that says otherwise.
+  Displayed spec authors come from front matter or git history, never from
+  CODEOWNERS.
+- See [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md) for the full
+  spec-authoring guide.
+
+## Contributor License Agreement
+
                                     OWF Contributor License Agreement 1.0 - Copyright and Patent
                                                     Open Web Foundation
 

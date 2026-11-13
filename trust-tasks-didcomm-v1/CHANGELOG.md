@@ -3,6 +3,162 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.38.0...trust-tasks-didcomm-v1-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs,tsp,didcomm,didcomm-v1**: One guarded consumer for the binding crates; answer an authenticated unparsable body ([#1241](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1241))
+
+The TSP, DIDComm v2.1 and DIDComm v1 consumers each carried the same wrapper
+  (record, freshness policy, consume/consume_dispatched). It now lives once in
+  trust-tasks-rs as GuardedConsumer; each binding consumer dereferences to it and
+  keeps only its unpack and its envelope check (the DIDComm thread headers).
+
+  receive now answers an authenticated body that fails to deserialise, or fails
+  the thread cross-check, with ConsumeOutcome::Rejected(malformedRequest),
+  addressed to the transport-authenticated sender and refused before the item-11
+  record is written, as binding section 4 requires and the Go and Dart bindings
+  already do. It used to return Err with nothing to answer.
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+
+
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.15...trust-tasks-didcomm-v1-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **rs,ts,go,dart**: The in-memory replay guard refuses when full instead of dropping live records ([#1163](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1163))
+
+* fix(runtime): the in-memory replay guard refuses when full instead of dropping live records
+
+  InMemoryReplayGuard (Rust, TypeScript, Go, Dart) made room for a new id by
+  dropping the least-recently-used record, whether or not that record was
+  still inside its retention window. A document whose record was dropped that
+  way was then accepted again inside its window, with nothing logged.
+
+  - When every slot holds a live record, a claim for a new id now fails
+    (Rust ReplayGuardError, TS ReplayGuardFullError, Go ErrReplayGuardFull,
+    Dart ReplayGuardFullException), which the pipeline answers `unavailable`
+    (retryable). Records whose window has closed are reclaimed first; a
+    record is never dropped to make room. Duplicates and conflicts are still
+    recognised while full.
+  - The default capacity is 100 000 live records (was 10 000), documented as
+    a ceiling on distinct documents per retention window, and exported as
+    DEFAULT_REPLAY_CAPACITY / DefaultReplayCapacity / defaultReplayCapacity.
+  - TypeScript, Go and Dart gain the expiry horizon Rust already had
+    (`expiryHorizonMs` / `ExpiryHorizon` / `expiryHorizon`, 30 days in the
+    consequential policy): a stated expiresAt bounds the acceptance window in
+    place of the maximum age, up to issuedAt + horizon, and the retained
+    record's expiry is clamped to the same instant, so a producer can no
+    longer pin a record indefinitely with a distant expiresAt.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth ([#1171](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1171))
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+
+
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.14...trust-tasks-didcomm-v1-v0.37.15) — 2026-11-11
+
+
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.13...trust-tasks-didcomm-v1-v0.37.14) — 2026-11-10
+
+
+## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.12...trust-tasks-didcomm-v1-v0.37.13) — 2026-11-10
+
+
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.11...trust-tasks-didcomm-v1-v0.37.12) — 2026-11-09
+
+
+## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.10...trust-tasks-didcomm-v1-v0.37.11) — 2026-11-09
+
+
 ## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.37.9...trust-tasks-didcomm-v1-v0.37.10) — 2026-11-08
 
 

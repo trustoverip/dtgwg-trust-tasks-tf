@@ -64,8 +64,13 @@ export type Response = VTAServicesRollbackResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/services/rollback/1.2",
   "title": "VTA Services — Rollback — payload",
@@ -89,24 +94,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Services — Rollback — response payload",
-      "description": "Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "result"
-      ],
-      "properties": {
-        "result": {
-          "$ref": "#/$defs/RollbackResult"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -115,57 +102,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RollbackResult": {
-      "title": "RollbackResult",
-      "description": "The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: \"noOp\"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "disabled",
-            "enabled",
-            "updated",
-            "noOp"
-          ],
-          "description": "What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written."
-        },
-        "logEntryVersionId": {
-          "type": "string",
-          "description": "Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise."
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 instant the rollback took effect. Absent for `noOp`."
-        },
-        "drainingMediator": {
-          "type": "string",
-          "description": "Present when rolling back DIDComm left a mediator draining."
-        },
-        "drainEndsAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When that drain completes."
-        },
-        "vtaDid": {
-          "type": "string",
-          "description": "The agent's own DID."
-        },
-        "serverless": {
-          "type": "boolean",
-          "default": false,
-          "description": "True when the entry was written locally but not published — the operator must redeploy before any verifier sees it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     },
     "ServiceKind": {
@@ -180,10 +116,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -265,20 +201,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/Ext"
         }
       }
-    },
-    "ServiceKind": {
-      "title": "ServiceKind",
-      "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
-      "type": "string",
-      "enum": [
-        "didcomm",
-        "rest",
-        "tsp",
-        "webauthn"
-      ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

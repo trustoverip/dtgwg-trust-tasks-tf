@@ -78,8 +78,13 @@ export type Response = VTAApplicationStateGetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/app-state/get/1.0",
   "title": "VTA Application State Get — payload",
@@ -113,26 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Application State Get — response payload",
-      "description": "Success response to vta/app-state/get. Type https://trusttasks.org/spec/vta/app-state/get/1.0#response. An absent record is not a success: it is reported as a trust-task-error carrying vta/app-state/get:notFound.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "record"
-      ],
-      "properties": {
-        "record": {
-          "$ref": "#/$defs/AppStateRecord",
-          "description": "The record at the requested address, with its `value` populated (unless it is a tombstone returned under `includeDeleted`)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -142,70 +127,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "AppStateRecord": {
-      "title": "AppStateRecord",
-      "description": "A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "namespace",
-        "key",
-        "version",
-        "deleted",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VTA context the record is scoped to; the isolation boundary."
-        },
-        "namespace": {
-          "$ref": "#/$defs/Namespace"
-        },
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between."
-        },
-        "value": {
-          "description": "The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone."
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write that produced this `version` was applied. For a tombstone, when the delete was applied."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
-        }
-      }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Key": {
       "title": "Key",
@@ -224,10 +145,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -342,7 +263,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

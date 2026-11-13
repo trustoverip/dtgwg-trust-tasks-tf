@@ -122,8 +122,13 @@ export type Response = VTABackupInitiateExportResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/backup/initiate-export/1.0",
   "title": "VTA Backup — Initiate Export — payload",
@@ -158,85 +163,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Backup Initiate Export — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "descriptor"
-      ],
-      "properties": {
-        "descriptor": {
-          "$ref": "#/$defs/BundleDescriptor",
-          "description": "Where the bytes are, what they should be, and until when."
-        },
-        "completionHint": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Operator-facing text describing how to complete the download. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
-    "BundleDescriptor": {
-      "title": "Bundle descriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-import, where it describes an upload rather than a download.",
-      "required": [
-        "bundleId",
-        "algorithm",
-        "transportUrl",
-        "transportToken",
-        "expectedSha256",
-        "expectedSizeBytes",
-        "expiresAt"
-      ],
-      "properties": {
-        "bundleId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Handle for this bundle across its whole lifecycle. Quoted back by complete-export and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence."
-        },
-        "algorithm": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The mechanism actually used, which is authoritative over what was requested."
-        },
-        "transportUrl": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where to fetch the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unfetchable one."
-        },
-        "transportToken": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it and should accept it once — the token plus the URL is the export."
-        },
-        "expectedSha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "Lowercase hex SHA-256 of the byte stream. Independent of the encrypted envelope's own authentication tag, so a truncated or substituted transfer is caught before the password is applied to it."
-        },
-        "expectedSizeBytes": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Total byte count. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "After which the bytes are collected and the token refused. Short by design: the window is how long a fetchable copy of the agent exists."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -248,10 +174,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -345,7 +271,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

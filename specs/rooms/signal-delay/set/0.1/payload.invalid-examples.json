@@ -1,0 +1,36 @@
+[
+  {
+    "note": "No reason. Turning the delay off changes what the timing of every member's signals reveals; the change carries its own account of intent.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "signalDelay": "none"
+    }
+  },
+  {
+    "note": "No signalDelay. The request states the setting in force from now on; one that left it out cannot be read as either value.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "reason": "This room is a live conversation."
+    }
+  },
+  {
+    "note": "A delay as a number. The host chooses the interval of a randomised delay; a room chooses only whether there is one, so that no room can pick an interval that marks its writes as plainly as none would.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "signalDelay": 500,
+      "reason": "Half a second is enough."
+    }
+  },
+  {
+    "note": "A value outside the enumeration. `off` reads as `none` to one implementation and as unknown to another; only `randomised` and `none` are accepted.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "signalDelay": "off",
+      "reason": "This room is a live conversation."
+    }
+  }
+]

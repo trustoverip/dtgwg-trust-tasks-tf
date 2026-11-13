@@ -82,8 +82,13 @@ export type Response = VotingBallotCastResponsePayloadTheReceipt;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/voting/ballot/cast/0.1",
   "title": "Voting — Ballot Cast — payload",
@@ -113,54 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Voting — Ballot Cast — response payload (the receipt)",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "outcome",
-        "leafIndex",
-        "entryHash",
-        "head",
-        "receiptToken"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "outcome": {
-          "type": "string",
-          "enum": [
-            "counted",
-            "replaced",
-            "alreadyCounted"
-          ],
-          "description": "`counted`: the first ballot under this tag, now counted. `replaced`: a later ballot under a tag that already had one; it is counted and the earlier one no longer is. `alreadyCounted`: this cast was admitted before; nothing changed, and the receipt is the first one's."
-        },
-        "leafIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The board index of this cast's CastEntry."
-        },
-        "entryHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The RFC 9162 leaf hash of the CastEntry at `leafIndex` (SHA-256, as a multihash)."
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead",
-          "description": "A head whose tree includes `leafIndex` — and, for `replaced`, the ReplacementEntry that follows it."
-        },
-        "receiptToken": {
-          "$ref": "#/$defs/Multibase",
-          "description": "32 random bytes, multibase base58btc. On a private board it authorizes voting/board/inclusion reads of this one leaf."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -177,35 +134,6 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "maxLength": 16384,
       "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
-    "BoardHead": {
-      "title": "BoardHead",
-      "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "treeSize",
-        "rootHash",
-        "issuedAt"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "treeSize": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "rootHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     },
     "ElectionId": {
       "title": "ElectionId",
@@ -325,10 +253,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[A-Za-z0-9._-]{1,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -441,110 +369,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "Cast": {
-      "title": "Cast",
-      "description": "A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ballot",
-        "tag",
-        "attestation"
-      ],
-      "properties": {
-        "ballot": {
-          "$ref": "#/$defs/Ballot"
-        },
-        "tag": {
-          "$ref": "#/$defs/Multibase"
-        },
-        "attestation": {
-          "$ref": "#/$defs/Multibase"
-        }
-      }
-    },
-    "Ballot": {
-      "title": "Ballot",
-      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "manifestDigest",
-        "answers"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "answers": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 128,
-          "items": {
-            "$ref": "#/$defs/Answer"
-          }
-        }
-      }
-    },
-    "Answer": {
-      "title": "Answer",
-      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "question"
-      ],
-      "minProperties": 2,
-      "maxProperties": 2,
-      "properties": {
-        "question": {
-          "$ref": "#/$defs/Key"
-        },
-        "choice": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "ranking": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "scores": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "integer"
-          }
-        },
-        "text": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "abstain": {
-          "const": true
-        }
-      }
-    },
-    "Key": {
-      "title": "Key",
-      "description": "A question or option key, unique within its manifest or question.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -82,8 +82,13 @@ export type Response = AuthOOBClaimResponsePayloadStep1;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/oob/claim/0.1",
   "title": "Auth — OOB Claim — payload",
@@ -103,42 +108,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — OOB Claim — response payload (step 1)",
-      "description": "Step 1 of the disclosure ladder, signed by the service's assertionMethod key: who the service is, where the request will be used and for what, and when the decision window closes. It MUST contain nothing about the starter.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "service",
-        "origin",
-        "purpose",
-        "decisionDeadline"
-      ],
-      "properties": {
-        "requestId": {
-          "$ref": "#/$defs/RequestId"
-        },
-        "service": {
-          "$ref": "#/$defs/Service"
-        },
-        "origin": {
-          "$ref": "#/$defs/Origin"
-        },
-        "purpose": {
-          "$ref": "#/$defs/Purpose"
-        },
-        "decisionDeadline": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "When the decision window, started by the claim, closes, as integer UTC epoch seconds. Prove, respond and redeem must all complete before it. At most 180 s after the claim; 120 s RECOMMENDED."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -149,47 +118,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Purpose": {
-      "title": "Purpose",
-      "type": "string",
-      "enum": [
-        "login"
-      ],
-      "description": "What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit."
-    },
-    "Origin": {
-      "title": "Origin",
-      "type": "string",
-      "minLength": 9,
-      "maxLength": 2048,
-      "pattern": "^https://[^/?#\\s]+$",
-      "description": "A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document."
-    },
-    "Service": {
-      "title": "Service",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "name"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link."
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority."
-        }
-      },
-      "description": "Who the service says it is."
-    },
     "RequestId": {
       "title": "RequestId",
       "type": "string",
@@ -199,10 +127,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -302,7 +230,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

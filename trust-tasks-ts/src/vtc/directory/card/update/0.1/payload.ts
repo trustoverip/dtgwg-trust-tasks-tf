@@ -90,8 +90,13 @@ export type Response = VTCDirectoryCardUpdateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/directory/card/update/0.1",
   "title": "VTC Directory — Card — Update — payload",
@@ -164,32 +169,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Card — Update — response payload",
-      "description": "The success response to a vtc/directory/card/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/update/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "card",
-        "missingRequired"
-      ],
-      "properties": {
-        "card": {
-          "$ref": "#/$defs/DirectoryCard"
-        },
-        "missingRequired": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/FieldKey"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -207,102 +186,6 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-    },
-    "DirectoryCard": {
-      "title": "DirectoryCard",
-      "description": "A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entryId",
-        "values",
-        "visibility",
-        "discoverability",
-        "introductions",
-        "revision",
-        "updatedAt"
-      ],
-      "properties": {
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "values": {
-          "$ref": "#/$defs/CardValues"
-        },
-        "visibility": {
-          "$ref": "#/$defs/FieldVisibility"
-        },
-        "discoverability": {
-          "$ref": "#/$defs/Discoverability"
-        },
-        "introductions": {
-          "$ref": "#/$defs/Introductions"
-        },
-        "groupAudience": {
-          "type": "array",
-          "maxItems": 64,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-          },
-          "description": "The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once."
-        },
-        "externalCard": {
-          "$ref": "#/$defs/ExternalCard"
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Incremented on every accepted change to the card, by its subject or by an administrator's assertion."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the card last changed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection."
-        }
-      }
-    },
-    "ExternalCard": {
-      "title": "ExternalCard",
-      "description": "Where the member's external card stands. Present on a card exactly when `discoverability.external` is true. `published`: the community is serving the card the member signed, and its trust registry points to it. `awaitingSignature`: the member's `public` values have changed since they signed, so the community has withdrawn the card it was serving and serves none until the member signs the current values (vtc/directory/card/publish). The community never serves a card the member did not sign, and never one that differs from their current `public` values.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state"
-      ],
-      "properties": {
-        "state": {
-          "type": "string",
-          "enum": [
-            "published",
-            "awaitingSignature"
-          ]
-        },
-        "cardDigest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Present while `published`: digest of the card served, as vtc/directory/card/publish defines it."
-        },
-        "publishedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present while `published`: when the card now served was published."
-        }
-      }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "Introductions": {
       "title": "Introductions",
@@ -354,18 +237,6 @@ export const PAYLOAD_SCHEMA = {
         "hidden"
       ]
     },
-    "FieldVisibility": {
-      "title": "FieldVisibility",
-      "description": "The audience the member chose for each field. A field with no entry here takes its definition's `defaultVisibility`. The community MUST NOT widen a member's choice: widening a field's ceiling or default changes no visibility already recorded.",
-      "type": "object",
-      "maxProperties": 64,
-      "propertyNames": {
-        "$ref": "#/$defs/FieldKey"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/Audience"
-      }
-    },
     "Audience": {
       "title": "Audience",
       "description": "Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\n\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.",
@@ -377,18 +248,6 @@ export const PAYLOAD_SCHEMA = {
         "members",
         "public"
       ]
-    },
-    "CardValues": {
-      "title": "CardValues",
-      "description": "A card's stored values, keyed by field. Holds `member`-, `admin`- and `credential`-sourced fields only; derived fields (`role`, `joinedAt`, `did`, `personhood`) are read from the community's own records when a projection is made, never stored here. At most 64 values, and at most 16 KiB serialized excluding the blobs a `CardBlobRef` names.",
-      "type": "object",
-      "maxProperties": 64,
-      "propertyNames": {
-        "$ref": "#/$defs/FieldKey"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/FieldValue"
-      }
     },
     "FieldValue": {
       "title": "FieldValue",
@@ -511,12 +370,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
     "GroupId": {
       "title": "GroupId",
       "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
@@ -524,10 +377,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -883,15 +736,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

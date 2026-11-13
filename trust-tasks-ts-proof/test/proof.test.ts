@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createPrivateKey, createPublicKey, sign as nodeSign, verify as nodeVerify } from "node:crypto";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";
 import type { TrustTaskDocument } from "@openvtc/trust-tasks/runtime";
 import {
   DataIntegrityProofVerifier,
+  SIGNING_PURPOSES,
   canonicalBytes,
   fromMultibase,
   signTrustTask,
@@ -47,7 +49,7 @@ function grant(issuer: string, role = "admin"): TrustTaskDocument<unknown> {
 
 test("interop: verifies a document signed by the Rust trust-tasks-proof crate", async () => {
   const r = await verifier.verifyDetailed(fixture);
-  assert.equal(r.valid, true, r.detail);
+  assert.equal(r.valid, true, r.detail ?? "");
 });
 
 test("interop: rejects the Rust document once its payload is changed", async () => {
@@ -79,8 +81,57 @@ test("interop: reproduces the Rust eddsa-jcs-2022 signature byte for byte", () =
   const signer = signerFromPrivateKey("ed25519", new Uint8Array(32).fill(7));
   const rustProof = fixture.proof as Record<string, unknown>;
   assert.equal(signer.did, fixture.issuer);
-  const signed = signTrustTask(fixture, signer, { created: new Date(rustProof.created as string) });
+  const signed = signTrustTask(fixture, signer, {
+    created: new Date(rustProof.created as string),
+    proofPurpose: rustProof.proofPurpose as string,
+  });
   assert.deepEqual(signed.proof, rustProof);
+});
+
+// The shared `@context` vector (fixtures/proof/eddsa-jcs-2022-context.json):
+// eddsa-jcs-2022 §3.3.1 step 2 copies the document's `@context` into the proof,
+// and every signer reproduces its proofValue byte for byte.
+test("interop: reproduces the shared @context vector byte for byte", () => {
+  const vector = JSON.parse(
+    readFileSync(fileURLToPath(new URL("../../../fixtures/proof/eddsa-jcs-2022-context.json", import.meta.url)), "utf8"),
+  ) as TrustTaskDocument<unknown>;
+  const signer = signerFromPrivateKey("ed25519", new Uint8Array(32).fill(7));
+  const proof = vector.proof as Record<string, unknown>;
+  const signed = signTrustTask(vector, signer, {
+    created: new Date(proof.created as string),
+    proofPurpose: proof.proofPurpose as string,
+  });
+  assert.deepEqual(signed.proof, proof);
+  assert.deepEqual((signed.proof as Record<string, unknown>)["@context"], (vector as Record<string, unknown>)["@context"]);
+});
+
+test("a document without @context gets a proof without @context", () => {
+  const signer = seededSigner("ed25519", 1);
+  const signed = signTrustTask(grant(signer.did), signer);
+  assert.equal(Object.prototype.hasOwnProperty.call(signed.proof, "@context"), false);
+});
+
+for (const [name, mutate] of [
+  ["removed from the document", (d: Record<string, unknown>) => delete d["@context"]],
+  ["reordered in the document", (d: Record<string, unknown>) => (d["@context"] as unknown[]).reverse()],
+  ["changed in the proof", (d: Record<string, unknown>) => ((d.proof as Record<string, unknown>)["@context"] = ["https://example.org/other"])],
+] as const) {
+  test(`@context ${name}: malformedProof`, async () => {
+    const signer = seededSigner("ed25519", 1);
+    const signed = structuredClone(
+      signTrustTask({ "@context": ["https://www.w3.org/ns/credentials/v2", "https://example.org/v1"], ...grant(signer.did) } as TrustTaskDocument<unknown>, signer),
+    ) as Record<string, unknown>;
+    mutate(signed);
+    const r = await verifier.verifyDetailed(signed as TrustTaskDocument<unknown>);
+    assert.equal(r.failure, "malformedProof", r.detail ?? "");
+  });
+}
+
+test("an inline object @context round-trips", async () => {
+  const signer = seededSigner("ed25519", 1);
+  const doc = { "@context": [{ ex: "https://example.org/#" }], ...grant(signer.did) } as TrustTaskDocument<unknown>;
+  const r = await verifier.verifyDetailed(signTrustTask(doc, signer));
+  assert.equal(r.valid, true, r.detail ?? "");
 });
 
 // ecdsa-jcs-2019 against node:crypto, an ECDSA that is not noble: ECDSA with
@@ -139,7 +190,7 @@ for (const curve of ["p256", "p384"] as const) {
       const resigned = structuredClone(doc) as Record<string, unknown>;
       (resigned.proof as Record<string, unknown>).proofValue = toMultibase(form);
       const r = await verifier.verifyDetailed(resigned as TrustTaskDocument<unknown>);
-      assert.equal(r.valid, true, r.detail);
+      assert.equal(r.valid, true, r.detail ?? "");
     }
   });
 }
@@ -154,7 +205,7 @@ const ecdsaFixtures = JSON.parse(
 for (const [name, doc] of Object.entries(ecdsaFixtures)) {
   test(`interop: verifies the ${name} ecdsa-jcs-2019 fixture`, async () => {
     const r = await verifier.verifyDetailed(doc);
-    assert.equal(r.valid, true, r.detail);
+    assert.equal(r.valid, true, r.detail ?? "");
   });
 }
 
@@ -164,7 +215,10 @@ for (const curve of ["p256", "p384"] as const) {
     const signer = seededSigner(curve, 7);
     assert.equal(signer.did, fixtureDoc.issuer);
     const proof = fixtureDoc.proof as Record<string, unknown>;
-    const signed = signTrustTask(fixtureDoc, signer, { created: new Date(proof.created as string) });
+    const signed = signTrustTask(fixtureDoc, signer, {
+      created: new Date(proof.created as string),
+      proofPurpose: proof.proofPurpose as string,
+    });
     assert.deepEqual(signed.proof, proof);
   });
 }
@@ -244,16 +298,114 @@ test("signing refuses a document that could never verify", () => {
 {
   const dir = new URL("../../../fixtures/proof/", import.meta.url);
   const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("manifest.json", dir)), "utf8")) as {
-    entries: { file: string; cryptosuite: string; expect: "valid" | "invalid" }[];
+    entries: {
+      file: string;
+      cryptosuite: string;
+      expect: "valid" | "invalid";
+      exceptions?: Record<string, { expect: "valid" | "invalid" }>;
+    }[];
   };
   // Every suite this verifier implements; an entry for any other suite fails
   // rather than being skipped silently.
   const supported = new Set(["eddsa-jcs-2022", "ecdsa-jcs-2019"]);
   for (const entry of manifest.entries) {
-    test(`shared vector: ${entry.file} is ${entry.expect}`, async () => {
+    const expect = entry.exceptions?.ts?.expect ?? entry.expect;
+    test(`shared vector: ${entry.file} is ${expect}`, async () => {
       assert.ok(supported.has(entry.cryptosuite), `no support for ${entry.cryptosuite}`);
       const doc = JSON.parse(readFileSync(fileURLToPath(new URL(entry.file, dir)), "utf8")) as TrustTaskDocument<unknown>;
-      assert.equal(await verifier.verify(doc), entry.expect === "valid");
+      assert.equal(await verifier.verify(doc), expect === "valid");
+    });
+  }
+}
+
+/** Sign `doc` with seed-1 Ed25519 over exactly `config` (plus type, suite and
+ * verificationMethod), so a test can produce a correctly signed proof carrying
+ * `expires`, which signTrustTask never writes, or a purpose it refuses. */
+function signWithConfig(doc: TrustTaskDocument<unknown>, config: Record<string, unknown>): TrustTaskDocument<unknown> {
+  const seed = new Uint8Array(32).fill(1);
+  const signer = signerFromPrivateKey("ed25519", seed);
+  const full = {
+    ...config,
+    type: "DataIntegrityProof",
+    cryptosuite: "eddsa-jcs-2022",
+    verificationMethod: signer.verificationMethod,
+  };
+  const { proof: _drop, ...body } = doc as Record<string, unknown>;
+  const hashData = new Uint8Array([...sha256(canonicalBytes(full)), ...sha256(canonicalBytes(body))]);
+  const proofValue = toMultibase(ed25519.sign(hashData, seed));
+  return { ...(body as TrustTaskDocument<unknown>), proof: { ...full, proofValue } as TrustTaskDocument<unknown>["proof"] };
+}
+
+const seed1Did = signerFromPrivateKey("ed25519", new Uint8Array(32).fill(1)).did;
+
+for (const purpose of SIGNING_PURPOSES) {
+  test(`proofPurpose ${purpose} verifies`, async () => {
+    const doc = signWithConfig(grant(seed1Did), { created: "2026-01-01T00:00:00Z", proofPurpose: purpose });
+    const r = await verifier.verifyDetailed(doc);
+    assert.equal(r.valid, true, r.detail ?? "");
+  });
+}
+
+for (const purpose of ["keyAgreement", "assertion", "AUTHENTICATION", "authentication "]) {
+  test(`proofPurpose ${JSON.stringify(purpose)} is malformedProof`, async () => {
+    const doc = signWithConfig(grant(seed1Did), { created: "2026-01-01T00:00:00Z", proofPurpose: purpose });
+    const r = await verifier.verifyDetailed(doc);
+    assert.equal(r.failure, "malformedProof");
+  });
+}
+
+test("signTrustTask defaults proofPurpose to authentication and refuses a non-signing purpose", () => {
+  const signer = seededSigner("ed25519", 1);
+  const signed = signTrustTask(grant(signer.did), signer);
+  assert.equal((signed.proof as Record<string, unknown>).proofPurpose, "authentication");
+  for (const proofPurpose of ["keyAgreement", "assertion"]) {
+    assert.throws(() => signTrustTask(grant(signer.did), signer, { proofPurpose }));
+  }
+});
+
+{
+  const at = Date.parse("2026-06-01T12:00:00Z");
+  const fixed = new DataIntegrityProofVerifier({ now: () => at });
+  const withExpires = (expires: unknown) =>
+    signWithConfig(grant(seed1Did), { created: "2026-06-01T11:00:00Z", proofPurpose: "authentication", expires });
+
+  for (const expires of [
+    "2026-06-01T12:00:01Z",
+    "2026-06-01T12:00:00Z",
+    "2028-02-29T00:00:00Z",
+    "2027-01-01T00:00:00+14:00",
+    "2027-01-01T00:00:00-12:59",
+    "2027-01-01T23:59:59.999Z",
+  ]) {
+    test(`a proof whose expires is ${expires} verifies`, async () => {
+      const r = await fixed.verifyDetailed(withExpires(expires));
+      assert.equal(r.valid, true, r.detail ?? "");
+    });
+  }
+
+  const refused: Record<string, unknown> = {
+    passed: "2026-06-01T11:59:59Z",
+    "passed, offset": "2026-06-01T13:59:59+02:00",
+    "no zone": "2027-01-01T00:00:00",
+    "not a string": 1767225600,
+    "not a date": "tomorrow",
+    "date only": "2027-01-01",
+    "impossible month": "2027-13-01T00:00:00Z",
+    "February 30": "2027-02-30T00:00:00Z",
+    "February 29, not a leap year": "2027-02-29T00:00:00Z",
+    "hour 24": "2027-01-01T24:00:00Z",
+    "minute 60": "2027-01-01T00:60:00Z",
+    "leap second": "2027-01-01T00:00:60Z",
+    "offset +24:00": "2027-01-01T00:00:00+24:00",
+    "offset +23:60": "2027-01-01T00:00:00+23:60",
+    "offset +14:01": "2027-01-01T00:00:00+14:01",
+    "offset -99:00": "2027-01-01T00:00:00-99:00",
+    empty: "",
+  };
+  for (const [name, expires] of Object.entries(refused)) {
+    test(`expires: ${name} is malformedProof`, async () => {
+      const r = await fixed.verifyDetailed(withExpires(expires));
+      assert.equal(r.failure, "malformedProof");
     });
   }
 }

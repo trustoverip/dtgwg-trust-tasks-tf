@@ -18,7 +18,7 @@ import 'package:trust_tasks/src/generator/generate.dart';
 import 'package:trust_tasks/src/generator/lock.dart';
 import 'package:trust_tasks/src/generator/sha256.dart';
 
-/// The Dart example application's lock and vendored bundles: acl/grant 0.2,
+/// The Dart example application's lock and vendored bundles: acl/grant 0.3,
 /// keys/list 0.2 and vault/get 0.3 from the registry, and payments/settle 1.0
 /// from the third-party source `example` (https://tasks.example.com).
 final exampleDir = Directory('../examples/consumer-app-dart');
@@ -255,13 +255,21 @@ void main() {
       final legacy = declared(bundle(null));
       expect(legacy, ['Alpha', 'Item', 'Response', 'Zeta', 'Item2', 'Payload']);
       expect(declared(bundle(<String, dynamic>{})), legacy);
-      // The example's vendored bundles predate defsOrder.
-      for (final f in Directory('${exampleDir.path}/trust-tasks')
-          .listSync(recursive: true)
-          .whereType<File>()) {
+      // The example generates bundles from before defsOrder beside one that
+      // carries it (acl/grant 0.3).
+      for (final rel in [
+        'keys/list/0.2.bundle.json',
+        'vault/get/0.3.bundle.json',
+        '@example/payments/settle/1.0.bundle.json',
+      ]) {
+        final f = File('${exampleDir.path}/trust-tasks/$rel');
         expect(f.readAsStringSync(), isNot(contains('"defsOrder"')),
             reason: f.path);
       }
+      expect(
+          File('${exampleDir.path}/trust-tasks/acl/grant/0.3.bundle.json')
+              .readAsStringSync(),
+          contains('"defsOrder"'));
     });
 
     test('refuses one of the wrong shape', () {
@@ -282,6 +290,106 @@ void main() {
     });
   });
 
+  group('names', () {
+    // Each of these compiled to a library the analyzer refuses: a keyword, a
+    // built-in identifier as a type name, or a name that shadows one the
+    // generated code is written in. scripts/build-dart-bindings.mjs escapes
+    // the same set.
+    String library() {
+      final b = vaultGet()
+        ..['schema'] = {
+          r'$defs': {
+            for (final name in [
+              'Function',
+              'String',
+              'Map',
+              'MapEntry',
+              'List',
+              'Object',
+              'SpecPolicy',
+              'Deprecated',
+            ])
+              name: {
+                'type': 'object',
+                'properties': {
+                  'a': {'type': 'string'},
+                },
+              },
+          },
+          'type': 'object',
+          'properties': {
+            for (final name in [
+              'class',
+              'dynamic',
+              'int',
+              'num',
+              'toJson',
+              'hashCode',
+              'toString',
+              'fromJson',
+            ])
+              name: {'type': 'string'},
+            'count': {'type': 'integer'},
+            'mode': {
+              'type': 'string',
+              'enum': ['value', 'values', 'dynamic', 'new'],
+            },
+            for (final name in ['Function', 'String', 'Map'])
+              'ref$name': {r'$ref': '#/\$defs/$name'},
+          },
+        }
+        ..['responseSchema'] = null
+        ..['propertyOrder'] = <String, dynamic>{}
+        ..remove('defsOrder');
+      return generateLibrary(Bundle.parse(jsonEncode(b)), source: 'test');
+    }
+
+    test('a type name the generated code needs is suffixed', () {
+      final lib = library();
+      for (final name in [
+        'Function',
+        'String',
+        'Map',
+        'MapEntry',
+        'List',
+        'Object',
+        'SpecPolicy',
+        'Deprecated',
+      ]) {
+        expect(lib, contains('class ${name}2 {'), reason: name);
+        expect(lib, isNot(contains('class $name {')), reason: name);
+      }
+      expect(lib, contains('final Function2? refFunction;'));
+    });
+
+    test('a field that would shadow or override is suffixed', () {
+      final lib = library();
+      for (final name in [
+        'class',
+        'dynamic',
+        'int',
+        'num',
+        'toJson',
+        'hashCode',
+        'toString',
+      ]) {
+        expect(lib, contains('final String? ${name}Value;'), reason: name);
+      }
+      // A named constructor does not collide with a field.
+      expect(lib, contains('final String? fromJson;'));
+    });
+
+    test('an enum constant keeps its name unless the extension type has it',
+        () {
+      final lib = library();
+      expect(lib, contains("static const PayloadMode valueValue ="));
+      expect(lib, contains("static const PayloadMode valuesValue ="));
+      expect(lib, contains("static const PayloadMode newValue ="));
+      // Published as `GroupKind.dynamic` (vtc/groups); legal, so unchanged.
+      expect(lib, contains("static const PayloadMode dynamic ="));
+    });
+  });
+
   group('generate', () {
     test('writes exactly the locked tasks, deterministically', () async {
       final dir = workspace();
@@ -289,7 +397,7 @@ void main() {
       final result = await generate(
           lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
       expect(result.generated, [
-        'acl/grant/v0_2/payload.dart',
+        'acl/grant/v0_3/payload.dart',
         'example/payments/settle/v1_0/payload.dart',
         'keys/list/v0_2/payload.dart',
         'vault/get/v0_3/payload.dart',
@@ -300,7 +408,7 @@ void main() {
         'extends_index.dart',
         markerFileName,
       });
-      final grant = first['acl/grant/v0_2/payload.dart']!;
+      final grant = first['acl/grant/v0_3/payload.dart']!;
       expect(grant, contains("import 'package:trust_tasks/trust_tasks.dart';"));
       expect(grant, contains('extension type const'));
 
@@ -478,6 +586,26 @@ void main() {
           lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
       expect(stale.existsSync(), isFalse);
       expect(Directory('${out.path}/old').existsSync(), isFalse);
+    });
+
+    // #1119: the output is swapped in by renames from a sibling directory, so
+    // nothing but the output itself is left beside it, however the path is
+    // spelled.
+    test('swaps the output in and leaves no sibling behind', () async {
+      final dir = workspace();
+      final before = dir.listSync().map((e) => e.path).toSet();
+      final out = Directory('${dir.path}/gen');
+      for (final spelling in [
+        out.path,
+        '${out.path}/',
+        '${dir.path}/./x/../gen',
+      ]) {
+        await generate(
+            lockPath: '${dir.path}/trust-tasks.lock', outDir: spelling);
+        expect(File('${out.path}/$markerFileName').existsSync(), isTrue);
+        expect(
+            dir.listSync().map((e) => e.path).toSet(), {...before, out.path});
+      }
     });
   });
 }

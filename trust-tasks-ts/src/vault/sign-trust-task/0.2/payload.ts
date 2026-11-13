@@ -38,7 +38,7 @@ export interface UnsignedTrustTaskEnvelope {
    */
   threadId?: string;
   /**
-   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`).
+   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`).
    */
   type: string;
   /**
@@ -112,8 +112,13 @@ export type Response = VaultSignTrustTaskResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/sign-trust-task/0.2",
   "title": "Vault Sign Trust Task — payload",
@@ -175,7 +180,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`)."
         },
         "issuer": {
           "type": "string",
@@ -208,33 +213,6 @@ export const PAYLOAD_SCHEMA = {
         "required": [
           "proof"
         ]
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Sign Trust Task — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "signedEnvelope"
-      ],
-      "properties": {
-        "signedEnvelope": {
-          "type": "object",
-          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` only when the envelope's `type` is a `https://trusttasks.org` request of `auth/step-up/approve-response`, `task-consent/decision` or `confirm/response` (the closed list of attestations), and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
-          "required": [
-            "id",
-            "type",
-            "issuer",
-            "recipient",
-            "issuedAt",
-            "payload",
-            "proof"
-          ]
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     },
     "Ext": {
@@ -305,76 +283,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "UnsignedTrustTaskEnvelope": {
-      "$anchor": "unsigned-envelope",
-      "title": "Unsigned Trust Task envelope",
-      "description": "Permissive shape for an unsigned Trust Task document — the framework-required members MUST be present, and `proof` MUST NOT be. The maintainer does not validate the inner `payload` against the embedded `type`'s schema; that validation is the recipient's responsibility.",
-      "type": "object",
-      "required": [
-        "id",
-        "type",
-        "issuer",
-        "recipient",
-        "issuedAt",
-        "payload"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Envelope identifier. Set by the producer of the inner task."
-        },
-        "threadId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Optional thread/correlation id, per framework §4.x."
-        },
-        "type": {
-          "type": "string",
-          "format": "uri",
-          "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
-        },
-        "issuer": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelopeIssuerMismatch` rather than overwriting."
-        },
-        "recipient": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Recipient DID — the relying party / audience the signed envelope will be delivered to."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Producer's wall-clock when the inner task was constructed. Maintainer copies through; the proof's `created` is the maintainer's wall-clock at signing."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Optional inner-task expiry. The maintainer rejects with `envelopeExpired` when this is in the past at sign time."
-        },
-        "payload": {
-          "description": "Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "not": {
-        "required": [
-          "proof"
-        ]
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Vault Sign Trust Task — response payload",
@@ -411,66 +326,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "StepUpProof": {
-      "title": "StepUpProof",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "proof",
-        "challengeId"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "webauthnUv",
-            "pushApproval",
-            "totp"
-          ]
-        },
-        "proof": {
-          "type": "string",
-          "description": "Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code."
-        },
-        "challengeId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Maintainer-issued challenge id the proof responds to."
-        }
-      }
-    },
-    "ConsumerContext": {
-      "title": "ConsumerContext",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "deviceId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity."
-        },
-        "lastUserVerificationAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds."
-        },
-        "networkClass": {
-          "type": "string",
-          "enum": [
-            "unknown",
-            "home",
-            "corp",
-            "public",
-            "vpn"
-          ],
-          "description": "Producer-supplied network classification. Advisory."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

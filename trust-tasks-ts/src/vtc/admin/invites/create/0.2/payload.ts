@@ -85,8 +85,13 @@ export type Response = VTCAdminInvitesCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/admin/invites/create/0.2",
   "title": "VTC Admin Invites Create — payload",
@@ -116,52 +121,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Invites Create — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jti",
-        "kind",
-        "installUrl",
-        "claimCode",
-        "expiresAt",
-        "aclEntryCreated"
-      ],
-      "properties": {
-        "jti": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Invite identifier; the revoke target."
-        },
-        "kind": {
-          "$ref": "#/$defs/InviteKind"
-        },
-        "installUrl": {
-          "type": "string",
-          "minLength": 1,
-          "description": "One-shot enrolment URL. Returned once and never retrievable again."
-        },
-        "claimCode": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Secret that authorises the enrolment. Returned once."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the invite lapses."
-        },
-        "aclEntryCreated": {
-          "type": "boolean",
-          "description": "True when this call wrote an administrator entry: a wallet invitation for a DID that held none. Always false for a passkey invitation, whose entry is written when it is claimed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -171,22 +130,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "InviteKind": {
-      "$anchor": "inviteKind",
-      "title": "InviteKind",
-      "type": "string",
-      "enum": [
-        "wallet",
-        "passkey"
-      ],
-      "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -257,7 +206,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

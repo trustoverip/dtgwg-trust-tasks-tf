@@ -78,8 +78,13 @@ export type Response = VTAPCSVoterReceiptsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1",
   "title": "VTA PCS — Voter Receipts — List — payload",
@@ -112,41 +117,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Voter Receipts — List — response payload",
-      "description": "The success response to a vta/pcs/voter/receipts/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/pcs/voter/receipts/list/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "ballotBox",
-        "receipts"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "ballotBox": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "^did:",
-          "description": "The ballot box the engine recorded at vta/pcs/voter/register: the DID every receipt is signed by, and the one to ask for each cast's inclusion proof."
-        },
-        "receipts": {
-          "type": "array",
-          "maxItems": 64,
-          "description": "Every receipt the engine keeps for the election, in the order it kept them: one per cast the ballot box admitted, a revote's beside the cast it replaced. Each is the ballot box's signed voting/ballot/cast/0.1 or voting/ballot/cast-encrypted/0.1 #response document, whole and exactly as received — its `receiptToken` included, which on a private board is what authorizes the inclusion read. Empty when no receipt was kept.",
-          "items": {
-            "type": "object"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -164,10 +134,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -223,7 +193,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

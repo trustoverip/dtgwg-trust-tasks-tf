@@ -94,8 +94,13 @@ export type Response = VTCJoinRequestsStatusResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
   "title": "VTC Join-Requests Status — payload",
@@ -116,81 +121,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Status — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "status"
-      ],
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "deferred",
-            "approved",
-            "rejected",
-            "withdrawn"
-          ]
-        },
-        "code": {
-          "type": "string",
-          "description": "Stable refusal code, safe to branch on. Present only when `status` is `rejected`."
-        },
-        "reason": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024,
-          "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`."
-        },
-        "decidedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`."
-        },
-        "needs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "When deferred, what the applicant must supply next."
-        },
-        "presentationDefinition": {
-          "type": "object",
-          "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)."
-        },
-        "credentialsDelivered": {
-          "type": "boolean",
-          "description": "Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`."
-        },
-        "credentialResend": {
-          "type": "string",
-          "enum": [
-            "queued",
-            "notNeeded",
-            "rateLimited"
-          ],
-          "description": "The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery."
-        },
-        "retryAfter": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -202,10 +132,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -295,7 +225,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

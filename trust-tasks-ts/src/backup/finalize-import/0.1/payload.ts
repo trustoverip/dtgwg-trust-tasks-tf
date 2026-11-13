@@ -98,8 +98,13 @@ export type Response = BackupFinalizeImportResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/backup/finalize-import/0.1",
   "title": "Backup — Finalize Import — payload",
@@ -134,56 +139,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Backup — Finalize Import — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Counts and a status, never contents. This document is the operator-held record of a replacement the node's own trail no longer describes.",
-      "required": [
-        "bundleId",
-        "status",
-        "counts"
-      ],
-      "properties": {
-        "bundleId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Echoed so the response stands alone as a record."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "preview",
-            "committed"
-          ],
-          "description": "Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the node was replaced, `preview` says it was not."
-        },
-        "sourceDid": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "Identifier of the node the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong node and this is what shows it. Absent where the bundle does not record one."
-        },
-        "counts": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "description": "How many of each kind of record the bundle holds, keyed by the node's own names for them — for an agent, `keys`, `acl`, `contexts`, `audit`, `importedSecrets`; for a community, one entry per backed-up keyspace. Counts, not an inventory: enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it. An audit count of zero is a bundle exported without its trail, not a truncated one."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -195,10 +150,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -263,7 +218,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -202,6 +202,62 @@ function inlineCrossFileRefs(schema, baseDir) {
 }
 
 /**
+ * `doc` with every root `$defs` entry its root does not reach removed (#1098),
+ * the survivors in their order, and `$defs` dropped when none survive.
+ *
+ * The request schema carries `$defs.Response` and what only the response uses,
+ * and the response document a copy of every request definition; pruning each
+ * keeps the other side's definitions out of the emitted constant. Only the
+ * constant is pruned, never the schema the types are compiled from.
+ * Reachability follows each `$ref` of the form `#/$defs/<name>[/…]` (its first
+ * segment, pointer-unescaped) from the root object without its `$defs` (its
+ * own `$ref` included — all a response document has), then each reached
+ * definition whole. Any other local `$ref` (`#`, an anchor) keeps
+ * every definition. Written independently of the other generators' copies
+ * (see the file header); `check-bindings` compares the results.
+ */
+function pruneUnreachableDefs(doc) {
+  if (doc === null) return null;
+  const defs = doc.$defs;
+  if (!defs || typeof defs !== "object" || Array.isArray(defs)) return doc;
+  const reached = new Set();
+  let opaque = false;
+  const rootView = { ...doc };
+  delete rootView.$defs;
+  const frontier = [rootView];
+  while (frontier.length > 0) {
+    const node = frontier.pop();
+    if (Array.isArray(node)) {
+      frontier.push(...node);
+    } else if (node && typeof node === "object") {
+      if (typeof node.$ref === "string") {
+        if (node.$ref.startsWith("#/$defs/")) {
+          const name = node.$ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~");
+          if (Object.hasOwn(defs, name) && !reached.has(name)) {
+            reached.add(name);
+            frontier.push(defs[name]);
+          }
+        } else if (node.$ref.startsWith("#")) {
+          opaque = true;
+        }
+      }
+      frontier.push(...Object.values(node));
+    }
+  }
+  if (opaque) return doc;
+  const out = {};
+  for (const [k, v] of Object.entries(doc)) {
+    if (k !== "$defs") {
+      out[k] = v;
+      continue;
+    }
+    const kept = Object.entries(defs).filter(([name]) => reached.has(name));
+    if (kept.length > 0) out[k] = Object.fromEntries(kept);
+  }
+  return out;
+}
+
+/**
  * The response variant needs a schema of its own: the root describes the
  * *request* payload and `$defs.Response` describes the response. Wrap the
  * latter so `$defs` stays reachable and its internal `$ref`s still resolve.
@@ -766,9 +822,26 @@ function readSpecPolicy(schemaPath) {
     extendsVersion = meta.extends;
   }
 
+  // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit appropriate
+  // to the Trust Task specification's payload"), per variant. An absent
+  // variant declares no bound — it does NOT inherit the other's, unlike the
+  // proof and issuedAt requirements above. Re-derived here rather than shared
+  // with the other generators, for the reason the rest of this function is.
+  const size = meta.maxDocumentBytes || {};
+  const bound = (variant) => {
+    const n = size[variant];
+    if (n === undefined || n === null) return null;
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new Error(`${specPath}: maxDocumentBytes.${variant} must be a positive integer, got ${JSON.stringify(n)}`);
+    }
+    return n;
+  };
+
   return {
     extendsVersion,
     isBearer: meta.bearer === true,
+    maxDocumentBytes: bound("request"),
+    responseMaxDocumentBytes: bound("response"),
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
     isIssuedAtRequired: issuedAtRequired.request,
@@ -796,7 +869,7 @@ function readSpecPolicy(schemaPath) {
 // on its root payload types, so a consumer's editor and linter flag the use
 // without anything breaking. The note text is byte-identical across the four
 // libraries; `npm run check-bindings` holds them to it. This is a third
-// independent implementation of the rule (see CLAUDE.md on why the generators
+// independent implementation of the rule (see docs/DEVELOPMENT.md on why the generators
 // are not factored together).
 
 const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };
@@ -1085,21 +1158,28 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
       ` * at runtime: without a schema a consumer has nothing to validate, and`,
       ` * every REQUIRED payload member is optional in practice. Cross-file`,
       ` * \`$ref\`s are already inlined, so it needs no resolver.`,
+      ` *`,
+      ` * Typed as a plain JSON object rather than \`as const\`: a literal type would`,
+      ` * carry the whole schema a second time in the declaration file, and nothing`,
+      ` * reads it at the type level. (An index signature, not \`Readonly<Record<…>>\`:`,
+      ` * a schema may itself define a type named \`Record\`.)`,
       ` */`,
-      `export const PAYLOAD_SCHEMA = ${JSON.stringify(schemas.request, null, 2)} as const;`,
+      `export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.request), null, 2)};`,
       "",
     );
     if (schemas.response) {
       lines.push(
         `/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */`,
-        `export const RESPONSE_PAYLOAD_SCHEMA = ${JSON.stringify(schemas.response, null, 2)} as const;`,
+        `export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.response), null, 2)};`,
         "",
       );
     }
   }
 
   if (policy) {
-    const obj = (uri, isProofRequired, isRecipientRequired, isIssuedAtRequired, schemaConst) =>
+    // `maxDocumentBytes` only where the variant declares one, as Rust emits
+    // MAX_DOCUMENT_BYTES only then: SpecPolicy's member is optional.
+    const obj = (uri, isProofRequired, isRecipientRequired, isIssuedAtRequired, schemaConst, maxBytes) =>
       [
         `{`,
         `  typeUri: ${uri},`,
@@ -1108,6 +1188,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
         `  isRecipientRequired: ${isRecipientRequired},`,
         `  isIssuedAtRequired: ${isIssuedAtRequired},`,
         `  payloadSchema: ${schemaConst},`,
+        ...(maxBytes === null ? [] : [`  maxDocumentBytes: ${maxBytes},`]),
         `} as const;`,
       ].join("\n");
 
@@ -1124,6 +1205,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
         policy.isRecipientRequired,
         policy.isIssuedAtRequired,
         schemas?.request ? "PAYLOAD_SCHEMA" : "undefined",
+        policy.maxDocumentBytes,
       )}`,
       "",
     );
@@ -1141,6 +1223,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
           policy.responseIsRecipientRequired,
           policy.responseIsIssuedAtRequired,
           schemas?.response ? "RESPONSE_PAYLOAD_SCHEMA" : "undefined",
+          policy.responseMaxDocumentBytes,
         )}`,
         "",
       );
@@ -1412,8 +1495,15 @@ function verifyComponentNames(ts, expected) {
         `${missing.length > 8 ? ", …" : ""}`,
     );
   }
+  // A component with a `type` beside an `anyOf` compiles to an intersection of
+  // numbered parts (`X = X1 & X2`), which are its own, not a duplicate. Only a
+  // bare name shows it; acl's `Purpose` is qualified here, so nothing does yet.
+  const parts = new Set();
+  for (const m of ts.matchAll(/^export type ([A-Za-z0-9_$]+) = ([A-Za-z0-9_$]+(?: & [A-Za-z0-9_$]+)+);$/gm)) {
+    for (const part of m[2].split(" & ")) if (part.replace(/\d+$/, "") === m[1]) parts.add(part);
+  }
   const numbered = [...declared].filter(
-    (n) => /\d$/.test(n) && !expected.includes(n) && declared.has(n.replace(/\d+$/, "")),
+    (n) => /\d$/.test(n) && !expected.includes(n) && !parts.has(n) && declared.has(n.replace(/\d+$/, "")),
   );
   if (numbered.length) {
     throw new Error(

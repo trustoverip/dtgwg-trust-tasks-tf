@@ -66,8 +66,13 @@ export type Response = PersonaContactListsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/contact/lists/list/1.0",
   "title": "Persona Contact Lists List — payload",
@@ -97,32 +102,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Contact Lists List — response payload",
-      "description": "Success response to persona/contact/lists/list. Type https://trusttasks.org/spec/persona/contact/lists/list/1.0#response. Lists ordered by `order`, ties by `name`; members are found with persona/contact/list and `listId`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "lists"
-      ],
-      "properties": {
-        "lists": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "$ref": "#/$defs/ContactList"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -132,81 +111,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ContactList": {
-      "title": "ContactList",
-      "description": "One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "listId",
-        "name",
-        "order",
-        "contactCount",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "listId": {
-          "$ref": "#/$defs/ListId"
-        },
-        "name": {
-          "$ref": "#/$defs/ListName"
-        },
-        "colour": {
-          "$ref": "#/$defs/ListColour"
-        },
-        "order": {
-          "$ref": "#/$defs/ListOrder"
-        },
-        "contactCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many of the context's contacts are on the list now."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it."
-        }
-      }
-    },
-    "ListOrder": {
-      "title": "ListOrder",
-      "description": "Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.",
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 1000000
-    },
-    "ListColour": {
-      "title": "ListColour",
-      "description": "A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.",
-      "type": "string",
-      "pattern": "^#[0-9a-f]{6}$"
-    },
-    "ListName": {
-      "title": "ListName",
-      "description": "The holder's name for one of their lists (\"Mentors\", \"Met at the spring meetup\"), on one line: no control characters. Unique within a context, compared exactly.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-    },
-    "ListId": {
-      "title": "ListId",
-      "description": "Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -316,7 +226,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

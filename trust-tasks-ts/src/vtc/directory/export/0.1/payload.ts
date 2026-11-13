@@ -89,8 +89,13 @@ export type Response = VTCDirectoryExportResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/directory/export/0.1",
   "title": "VTC Directory — Export — payload",
@@ -128,40 +133,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Export — response payload",
-      "description": "The success response to a vtc/directory/export/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items",
-        "exportedAt"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "$ref": "#/$defs/JSContactCard"
-          }
-        },
-        "nextCursor": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024
-        },
-        "exportedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -171,18 +142,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "JSContactCard": {
-      "title": "JSContactCard",
-      "description": "One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.",
-      "type": "object",
-      "additionalProperties": true
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -237,7 +202,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "additionalProperties": true
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -266,4 +231,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 8388608,
 } as const;

@@ -76,8 +76,13 @@ export type Response = VTAPCSVetterRecoverResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/pcs/vetter/recover/0.1",
   "title": "VTA PCS — Vetter — Recover — payload",
@@ -116,28 +121,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Vetter — Recover — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "recovered",
-        "vetter"
-      ],
-      "properties": {
-        "recovered": {
-          "type": "boolean",
-          "description": "True when the engine's key was replaced by the bound one; false when the engine already held it."
-        },
-        "vetter": {
-          "$ref": "#/$defs/VetterSummary"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -147,120 +130,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "VetterSummary": {
-      "title": "VetterSummary",
-      "description": "A vetter engine as the VTA holds it, without its key, its credentials or its tokens.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "community",
-        "memberDid",
-        "suite",
-        "id",
-        "enrolledLabels",
-        "pendingLabels",
-        "tokensFree",
-        "tokensHeld",
-        "drawsInFlight",
-        "attested"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "community": {
-          "type": "string",
-          "minLength": 1
-        },
-        "memberDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member DID the engine draws tokens as. Bound into every token request."
-        },
-        "suite": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64
-        },
-        "id": {
-          "$ref": "#/$defs/Multibase",
-          "description": "The vetter's PCS identifier for this community."
-        },
-        "enrolledLabels": {
-          "type": "array",
-          "description": "Class labels this vetter holds a credential under, newest first.",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          }
-        },
-        "pendingLabels": {
-          "type": "array",
-          "description": "Class labels requested and not yet accepted.",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          }
-        },
-        "tokensFree": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Tokens held and not reserved."
-        },
-        "tokensHeld": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Tokens held in all."
-        },
-        "drawsInFlight": {
-          "type": "array",
-          "description": "Draws requested and not yet accepted or abandoned.",
-          "items": {
-            "$ref": "#/$defs/TokenDraw"
-          }
-        },
-        "attested": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Attestations made through this engine."
-        }
-      }
-    },
-    "TokenDraw": {
-      "title": "TokenDraw",
-      "description": "One draw of the token drip: a label and a tick.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "label",
-        "tick"
-      ],
-      "properties": {
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128
-        },
-        "tick": {
-          "type": "integer",
-          "minimum": 0
-        }
-      }
-    },
-    "Multibase": {
-      "title": "Multibase",
-      "description": "A binary value, multibase base58btc over the suite's canonical encoding.",
-      "type": "string",
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -405,7 +280,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

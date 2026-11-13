@@ -117,19 +117,69 @@ pub fn unpack_trust_task<P>(
 where
     P: DeserializeOwned,
 {
-    unpack_received(wire, agent, expected_sender_did).map(|(doc, _, handler)| (doc, handler))
+    open(wire, agent, expected_sender_did)?.into_document()
 }
 
-/// [`unpack_trust_task`], also returning the document as received — what a
-/// proof is verified over (see `ProofPolicy::with_received`).
-pub(crate) fn unpack_received<P>(
+/// An authenticated envelope of this binding's type, opened, its body not yet
+/// parsed as a document.
+pub(crate) struct Opened {
+    /// The envelope `body` as received — what a proof is verified over.
+    pub(crate) body: serde_json::Value,
+    /// The authenticated parties.
+    pub(crate) transport: DidcommHandler,
+    /// The envelope's thread headers, for the §3.1 cross-check.
+    pub(crate) threads: ThreadHeaders,
+}
+
+impl Opened {
+    /// Parse the body as `TrustTask<P>` and apply §3.1 — the whole of
+    /// [`unpack_trust_task`] after the envelope is opened.
+    fn into_document<P: DeserializeOwned>(
+        self,
+    ) -> Result<(TrustTask<P>, DidcommHandler), DidcommError> {
+        let doc: TrustTask<P> =
+            serde_json::from_value(self.body).map_err(DidcommError::InvalidBody)?;
+        self.threads.check(&doc)?;
+        Ok((doc, self.transport))
+    }
+}
+
+/// The DIDComm `thid` and `pthid` an envelope carried.
+pub(crate) struct ThreadHeaders {
+    thid: Option<String>,
+    pthid: Option<String>,
+}
+
+impl ThreadHeaders {
+    /// Binding §3.1 — where both a DIDComm thread header and its framework
+    /// member are explicitly present they MUST agree. Scoped to both-present
+    /// on purpose: DIDComm's `thid` defaults to the DIDComm message `id` and
+    /// the framework's `threadId` falls back to the document's `id`, and those
+    /// are different identifier spaces (§2), so an unconditional comparison
+    /// would reject exchanges that conform on both layers.
+    pub(crate) fn check<P>(&self, doc: &TrustTask<P>) -> Result<(), DidcommError> {
+        check_thread(
+            "thid",
+            "threadId",
+            self.thid.as_deref(),
+            doc.thread_id.as_deref(),
+        )?;
+        check_thread(
+            "pthid",
+            "parentThreadId",
+            self.pthid.as_deref(),
+            doc.parent_thread_id.as_deref(),
+        )
+    }
+}
+
+/// Open an inbound envelope: every transport-level rule of
+/// [`unpack_trust_task`], stopping short of parsing the body.
+pub(crate) fn open(
     wire: &str,
     agent: &DIDCommAgent,
     expected_sender_did: Option<&str>,
-) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
-where
-    P: DeserializeOwned,
-{
+) -> Result<Opened, DidcommError> {
     let (message, peer_did, local_did) = match agent.unpack(wire, expected_sender_did)? {
         UnpackResult::Encrypted {
             message,
@@ -196,31 +246,14 @@ where
         return Err(DidcommError::WrongEnvelopeType(message.typ.clone()));
     }
 
-    let received = message.body;
-    let doc: TrustTask<P> =
-        serde_json::from_value(received.clone()).map_err(DidcommError::InvalidBody)?;
-
-    // Binding §3.1 — where both a DIDComm thread header and its framework
-    // member are explicitly present they MUST agree. Scoped to both-present on
-    // purpose: DIDComm's `thid` defaults to the DIDComm message `id` and the
-    // framework's `threadId` falls back to the document's `id`, and those are
-    // different identifier spaces (§2), so an unconditional comparison would
-    // reject exchanges that conform on both layers.
-    check_thread(
-        "thid",
-        "threadId",
-        message.thid.as_deref(),
-        doc.thread_id.as_deref(),
-    )?;
-    check_thread(
-        "pthid",
-        "parentThreadId",
-        message.pthid.as_deref(),
-        doc.parent_thread_id.as_deref(),
-    )?;
-
-    let handler = DidcommHandler::new(local_did, peer_did);
-    Ok((doc, received, handler))
+    Ok(Opened {
+        body: message.body,
+        transport: DidcommHandler::new(local_did, peer_did),
+        threads: ThreadHeaders {
+            thid: message.thid,
+            pthid: message.pthid,
+        },
+    })
 }
 
 /// Compare a DIDComm thread header against its framework member, per binding
@@ -396,23 +429,22 @@ pub fn unpack_trust_task_from<P>(
 where
     P: DeserializeOwned,
 {
-    unpack_received_from(wire, agent, allowlist).map(|(doc, _, handler)| (doc, handler))
+    open_from(wire, agent, allowlist)?.into_document()
 }
 
-/// [`unpack_trust_task_from`], also returning the document as received.
-pub(crate) fn unpack_received_from<P>(
+/// [`open`] for a sender on `allowlist`: the advertised `skid` is checked
+/// against it **before** anything is decrypted, then enforced against the key
+/// that opens the envelope.
+pub(crate) fn open_from(
     wire: &str,
     agent: &DIDCommAgent,
     allowlist: &SenderAllowlist,
-) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
-where
-    P: DeserializeOwned,
-{
+) -> Result<Opened, DidcommError> {
     let advertised = advertised_sender_did(wire)?;
     if !allowlist.permits(&advertised) {
         return Err(DidcommError::SenderNotAllowed { did: advertised });
     }
-    unpack_received(wire, agent, Some(&advertised))
+    open(wire, agent, Some(&advertised))
 }
 
 #[cfg(test)]

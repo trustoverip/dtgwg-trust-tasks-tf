@@ -14,13 +14,9 @@ for the model.
 
 ## Use
 
-```toml
-# Cargo.toml
-[dependencies]
-trust-tasks-rs = { version = "0.35", default-features = false } # the runtime, no prebuilt modules
-
-[build-dependencies]
-trust-tasks-build = "0.1"
+```sh
+cargo add trust-tasks-rs                         # the runtime; no prebuilt module is on by default
+cargo add --build trust-tasks-build
 ```
 
 ```rust
@@ -52,6 +48,13 @@ prebuilt module holds: the `Payload`/`Response` types and their builders, the
 
 The application needs no serde, serde_json, regress or chrono dependency of its
 own: generated code reaches them through `trust-tasks-rs`.
+
+`trust-tasks-build` and `trust-tasks-rs` version independently, and generated
+code names items of the runtime. The generated file therefore opens with
+`const _: () = ::trust_tasks_rs::__private::ABI_V1;`, the runtime contract it
+was generated for. If the build's `trust-tasks-rs` is too old for this
+`trust-tasks-build`, or has moved to a newer contract, compilation fails on that
+line with an error naming `ABI_V1`. Upgrade whichever of the two is behind.
 
 `Config` also takes `.lockfile(path)`, `.bundle_dir(path)` and `.out_dir(path)`
 when the files are not in the default places.

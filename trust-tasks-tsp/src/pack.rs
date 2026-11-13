@@ -144,8 +144,9 @@ where
 /// unknown senders reads the cleartext `VID_sndr` first (via
 /// [`affinidi_tsp::MetaEnvelope::parse`]), resolves it, then calls this.
 ///
-/// Rejects non-`Direct` carriage and any envelope whose cleartext sender does
-/// not match the verified `sender`, and verifies the envelope `type`.
+/// Rejects non-`Direct` carriage, any envelope whose cleartext sender does
+/// not match the verified `sender` or whose cleartext receiver names a VID
+/// other than `recipient`'s, and verifies the envelope `type`.
 ///
 /// `P` is any deserializable payload: a generated type, or
 /// `serde_json::Value` for a consumer that routes on `type` itself — see
@@ -159,19 +160,19 @@ pub fn unpack_trust_task<P>(
 where
     P: DeserializeOwned,
 {
-    unpack_received(wire, recipient, sender).map(|(doc, _, handler)| (doc, handler))
+    let (document, handler) = open(wire, recipient, sender)?;
+    let doc = serde_json::from_value(document).map_err(TspError::InvalidBody)?;
+    Ok((doc, handler))
 }
 
-/// [`unpack_trust_task`], also returning the document as received — what a
-/// proof is verified over (see `ProofPolicy::with_received`).
-pub(crate) fn unpack_received<P>(
+/// Open a TSP message: every transport-level rule of [`unpack_trust_task`],
+/// stopping short of parsing the carried `document`. Returns it as received —
+/// what a proof is verified over — with the authenticated parties.
+pub(crate) fn open(
     wire: &[u8],
     recipient: &PrivateVid,
     sender: &ResolvedVid,
-) -> Result<(TrustTask<P>, serde_json::Value, TspHandler), TspError>
-where
-    P: DeserializeOwned,
-{
+) -> Result<(serde_json::Value, TspHandler), TspError> {
     let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
     if unpacked.message_type != MessageType::Direct {
@@ -187,19 +188,27 @@ where
         });
     }
 
+    // The cleartext receiver VID is chosen by the sender: the seal proves only
+    // that the message was encrypted to `recipient`'s key, not that the sender
+    // addressed it to `recipient`'s VID. A message naming another VID is not
+    // for this consumer, whose identity it would otherwise take as the
+    // transport recipient (and so as the issuer of every answer). An empty
+    // receiver is the NULL-VID form, opened as `recipient`.
+    if !unpacked.receiver.is_empty() && unpacked.receiver != recipient.id {
+        return Err(TspError::Upstream(affinidi_tsp::TspError::InvalidMessage(
+            "the message is not addressed to this receiver".into(),
+        )));
+    }
+
     let envelope: Envelope =
         serde_json::from_slice(&unpacked.payload).map_err(TspError::InvalidBody)?;
     if envelope.type_ != ENVELOPE_TYPE {
         return Err(TspError::WrongEnvelopeType(envelope.type_));
     }
 
-    let received = envelope.document;
-    let doc: TrustTask<P> =
-        serde_json::from_value(received.clone()).map_err(TspError::InvalidBody)?;
-
     // A TSP VID is a framework VID verbatim — no normalisation.
-    let handler = TspHandler::new(Some(unpacked.receiver), Some(sender.id.clone()));
-    Ok((doc, received, handler))
+    let handler = TspHandler::new(Some(recipient.id.clone()), Some(sender.id.clone()));
+    Ok((envelope.document, handler))
 }
 
 /// The binding envelope object: a `type` tag plus the carried Trust Task.

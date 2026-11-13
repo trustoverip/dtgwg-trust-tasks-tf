@@ -70,8 +70,13 @@ export type Response = VTCWebsiteDeployResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/website/deploy/0.1",
   "title": "VTC Website — Deploy — payload",
@@ -90,48 +95,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Website — Deploy — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "deployMode",
-        "bundleSha256",
-        "bundleSizeBytes",
-        "targetGeneration",
-        "prunedGenerations"
-      ],
-      "properties": {
-        "deployMode": {
-          "type": "string",
-          "enum": [
-            "live",
-            "managed"
-          ],
-          "description": "How the site was replaced."
-        },
-        "bundleSha256": {
-          "$ref": "#/$defs/ExpectedSha256"
-        },
-        "bundleSizeBytes": {
-          "$ref": "#/$defs/ExpectedSizeBytes"
-        },
-        "targetGeneration": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The generation created; 0 in live mode."
-        },
-        "prunedGenerations": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Old generations removed; 0 in live mode."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -142,18 +105,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "ExpectedSizeBytes": {
-      "title": "ExpectedSizeBytes",
-      "description": "Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "ExpectedSha256": {
-      "title": "ExpectedSha256",
-      "description": "Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.",
-      "type": "string",
-      "pattern": "^[0-9a-f]{64}$"
-    },
     "UploadId": {
       "title": "UploadId",
       "type": "string",
@@ -161,10 +112,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -231,15 +182,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
-    },
-    "UploadId": {
-      "title": "UploadId",
-      "type": "string",
-      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "description": "Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

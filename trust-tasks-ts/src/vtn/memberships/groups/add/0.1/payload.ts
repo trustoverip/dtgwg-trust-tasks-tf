@@ -74,8 +74,13 @@ export type Response = VTNMembershipsGroupsAddResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1",
   "title": "VTN Memberships — Groups — Add — payload",
@@ -105,25 +110,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Memberships — Groups — Add — response payload",
-      "description": "The membership as it now stands, with the new registration.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "membership"
-      ],
-      "properties": {
-        "membership": {
-          "$ref": "#/$defs/UpstreamMembership",
-          "description": "This network's membership of the parent as it now stands."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -133,114 +119,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "UpstreamMembership": {
-      "description": "This network's membership of a parent.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "network",
-        "url",
-        "state",
-        "listing",
-        "groups",
-        "updatedAt"
-      ],
-      "properties": {
-        "network": {
-          "$ref": "#/$defs/Did",
-          "description": "The parent network."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the parent is reached."
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "The parent's name."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "acknowledged",
-            "repudiated",
-            "departed"
-          ],
-          "description": "`acknowledged`: this network is a member. `repudiated`: it rejected the parent's listing. `departed`: it left."
-        },
-        "listing": {
-          "$ref": "#/$defs/Credential",
-          "description": "The parent's listing of this network, as verified."
-        },
-        "grant": {
-          "$ref": "#/$defs/Credential",
-          "description": "The parent's grant."
-        },
-        "acknowledgement": {
-          "$ref": "#/$defs/Credential",
-          "description": "This network's acknowledgement."
-        },
-        "repudiation": {
-          "$ref": "#/$defs/Credential",
-          "description": "This network's repudiation of the listing or grant."
-        },
-        "groups": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/UpstreamGroup"
-          },
-          "description": "Groups registered at the parent."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it last changed."
-        }
-      }
-    },
-    "UpstreamGroup": {
-      "description": "A group this network registered at its parent.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "parentRole",
-        "localRole",
-        "group",
-        "registration",
-        "acceptance"
-      ],
-      "properties": {
-        "parentRole": {
-          "$ref": "#/$defs/RoleName"
-        },
-        "localRole": {
-          "$ref": "#/$defs/RoleName"
-        },
-        "group": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "This network's network group (`<did>#role-<localRole>`)."
-        },
-        "registration": {
-          "$ref": "#/$defs/SignedTask",
-          "description": "This network's signed vtn/groups/register request to the parent."
-        },
-        "acceptance": {
-          "$ref": "#/$defs/Credential",
-          "description": "The parent's groupRegistered credential accepting the registration: issued by the parent, subject this network's network group, `object.digestMultibase` the digest of `registration`, revocable on the parent's status list."
-        }
-      }
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "SignedTask": {
-      "type": "object",
-      "description": "A complete Trust Task document, with its proof, exactly as signed and received. Verified as a document in its own right; open so its proof still covers every member, and so its digest can be recomputed."
     },
     "RoleName": {
       "type": "string",
@@ -254,10 +132,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -410,7 +288,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

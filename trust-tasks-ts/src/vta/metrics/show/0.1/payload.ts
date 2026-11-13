@@ -59,8 +59,13 @@ export type Response = VTAMetricsShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/metrics/show/0.1",
   "title": "VTA Metrics — Show — payload",
@@ -73,24 +78,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Metrics — Show — response payload",
-      "description": "The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "snapshot"
-      ],
-      "properties": {
-        "snapshot": {
-          "$ref": "#/$defs/MetricsSnapshot"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -100,144 +87,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MetricsSnapshot": {
-      "title": "MetricsSnapshot",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "takenAt",
-        "counters",
-        "gauges",
-        "histograms"
-      ],
-      "properties": {
-        "takenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering."
-        },
-        "counters": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Metric"
-          },
-          "description": "Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \"no counters\" from \"the field was dropped\"."
-        },
-        "gauges": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Metric"
-          },
-          "description": "Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters."
-        },
-        "histograms": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Histogram"
-          },
-          "description": "Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Histogram": {
-      "title": "Histogram",
-      "description": "One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "count",
-        "sum",
-        "buckets"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The histogram's stable name (e.g. `did_hosting_resolve_seconds`)."
-        },
-        "labels": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Dimensions the distribution is broken down by. Absent or empty when the histogram carries none."
-        },
-        "count": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total number of observations."
-        },
-        "sum": {
-          "type": "number",
-          "description": "Sum of all observed values."
-        },
-        "buckets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/HistogramBucket"
-          },
-          "description": "Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays."
-        }
-      }
-    },
-    "HistogramBucket": {
-      "title": "HistogramBucket",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "le",
-        "count"
-      ],
-      "properties": {
-        "le": {
-          "type": "number",
-          "description": "Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling."
-        },
-        "count": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of observations at or below `le`."
-        }
-      }
-    },
-    "Metric": {
-      "title": "Metric",
-      "description": "One counter or gauge reading.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "value"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary."
-        },
-        "value": {
-          "type": "number",
-          "description": "The current reading."
-        },
-        "labels": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Dimensions the value is broken down by (e.g. `{\"method\": \"resolve\"}`). Absent or empty when the metric carries none."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -402,7 +257,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -276,3 +276,36 @@ fn verifying_against_the_wrong_sender_fails() {
         "expected an authentication failure, got: {err}"
     );
 }
+
+/// The receiver VID in the clear is the one the sender wrote; the seal only
+/// shows the message was encrypted to bob's key. A message sealed to bob's key
+/// but naming another VID — the document addressed to that VID too — is not
+/// opened as bob's, so bob never answers as that VID.
+#[test]
+fn a_message_naming_another_receiver_is_refused() {
+    let p = setup();
+    let other = "did:example:someone-else";
+
+    let doc = grant_doc(&p.alice.id, other);
+    let envelope = serde_json::to_vec(&json!({
+        "type": ENVELOPE_TYPE,
+        "document": serde_json::to_value(&doc).unwrap(),
+    }))
+    .unwrap();
+    let wire = direct::pack(
+        &envelope,
+        MessageType::Direct,
+        &p.alice.id,
+        other,
+        &p.alice.signing_key,
+        &p.bob.to_resolved().encryption_key,
+    )
+    .unwrap()
+    .bytes;
+
+    let err = unpack_trust_task::<GrantPayload>(&wire, &p.bob, &p.alice.to_resolved()).unwrap_err();
+    assert!(
+        err.to_string().contains("not addressed to this receiver"),
+        "expected a receiver refusal, got: {err}"
+    );
+}

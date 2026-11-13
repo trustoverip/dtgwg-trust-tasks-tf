@@ -78,8 +78,13 @@ export type Response = VTCJoinRequestsSupplementResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1",
   "title": "VTC Join-Requests Supplement — payload",
@@ -108,31 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Supplement — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "verdict"
-      ],
-      "description": "The community's fresh decision on the re-presented evidence. Failures use trust-task-error, not this shape.",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The request that was re-decided (a UUID). Returned even when the request omitted it, so an applicant who used the id-less form learns which request they answered."
-        },
-        "verdict": {
-          "$ref": "#/$defs/Verdict",
-          "description": "What the community decided on the new evidence, in the same shape `vtc/join-requests/submit` returns. MAY be any outcome a submission can produce, including a further request for more evidence and including a refusal."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -142,95 +122,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Verdict": {
-      "$anchor": "verdict",
-      "title": "Verdict",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "effect",
-        "with"
-      ],
-      "description": "A ceremony decision: the effect, plus its effect-dependent detail.",
-      "properties": {
-        "effect": {
-          "$ref": "#/$defs/VerdictEffect"
-        },
-        "with": {
-          "$ref": "#/$defs/VerdictWith"
-        }
-      }
-    },
-    "VerdictWith": {
-      "$anchor": "verdictWith",
-      "title": "VerdictWith",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "The effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
-      "properties": {
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The granted local role. `allow` only."
-        },
-        "obligations": {
-          "type": "object",
-          "description": "Conditions attached to the grant. `allow` only."
-        },
-        "bundleRef": {
-          "type": "object",
-          "description": "Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only."
-        },
-        "code": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Stable refusal code, safe to branch on. `deny` only."
-        },
-        "reason": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024,
-          "description": "Elaboration in prose, when the decider gave one. `deny` and `refer`."
-        },
-        "queue": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only."
-        },
-        "needs": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only."
-        },
-        "presentationDefinition": {
-          "type": "object",
-          "description": "A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only."
-        }
-      }
-    },
-    "VerdictEffect": {
-      "$anchor": "verdictEffect",
-      "title": "VerdictEffect",
-      "type": "string",
-      "enum": [
-        "allow",
-        "deny",
-        "refer",
-        "requestMore"
-      ],
-      "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -353,7 +250,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -76,8 +76,13 @@ export type Response = VotingTrusteesAuthorizeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/voting/trustees/authorize/0.1",
   "title": "Voting — Trustees — Authorize — payload",
@@ -129,27 +134,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Voting — Trustees — Authorize — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "election",
-        "phase"
-      ],
-      "properties": {
-        "election": {
-          "$ref": "#/$defs/ElectionSummary"
-        },
-        "phase": {
-          "$ref": "#/$defs/TrusteePhase"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -158,58 +142,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "TrusteePhase": {
-      "title": "TrusteePhase",
-      "description": "`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.",
-      "type": "string",
-      "enum": [
-        "enrolling",
-        "dealing",
-        "confirming",
-        "keyed",
-        "decrypting",
-        "done",
-        "failed"
-      ]
-    },
-    "ElectionSummary": {
-      "title": "ElectionSummary",
-      "description": "A ballot box's view of one election.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "community",
-        "manifestDigest",
-        "state",
-        "ballotsAdmitted",
-        "head"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "community": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "state": {
-          "$ref": "#/$defs/ElectionState"
-        },
-        "ballotsAdmitted": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct tags with a counted ballot."
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead"
-        }
       }
     },
     "BoardHead": {
@@ -256,24 +188,12 @@ export const PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "ElectionState": {
-      "title": "ElectionState",
-      "type": "string",
-      "enum": [
-        "registered",
-        "registration",
-        "voting",
-        "closed",
-        "tallied",
-        "cancelled"
-      ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -418,7 +338,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

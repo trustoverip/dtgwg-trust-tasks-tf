@@ -88,8 +88,13 @@ export type Response = VTCVettingPCSBindingShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/pcs-binding/show/0.1",
   "title": "VTC — Vetting PCS Binding — Show — payload",
@@ -102,72 +107,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC — Vetting PCS Binding — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bound",
-        "enrolledLabels"
-      ],
-      "description": "The requester's own binding. `id` is present exactly when `bound` is true.",
-      "properties": {
-        "bound": {
-          "type": "boolean",
-          "description": "Whether the community holds an identifier for this member. False for a member who has never enrolled."
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The PCS identifier recorded at this member's first enrolment, multibase base58btc. Present if and only if `bound` is true; a consumer treats `bound: true` without `id` as not bound. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset."
-        },
-        "enrolledLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          },
-          "description": "The vetter class labels this member has enrolled under with the recorded identifier, oldest first. Empty when not bound."
-        },
-        "reset": {
-          "$ref": "#/$defs/Reset"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Reset": {
-      "title": "Reset",
-      "description": "An administrator's reset of this member's binding, not yet completed by an enrolment under a new identifier.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "resetAt",
-        "waitingOn",
-        "open"
-      ],
-      "properties": {
-        "resetAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the administrator reset the binding."
-        },
-        "waitingOn": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          },
-          "description": "The labels the recorded identifier enrolled under that the community still accepts, at the time of this answer. A new identifier is refused until this is empty."
-        },
-        "open": {
-          "type": "boolean",
-          "description": "True when `waitingOn` is empty: the next enrolment may present a new identifier, and the community binds it."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -179,10 +118,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -263,7 +202,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

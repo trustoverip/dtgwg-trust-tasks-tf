@@ -61,8 +61,13 @@ export type Response = VTANotificationsDismissResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/notifications/dismiss/0.1",
   "title": "VTA Notifications — Dismiss — payload",
@@ -85,25 +90,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Notifications — Dismiss — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "recordId",
-        "changed"
-      ],
-      "properties": {
-        "recordId": {
-          "$ref": "#/$defs/RecordId"
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "Whether this request dismissed it: false when it was already dismissed."
-        }
-      }
-    },
     "RecordId": {
       "title": "RecordId",
       "description": "The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.",
@@ -130,10 +116,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 256
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -163,26 +149,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 16,
       "maxLength": 128,
       "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContextId": {
-      "title": "ContextId",
-      "description": "The trust context the notification is held in: the one the addressed DID belongs to.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

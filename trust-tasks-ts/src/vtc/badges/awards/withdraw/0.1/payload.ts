@@ -70,8 +70,13 @@ export type Response = VTCBadgesAwardsWithdrawResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1",
   "title": "VTC Badges — Awards — Withdraw — payload",
@@ -98,25 +103,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — Awards — Withdraw — response payload",
-      "description": "The success response to a vtc/badges/awards/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/withdraw/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "award"
-      ],
-      "properties": {
-        "award": {
-          "$ref": "#/$defs/Award",
-          "description": "The award as it now stands: `state` `withdrawn`, `decidedAt` set."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -127,141 +113,17 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Award": {
-      "title": "Award",
-      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "awardId",
-        "badgeId",
-        "entryId",
-        "state",
-        "offeredAt"
-      ],
-      "properties": {
-        "awardId": {
-          "$ref": "#/$defs/AwardId"
-        },
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId"
-        },
-        "entryId": {
-          "$ref": "#/$defs/EntryId",
-          "description": "The recipient."
-        },
-        "givenBy": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "note": {
-          "$ref": "#/$defs/AwardNote"
-        },
-        "state": {
-          "$ref": "#/$defs/AwardState"
-        },
-        "offeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "decidedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When an unanswered offer lapses, where the community expires offers."
-        },
-        "credentialId": {
-          "$ref": "#/$defs/GroupCredentialId"
-        },
-        "shared": {
-          "$ref": "#/$defs/AwardShare"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "AwardShare": {
-      "title": "AwardShare",
-      "description": "Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verificationUrl",
-        "since"
-      ],
-      "properties": {
-        "verificationUrl": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "The public location that answers the credential and a verification of it."
-        },
-        "bakedImageUrl": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image."
-        },
-        "since": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "AwardState": {
-      "title": "AwardState",
-      "description": "`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).",
-      "type": "string",
-      "enum": [
-        "offered",
-        "accepted",
-        "declined",
-        "withdrawn",
-        "expired",
-        "revoked"
-      ]
-    },
-    "AwardNote": {
-      "title": "AwardNote",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090)."
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
-    },
     "AwardId": {
       "title": "AwardId",
       "description": "Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.",
       "type": "string",
       "pattern": "^awd_[A-Za-z0-9_-]{16,64}$"
-    },
-    "GroupCredentialId": {
-      "title": "GroupCredentialId",
-      "description": "Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 512
-    },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -425,7 +287,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

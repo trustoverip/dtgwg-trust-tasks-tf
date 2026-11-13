@@ -5,6 +5,74 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the `trust-tasks-ts-tsp-v<version>`
 tag; see `RELEASING.md`.
 
+## 0.1.4 — 2026-11-13
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector (#1263)
+
+Size bounds (#1121). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends (#1117). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof (#1092). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows (#1251)
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+- **tsp,ts-tsp,go-tsp**: Open a TSP message only when it names this consumer's VID (#1247)
+
+The receiver VID in a TSP envelope is written by the sender; the HPKE seal only shows the message was encrypted to the recipient's key. The Rust and TypeScript bindings took that VID as the transport recipient, so a message sealed to our key but naming another VID passed the recipient check and was answered as that VID. Both now refuse a message whose receiver VID is set and differs from the configured one, and take the configured VID as the transport recipient. The Go binding's upstream library already refuses it; Go now takes the configured VID as the transport recipient too and keeps its own check. Dart's upstream library already refuses it.
+
+- **ts-proof,ts-tsp,ts-capability-client**: Require @openvtc/trust-tasks 0.29 (#1237)
+
+## 0.1.3 — 2026-11-12
+
+
+### Fixed
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
 ## 0.1.2 — 2026-10-28
 
 

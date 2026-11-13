@@ -81,8 +81,13 @@ export type Response = VTCElectionsCertifyResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/elections/certify/0.1",
   "title": "VTC Elections — Certify — payload",
@@ -110,50 +115,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Elections — Certify — response payload",
-      "description": "Success response to vtc/elections/certify/0.1: the result the community verified and certified.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "result",
-        "head",
-        "certifiedAt",
-        "auditAttestations"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "result": {
-          "$ref": "#/$defs/ElectionResult",
-          "description": "The result the community recomputed from the board, equal to the ballot box's."
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead",
-          "description": "The board head the community verified: the head as it stood at close, which the result counts exactly."
-        },
-        "certifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "maxLength": 64
-        },
-        "auditAttestations": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "object",
-            "description": "An auditor's attestation the community verified, as received."
-          },
-          "description": "The attestations certified with the result; empty when none was given."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -164,172 +125,17 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "BoardHead": {
-      "title": "BoardHead",
-      "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "treeSize",
-        "rootHash",
-        "issuedAt"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "treeSize": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "rootHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
     "ElectionId": {
       "title": "ElectionId",
       "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
       "type": "string",
       "pattern": "^[A-Za-z0-9._-]{1,128}$"
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
-    },
-    "ElectionResult": {
-      "title": "ElectionResult",
-      "description": "An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "manifestDigest",
-        "ballotsCounted",
-        "questions",
-        "head"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "ballotsCounted": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "questions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/QuestionResult"
-          }
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead",
-          "description": "The head of the board as it stood at close: the result counts exactly its entries."
-        }
-      }
-    },
-    "QuestionResult": {
-      "title": "QuestionResult",
-      "description": "One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "question",
-        "abstained"
-      ],
-      "properties": {
-        "question": {
-          "$ref": "#/$defs/Key"
-        },
-        "abstained": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "choice": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "integer",
-            "minimum": 0
-          }
-        },
-        "ranking": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        },
-        "score": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "sum",
-              "count"
-            ],
-            "properties": {
-              "sum": {
-                "type": "integer"
-              },
-              "count": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          }
-        },
-        "text": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "maxLength": 4096
-          }
-        },
-        "withheld": {
-          "type": "boolean"
-        }
-      }
-    },
-    "Key": {
-      "title": "Key",
-      "description": "A question or option key, unique within its manifest or question.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -549,7 +355,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[A-Za-z0-9._-]{1,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

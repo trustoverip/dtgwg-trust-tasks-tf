@@ -81,8 +81,13 @@ export type Response = VTCElectionsBallotBoxesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/elections/ballot-boxes/list/0.1",
   "title": "VTC Elections — Ballot Boxes — List — payload",
@@ -95,58 +100,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "TrustedBallotBox": {
-      "title": "TrustedBallotBox",
-      "description": "One voting service the community trusts (VTI-VOT-082), with what its members are told about it when an election names it (VTI-VOT-090).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "operator",
-        "sameOperator"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The ballot box's DID, exactly as a manifest names it in `ballotBox`."
-        },
-        "operator": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Who operates it, as the community names them — the `ballotBoxOperator` a member is shown."
-        },
-        "sameOperator": {
-          "type": "boolean",
-          "description": "Whether the party operating the community's VTC also operates this ballot box — the `sameOperator` a member is shown."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Elections — Ballot Boxes — List — response payload",
-      "description": "Success response to vtc/elections/ballot-boxes/list/0.1: every voting service the community trusts, as it trusts them now.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ballotBoxes"
-      ],
-      "properties": {
-        "ballotBoxes": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/TrustedBallotBox"
-          },
-          "description": "Every trusted ballot box, in the community's own order. Empty when the community trusts none, and so can create no election."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -158,10 +111,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -228,7 +181,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

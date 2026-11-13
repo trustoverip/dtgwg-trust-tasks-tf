@@ -1,0 +1,4 @@
+[
+  { "note": "Duplicate keys are refused rather than deduplicated — uniqueItems catches them in the schema.", "payload": { "contextId": "finance", "keys": ["a", "a"] } },
+  { "note": "A get naming no key asks for nothing.", "payload": { "contextId": "finance", "keys": [] } }
+]

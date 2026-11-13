@@ -9,12 +9,12 @@ document type and a `TransportHandler` trait that lets concrete transports
 (REST, DIDComm, message queues, ...) plug their identity, integrity, and
 freshness semantics into a single validation pipeline.
 
-The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
+The framework specification this crate implements is [`SPEC.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md).
 
 > **The prebuilt specification modules under `specs::` are deprecated** (all but
 > the framework's own `trust-task-*` families) and will be removed in a future
-> release. Depend on this crate with `default-features = false` for the runtime
-> alone, pin the tasks you use with the `trust-tasks` CLI, and generate them in
+> release. A plain dependency on this crate is the runtime alone (no family is
+> on by default), pin the tasks you use with the `trust-tasks` CLI, and generate them in
 > `build.rs` with [`trust-tasks-build`](https://crates.io/crates/trust-tasks-build)
 > — see [Generating only the tasks you use](#generating-only-the-tasks-you-use).
 
@@ -55,7 +55,7 @@ struct AclChangeRole {
 
 let doc: TrustTask<AclChangeRole> = serde_json::from_str(r#"{
     "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-    "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+    "type": "https://trusttasks.org/spec/acl/change-role/0.3",
     "issuer": "did:web:org.example",
     "recipient": "did:web:maintainer.example",
     "issuedAt": "2026-06-10T14:00:00Z",
@@ -63,7 +63,7 @@ let doc: TrustTask<AclChangeRole> = serde_json::from_str(r#"{
 }"#)?;
 
 assert_eq!(doc.type_uri.slug(), "acl/change-role");
-assert_eq!(doc.type_uri.minor(), 1);
+assert_eq!(doc.type_uri.minor(), 3);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -102,11 +102,11 @@ that need to `await` and for the request-scoped context they need to do it:
 use trust_tasks_rs::{specs::acl, AsyncDispatcher};
 
 let dispatcher = AsyncDispatcher::<Arc<AppState>, Outcome>::new()
-    .on_async::<acl::grant::v0_1::Payload, _, _>(|req, ctx| async move {
+    .on_async::<acl::grant::v0_3::Payload, _, _>(|req, ctx| async move {
         ctx.db.record_grant(&req.payload.entry).await;      // a real await
         Outcome::Granted
     })
-    .on_async::<acl::revoke::v0_1::Payload, _, _>(|req, ctx| async move {
+    .on_async::<acl::revoke::v0_3::Payload, _, _>(|req, ctx| async move {
         ctx.db.revoke(&req.payload.subject).await;
         Outcome::Revoked
     });
@@ -210,11 +210,19 @@ one more optional setter and every existing call site keeps compiling. Reading
 is unchanged — the fields are `pub`.
 
 ```rust,ignore
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_3 as grant, Payload, TrustTask};
 
+// acl/grant/0.3 states every authority axis explicitly.
+let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+let capabilities =
+    grant::CapabilityScopeCeiling::try_from(grant::CapabilityScopeCeiling::builder().scope("ceiling"))?;
 let entry: grant::AclEntry = grant::AclEntry::builder()
     .subject("did:web:alice.example")
     .role("admin")
+    .act(act)
+    .keys(keys)
+    .capabilities(capabilities)
     .try_into()?;
 let payload: grant::Payload = grant::Payload::builder()
     .entry(entry)
@@ -225,7 +233,7 @@ assert_eq!(req.type_uri, grant::Payload::type_uri());
 ```
 
 A struct whose members are all optional also implements `Default`, so
-`acl::list::v0_1::Payload::default()` is the whole construction.
+`acl::list::v0_4::Payload::default()` is the whole construction.
 
 `RequestPayload` pairs a request with its response type, which is how a
 transport infers the response instead of being told it — see
@@ -251,9 +259,9 @@ codegen can't produce.
 
 | Feature | What it enables |
 |---|---|
-| _(default)_ | `all-specs` — the framework crate plus every generated spec family, which is what the crate has always shipped |
-| `all-specs` | Every top-level spec family |
-| one per family | `acl`, `audit`, `auth`, `chat`, `config`, `confirm`, `consent`, `credential-exchange`, `device`, `did-management`, `git-trust`, `governance`, `keys`, `messaging`, `policy`, `provision`, `push`, `registry`, `sync`, `task-consent`, `vault`, `vrc`, `vta`, `vtc`, `webvh`, `witness` — the `specs::<family>` module tree and nothing else |
+| _(default)_ | nothing: the runtime and the framework's own `trust-task-*` modules, no prebuilt spec family. In 0.38 and earlier the default was `all-specs`; a consumer that still uses `specs::<family>` now asks for it |
+| `all-specs` | Every top-level spec family (deprecated, like the modules it compiles) |
+| one per family | `acl`, `vault`, `keys`, … — one per top-level directory under `specs/`, listed in the `[features]` table of this crate's `Cargo.toml`; each is the `specs::<family>` module tree and nothing else |
 | `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
 
 ### Generating only the tasks you use
@@ -262,24 +270,25 @@ An application can skip the prebuilt modules entirely: pin the specification
 versions it speaks with the [`trust-tasks`](https://crates.io/crates/trust-tasks-cli)
 command and generate them at build time with
 [`trust-tasks-build`](https://crates.io/crates/trust-tasks-build), depending on
-this crate with `default-features = false` for the runtime alone. Three tasks
-build in about 8 s and 0.4 GB, against minutes and over 16 GB for the default
-features. See the `trust-tasks-build` README.
+this crate with its default features, which are the runtime alone. Three tasks
+build in about 8 s and 0.4 GB, against minutes and over 16 GB for `all-specs`.
+See the `trust-tasks-build` README.
 
 ### Compiling only the families you use
 
-`specs/` is 941 generated modules and ~66 MB of source, across 34 feature-gated families. Depending on the crate
-with default features compiles all of it. If you use three tasks, say so:
+`specs/` is well over a thousand generated modules and over 90 MB of source,
+one feature-gated family per top-level directory, and none of them is on by
+default. `all-specs` compiles all of it — minutes and over 16 GB of memory for a
+cold build. If you still use a prebuilt family, name just that one:
 
-```toml
-[dependencies]
-trust-tasks-rs = { version = "0.34", default-features = false, features = ["vault"] }
+```sh
+cargo add trust-tasks-rs --features vault
 ```
 
-Rebuilding the crate alone, with dependencies cached and `CARGO_INCREMENTAL=0`,
-on an Apple-silicon laptop: **14 s** for the default feature set, about **1 s**
-for `vault` or `acl` alone. On a CI runner the gap is wider in memory than in
-time — the default set needs several GB to compile, one family about 1 GB.
+A single family builds in seconds and about 1 GB (`cargo test -p
+trust-tasks-rs --features vault` takes about 13 s cold,
+dependencies cached). These prebuilt modules are deprecated either way; the
+section above is the replacement.
 
 The framework surface — `TrustTask`, the §7.2 consume pipeline, the transport
 traits, `ErrorPayload`, discovery — is always compiled, along with the five
@@ -309,5 +318,5 @@ landed and for the versioning rules.
 
 ## License
 
-Apache-2.0. See [`../SOURCE_CODE.md`](../SOURCE_CODE.md) for the source-code
-licensing terms of this repository.
+Apache-2.0 — see
+[`LICENSE`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-rs/LICENSE), included in the published crate.

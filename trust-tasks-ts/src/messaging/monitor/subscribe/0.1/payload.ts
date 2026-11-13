@@ -6,6 +6,7 @@
 import type { Ext, MonitorFilter, TrafficChannel, TrafficDirection, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by messaging/monitor/subscribe/0.2 */
 export interface MessagingSubscribeToTrafficMonitorPayload {
   filter?: MonitorFilter;
   /**
@@ -27,6 +28,8 @@ export interface MessagingSubscribeToTrafficMonitorPayload {
 }
 /**
  * The success response to a messaging/monitor/subscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
  */
 export interface MessagingSubscribeToTrafficMonitorResponsePayload {
   subscriptionId: string;
@@ -65,15 +68,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by messaging/monitor/subscribe/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
+ */
 export type Payload = MessagingSubscribeToTrafficMonitorPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
+ */
 export type Response = MessagingSubscribeToTrafficMonitorResponsePayload;
 
 /**
@@ -84,8 +95,13 @@ export type Response = MessagingSubscribeToTrafficMonitorResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1",
   "title": "Messaging — Subscribe to Traffic Monitor — payload",
@@ -118,42 +134,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Subscribe to Traffic Monitor — response payload",
-      "description": "The success response to a messaging/monitor/subscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "subscriptionId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "filter": {
-          "$ref": "#/$defs/MonitorFilter",
-          "description": "The filter in force, after the mediator narrowed it to what the requester is entitled to see."
-        },
-        "maxEventsPerSecond": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The rate ceiling in force."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "subscriptionId",
-        "expiresAt",
-        "filter",
-        "maxEventsPerSecond"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -284,10 +264,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -457,7 +437,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

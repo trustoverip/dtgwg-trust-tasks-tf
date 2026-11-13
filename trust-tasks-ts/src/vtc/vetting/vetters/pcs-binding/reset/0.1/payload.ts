@@ -79,8 +79,13 @@ export type Response = VTCVettingPCSBindingResetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/pcs-binding/reset/0.1",
   "title": "VTC — Vetting PCS Binding — Reset — payload",
@@ -108,45 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC — Vetting PCS Binding — Reset — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "memberDid",
-        "resetAt",
-        "waitingOn",
-        "open"
-      ],
-      "description": "The reset as recorded. A repeated reset returns the first one's record.",
-      "properties": {
-        "memberDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "resetAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was reset — the first reset, if this one repeats it."
-        },
-        "waitingOn": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-          },
-          "description": "The labels the old identifier enrolled under that are still live now. A new identifier is accepted once none is."
-        },
-        "open": {
-          "type": "boolean",
-          "description": "True when `waitingOn` is empty: the member's next enrolment may present a new identifier."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -158,10 +124,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -215,7 +181,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

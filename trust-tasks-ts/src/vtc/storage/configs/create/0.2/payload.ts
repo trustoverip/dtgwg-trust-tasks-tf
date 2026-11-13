@@ -86,8 +86,13 @@ export type Response = VTCStorageConfigsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/storage/configs/create/0.2",
   "title": "VTC Storage — Configs — Create — payload",
@@ -136,23 +141,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Storage — Configs — Create — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "config"
-      ],
-      "properties": {
-        "config": {
-          "$ref": "#/$defs/StorageConfig"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -162,77 +150,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "StorageConfig": {
-      "title": "StorageConfig",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "label",
-        "settings",
-        "state",
-        "createdBy",
-        "createdAt"
-      ],
-      "description": "One storage config as the community holds it. Carries no secret.",
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose."
-        },
-        "settings": {
-          "$ref": "#/$defs/StorageSettings"
-        },
-        "auth": {
-          "$ref": "#/$defs/StorageAuth"
-        },
-        "capacityBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set."
-        },
-        "state": {
-          "$ref": "#/$defs/ConfigState"
-        },
-        "isDefault": {
-          "type": "boolean",
-          "description": "True for the config a room is assigned to when neither the community's policy nor its creator names one."
-        },
-        "createdBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "ConfigState": {
-      "title": "ConfigState",
-      "type": "string",
-      "enum": [
-        "active",
-        "draining",
-        "retired"
-      ],
-      "description": "`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it."
     },
     "StorageAuth": {
       "title": "StorageAuth",
@@ -477,10 +394,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -825,7 +742,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

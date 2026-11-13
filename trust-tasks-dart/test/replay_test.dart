@@ -43,6 +43,7 @@ Future<ConsumeOutcome<Response>> consequential(
   TrustTaskDocument<Payload> doc,
   Executions executions, {
   ConsumeChecks? checks,
+  DateTime? now,
 }) =>
     consumeInbound<Payload, Response>(
       transport: const UnauthenticatedTransport(),
@@ -52,9 +53,10 @@ Future<ConsumeOutcome<Response>> consequential(
       checks: checks ?? consequentialChecks(guard),
       doc: doc,
       myVid: me,
-      now: testNow,
+      now: now ?? testNow,
       newErrorId: () => 'err-1',
       payloadToJson: payloadToJson,
+      responseToJson: (r) => r.toJson(),
       clock: fixedClock,
       handler: (accepted, parties) async {
         executions.count++;
@@ -79,7 +81,8 @@ class _FailingGuard implements ReplayGuard {
   ) async =>
       throw StateError('redis://cache.internal:6379 connection refused');
   @override
-  Future<void> recordResponse(String id, Object? response) async {}
+  Future<void> recordResponse(
+      String id, Map<String, dynamic>? response) async {}
   @override
   Future<void> release(String id, String digest) async {}
 }
@@ -88,8 +91,20 @@ class _FailingGuard implements ReplayGuard {
 /// JSON, and keeps it as the decoded JSON.
 class _SerialisingGuard extends InMemoryReplayGuard {
   @override
-  Future<void> recordResponse(String id, Object? response) =>
-      super.recordResponse(id, jsonDecode(jsonEncode(response)));
+  Future<void> recordResponse(String id, Map<String, dynamic>? response) =>
+      super.recordResponse(
+        id,
+        jsonDecode(jsonEncode(response)) as Map<String, dynamic>?,
+      );
+}
+
+/// A final refusal whose payload cannot be encoded.
+class _UnencodableErrorPayload extends ErrorPayload {
+  const _UnencodableErrorPayload()
+      : super(code: 'permissionDenied', retryable: false);
+
+  @override
+  Map<String, dynamic> toJson() => throw StateError('cannot encode');
 }
 
 void main() {
@@ -109,8 +124,9 @@ void main() {
 
       // §7.2 (*Disposition of a duplicate*): return the prior response.
       final prior = (second as DuplicateOutcome<Response>).priorResponse;
-      expect(prior, isA<TrustTaskDocument<Response>>());
-      expect((prior! as TrustTaskDocument<Response>).id, 'resp-1');
+      expect(prior?['id'], 'resp-1');
+      expect(prior?['payload'], {'ok': true});
+      expect(second.isError, isFalse);
     });
 
     test('releases the claim when the handler throws, so a resend executes',
@@ -128,6 +144,7 @@ void main() {
           now: testNow,
           newErrorId: () => 'err-1',
           payloadToJson: payloadToJson,
+          responseToJson: (r) => r.toJson(),
           handler: (accepted, parties) async =>
               throw StateError('database connection reset'),
         ),
@@ -140,6 +157,85 @@ void main() {
       final outcome =
           await consequential(guard, consequentialDoc(), executions);
       expect(outcome, isA<Handled<Response>>());
+      expect(executions.count, 1);
+    });
+
+    test('settles the claim when the response encoder throws', () async {
+      // The handler returned, so the effect happened: the claim is settled
+      // (with no response to hand back) rather than left in flight until the
+      // record expires, and the encoder's error reaches the caller.
+      final guard = InMemoryReplayGuard();
+      final executions = Executions();
+      Future<ConsumeOutcome<Response>> run() =>
+          consumeInbound<Payload, Response>(
+            transport: const UnauthenticatedTransport(),
+            spec: consequentialSpec,
+            proofPolicy: const ProofPolicy.acceptUnverified(),
+            payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+            checks: consequentialChecks(guard),
+            doc: consequentialDoc(),
+            myVid: me,
+            now: testNow,
+            newErrorId: () => 'err-1',
+            payloadToJson: payloadToJson,
+            clock: fixedClock,
+            responseToJson: (r) => throw StateError('cannot encode'),
+            handler: (accepted, parties) async {
+              executions.count++;
+              return respondWith<Payload, Response>(
+                accepted,
+                'resp-1',
+                const Response(true),
+                clock: fixedClock,
+              );
+            },
+          );
+
+      await expectLater(run(), throwsStateError);
+
+      final resend = await run();
+      expect(resend, isA<DuplicateOutcome<Response>>());
+      final duplicate = resend as DuplicateOutcome<Response>;
+      expect(duplicate.inFlight, isFalse,
+          reason: 'the claim was left in flight');
+      expect(duplicate.priorResponse, isNull);
+      expect(executions.count, 1,
+          reason: 'the consequential effect happened twice');
+    });
+
+    test('releases the claim when a final refusal cannot be encoded', () async {
+      // A refusal executed nothing. If it cannot be encoded for the record, the
+      // claim is released — not recorded as completed with no body — so a
+      // resend is evaluated again; the encoder's error reaches the caller.
+      final guard = InMemoryReplayGuard();
+      await expectLater(
+        consumeInbound<Payload, Response>(
+          transport: const UnauthenticatedTransport(),
+          spec: consequentialSpec,
+          proofPolicy: const ProofPolicy.acceptUnverified(),
+          payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+          checks: consequentialChecks(guard),
+          doc: consequentialDoc(),
+          myVid: me,
+          now: testNow,
+          newErrorId: () => 'err-1',
+          payloadToJson: payloadToJson,
+          responseToJson: (r) => r.toJson(),
+          clock: fixedClock,
+          handler: (accepted, parties) async => throw Refusal(
+            TrustTaskDocument<ErrorPayload>(
+              id: 'err-1',
+              type: trustTaskErrorTypeUri,
+              payload: const _UnencodableErrorPayload(),
+            ),
+          ),
+        ),
+        throwsStateError,
+      );
+
+      final executions = Executions();
+      final resend = await consequential(guard, consequentialDoc(), executions);
+      expect(resend, isA<Handled<Response>>());
       expect(executions.count, 1);
     });
 
@@ -176,8 +272,8 @@ void main() {
       expect(second, isA<DuplicateOutcome<Response>>());
       final prior = (second as DuplicateOutcome<Response>).priorResponse;
       expect(prior, isA<Map<String, dynamic>>());
-      expect((prior! as Map<String, dynamic>)['id'], 'resp-1');
-      expect((prior as Map<String, dynamic>)['payload'], {'ok': true});
+      expect(prior!['id'], 'resp-1');
+      expect(prior['payload'], {'ok': true});
     });
 
     test('rejects differing content under a reused id with idConflict',
@@ -299,29 +395,94 @@ void main() {
   group('InMemoryReplayGuard', () {
     final deadline = testNow.add(const Duration(hours: 1));
 
-    test('evicts the least recently used record at capacity', () async {
-      final guard = InMemoryReplayGuard(2);
-      await guard.claim('a', 'd1', deadline, testNow);
-      await guard.claim('b', 'd2', deadline, testNow);
-      await guard.claim('a', 'd1', deadline, testNow); // touch a
-      await guard.claim('c', 'd3', deadline, testNow); // evicts b
+    test('refuses a new document when full of live records, dropping none',
+        () async {
+      final guard = InMemoryReplayGuard(2, 2);
+      final later = testNow.add(const Duration(days: 30));
+      await guard.claim('a', 'd1', later, testNow);
+      await guard.claim('b', 'd2', null, testNow);
+      await expectLater(
+        guard.claim('c', 'd3', later, testNow),
+        throwsA(isA<ReplayGuardFullException>()),
+      );
 
+      // Both records survive, and duplicates are still recognised while full.
       expect(guard.size, 2);
-      // Assert `a` before re-claiming `b`, which would itself evict something.
-      expect(await guard.claim('a', 'd1', deadline, testNow), isA<Duplicate>());
-      expect(await guard.claim('b', 'd2', deadline, testNow), isA<Fresh>());
+      expect(await guard.claim('a', 'd1', later, testNow), isA<Duplicate>());
+      expect(await guard.claim('b', 'd2', null, testNow), isA<Duplicate>());
+    });
+
+    test('reclaims expired records first when full', () async {
+      final guard = InMemoryReplayGuard(2, 2);
+      final hour = testNow.add(const Duration(hours: 1));
+      await guard.claim(
+          'a', 'd1', testNow.add(const Duration(minutes: 5)), testNow);
+      await guard.claim('b', 'd2', hour, testNow);
+      final afterA = testNow.add(const Duration(minutes: 10));
+      expect(await guard.claim('c', 'd3', hour, afterA), isA<Fresh>());
+      expect(guard.size, 2);
+      expect(await guard.claim('b', 'd2', hour, afterA), isA<Duplicate>());
+    });
+
+    test('no one issuer holds more than its share; only it is refused',
+        () async {
+      final guard = InMemoryReplayGuard(10); // a tenth of 10 is 1
+      final month = testNow.add(const Duration(days: 30));
+      expect(await guard.claimFor('did:example:a', 'a1', 'd', month, testNow),
+          isA<Fresh>());
+      await expectLater(
+        guard.claimFor('did:example:a', 'a2', 'd', month, testNow),
+        throwsA(isA<ReplayGuardFullException>()
+            .having((e) => e.issuerShare, 'issuerShare', isTrue)),
+      );
+      expect(await guard.claimFor('did:example:a', 'a1', 'd', month, testNow),
+          isA<Duplicate>());
+      expect(await guard.claimFor('did:example:b', 'b1', 'd', month, testNow),
+          isA<Fresh>());
+      expect(
+          await guard.claimFor(null, 'n1', 'd', month, testNow), isA<Fresh>());
+      expect(
+          await guard.claimFor('did:example:a', 'a2', 'd', null,
+              month.add(const Duration(seconds: 1))),
+          isA<Fresh>());
+      final wide = InMemoryReplayGuard(10, 3);
+      for (final id in ['x1', 'x2', 'x3']) {
+        await wide.claimFor('did:example:a', id, 'd', null, testNow);
+      }
+      await expectLater(
+        wide.claimFor('did:example:a', 'x4', 'd', null, testNow),
+        throwsA(isA<ReplayGuardFullException>()),
+      );
+    });
+
+    test('a full guard answers unavailable through the pipeline', () async {
+      final guard = InMemoryReplayGuard(1);
+      final executions = Executions();
+      expect(await consequential(guard, consequentialDoc(), executions),
+          isA<Handled<Response>>());
+      final refused = await consequential(
+          guard, consequentialDoc().copyWith(id: 'req-2'), executions);
+      expect(refused, isA<Rejected<Response>>());
+      final error = (refused as Rejected<Response>).error;
+      expect(error.payload.code, StandardCode.unavailable);
+      expect(error.payload.retryable, isTrue);
+      // The first document's record was kept: a resend is still absorbed.
+      expect(await consequential(guard, consequentialDoc(), executions),
+          isA<DuplicateOutcome<Response>>());
+      expect(executions.count, 1);
     });
 
     test('a conflict does not displace the record it conflicts with', () async {
-      final guard = InMemoryReplayGuard(2);
+      final guard = InMemoryReplayGuard(2, 2);
       await guard.claim('a', 'd1', deadline, testNow);
       await guard.claim('b', 'd2', deadline, testNow);
       for (var i = 0; i < 5; i++) {
         expect(await guard.claim('a', 'other', deadline, testNow),
             isA<Conflict>());
       }
-      await guard.claim(
-          'c', 'd3', deadline, testNow); // evicts the LRU, which is a
+      // Full: refused, nothing dropped.
+      await expectLater(guard.claim('c', 'd3', deadline, testNow),
+          throwsA(isA<ReplayGuardFullException>()));
       expect(await guard.claim('b', 'd2', deadline, testNow), isA<Duplicate>());
     });
 
@@ -457,6 +618,44 @@ void main() {
       expect(reason?.message, staleWireMessage);
     });
 
+    test(
+        'closes the acceptance window at the instant the record may be dropped',
+        () async {
+      // The window is half-open and ends where the record does. At exactly
+      // `recordExpiry` the guard treats the record as absent, so the document
+      // must already be refused; one millisecond earlier it is still a
+      // duplicate.
+      final guard = InMemoryReplayGuard();
+      final executions = Executions();
+      final end = recordExpiry(
+        consequentialDoc(),
+        consequentialChecks(guard).freshness,
+        testNow,
+      )!;
+      expect(end, testNow.add(const Duration(minutes: 6)));
+
+      await consequential(guard, consequentialDoc(), executions);
+
+      final justBefore = await consequential(
+        guard,
+        consequentialDoc(),
+        executions,
+        now: end.subtract(const Duration(milliseconds: 1)),
+      );
+      expect(justBefore, isA<DuplicateOutcome<Response>>());
+
+      final atEnd = await consequential(
+        guard,
+        consequentialDoc(),
+        executions,
+        now: end,
+      );
+      expect(atEnd, isA<Rejected<Response>>());
+      expect((atEnd as Rejected<Response>).error.payload.code,
+          StandardCode.expired);
+      expect(executions.count, 1);
+    });
+
     test('refuses a document with no timestamp once a window is configured',
         () {
       const windowed = FreshnessPolicy(maxAge: defaultMaxAge);
@@ -497,6 +696,48 @@ void main() {
       );
       // No window at all: the caller must not execute a consequential task.
       expect(recordExpiry(at(), FreshnessPolicy.defaults, testNow), isNull);
+    });
+
+    test('a stated expiresAt replaces maxAge, as in Rust', () {
+      // Ten minutes old with an hour left.
+      expect(
+        validateFreshness(
+          at(
+              issuedAt: '2025-12-31T23:50:00Z',
+              expiresAt: '2026-01-01T01:00:00Z'),
+          testNow,
+          FreshnessPolicy.consequential,
+        ),
+        isNull,
+      );
+    });
+
+    test('a distant expiresAt is clamped to the expiry horizon', () {
+      const policy = FreshnessPolicy.consequential;
+      final d = at(
+          issuedAt: '2026-01-01T00:00:00Z', expiresAt: '9999-12-31T23:59:59Z');
+      final end = DateTime.utc(2026, 1, 1).add(defaultExpiryHorizon);
+      // The record is not pinned for the producer's millennia.
+      expect(recordExpiry(d, policy, testNow), end.add(policy.skew));
+      // Accepted inside the horizon (plus skew), refused from its end — the
+      // instant the record may be dropped — so never accepted once it could be.
+      expect(
+        validateFreshness(
+            d, end.add(policy.skew - const Duration(milliseconds: 1)), policy),
+        isNull,
+      );
+      expect(
+        validateFreshness(d, end.add(policy.skew), policy)?.code,
+        StandardCode.expired,
+      );
+      // A zero horizon clamps at issuedAt; only null means none.
+      const immediate =
+          FreshnessPolicy(maxAge: defaultMaxAge, expiryHorizon: Duration.zero);
+      expect(recordExpiry(d, immediate, testNow),
+          DateTime.utc(2026, 1, 1).add(defaultSkew));
+      // With no horizon the stated expiresAt stands.
+      const unbounded = FreshnessPolicy(maxAge: defaultMaxAge);
+      expect(recordExpiry(d, unbounded, testNow)?.year, 9999);
     });
   });
 

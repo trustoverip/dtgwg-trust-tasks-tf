@@ -79,8 +79,13 @@ export type Response = VTCNetworksLeaveResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/networks/leave/0.1",
   "title": "VTC Networks — Leave — payload",
@@ -107,24 +112,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Networks — Leave — response payload",
-      "description": "The membership, in state `departed`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "membership"
-      ],
-      "properties": {
-        "membership": {
-          "$ref": "#/$defs/NetworkMembership"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,133 +121,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "NetworkMembership": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "network",
-        "url",
-        "state",
-        "listing",
-        "groups",
-        "updatedAt"
-      ],
-      "properties": {
-        "network": {
-          "type": "string",
-          "pattern": "^did:[a-z0-9]+:.+$",
-          "maxLength": 2048,
-          "description": "The network's DID."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the network's API is reached: the base its `/.well-known/vtn` profile is served under."
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "The network's name, as its profile gives it."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "acknowledged",
-            "repudiated",
-            "departed"
-          ],
-          "description": "`acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant."
-        },
-        "listing": {
-          "type": "object",
-          "description": "The network's listing credential naming the community, as the community verified it."
-        },
-        "grant": {
-          "type": "object",
-          "description": "The network's membership grant (VMC), once the community acknowledged."
-        },
-        "acknowledgement": {
-          "type": "object",
-          "description": "The community's acknowledgement (VMC carrying the grant's digest)."
-        },
-        "repudiation": {
-          "type": "object",
-          "description": "The community's repudiation (VSC) of the listing, or — on departure — of the grant."
-        },
-        "groups": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/RegisteredGroup"
-          }
-        },
-        "joinedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "RegisteredGroup": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "role",
-        "groupId",
-        "groupDid",
-        "endpoint",
-        "registration",
-        "acceptance",
-        "registeredAt"
-      ],
-      "properties": {
-        "role": {
-          "type": "string",
-          "pattern": "^[a-z0-9_-]{1,64}$",
-          "description": "A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`."
-        },
-        "groupId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The community's identifier for the group."
-        },
-        "groupDid": {
-          "type": "string",
-          "pattern": "^did:[a-z0-9]+:.+$",
-          "maxLength": 2048,
-          "description": "The group's own DID, which the registration names as its subject."
-        },
-        "endpoint": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the network delivers broadcasts for the group: the community's relay endpoint for it."
-        },
-        "registration": {
-          "type": "object",
-          "description": "The community's `servesRole` statement (VSC): the group serves `role` in the network."
-        },
-        "acceptance": {
-          "type": "object",
-          "description": "The network's `groupRegistered` statement (VSC), bound to the registration's digest."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -414,7 +280,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

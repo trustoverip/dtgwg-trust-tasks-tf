@@ -14,7 +14,12 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
-  trust_tasks: ^0.9.3
+  # The floor is the oldest published core this package's lib/ and example/
+  # compile against; the `packages` job in dart.yml checks it with
+  # `dart pub downgrade`. Raise it when this package starts using newer core API.
+  # 0.9.23: the example uses trust_task_discovery/v0_4 (added in 0.9.22;
+  # 0.9.11-0.9.22 never reached pub.dev). lib/ needs 0.9.6 (`received:`).
+  trust_tasks: ^0.11.0
   # ToIP TSP for Dart: CESR framing, HPKE-Base sealing, ssi-integrated VIDs.
   affinidi_tsp: ^0.1.0
   # For DidManager, DidDocument and the resolver types affinidi_tsp's API is
@@ -22,5 +27,5 @@ dependencies:
   ssi: ">=3.9.6 <5.0.0"
 
 dev_dependencies:
-  lints: ^5.1.1
+  lints: ">=5.1.1 <7.0.0"
   test: ^1.26.3

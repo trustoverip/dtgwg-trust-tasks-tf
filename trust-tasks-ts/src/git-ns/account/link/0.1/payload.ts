@@ -78,8 +78,13 @@ export type Response = GitNamespacesLinkForgeAccountResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/account/link/0.1",
   "title": "Git Namespaces — Link Forge Account — payload",
@@ -99,47 +104,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Link Forge Account — response payload",
-      "description": "Where to authorise the link.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "linkId",
-        "url",
-        "expiresAt"
-      ],
-      "properties": {
-        "linkId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Identifies this attempt for git-ns/account/link-status. Opaque; meaningful only to the member who began it."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "pattern": "^https://",
-          "description": "Where the member authorises the link: the device-code entry page (GitHub), or the forge's authorisation page (Forgejo, authorisation code with PKCE)."
-        },
-        "userCode": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The code the member types at `url`, for a forge that uses a device flow. Absent otherwise."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this attempt lapses if not completed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -159,10 +123,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -216,17 +180,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ForgeHost": {
-      "title": "ForgeHost",
-      "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 253,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -87,8 +87,13 @@ export type Response = DeviceHeartbeatResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/device/heartbeat/0.3",
   "title": "Device Heartbeat — payload",
@@ -110,64 +115,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Device Heartbeat — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "respondedAt"
-      ],
-      "properties": {
-        "respondedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Authoritative timestamp — consumers MAY use to detect clock drift."
-        },
-        "queuedOperations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/QueuedOperation"
-          },
-          "description": "Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op."
-        },
-        "syncHint": {
-          "type": "string",
-          "enum": [
-            "upToDate",
-            "syncDue",
-            "fullResyncRequired"
-          ],
-          "description": "Tells the consumer whether to call vault/sync."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "QueuedOperation": {
-      "title": "QueuedOperation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "task"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "wipe",
-            "policyReload",
-            "configUpdate"
-          ],
-          "description": "Discriminator. The framework currently supports wipe; future versions may add others."
-        },
-        "task": {
-          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.2 document). Consumer verifies and executes as if it had been received normally."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -179,10 +126,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -255,7 +202,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

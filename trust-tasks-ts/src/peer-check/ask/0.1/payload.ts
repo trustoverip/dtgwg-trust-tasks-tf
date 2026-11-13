@@ -92,8 +92,13 @@ export type Response = PeerCheckAskResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/peer-check/ask/0.1",
   "title": "Peer Check — Ask — payload",
@@ -128,78 +133,11 @@ export const PAYLOAD_SCHEMA = {
       "format": "date-time",
       "description": "The answer deadline. After this instant the pending question lapses: the responder does not prompt for it and the asker accepts no answer. It is the task's own deadline (SPEC §7.3 item 16); the envelope `expiresAt` bounds only acceptance of the request document."
     }
-  },
-  "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Peer Check Ask Response Payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "requestDigest",
-        "decision",
-        "respondedAt"
-      ],
-      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognize the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
-      "dependentSchemas": {
-        "notConfirmedReason": {
-          "properties": {
-            "decision": {
-              "const": "notConfirmed"
-            }
-          }
-        }
-      },
-      "properties": {
-        "challenge": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{22,86}$",
-          "description": "The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed."
-        },
-        "requestDigest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
-        },
-        "decision": {
-          "type": "string",
-          "enum": [
-            "confirmed",
-            "notConfirmed"
-          ],
-          "description": "The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no."
-        },
-        "respondedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later."
-        },
-        "notConfirmedReason": {
-          "type": "string",
-          "enum": [
-            "notRecognized",
-            "declined",
-            "other"
-          ],
-          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognized` — the responder does not recognize what the question describes; `declined` — the responder recognizes it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
-        }
-      }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
-    }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -269,7 +207,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -94,8 +94,13 @@ export type Response = VTCRoomsLimitsSetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/limits/set/0.1",
   "title": "VTC Rooms — Limits — Set — payload",
@@ -140,48 +145,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Limits — Set — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "target",
-        "limits",
-        "usage",
-        "overLimit"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier, as its owner minted it."
-        },
-        "target": {
-          "$ref": "#/$defs/LimitTarget"
-        },
-        "limits": {
-          "$ref": "#/$defs/EffectiveLimits"
-        },
-        "targetLimits": {
-          "$ref": "#/$defs/ScopeLimits",
-          "description": "With a `member` target: that member's effective limits after the change, override or not."
-        },
-        "usage": {
-          "$ref": "#/$defs/Usage",
-          "description": "Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's."
-        },
-        "overLimit": {
-          "type": "boolean",
-          "description": "True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -190,39 +153,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Usage": {
-      "title": "Usage",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "files",
-        "bytes",
-        "reservedBytes"
-      ],
-      "description": "What one scope holds now. Ciphertext bytes throughout.",
-      "properties": {
-        "files": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Committed blobs that are not orphaned."
-        },
-        "bytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once."
-        },
-        "reservedBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits."
-        },
-        "reservedFiles": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`."
-        }
       }
     },
     "ScopeLimits": {
@@ -246,67 +176,6 @@ export const PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 0,
           "description": "The total size of the committed and reserved blobs the scope may hold."
-        }
-      }
-    },
-    "EffectiveLimits": {
-      "title": "EffectiveLimits",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "limits",
-        "roomSource",
-        "memberSource"
-      ],
-      "description": "The limits a room is enforced against now, with where each scope's came from.",
-      "properties": {
-        "limits": {
-          "$ref": "#/$defs/RoomLimits"
-        },
-        "roomSource": {
-          "$ref": "#/$defs/LimitSource"
-        },
-        "memberSource": {
-          "$ref": "#/$defs/LimitSource"
-        },
-        "hostCeilingBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1073741824,
-          "description": "The host-wide largest-file ceiling, which no room or member limit can exceed."
-        }
-      }
-    },
-    "LimitSource": {
-      "title": "LimitSource",
-      "type": "string",
-      "enum": [
-        "policy",
-        "override",
-        "default"
-      ],
-      "description": "Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three."
-    },
-    "RoomLimits": {
-      "title": "RoomLimits",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "filesEnabled"
-      ],
-      "description": "How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.",
-      "properties": {
-        "filesEnabled": {
-          "type": "boolean",
-          "description": "False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue."
-        },
-        "room": {
-          "$ref": "#/$defs/ScopeLimits",
-          "description": "Limits on the room as a whole."
-        },
-        "member": {
-          "$ref": "#/$defs/ScopeLimits",
-          "description": "Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there."
         }
       }
     },
@@ -336,10 +205,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -539,7 +408,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

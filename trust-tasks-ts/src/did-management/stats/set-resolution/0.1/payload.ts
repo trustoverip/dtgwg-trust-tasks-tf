@@ -91,8 +91,13 @@ export type Response = StatsSetResolutionResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1",
   "title": "Stats Set Resolution — payload",
@@ -135,59 +140,6 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "`auto`: the hosting service's own policy decides, typically by the slot's traffic; this clears any override. `fine`: always keep the finest series the service offers. `coarse`: never keep the finest series, only the coarser ones. `off`: keep the slot's totals only, and no series over time."
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Stats Set Resolution — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "resolution",
-        "previousResolution",
-        "changed",
-        "tier",
-        "tierReason"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "description": "Echo of the slot."
-        },
-        "resolution": {
-          "$ref": "#/$defs/Resolution",
-          "description": "The resolution now set for the slot."
-        },
-        "previousResolution": {
-          "$ref": "#/$defs/Resolution",
-          "description": "The resolution this request replaced; `auto` when none was set."
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "`false` when `previousResolution` already equalled the requested resolution."
-        },
-        "tier": {
-          "type": "string",
-          "enum": [
-            "fine",
-            "coarse",
-            "off"
-          ],
-          "description": "The detail the service keeps for the slot as of this response. Under `auto` it can change later with the slot's traffic or the service's policy."
-        },
-        "tierReason": {
-          "type": "string",
-          "enum": [
-            "override",
-            "policy",
-            "traffic"
-          ],
-          "description": "Why `tier` applies: `override`, this slot's resolution; `policy`, a service-wide setting that applies to every slot; `traffic`, the service's automatic choice from the slot's activity."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -199,10 +151,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -280,7 +232,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

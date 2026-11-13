@@ -6,11 +6,15 @@
  *  - Parses YAML front matter, validates it against specs/spec.meta.schema.json
  *  - Loads sibling payload.schema.json, sanity-checks $id / $schema
  *  - Computes 'updated' from the most recent git commit touching the spec folder
- *  - Emits website/assets/tasks.generated.js (window.TT_TASKS = [...])
+ *  - Emits website/assets/tasks.generated.js (window.TT_TASKS = [...]), the
+ *    registry index, and website/specs/<slug>/<version>/detail.json, each
+ *    version's full record, which the spec page fetches on demand (#1145)
  *  - Copies specs/ tree into website/specs/ so the SPA can fetch prose + schema
  *  - Copies bindings/ tree into website/bindings/ so the SPA's BindingSpecPage
  *    can fetch each binding's spec.md
  *  - Copies SPEC.md to website/SPEC.md so FrameworkSpecPage can fetch it
+ *  - Compiles the page code (website/assets/*.jsx) into a hashed bundle and
+ *    writes website/index.html from index.template.html (build-website.mjs)
  *
  * Run from the repo root: `npm run build` or `npm run validate` (no website writes).
  */
@@ -19,6 +23,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { buildWebsite, compileApp } from './build-website.mjs';
 import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
@@ -31,8 +36,13 @@ import {
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 import { checkMemberCasing } from './lib/member-casing.mjs';
+import { findGeneratorKeywords } from './lib/generator-keywords.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
+import { checkMemberDescriptions } from './lib/member-descriptions.mjs';
+import { checkCurrentFramework } from './lib/spec-lifecycle.mjs';
+import { checkSpecExamples } from './lib/spec-examples.mjs';
+import { checkSchemaBounds } from './lib/schema-bounds.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,34 +81,71 @@ function splitFrontMatter(src) {
   return { data: YAML.parse(yamlBlock), body };
 }
 
-function lastModified(dirRel) {
+/* Per-folder history — newest and oldest commit date, and authors newest
+ * first — for every directory under specs/, from ONE `git log` over specs/.
+ * It used to be two or three `git log` processes per spec version (~2,800 on
+ * a full build), which was ~97% of the build's time (#1136). Computed on first
+ * use, so `--validate-only`, which needs no dates, never runs it.
+ *
+ * `git log` lists commits newest first, so the first commit seen touching a
+ * folder is its last modification and the last one seen is its creation —
+ * what `git log -1` and `git log --reverse | head -1` per folder gave. Every
+ * ancestor directory of a changed file is credited, so any folder under
+ * specs/ can be looked up. Rename-aware tracking would need --follow per
+ * file (which does not apply to folders): the per-version folder is the unit,
+ * and a rename produces a new "created" date, which matches how versions are
+ * independently editable. */
+let specHistoryCache = null;
+function specHistory() {
+  if (specHistoryCache) return specHistoryCache;
+  specHistoryCache = new Map(); // dirRel -> { newest, oldest, authors: Set }
+  let out = '';
   try {
-    const iso = execSync(
-      `git log -1 --format=%cI -- "${dirRel}"`,
-      { cwd: ROOT, encoding: 'utf8' }
-    ).trim();
-    if (iso) return iso.slice(0, 10); // YYYY-MM-DD
+    // \x1f cannot appear in a date or (in practice) an author name, and a
+    // commit header line is told from a path by its leading \x1e.
+    out = execSync('git log --format=%x1e%cI%x1f%an --name-only -- specs', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 1 << 30,
+    });
   } catch {
-    /* ignore — fall through */
+    return specHistoryCache; // not a git checkout: every lookup falls back
   }
-  return new Date().toISOString().slice(0, 10);
+  let date = null;
+  let author = null;
+  for (const line of out.split('\n')) {
+    if (line.startsWith('\x1e')) {
+      [date, author] = line.slice(1).split('\x1f');
+      date = date.slice(0, 10); // YYYY-MM-DD
+      continue;
+    }
+    if (!line || !date) continue;
+    const parts = line.split('/');
+    for (let i = 1; i < parts.length; i++) {
+      const dir = parts.slice(0, i).join('/');
+      let h = specHistoryCache.get(dir);
+      if (!h) specHistoryCache.set(dir, (h = { newest: date, oldest: date, authors: new Set() }));
+      h.oldest = date;
+      if (author) h.authors.add(author);
+    }
+  }
+  // A commit touching several files in one folder credits it once per file;
+  // `oldest` is simply overwritten by each older commit, so that is harmless.
+  return specHistoryCache;
+}
+
+const gitKey = (dirRel) => dirRel.split(path.sep).join('/');
+const today = () => new Date().toISOString().slice(0, 10);
+
+function lastModified(dirRel) {
+  if (validateOnly) return today(); // discarded: nothing is written
+  return specHistory().get(gitKey(dirRel))?.newest ?? today();
 }
 
 function firstAdded(dirRel) {
   // Oldest commit that touched the spec folder; treated as the spec's creation date.
-  // Rename-aware tracking would require --follow per file (which doesn't apply to
-  // folders) — for now the per-version folder is the unit and renames produce a
-  // new "created" date, which matches how versions are independently editable.
-  try {
-    const out = execSync(
-      `git log --reverse --format=%cI -- "${dirRel}"`,
-      { cwd: ROOT, encoding: 'utf8' }
-    ).trim();
-    if (out) return out.split('\n')[0].slice(0, 10);
-  } catch {
-    /* ignore — fall through */
-  }
-  return new Date().toISOString().slice(0, 10);
+  if (validateOnly) return today(); // discarded: nothing is written
+  return specHistory().get(gitKey(dirRel))?.oldest ?? today();
 }
 
 /* Spec discovery lives in scripts/lib/specs.mjs — one rule, shared with
@@ -161,6 +208,7 @@ function discoverSharedSchemas() {
       if (!underInternal) continue;
       try {
         const schema = readJson(full);
+        checkGeneratorKeywords(schema, rel);
         found.push({ filePath: full, rel, schema });
       } catch (e) {
         fail(rel, `invalid JSON: ${e.message}`);
@@ -287,7 +335,7 @@ function computeUses(schema, schemaPath, sharedByPath) {
  *
  * Refs are resolved and INLINED into the emitted registry rather than passed
  * through. `detailsSchema` is consumed only by machine readers via
- * registry.json / tasks.generated.js, and handing them a relative `$ref` with
+ * registry.json and each version's detail.json, and handing them a relative `$ref` with
  * no base URI would be strictly worse than the duplication it replaces. So the
  * source gets one home for the shape and consumers still get the whole thing.
  */
@@ -769,8 +817,8 @@ function checkIdentifierScopeJustification(meta, body, rel) {
  * The codes are *defined* by that schema's `code` enum — a document carrying a
  * code the declared version does not list will not validate — so the schema is
  * the only copy that cannot be wrong. A hard-coded list in this file would be a
- * fourth hand-maintained taxonomy of exactly the kind the callouts at the top of
- * CLAUDE.md exist to warn about: it would go stale the moment a
+ * fourth hand-maintained taxonomy of exactly the kind docs/DEVELOPMENT.md
+ * ("Hand-maintained lists") exists to warn about: it would go stale the moment a
  * `trust-task-error/0.6` adds a code, and the staleness would present as a lint
  * that quietly stops catching one shadow rather than as a failure.
  *
@@ -1258,6 +1306,15 @@ function closedObjectSubschemas(schema) {
   return out;
 }
 
+/* A code generator's keyword (`tsType`, `tsEnumNames`) is not JSON Schema, and
+ * the TypeScript generators would write its value into a module as source. The
+ * generators add `tsType` themselves; a schema never carries one. */
+function checkGeneratorKeywords(schema, rel) {
+  for (const { pointer, keyword } of findGeneratorKeywords(schema)) {
+    fail(rel, `${pointer}: \`${keyword}\` is a code-generator keyword, not JSON Schema — remove it`);
+  }
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -1278,6 +1335,7 @@ function checkPayloadSchema(slug, version, dir) {
   if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
     fail(`${slug}/${version}/payload.schema.json`, `$schema must be JSON Schema 2020-12`);
   }
+  checkGeneratorKeywords(schema, `${slug}/${version}/payload.schema.json`);
   // §7.3 item 7.4 asks a schema to say how unrecognized members are treated.
   // `unevaluatedProperties` satisfies that as squarely as `additionalProperties`
   // and is the only one that composes: a schema built by `allOf` over a shared
@@ -1375,9 +1433,11 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * than the lazy one, which means it has to reach the same answer a
  * conscientious author would have typed:
  *
- *   authors  — from CODEOWNERS, which already names who reviews each slug and
- *              is kept current because GitHub enforces it. Falling back to the
- *              spec folder's git history, which is who actually wrote it.
+ *   authors  — from the spec folder's git history, which is who actually
+ *              wrote it. (This used to come from CODEOWNERS first, but that
+ *              file names one maintainer for nearly every family, so most
+ *              specs were credited to the reviewer of record rather than to
+ *              their authors — #1144.)
  *   keywords — from the slug's own segments plus the category, which is exactly
  *              what 46% of hand-written keyword lists already were.
  *
@@ -1385,73 +1445,17 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * ceremony, not to overrule an author who has something real to say.
  */
 
-let codeownersRules = null;
-
-/* CODEOWNERS, reduced to what this needs: (pattern, owners) in file order, last
- * match winning, as GitHub does. Only path-prefix patterns are honoured — the
- * file uses nothing else, and implementing the full gitignore grammar to serve
- * a display string would be a poor trade. */
-function loadCodeowners() {
-  if (codeownersRules) return codeownersRules;
-  codeownersRules = [];
-  for (const candidate of ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS']) {
-    const p = path.join(ROOT, candidate);
-    if (!fs.existsSync(p)) continue;
-    for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
-      const stripped = line.replace(/#.*$/, '').trim();
-      if (!stripped) continue;
-      const [pattern, ...owners] = stripped.split(/\s+/);
-      const handles = owners.filter((o) => o.startsWith('@'));
-      if (!handles.length) continue;
-      codeownersRules.push({ pattern, owners: handles });
-    }
-    break;
-  }
-  return codeownersRules;
-}
-
-function codeownersFor(relPath) {
-  let match = null;
-  for (const rule of loadCodeowners()) {
-    const p = rule.pattern;
-    if (p === '*') { match = rule; continue; }
-    const needle = p.startsWith('/') ? p.slice(1) : p;
-    if (relPath === needle || relPath.startsWith(needle.endsWith('/') ? needle : `${needle}/`)) {
-      match = rule;
-    }
-  }
-  return match ? match.owners : [];
-}
-
-/* A GitHub handle rendered in the same "Name (url)" shape the declared authors
- * use, so the spec page's existing renderer links it without a special case. */
-function handleToAuthor(handle) {
-  const login = handle.replace(/^@/, '');
-  // A team handle (@org/team) has no user profile page; link the org.
-  if (login.includes('/')) {
-    const [org, team] = login.split('/');
-    return `${login} (https://github.com/orgs/${org}/teams/${team})`;
-  }
-  return `${login} (https://github.com/${login})`;
-}
-
 function gitAuthorsFor(dirRel) {
-  try {
-    const out = execSync(`git log --format=%an -- "${dirRel}"`, { cwd: ROOT, encoding: 'utf8' }).trim();
-    if (!out) return [];
-    return [...new Set(out.split('\n').map((s) => s.trim()).filter(Boolean))];
-  } catch {
-    return [];
-  }
+  // Newest first, each once — from the same single pass as the dates.
+  const authors = specHistory().get(gitKey(dirRel))?.authors;
+  // A bot (the withdrawal batch, Dependabot) is not an author.
+  return authors ? [...authors].map((s) => s.trim()).filter((s) => s && !/\[bot\]$/.test(s)) : [];
 }
 
 function deriveAuthors(meta, entry) {
   if (Array.isArray(meta.authors) && meta.authors.length) {
     return { authors: meta.authors, source: 'declared' };
   }
-  const specRel = path.relative(ROOT, entry.specPath).split(path.sep).join('/');
-  const owners = codeownersFor(specRel);
-  if (owners.length) return { authors: owners.map(handleToAuthor), source: 'codeowners' };
   const fromGit = gitAuthorsFor(path.relative(ROOT, entry.dir));
   if (fromGit.length) return { authors: fromGit, source: 'git' };
   // Never empty: TT_STATS iterates authors unconditionally, and a spec with no
@@ -1542,92 +1546,216 @@ function copyDirSync(src, dst) {
   }
 }
 
-function emitTasks(tasks, shared) {
-  const out = path.join(WEBSITE_DIR, 'assets', 'tasks.generated.js');
-  const header = [
-    '/* AUTO-GENERATED by scripts/build-registry.mjs — do not edit by hand.',
-    ' * Source of truth: specs/<slug>/<version>/spec.md',
-    ` * Generated at: ${new Date().toISOString()}`,
-    ' */',
-    'window.TT_TASKS = '
-  ].join('\n');
-  const mid = ';\n\nwindow.TT_SHARED = ';
-  const footer = ';\n\n/* derived counts */\n' + `
-window.TT_STATS = (function () {
-  // Count distinct Trust Tasks (one entry per slug — the latest non-retired
-  // version), not how many versions exist, so coexisting 0.1/0.2 don't inflate.
-  const cmpVer = (a, b) => { const pa = a.split('.').map(Number), pb = b.split('.').map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
-  const bySlug = new Map();
-  for (const t of window.TT_TASKS) {
-    const prev = bySlug.get(t.slug);
-    if (!prev) { bySlug.set(t.slug, t); continue; }
-    const pr = prev.status === 'retired' || prev.status === 'withdrawn', tr = t.status === 'retired' || t.status === 'withdrawn';
-    if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
-    if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
-  }
-  const tasks = [...bySlug.values()];
-  const byStatus = tasks.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
-  const orgs = new Set();
-  tasks.forEach(t => t.authors.forEach(a => orgs.add(a)));
-  const latest = tasks.length ? tasks.reduce((a, b) => (a.updated > b.updated ? a : b)) : null;
-  return {
-    total: tasks.length,
-    byStatus,
-    categories: (window.TT_CATEGORIES || []).length,
-    orgs: orgs.size,
-    latest: latest ? latest.updated : null,
-    latestTitle: latest ? latest.title : null
-  };
-})();
+/* The page's registry index and the per-version detail it fetches (#1145).
+ *
+ * tasks.generated.js used to carry every version's whole record — schema,
+ * error codes, classification rationales — so every visit, including a deep
+ * link to one spec, downloaded ~10 MB to draw a list. It now carries only
+ * what the list views, nav, filters, search, counts and the spec page's
+ * header read (INDEX_FIELDS), and the spec page fetches the rest of one
+ * version's record from /specs/<slug>/<M.N>/detail.json, which emitDetails()
+ * writes beside that version's spec.md and payload.schema.json. Shared schemas
+ * likewise: the index keeps the catalogue (no `schema`) and a reference
+ * count, and /schema/<slug> fetches `detailPath` — the schema and the
+ * specifications that use it.
+ *
+ * A field the page reads without fetching must be in INDEX_FIELDS; the
+ * website test renders every route against this index to catch one that is
+ * not.
+ *
+ * The generated files are written minified and without a build timestamp:
+ * minified to keep them small, and timestamp-free so that an unchanged
+ * registry produces byte-identical output and a nightly deploy hands caches
+ * nothing new to fetch (#1148). */
+const INDEX_FIELDS = [
+  'id', 'slug', 'title', 'summary', 'category', 'keywords', 'status', 'version',
+  'created', 'updated', 'lifecycle',
+];
+const SHARED_INDEX_FIELDS = ['slug', 'schemaId', 'title', 'description', 'kind', 'family', 'sourcePath', 'defs'];
 
-/* reverse index: for each shared schema, which tasks reference it.
- * Carries the same via/method metadata as the forward uses entries so
- * the schema page can show whether each usage is a structural $ref or a
- * frontmatter-declared method extension. */
-window.TT_SHARED_USED_BY = (function () {
-  const idx = {};
-  for (const t of window.TT_TASKS) {
-    for (const u of (t.uses || [])) {
-      const list = idx[u.schemaSlug] = idx[u.schemaSlug] || [];
-      list.push({
+function pickFields(obj, fields) {
+  const out = {};
+  for (const k of fields) if (obj[k] !== undefined) out[k] = obj[k];
+  return out;
+}
+
+/* Where a version's full record is published. The page derives the same path
+ * (specDetailPath in pages.jsx). */
+function taskDetailPath(t) {
+  return `/specs/${t.slug}/${t.version}/detail.json`;
+}
+/* A shared schema's: beside the schema file, `<name>.detail.json` — never
+ * `*.schema.json`, which deploy.yml serves as application/schema+json. */
+function sharedDetailPath(r) {
+  return r.sourcePath.replace(/(\.schema)?\.json$/, '') + '.detail.json';
+}
+
+/* For each shared schema, which tasks reference it — the same via/method
+ * metadata as the forward `uses` entries, so the schema page can show whether
+ * each usage is a structural $ref or a front-matter method extension. Tasks
+ * in the registry's sort order. */
+function sharedUsedBy(tasks) {
+  const idx = new Map();
+  for (const t of tasks) {
+    for (const u of t.uses || []) {
+      if (!idx.has(u.schemaSlug)) idx.set(u.schemaSlug, []);
+      idx.get(u.schemaSlug).push({
         slug: t.slug, version: t.version, title: t.title, status: t.status,
         def: u.def, via: u.via || 'ref', method: u.method || null, requirement: u.requirement || null
       });
     }
   }
   return idx;
-})();
-`;
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(
-    out,
-    header + JSON.stringify(tasks, null, 2)
-      + mid + JSON.stringify(shared, null, 2)
-      + footer
-  );
-  console.log(`  wrote ${path.relative(ROOT, out)}`);
 }
 
+/* The home page's counters. Distinct Trust Tasks (one per slug — the latest
+ * live version, by routes.js `latestPerSlug`, the page's own rule), not how
+ * many versions exist, so coexisting 0.1/0.2 don't inflate. Computed here
+ * because `authors` is not in the index; `categories` is counted on the page,
+ * from data.js. */
+function registryStats(tasks) {
+  const latest = loadSiteRoutes().latestPerSlug(tasks);
+  const byStatus = {};
+  const orgs = new Set();
+  for (const t of latest) {
+    byStatus[t.status] = (byStatus[t.status] || 0) + 1;
+    for (const a of t.authors) orgs.add(a);
+  }
+  const newest = latest.length ? latest.reduce((a, b) => (a.updated > b.updated ? a : b)) : null;
+  return {
+    total: latest.length,
+    byStatus,
+    orgs: orgs.size,
+    latest: newest ? newest.updated : null,
+    latestTitle: newest ? newest.title : null
+  };
+}
+
+function emitTasks(tasks, shared) {
+  const out = path.join(WEBSITE_DIR, 'assets', 'tasks.generated.js');
+  const usedBy = sharedUsedBy(tasks);
+  const index = tasks.map((t) => pickFields(t, INDEX_FIELDS));
+  const sharedIndex = shared.map((r) => ({
+    ...pickFields(r, SHARED_INDEX_FIELDS),
+    usedByCount: (usedBy.get(r.slug) || []).length,
+    detailPath: sharedDetailPath(r)
+  }));
+  const body = [
+    '/* AUTO-GENERATED by scripts/build-registry.mjs — do not edit by hand.',
+    ' * Source of truth: specs/<slug>/<version>/spec.md',
+    ' * The registry index only: the spec and schema pages fetch each entry\'s',
+    ' * full record (/specs/<slug>/<M.N>/detail.json) on demand (#1145).',
+    ' */',
+    'window.TT_TASKS = ' + JSON.stringify(index) + ';',
+    'window.TT_SHARED = ' + JSON.stringify(sharedIndex) + ';',
+    'window.TT_STATS = Object.assign(' + JSON.stringify(registryStats(tasks)) +
+      ', { categories: (window.TT_CATEGORIES || []).length });',
+    ''
+  ].join('\n');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, body);
+  console.log(`  wrote ${path.relative(ROOT, out)} (${(Buffer.byteLength(body) / 1e3).toFixed(0)} KB; the registry index)`);
+}
+
+/* Each version's full record, and each shared schema's schema and users, as
+ * the files the page fetches on demand. Run after syncWebsiteSpecs, which
+ * recreates website/specs/. */
+function emitDetails(tasks, shared) {
+  let bytes = 0;
+  const write = (servedPath, value) => {
+    const body = JSON.stringify(value);
+    bytes += Buffer.byteLength(body);
+    fs.writeFileSync(path.join(WEBSITE_DIR, servedPath), body);
+  };
+  for (const t of tasks) write(taskDetailPath(t), t);
+  const usedBy = sharedUsedBy(tasks);
+  for (const r of shared) write(sharedDetailPath(r), { slug: r.slug, schema: r.schema, usedBy: usedBy.get(r.slug) || [] });
+  console.log(`  wrote ${tasks.length + shared.length} detail.json files under website/specs/ (${(bytes / 1e6).toFixed(1)} MB in all, fetched one at a time)`);
+}
+
+// CloudFront compresses on the fly only objects of at most 10,000,000 bytes.
+// registry.json is stored uncompressed — machine consumers fetch it, and not
+// every client decodes a Content-Encoding it did not ask for — so it relies on
+// that on-the-fly compression. Warn well before it outgrows the limit.
+const CLOUDFRONT_COMPRESS_LIMIT = 10_000_000;
+
 // Plain-JSON registry for non-browser consumers (the VTA policy engine, the
-// browser-extension / mobile consent surfaces). Same task metadata as
-// tasks.generated.js but framed as JSON with a stable per-entry `typeUri`, so a
+// browser-extension / mobile consent surfaces). The same records as the
+// per-version detail.json files, in one document, each with a stable `typeUri`, so a
 // consumer can key on the Type URI and read sideEffects / exposure / subjectPath
 // without evaluating a `window.*` assignment. Served at
 // https://trusttasks.org/registry.json.
+//
+// `updated` is the date of the most recent specification change. It replaced a
+// build timestamp (`generatedAt`), which made every nightly build a new file.
 function emitRegistryJson(tasks) {
   const out = path.join(WEBSITE_DIR, 'registry.json');
   const entries = tasks.map((t) => ({
     typeUri: `https://trusttasks.org/spec/${t.slug}/${t.version}`,
     ...t
   }));
+  const updated = tasks.reduce((a, t) => (t.updated && t.updated > a ? t.updated : a), '');
   const doc = {
     metaSchema: 'https://trusttasks.org/internal/spec-meta/2.0',
-    generatedAt: new Date().toISOString(),
+    updated: updated || null,
     tasks: entries
   };
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, JSON.stringify(doc, null, 2));
-  console.log(`  wrote ${path.relative(ROOT, out)}`);
+  const body = JSON.stringify(doc);
+  fs.writeFileSync(out, body);
+  const bytes = Buffer.byteLength(body);
+  console.log(`  wrote ${path.relative(ROOT, out)} (${(bytes / 1e6).toFixed(1)} MB)`);
+  if (bytes > CLOUDFRONT_COMPRESS_LIMIT * 0.9) {
+    warn(
+      `registry.json is ${bytes} bytes, near or over CloudFront's ${CLOUDFRONT_COMPRESS_LIMIT}-byte limit for ` +
+        `on-the-fly compression; past it the file is served uncompressed (#1145). Slim it, or pre-compress it in deploy.yml.`
+    );
+  }
+}
+
+/* robots.txt and sitemap.xml (#1150). The sitemap names every page a crawler
+ * should index: the static routes, every specification version that is not
+ * withdrawn, and every binding, shared schema and ceremony definition. Both are
+ * root files, so the CloudFront function's ROOT_FILES must list them — or they
+ * are answered with the SPA shell. */
+const SITE_ORIGIN = 'https://trusttasks.org';
+const STATIC_ROUTES = [
+  '/', '/specification', '/registry', '/bindings', '/ceremonies', '/implementations',
+  '/implementations/rust', '/implementations/go', '/implementations/dart', '/schema',
+  '/categories', '/ecosystem', '/about', '/contributing', '/glossary',
+];
+function loadSiteGlobals(file) {
+  const sandbox = { window: { URL } };
+  sandbox.window.window = sandbox.window;
+  sandbox.URL = URL;
+  vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: path.basename(file) });
+  return sandbox.window;
+}
+function emitCrawlerFiles(tasks, shared) {
+  const xmlEscape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const urls = STATIC_ROUTES.map((r) => ({ loc: SITE_ORIGIN + r }));
+  for (const t of tasks) {
+    if (t.status === 'withdrawn') continue;
+    urls.push({ loc: `${SITE_ORIGIN}/spec/${t.slug}/${t.version}`, lastmod: t.updated });
+  }
+  for (const b of loadSiteGlobals(BINDINGS_JS_PATH).TT_BINDINGS || []) {
+    urls.push({ loc: `${SITE_ORIGIN}/binding/${b.slug}/${b.version}` });
+  }
+  for (const r of shared) urls.push({ loc: `${SITE_ORIGIN}/schema/${r.slug}` });
+  for (const c of loadSiteGlobals(path.join(WEBSITE_DIR, 'assets', 'ceremonies.js')).TT_CEREMONIES || []) {
+    urls.push({ loc: `${SITE_ORIGIN}/ceremony/${c.slug}/${c.version}` });
+  }
+  const sitemap =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    urls
+      .map((u) => `  <url><loc>${xmlEscape(u.loc)}</loc>${u.lastmod ? `<lastmod>${xmlEscape(u.lastmod)}</lastmod>` : ''}</url>`)
+      .join('\n') +
+    '\n</urlset>\n';
+  fs.writeFileSync(path.join(WEBSITE_DIR, 'sitemap.xml'), sitemap);
+  fs.writeFileSync(path.join(WEBSITE_DIR, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`);
+  console.log(`  wrote website/sitemap.xml (${urls.length} URLs) and website/robots.txt`);
 }
 
 function syncWebsiteSpecs() {
@@ -2054,6 +2182,274 @@ function checkBindingErrorSpecPin() {
   }
 }
 
+/* ---------- Version lifecycle, for the spec page's banner (#1155) ----------
+ *
+ * The rule the four generators apply (SPEC "Superseded and Withdrawn Versions";
+ * see the lifecycle block in scripts/build-ts-bindings.mjs), implemented again
+ * here rather than imported, as docs/DEVELOPMENT.md asks of every implementation of it:
+ *
+ *   withdrawn  — `status: withdrawn`.
+ *   retired    — `status: retired`; successor is the `supersededBy` pin, the
+ *                latest live version of the slug it names, or the latest live
+ *                version of its own slug.
+ *   superseded — a later version of the same slug is live (neither retired nor
+ *                withdrawn) at an equal or higher maturity
+ *                (draft < candidate < standard); successor is the latest live
+ *                version of the slug.
+ *   current    — none of the above.
+ *
+ * Each task gains `lifecycle: { state, successor }`, successor being
+ * `<slug>/<M.N>` or null. */
+const LIFECYCLE_MATURITY = { draft: 0, candidate: 1, standard: 2 };
+function annotateLifecycle(tasks) {
+  const cmp = (a, b) => {
+    const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+    return (pa[0] - pb[0]) || (pa[1] - pb[1]);
+  };
+  const bySlug = new Map();
+  for (const t of tasks) {
+    if (!bySlug.has(t.slug)) bySlug.set(t.slug, []);
+    bySlug.get(t.slug).push(t);
+  }
+  const isLive = (t) => t.status !== 'retired' && t.status !== 'withdrawn';
+  const latestLive = (slug) => {
+    const live = (bySlug.get(slug) || []).filter(isLive).sort((a, b) => cmp(a.version, b.version));
+    return live.length ? `${slug}/${live[live.length - 1].version}` : null;
+  };
+  const counts = { current: 0, superseded: 0, retired: 0, withdrawn: 0 };
+  for (const t of tasks) {
+    let state = 'current';
+    let successor = null;
+    if (t.status === 'withdrawn') {
+      state = 'withdrawn';
+      successor = latestLive(t.slug);
+    } else if (t.status === 'retired') {
+      state = 'retired';
+      if (typeof t.supersededBy === 'string') {
+        successor = /\/\d+\.\d+$/.test(t.supersededBy) ? t.supersededBy : latestLive(t.supersededBy);
+      } else {
+        successor = latestLive(t.slug);
+      }
+    } else {
+      const rank = LIFECYCLE_MATURITY[t.status] ?? 0;
+      const superseded = bySlug.get(t.slug).some(
+        (w) => isLive(w) && cmp(w.version, t.version) > 0 && (LIFECYCLE_MATURITY[w.status] ?? 0) >= rank
+      );
+      if (superseded) {
+        state = 'superseded';
+        successor = latestLive(t.slug);
+      }
+    }
+    t.lifecycle = { state, successor };
+    counts[state]++;
+  }
+  console.log(
+    `  Lifecycle: ${counts.current} current, ${counts.superseded} superseded, ${counts.retired} retired, ${counts.withdrawn} withdrawn`
+  );
+}
+
+/* ---------- Website links, checked where they are rendered ---------- */
+
+/* assets/routes.js, the same file the page loads, evaluated here so the build
+ * maps prose links exactly as the browser will. */
+function loadSiteRoutes() {
+  return loadSiteGlobals(path.join(WEBSITE_DIR, 'assets', 'routes.js')).ttRoutes;
+}
+
+/* Every markdown link target in a prose file, outside fenced code. */
+function proseLinkTargets(src) {
+  const out = [];
+  let fence = false;
+  for (const line of src.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) { fence = !fence; continue; }
+    if (fence) continue;
+    const noCode = line.replace(/`[^`]*`/g, '');
+    for (const m of noCode.matchAll(/\]\(<?([^)\s>]+)>?(?:\s+"[^"]*")?\)/g)) out.push(m[1]);
+    const ref = /^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)/.exec(noCode);
+    if (ref) out.push(ref[1]);
+  }
+  return out;
+}
+
+/* #1146. A relative link in spec or binding prose is resolved by the page
+ * against the prose file's served path and mapped onto a site route
+ * (routes.js `resolveProseHref`). This runs the same function over every link
+ * in every spec and binding and checks that the result lands somewhere real:
+ * a registered specification, a binding, a shared schema, a published file, or
+ * a file in the repository (for a link that leaves the published trees, which
+ * the page sends to GitHub). Checking on disk alone is what let ≈5,700 links
+ * pass while every one of them rendered as "No Trust Task registered". */
+function checkProseLinksAsRendered(entries, tasks, sharedRecords) {
+  const routes = loadSiteRoutes();
+  const sharedSlugByPath = new Map(sharedRecords.map((r) => [r.sourcePath, r.slug]));
+  const taskKeys = new Set(tasks.map((t) => `${t.slug}/${t.version}`));
+  const sources = entries.map(({ slug, version, specPath }) => ({
+    loc: `${slug}/${version}/spec.md`,
+    file: specPath,
+    prosePath: `/specs/${slug}/${version}/spec.md`,
+  }));
+  if (fs.existsSync(BINDINGS_DIR)) {
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (e.name === 'spec.md') {
+          const rel = path.relative(ROOT, full).split(path.sep).join('/');
+          sources.push({ loc: rel, file: full, prosePath: `/${rel}` });
+        }
+      }
+    };
+    walk(BINDINGS_DIR);
+  }
+  const counts = {};
+  for (const { loc, file, prosePath } of sources) {
+    for (const target of proseLinkTargets(fs.readFileSync(file, 'utf8'))) {
+      const { href, kind } = routes.resolveProseHref(target, prosePath, sharedSlugByPath);
+      counts[kind] = (counts[kind] || 0) + 1;
+      const pathOnly = href.replace(/[?#].*$/, '');
+      let ok = true;
+      if (kind === 'spec') ok = taskKeys.has(pathOnly.slice('/spec/'.length));
+      else if (kind === 'binding') ok = fs.existsSync(path.join(BINDINGS_DIR, pathOnly.slice('/binding/'.length), 'spec.md'));
+      else if (kind === 'asset') {
+        const rel = decodeURIComponent(pathOnly).replace(/^\/assets\//, 'website/assets/').replace(/^\//, '');
+        ok = fs.existsSync(path.join(ROOT, rel));
+      } else if (kind === 'github') {
+        ok = fs.existsSync(path.join(ROOT, decodeURIComponent(pathOnly.slice(routes.REPO_BLOB.length))));
+      }
+      if (!ok) {
+        fail(loc, `link '${target}' renders on the site as '${href}', which names nothing that exists (resolved from ${prosePath})`);
+      }
+    }
+  }
+  const summary = Object.entries(counts).filter(([k]) => k !== 'unchanged').map(([k, n]) => `${n} ${k}`).join(', ');
+  console.log(`  Prose links as rendered: ${summary || 'none'}`);
+}
+
+/* Section number → heading anchor for every numbered heading of SPEC.md, under
+ * the website's slug rule (`injectHeadingIds` in pages.jsx). */
+function specMdHeadingAnchors() {
+  const out = new Map();
+  const seen = new Set();
+  const src = fs.readFileSync(path.join(ROOT, 'SPEC.md'), 'utf8');
+  const slug = (t) =>
+    t.replace(/<[^>]+>/g, '').replace(/&amp;/g, '').toLowerCase()
+      .replace(/[^a-z0-9 \-]+/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  let fence = false;
+  for (const line of src.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) { fence = !fence; continue; }
+    if (fence) continue;
+    const h = /^#{2,6}\s+(.*)$/.exec(line);
+    if (!h) continue;
+    const base = slug(h[1]);
+    let id = base;
+    for (let i = 2; seen.has(id); i++) id = `${base}-${i}`;
+    seen.add(id);
+    const num = /^(\d+(?:\.\d+)*)\.?\s/.exec(h[1]);
+    if (num && !out.has(num[1])) out.set(num[1], id);
+  }
+  return out;
+}
+
+/* #1158. The site's own code links into the framework specification too —
+ * `SPEC_ANCHORS` in components.jsx (what `§N` in site copy links to), raw
+ * `/SPEC.md#…` and `/specification#…` hrefs, and `setRoute` calls carrying a
+ * `hash` onto the specification page. None of them was checked: the anchor
+ * check above reads only spec and binding prose. */
+function checkSiteFrameworkLinks(frameworkAnchors) {
+  const assetsDir = path.join(WEBSITE_DIR, 'assets');
+  const files = fs.readdirSync(assetsDir)
+    .filter((f) => /\.(jsx|js)$/.test(f) && f !== 'tasks.generated.js')
+    .map((f) => path.join(assetsDir, f));
+  files.push(path.join(WEBSITE_DIR, 'index.template.html'));
+  let checked = 0;
+  for (const file of files) {
+    const rel = path.relative(ROOT, file);
+    const src = fs.readFileSync(file, 'utf8');
+    const patterns = [
+      /href=\{?["'`](?:\/SPEC\.md|\/specification)#([A-Za-z0-9_.-]+)/g,
+      /name:\s*"specification",\s*hash:\s*"([^"]+)"/g,
+    ];
+    for (const re of patterns) {
+      for (const m of src.matchAll(re)) {
+        checked++;
+        if (!frameworkAnchors.has(m[1])) fail(rel, `links to the framework specification at #${m[1]}, which names no section of SPEC.md`);
+      }
+    }
+  }
+
+  // SPEC_ANCHORS: every entry must name the heading that section number has
+  // now. An alias anchor would still resolve, but to a section whose number no
+  // longer matches the `§N` the reader clicked.
+  const componentsPath = path.join(assetsDir, 'components.jsx');
+  const block = /const SPEC_ANCHORS = \{([\s\S]*?)\};/.exec(fs.readFileSync(componentsPath, 'utf8'));
+  if (!block) {
+    fail(path.relative(ROOT, componentsPath), 'SPEC_ANCHORS not found — the build validates it against SPEC.md');
+    return;
+  }
+  const headings = specMdHeadingAnchors();
+  let entries = 0;
+  for (const m of block[1].matchAll(/"([\d.]+)":\s*"([^"]+)"/g)) {
+    entries++;
+    const [, section, anchor] = m;
+    const want = headings.get(section);
+    if (!want) {
+      fail(path.relative(ROOT, componentsPath), `SPEC_ANCHORS maps §${section}, which SPEC.md no longer has`);
+    } else if (want !== anchor) {
+      fail(
+        path.relative(ROOT, componentsPath),
+        `SPEC_ANCHORS maps §${section} to '${anchor}', but that section's heading anchor is now '${want}'`
+      );
+    }
+  }
+  console.log(`  Site links into SPEC.md: ${checked} checked, ${entries} SPEC_ANCHORS entr${entries === 1 ? 'y' : 'ies'} validated against its headings`);
+}
+
+/* #1158. bindings.js lists who implements each binding; libraries.js says which
+ * library ships which binding, naming the package. Both are hand-kept, and they
+ * disagreed (tsp/0.1 listed only the Rust crate while the matrix showed
+ * TypeScript and Go shipping it). Every transport a library claims must appear
+ * under some version of that binding as an implementation in the same language
+ * with the same package name; and an in-repo implementation listed under a
+ * binding must be claimed by its library. */
+function checkBindingImplementations() {
+  if (!fs.existsSync(BINDINGS_JS_PATH) || !fs.existsSync(LIBRARIES_JS_PATH)) return;
+  const bindings = (loadSiteGlobals(BINDINGS_JS_PATH).TT_BINDINGS || []).filter(Boolean);
+  const libraries = (loadSiteGlobals(LIBRARIES_JS_PATH).TT_LIBRARIES || []).filter(Boolean);
+  const relB = path.relative(ROOT, BINDINGS_JS_PATH);
+  const relL = path.relative(ROOT, LIBRARIES_JS_PATH);
+  for (const lib of libraries) {
+    for (const [capId, impl] of Object.entries(lib.transports || {})) {
+      if (!capId.startsWith('binding:') || !impl) continue;
+      const slug = capId.slice('binding:'.length);
+      const listed = bindings.some(
+        (b) => b.slug === slug && (b.implementations || []).some((i) => i.language === lib.language && i.name === impl.package)
+      );
+      if (!listed) {
+        fail(
+          relB,
+          `${relL} says ${lib.language} ships the '${slug}' binding as ${impl.package}, but no ${slug} entry ` +
+            `lists it under \`implementations\` — add { name: "${impl.package}", href, language: "${lib.language}" } to the version it implements`
+        );
+      }
+    }
+  }
+  const repoTree = 'https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/';
+  for (const b of bindings) {
+    for (const i of b.implementations || []) {
+      if (typeof i.href !== 'string' || !i.href.startsWith(repoTree)) continue;
+      const lib = libraries.find((l) => l.language === i.language);
+      const impl = lib && (lib.transports || {})[`binding:${b.slug}`];
+      if (!impl || impl.package !== i.name) {
+        fail(
+          relL,
+          `${relB} lists ${i.name} (${i.language}) as an implementation of ${b.id}, but the ${i.language} library ` +
+            `does not claim binding:${b.slug} with that package under \`transports\``
+        );
+      }
+    }
+  }
+}
+
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
 
@@ -2118,7 +2514,24 @@ function main() {
       fail(`${rel}/spec.md`, `front matter version '${meta.version}' does not match folder '${version}'`);
     }
     if (!validate(meta)) {
+      // A slug in the reserved namespace that is not on the allowlist fails the
+      // `anyOf` as "/slug must NOT be valid" and "must be equal to one of the
+      // allowed values" — the schema's least helpful phrasing, pointing at the
+      // spec rather than at the list to edit. Say what it means instead
+      // (scripts/new-spec.mjs words it the same way).
+      const reserved = typeof meta.slug === 'string' && /^trust-(task|ceremony)($|-|\/)/.test(meta.slug);
+      const isReservedSlugError = (err) => reserved && err.instancePath === '/slug' && ['not', 'enum', 'anyOf'].includes(err.keyword);
+      if (reserved && (validate.errors || []).some(isReservedSlugError)) {
+        fail(
+          `${rel}/spec.md`,
+          `/slug '${meta.slug}' is in the framework-reserved namespace (SPEC §6.1 reserves every slug matching ` +
+            `^trust-(task|ceremony)($|-|/)) and is not on the allowlist. A framework slug must be documented in ` +
+            `SPEC §6.1 (the canonical framework repository) AND added to specs/spec.meta.schema.json ` +
+            `#/properties/slug/anyOf[1]/enum; any other specification needs a different slug.`
+        );
+      }
       for (const err of validate.errors || []) {
+        if (isReservedSlugError(err)) continue;
         fail(`${rel}/spec.md`, `${err.instancePath || '/'} ${err.message}`);
       }
       continue;
@@ -2226,9 +2639,26 @@ function main() {
     warn,
     log: console.log,
   });
+  // #1132: the description ratchet, and the current framework version.
+  checkMemberDescriptions({ specsDir: SPECS_DIR, fail, warn, log: console.log });
+  checkCurrentFramework({ root: ROOT, fail, log: console.log });
   checkStaleReferences({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'stale-references-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkSpecExamples({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'spec-examples-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkSchemaBounds({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'schema-bounds-allowlist.json'),
     fail,
     warn,
     log: console.log,
@@ -2357,8 +2787,12 @@ function main() {
   // Relative markdown links in spec prose must resolve on disk.
   //
   // They resolve from the VERSION directory (`specs/<slug>/<version>/`),
-  // because that is where spec.md lives and where it is served from — the
-  // sync below copies `specs/` verbatim to `website/specs/<slug>/<version>/`.
+  // because that is where spec.md lives — on disk, on GitHub, and on the site,
+  // where the page resolves each link against the prose file's served path
+  // (`/specs/<slug>/<version>/spec.md`) and maps it onto a route
+  // (`resolveProseHref` in website/assets/routes.js). That mapping is checked
+  // separately, by checkProseLinksAsRendered; this check gives the better
+  // message for the commonest mistake.
   // The recurring mistake is writing them as though they resolved from the
   // SLUG directory, one level shallower: from `auth/passkey/enroll/start/0.1`,
   // `../finish/0.1/spec.md` points at `.../start/finish/0.1/`, not at the
@@ -2427,6 +2861,13 @@ function main() {
   }
 
   console.log(`  Framework links: ${frameworkLinks} link(s) into SPEC.md checked against ${frameworkAnchors.size} anchor(s)`);
+  checkProseLinksAsRendered(entries, tasks, sharedRecords);
+  checkSiteFrameworkLinks(frameworkAnchors);
+  // The page code compiles (#1147) — checked in --validate-only too, so a
+  // syntax error in a .jsx file fails `npm run validate`, not just the build.
+  try { compileApp(); } catch (e) { fail('website/assets', e.message); }
+  checkBindingImplementations();
+  annotateLifecycle(tasks);
 
   if (errors.length) {
     console.error('\nBuild failed with the following problems:');
@@ -2445,10 +2886,13 @@ function main() {
   sharedRecords.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
   emitTasks(tasks, sharedRecords);
   emitRegistryJson(tasks);
+  emitCrawlerFiles(tasks, sharedRecords);
   syncWebsiteSpecs();
+  emitDetails(tasks, sharedRecords);
   syncWebsiteBindings();
   syncWebsiteCeremonies();
   syncWebsiteFrameworkSpec();
+  buildWebsite();
   console.log('Done.');
 }
 

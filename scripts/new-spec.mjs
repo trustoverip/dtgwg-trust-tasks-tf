@@ -230,8 +230,12 @@ function main() {
   console.log('load-bearing prose only you can write. Start with ## Abstract and the four');
   console.log('## Security & Privacy sub-headings; the build lints for those by name.');
   console.log('');
-  console.log('When the schema is final: regenerate the bindings and bump both libraries');
-  console.log('in the same PR (see CONTRIBUTING-SPECS.md → "Regenerate the bindings").');
+  console.log('When the schema is final, in the same PR:');
+  console.log('  npm run regen   regenerate all four libraries (Rust, TS, Go, Dart) and cargo fmt');
+  console.log('  npm run check   validate, plus the node-only checks CI gates a spec PR on');
+  console.log('Do not bump a version or write a CHANGELOG entry — the Release PR does both;');
+  console.log('title the PR `feat(<family>):` for a new family, `spec(<family>):` for an edit');
+  console.log('(see CONTRIBUTING-SPECS.md → "Regenerate the bindings" and RELEASING.md).');
 }
 
 /* ── Templates ───────────────────────────────────────────────────────────── */
@@ -372,10 +376,10 @@ status: draft
 targetFrameworkVersion: "${ctx.targetFrameworkVersion}"
 category: ${category}
 # keywords and authors are OPTIONAL, and omitted here on purpose: the build derives
-# keywords from the slug segments + category, and authors from CODEOWNERS (falling
-# back to this folder's git history). Declare them only where the derivation would
-# be wrong \u2014 a term a searcher would use that appears nowhere in the slug, or an
-# editor who is not this slug's CODEOWNER.
+# keywords from the slug segments + category, and authors from this folder's git
+# history. Declare them only where the derivation would be wrong \u2014 a term a
+# searcher would use that appears nowhere in the slug, or an editor who is not the
+# folder's committer.
 #   keywords: [${[...new Set(slug.split('/').flatMap((x) => x.split('-')))].join(', ')}, a-term-a-searcher-would-use]
 #   authors:
 #     - Your Name (https://github.com/your-handle)

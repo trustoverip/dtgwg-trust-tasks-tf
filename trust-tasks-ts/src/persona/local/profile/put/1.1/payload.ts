@@ -96,8 +96,13 @@ export type Response = PersonaLocalProfilePutResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/local/profile/put/1.1",
   "title": "Persona Local Profile Put — payload",
@@ -170,54 +175,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Local Profile Put — response payload",
-      "description": "Success response to persona/local/profile/put. Type https://trusttasks.org/spec/persona/local/profile/put/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "version",
-        "wasCreated"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "wasCreated": {
-          "type": "boolean"
-        },
-        "correlation": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "severity"
-          ],
-          "description": "A correlation assessment of what was just written, and it is **conditional**: a maintainer MUST include it only for a caller authorized to read across the holder's contexts, and MUST omit it entirely otherwise. Local profiles ARE correlation-indexed, and the naive implementation that skips them loses the guard exactly where a human most needs it: a throwaway identity is precisely where somebody reuses a real value. But the index is answerable only to the holder, and returning its answer to a context-scoped caller hands that caller a yes/no oracle on any value it cares to guess — one guess per write, against the whole pool. No value leaves either way; a confirmed guess at a low-entropy value (a name, an address, a date of birth) is disclosure all the same.",
-          "properties": {
-            "severity": {
-              "type": "string",
-              "enum": [
-                "none",
-                "low",
-                "high"
-              ]
-            },
-            "matchesPoolValue": {
-              "type": "boolean",
-              "description": "True when a value here also appears in the holder's pool — the signal that a throwaway is not throwaway. Present only under the condition on `correlation` itself: this member is the oracle, and a maintainer that omits `correlation` for a context-scoped caller has omitted this."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -227,12 +184,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Ulid": {
       "title": "Ulid",
@@ -273,10 +224,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -349,41 +300,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "Slot": {
-      "title": "Slot",
-      "type": "string",
-      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
-      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
-    },
-    "ValueType": {
-      "title": "ValueType",
-      "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-      "type": "string",
-      "enum": [
-        "string",
-        "number",
-        "boolean",
-        "date",
-        "object"
-      ]
-    },
-    "ClaimType": {
-      "title": "ClaimType",
-      "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

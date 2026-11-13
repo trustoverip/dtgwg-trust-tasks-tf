@@ -14,23 +14,28 @@ mod acl {
     mod change_role {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod grant {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod list {
         mod v0_1;
         mod v0_2;
         mod v0_3;
+        mod v0_4;
     }
     mod revoke {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod show {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod swap_key {
         mod v0_1;
@@ -38,6 +43,7 @@ mod acl {
     mod update {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
 }
 #[cfg(feature = "audit")]
@@ -968,11 +974,57 @@ mod messaging {
         mod event {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod subscribe {
             mod v0_1;
+            mod v0_2;
         }
         mod unsubscribe {
+            mod v0_1;
+        }
+    }
+    mod mux {
+        mod ack {
+            mod v0_1;
+        }
+        mod admin_list {
+            mod v0_1;
+        }
+        mod admin_revoke {
+            mod v0_1;
+        }
+        mod admin_revoke_all {
+            mod v0_1;
+        }
+        mod attach {
+            mod v0_1;
+        }
+        mod connections {
+            mod v0_1;
+        }
+        mod detach {
+            mod v0_1;
+        }
+        mod event {
+            mod v0_1;
+        }
+        mod grant {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notice {
+            mod v0_1;
+        }
+        mod revoke {
+            mod v0_1;
+        }
+        mod revoke_all {
+            mod v0_1;
+        }
+        mod update {
             mod v0_1;
         }
     }
@@ -1216,6 +1268,7 @@ mod rooms {
     mod create {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod epoch {
         mod chain {
@@ -1237,6 +1290,7 @@ mod rooms {
         mod v0_1;
         mod v0_2;
         mod v0_3;
+        mod v0_4;
     }
     mod keys {
         mod act {
@@ -1262,6 +1316,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod chain {
             mod v0_1;
@@ -1273,6 +1328,7 @@ mod rooms {
         mod file_key {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod key_package {
             mod v0_2;
@@ -1283,6 +1339,7 @@ mod rooms {
         mod list {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod profile {
             mod read {
@@ -1295,6 +1352,15 @@ mod rooms {
         mod read {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
+        }
+        mod read_marker {
+            mod moved {
+                mod v0_1;
+            }
+            mod set {
+                mod v0_1;
+            }
         }
         mod seal {
             mod v0_1;
@@ -1303,6 +1369,7 @@ mod rooms {
         }
         mod watch {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod owner {
@@ -1335,6 +1402,7 @@ mod rooms {
         mod issue_authority {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod issue_membership {
             mod v0_1;
@@ -1342,6 +1410,7 @@ mod rooms {
         mod register {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod revoke {
             mod v0_1;
@@ -1351,6 +1420,7 @@ mod rooms {
         mod get {
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod list {
             mod v0_2;
@@ -1358,6 +1428,7 @@ mod rooms {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod prune {
             mod v0_1;
@@ -1368,6 +1439,7 @@ mod rooms {
             mod v0_3;
             mod v0_4;
             mod v0_5;
+            mod v0_6;
         }
         mod retention {
             mod set {
@@ -1383,11 +1455,17 @@ mod rooms {
             mod v0_1;
         }
     }
+    mod signal_delay {
+        mod set {
+            mod v0_1;
+        }
+    }
     mod usage {
         mod v0_1;
     }
     mod watch {
         mod v0_1;
+        mod v0_2;
     }
 }
 #[cfg(feature = "sync")]
@@ -1783,6 +1861,7 @@ mod vta {
     mod dids {
         mod create {
             mod v1_0;
+            mod v1_1;
         }
         mod keys {
             mod add {
@@ -1803,8 +1882,12 @@ mod vta {
         }
         mod recover {
             mod v1_0;
+            mod v1_1;
         }
         mod update {
+            mod v1_0;
+        }
+        mod upgrade {
             mod v1_0;
         }
     }
@@ -1821,12 +1904,22 @@ mod vta {
     mod memory {
         mod delete {
             mod v0_1;
+            mod v0_2;
+            mod v0_3;
+        }
+        mod get {
+            mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
+            mod v0_3;
         }
         mod put {
             mod v0_1;
+            mod v0_2;
+            mod v0_3;
         }
     }
     mod metrics {
@@ -2035,6 +2128,29 @@ mod vta {
             mod v1_0;
             mod v1_1;
             mod v1_2;
+        }
+    }
+    mod webs {
+        mod dids {
+            mod create {
+                mod v0_1;
+                mod v0_2;
+            }
+            mod delete {
+                mod v0_1;
+            }
+            mod get {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod rotate_keys {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
         }
     }
     mod webvh {

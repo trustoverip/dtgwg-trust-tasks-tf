@@ -26,6 +26,8 @@ package trusttasks
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -52,8 +54,15 @@ func (p Proof) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON collects members this struct does not name into [Proof.Extra].
+//
+// A member whose name differs from a declared one only by case is refused (see
+// [CheckMemberNames]): encoding/json would read it as the declared member, where
+// a proof verifier reads the exact-case one.
 func (p *Proof) UnmarshalJSON(data []byte) error {
 	type plain Proof
+	if err := checkMemberNames(data, reflect.TypeOf(plain{})); err != nil {
+		return err
+	}
 	var base plain
 	if err := json.Unmarshal(data, &base); err != nil {
 		return err
@@ -220,8 +229,17 @@ func (d Document[P]) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON collects unrecognized top-level members into [Document.Extra].
+//
+// A member whose name differs from one the envelope, or the payload type P,
+// declares only by case is refused (see [CheckMemberNames]). encoding/json would
+// read `"Issuer"` as Issuer, while a proof verifier, a schema validator and the
+// other runtimes read the exact-case `"issuer"`; refusing it keeps the decoded
+// document the one those checks saw.
 func (d *Document[P]) UnmarshalJSON(data []byte) error {
 	type plain Document[P]
+	if err := checkMemberNames(data, reflect.TypeOf(plain{})); err != nil {
+		return err
+	}
 	var base plain
 	if err := json.Unmarshal(data, &base); err != nil {
 		return err
@@ -349,6 +367,20 @@ type SpecPolicy struct {
 	// carried so a consumer has something to validate against. Empty only for a
 	// hand-written policy that omits it.
 	PayloadSchema string
+
+	// MaxDocumentBytes is the specification's front-matter maxDocumentBytes for
+	// this variant, in bytes of the serialized document as received (the JSON
+	// text, proof included, no transport envelope), or 0 when it declares none.
+	//
+	// Two-sided (SPEC §12.4, as CONTRIBUTING-SPECS.md states it): a consumer
+	// serving the task MUST NOT refuse a document within it on grounds of size
+	// alone, and SHOULD refuse a larger one with malformedRequest —
+	// [ConsumeInbound] does, when it is given the bytes as
+	// [ConsumeOptions.Received]. Zero declares nothing: the receiving party's own
+	// transport limit applies. The two variants are independent: a response
+	// never inherits the request's bound. The counterpart of Rust's
+	// Payload::MAX_DOCUMENT_BYTES.
+	MaxDocumentBytes int
 }
 
 // RejectReason records why a consumer rejected a document, and the §8.3 code it
@@ -367,22 +399,24 @@ type RejectReason struct {
 // side. Build error responses with [RejectWith] / [RejectWithRecipient], or read
 // the URI from here; do not spell it out again.
 //
-// The Rust counterpart is trust_task_error_type_uri() in trust-tasks-rs and the
-// TypeScript one is TRUST_TASK_ERROR_TYPE_URI in @openvtc/trust-tasks, both kept
-// equal to this value. scripts/check-bindings-conformance.mjs enforces it.
+// The Rust, TypeScript and Dart counterparts are TRUST_TASK_ERROR_TYPE_URI in
+// trust-tasks-rs and @openvtc/trust-tasks and trustTaskErrorTypeUri in
+// trust_tasks, all kept equal to this value; scripts/check-bindings-conformance.mjs
+// enforces it.
 //
-// 0.5 because this runtime populates the inResponseTo member of §8.2 and can
-// emit idConflict (§8.3), which is absent from 0.3's code enum and does not match
-// its extended-code pattern — a document carrying it would not validate as 0.3.
-// Per §5.2 forward-minor compatibility a 0.3 consumer SHOULD accept it.
+// The version is the one whose schema covers what this runtime writes: the
+// inResponseTo member of §8.2 and every standard code it can emit. Per §5.2
+// forward-minor compatibility a consumer of an earlier 0.x SHOULD accept it.
+// Moving it is a change to this constant alone; do not restate the number in
+// prose.
 const TrustTaskErrorTypeURI = "https://trusttasks.org/spec/trust-task-error/0.6"
 
 // ValidateBasic applies SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
 //
-// This is not the full §7.2 check. Items 1–3 (framework schema, payload schema,
-// unknown type) belong to the caller's parse and dispatch; items 5b, 7 and 8 need
-// the specification's policy and live in [EnforceSpecPolicy]. [ConsumeInbound]
-// bundles 4–8.
+// This is not the full §7.2 check. Item 1 (framework schema) belongs to the
+// caller's parse; items 5b, 7 and 8 need the specification's policy and live in
+// [EnforceSpecPolicy]; item 13 is [ValidateFreshness]. [ConsumeInbound] bundles
+// items 2–8, 11 and 13.
 //
 // Returns nil when the document passes.
 func ValidateBasic[P any](doc *Document[P], now time.Time, myVID string) *RejectReason {
@@ -600,8 +634,26 @@ func bareTypeURI(typeURI string) string {
 
 // parseTimestamp reads an RFC 3339 timestamp, accepting the fractional-second
 // form every producer in this ecosystem emits.
+//
+// Every field must be in range: month 1-12, a day the month has, hour 0-23,
+// minute and second 0-59 (no leap second), and an offset of at most 23:59.
+// time.Parse refuses all of these but the offset, where it accepts +24:00 and
+// +23:60, so the offset is checked here. The Rust, TypeScript and Dart
+// runtimes apply the same ranges, and fixtures/consume/timestamps.json holds
+// the shared cases.
 func parseTimestamp(s string) (time.Time, error) {
-	return time.Parse(time.RFC3339, s)
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if n := len(s); n >= 6 && (s[n-6] == '+' || s[n-6] == '-') && s[n-3] == ':' {
+		hours := int(s[n-5]-'0')*10 + int(s[n-4]-'0')
+		minutes := int(s[n-2]-'0')*10 + int(s[n-1]-'0')
+		if hours > 23 || minutes > 59 {
+			return time.Time{}, fmt.Errorf("parsing time %q: time zone offset out of range", s)
+		}
+	}
+	return t, nil
 }
 
 func strPtr(s string) *string { return &s }

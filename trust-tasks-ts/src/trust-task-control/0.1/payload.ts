@@ -125,8 +125,13 @@ export type Response = TrustTaskControlResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/trust-task-control/0.1",
   "title": "Trust Task Control — payload",
@@ -176,94 +181,11 @@ export const PAYLOAD_SCHEMA = {
       "type": "object",
       "description": "Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls."
     }
-  },
-  "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Trust Task Control — response payload",
-      "description": "What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §11.4 declines to require rollback.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "operation",
-        "target",
-        "outcome"
-      ],
-      "properties": {
-        "operation": {
-          "enum": [
-            "cancel",
-            "suspend",
-            "resume"
-          ],
-          "description": "Echoed from the request, so the response is self-describing when retained apart from it."
-        },
-        "target": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "id"
-          ],
-          "description": "Echoed from the request.",
-          "properties": {
-            "id": {
-              "type": "string",
-              "minLength": 1
-            },
-            "typeUri": {
-              "type": "string",
-              "format": "uri",
-              "minLength": 1
-            }
-          }
-        },
-        "outcome": {
-          "enum": [
-            "applied",
-            "appliedWithEffects",
-            "alreadyCompleted",
-            "unknownTask"
-          ],
-          "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this."
-        },
-        "effects": {
-          "type": "array",
-          "description": "What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "description"
-            ],
-            "properties": {
-              "description": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1024,
-                "description": "Human-readable statement of the effect that occurred."
-              },
-              "ref": {
-                "type": "string",
-                "description": "An identifier for the effect where one exists — a credential id, a record identifier, a transaction reference — so a compensating task can name it."
-              },
-              "reversible": {
-                "type": "boolean",
-                "description": "Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`."
-              }
-            }
-          }
-        },
-        "ext": {
-          "type": "object",
-          "description": "Vendor-namespaced extension data per SPEC.md §4.5.1."
-        }
-      }
-    }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -349,7 +271,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

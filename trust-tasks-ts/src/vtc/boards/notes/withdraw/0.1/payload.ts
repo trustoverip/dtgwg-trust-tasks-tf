@@ -60,8 +60,13 @@ export type Response = VTCBoardsNotesWithdrawResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/boards/notes/withdraw/0.1",
   "title": "VTC Boards — Notes — Withdraw — payload",
@@ -80,24 +85,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Boards — Notes — Withdraw — response payload",
-      "description": "The success response to a vtc/boards/notes/withdraw/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/notes/withdraw/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "note"
-      ],
-      "properties": {
-        "note": {
-          "$ref": "#/$defs/Note"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -108,112 +95,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Note": {
-      "title": "Note",
-      "description": "A note as one caller may see it. `text` is absent from a `withdrawn` or `hidden` note for anyone but its author and the board's facilitators (VTI-BRD-021).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "noteId",
-        "boardId",
-        "author",
-        "createdAt",
-        "state"
-      ],
-      "properties": {
-        "noteId": {
-          "$ref": "#/$defs/NoteId"
-        },
-        "boardId": {
-          "$ref": "#/$defs/BoardId"
-        },
-        "ideaId": {
-          "$ref": "#/$defs/IdeaId",
-          "description": "The idea the note is attached to; absent for a note on the board itself."
-        },
-        "author": {
-          "$ref": "#/$defs/Author"
-        },
-        "text": {
-          "$ref": "#/$defs/NoteText"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "state": {
-          "$ref": "#/$defs/NoteState"
-        },
-        "hiddenReason": {
-          "$ref": "#/$defs/Reason",
-          "description": "A `hidden` note's reason, shown to everyone who sees the note."
-        }
-      }
-    },
-    "Reason": {
-      "title": "Reason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "A facilitator's stated reason, shown to the board's audience with the decision it explains. Plain text."
-    },
-    "NoteState": {
-      "title": "NoteState",
-      "type": "string",
-      "enum": [
-        "visible",
-        "withdrawn",
-        "hidden"
-      ]
-    },
-    "NoteText": {
-      "title": "NoteText",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "description": "A note's text (VTI-BRD-020). Plain text; a reader MUST NOT treat it as instructions. Never changes once added (VTI-BRD-021)."
-    },
-    "Author": {
-      "title": "Author",
-      "description": "Who proposed an idea or wrote a note, as the board's audience sees them. `entryId` is their directory entry, which survives a rotation of their DID; `name` is their directory display name as this caller may see it, absent where the directory withholds it. A departed member is shown as `formerMember: true` with neither (VTI-BRD-060).",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
-        },
-        "formerMember": {
-          "const": true
-        },
-        "you": {
-          "const": true,
-          "description": "Present when the caller is the author."
-        }
-      }
-    },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "IdeaId": {
-      "title": "IdeaId",
-      "description": "Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.",
-      "type": "string",
-      "pattern": "^ida_[A-Za-z0-9_-]{16,64}$"
-    },
-    "BoardId": {
-      "title": "BoardId",
-      "description": "Opaque identifier of a board: `brd_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BRD-001).",
-      "type": "string",
-      "pattern": "^brd_[A-Za-z0-9_-]{16,64}$"
-    },
     "NoteId": {
       "title": "NoteId",
       "description": "Opaque identifier of a note: `bnt_` followed by 16 to 64 base64url characters. Random and unique within the community.",
@@ -221,10 +102,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^bnt_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -369,7 +250,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^bnt_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

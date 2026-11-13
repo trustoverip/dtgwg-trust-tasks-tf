@@ -81,8 +81,8 @@
 //! departure from that MUST, available to a deployment that knows all its peers
 //! have migrated:
 //!
-//! ```toml
-//! trust-tasks-didcomm-v1 = { version = "0.10", default-features = false }
+//! ```sh
+//! cargo add trust-tasks-didcomm-v1 --no-default-features
 //! ```
 //!
 //! With the feature on, every message that arrives on the legacy carriage is

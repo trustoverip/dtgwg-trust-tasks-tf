@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:ssi/ssi.dart' as ssi;
 
+import 'data_integrity_verifier.dart' show proofPurposeError, signingPurposes;
+
 /// Why [signTrustTask] refused to sign.
 enum SignFailureKind {
   /// The document has no in-band `issuer`. The verifier binds every proof to
@@ -38,10 +40,17 @@ final class SignException implements Exception {
 ///
 /// - The proof covers the document minus its `proof` member. **An existing
 ///   `proof` is replaced**, never nested or signed over.
+/// - A document carrying `@context` gets a proof carrying the same
+///   `@context`, as the cryptosuites' Create Proof algorithm requires
+///   (eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2).
 /// - The document's `issuer` must equal the DID of [signer]'s verification
 ///   method, exactly. That is the binding the verifier enforces, so a document
 ///   that could not verify is refused here with a [SignException] rather than
 ///   at the consumer.
+/// - [proofPurpose] defaults to `authentication`: a Trust Task proof shows the
+///   issuer controls its identifier (SPEC §4.7.3). `assertionMethod` is for a
+///   proof a specification defines as an attestation. A purpose outside
+///   [signingPurposes] is an [ArgumentError].
 /// - [cryptosuite] defaults from the key: `eddsa-jcs-2022` for Ed25519,
 ///   `ecdsa-jcs-2019` for P-256 and P-384.
 /// - `created` is emitted in UTC with a trailing `Z`, as VC Data Integrity
@@ -55,9 +64,14 @@ Future<Map<String, dynamic>> signTrustTask(
   Map<String, dynamic> doc,
   ssi.DidSigner signer, {
   String? cryptosuite,
-  String proofPurpose = 'assertionMethod',
+  String proofPurpose = 'authentication',
   DateTime? created,
 }) async {
+  final purposeError = proofPurposeError(proofPurpose);
+  if (purposeError != null) {
+    throw ArgumentError.value(proofPurpose, 'proofPurpose', purposeError);
+  }
+
   final unsigned = Map<String, dynamic>.of(doc)..remove('proof');
 
   final issuer = unsigned['issuer'];
@@ -86,6 +100,14 @@ Future<Map<String, dynamic>> signTrustTask(
     'verificationMethod': verificationMethod,
     'proofPurpose': proofPurpose,
   };
+  // eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+  // unsecuredDocument.@context is present, set proof.@context to
+  // unsecuredDocument.@context." The proof configuration is hashed with it and
+  // the emitted proof carries it. A document without `@context` (the usual
+  // Trust Task) gets exactly the proof it got before.
+  if (unsigned.containsKey('@context')) {
+    config['@context'] = jsonDecode(jsonEncode(unsigned['@context']));
+  }
 
   // eddsa-jcs-2022 §3.3.4 and ecdsa-jcs-2019 §3.3.4: hash the canonical proof
   // configuration and the canonical document separately, and sign the two

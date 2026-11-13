@@ -158,8 +158,13 @@ export type Response = GitNamespacesBridgeJobResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/bridge/job/0.2",
   "title": "Git Namespaces — Bridge Job — payload",
@@ -309,56 +314,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Bridge Job — response payload",
-      "description": "Whether the bridge took the job.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jobId",
-        "accepted"
-      ],
-      "properties": {
-        "jobId": {
-          "$ref": "#/$defs/JobId"
-        },
-        "accepted": {
-          "type": "boolean",
-          "description": "`true` — the job is durably queued, or was already queued or running under this `jobId`; a git-ns/bridge/result follows. `false` — the bridge already finished this `jobId`; it does not run it again, and sends its git-ns/bridge/result again."
-        },
-        "next": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "url",
-            "expiresAt"
-          ],
-          "description": "For `beginBind` and `beginAccountLink` when `accepted` is `true`: where the VTC sends the person.",
-          "properties": {
-            "url": {
-              "type": "string",
-              "format": "uri",
-              "maxLength": 2048,
-              "pattern": "^https://"
-            },
-            "userCode": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "description": "The device-flow code, for a forge that uses one."
-            },
-            "expiresAt": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -460,10 +415,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -473,69 +428,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 128,
       "description": "The VTC's identifier for a job, unique across the VTC's jobs."
     },
-    "StepName": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z][A-Za-z0-9]*$",
-      "description": "One step of a forge adapter's plan. Forge-neutral names: `create`, `workflow`, `keyring`, `variables`, `requiredCheck`, `roles`, `archive`. An adapter MAY add its own (`mergeStyle`, `runner`), which a VTC displays but need not understand."
-    },
-    "DesiredRole": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "account",
-        "right"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did"
-        },
-        "account": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "The subject's linked account on this namespace's forge."
-        },
-        "right": {
-          "$ref": "#/$defs/Right",
-          "description": "The subject's highest effective right on the target, which the forge adapter maps to one of its roles."
-        }
-      }
-    },
-    "RepoSpec": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "visibility"
-      ],
-      "properties": {
-        "visibility": {
-          "$ref": "#/$defs/RepoVisibility"
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 350
-        }
-      }
-    },
-    "BindTarget": {
-      "title": "BindTarget",
-      "description": "The forge owner whose control the binding admin is to prove.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "owner"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "owner": {
-          "$ref": "#/$defs/Segment"
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Git Namespaces — Bridge Job — response payload",
@@ -595,99 +487,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Segment": {
-      "title": "Segment",
-      "description": "One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100,
-      "pattern": "^[a-z0-9_-][a-z0-9._-]*$"
-    },
-    "ForgeHost": {
-      "title": "ForgeHost",
-      "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 253,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-    },
-    "RepoVisibility": {
-      "title": "RepoVisibility",
-      "type": "string",
-      "enum": [
-        "public",
-        "private"
-      ],
-      "description": "Repository visibility on the forge."
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
-    },
-    "ForgeAccount": {
-      "title": "ForgeAccount",
-      "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "id",
-        "login"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "id": {
-          "$ref": "#/$defs/ForgeId"
-        },
-        "login": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "The account's current login, as the forge reported it when last seen. Display only."
-        }
-      }
-    },
-    "ForgeId": {
-      "title": "ForgeId",
-      "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
-    },
-    "Did": {
-      "title": "Did",
-      "description": "A DID, compared by exact string equality.",
-      "type": "string",
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:\\S+$"
-    },
-    "RepoResource": {
-      "title": "RepoResource",
-      "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.",
-      "type": "string",
-      "maxLength": 455,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
-    },
-    "NamespaceId": {
-      "title": "NamespaceId",
-      "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

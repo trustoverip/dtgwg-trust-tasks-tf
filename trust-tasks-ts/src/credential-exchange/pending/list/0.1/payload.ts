@@ -59,8 +59,13 @@ export type Response = CredentialExchangePendingListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/credential-exchange/pending/list/0.1",
   "title": "Credential Exchange Pending List — payload",
@@ -73,27 +78,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Credential Exchange Pending List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "pending"
-      ],
-      "properties": {
-        "pending": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DeferredPresentation"
-          },
-          "description": "The actionable deferrals. A consumer MUST omit records that are already terminal or past their `expiresAt` — they cannot be approved, so listing them would offer the approver a decision that is guaranteed to fail. An empty array means nothing is awaiting a decision."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -103,94 +87,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "DeferredPresentation": {
-      "$anchor": "deferredPresentation",
-      "title": "DeferredPresentation",
-      "description": "One presentation request awaiting the holder's decision, as the approver sees it.\n\nThis is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer \"should I disclose this\": who is asking, why, and precisely which claims of which held credentials would leave the wallet.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "verifierDid",
-        "requested",
-        "purpose",
-        "createdAt",
-        "expiresAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Approval handle for this deferral — the value `pending/approve` and `pending/deny` act on."
-        },
-        "verifierDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The verifier that asked. An approved presentation binds to this audience, so approving is a decision about *this* party and not a standing permission."
-        },
-        "requested": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RequestedCredential"
-          },
-          "description": "Every held credential the query would disclose, resolved against what the holder actually holds. This is the authorization surface: the approver is consenting to these claims leaving the wallet, not to the query in the abstract."
-        },
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "description": "The verifier's stated reason, carried through from the query. Purpose binding: an approver decides against a stated why, never a bare request."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the deferral was recorded."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check."
-        }
-      }
-    },
-    "RequestedCredential": {
-      "$anchor": "requestedCredential",
-      "title": "RequestedCredential",
-      "description": "One held credential a deferred query asked for, and the claims of it that would be disclosed.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialQueryId",
-        "credentialId",
-        "claims"
-      ],
-      "properties": {
-        "credentialQueryId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DCQL `credential_query_id` this held credential satisfied."
-        },
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The held credential that would satisfy it."
-        },
-        "claims": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "The claims the query asks to disclose from this credential. An empty array means the query matched the credential without naming claims — a consumer SHOULD treat that as a request for the whole credential and present it to the approver as such."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -308,7 +210,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

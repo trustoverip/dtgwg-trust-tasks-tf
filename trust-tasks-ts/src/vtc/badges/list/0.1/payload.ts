@@ -104,8 +104,13 @@ export type Response = VTCBadgesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/badges/list/0.1",
   "title": "VTC Badges — List — payload",
@@ -146,64 +151,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "MyState": {
-      "title": "MyState",
-      "description": "Where the caller stands with a badge. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.",
-      "type": "string",
-      "enum": [
-        "holder",
-        "offered",
-        "requested",
-        "none"
-      ]
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — List — response payload",
-      "description": "The success response to a vtc/badges/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/list/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "maxItems": 200,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "badge",
-              "myCount",
-              "myState"
-            ],
-            "properties": {
-              "badge": {
-                "$ref": "#/$defs/Badge"
-              },
-              "myCount": {
-                "type": "integer",
-                "minimum": 0,
-                "description": "Accepted awards of this badge the caller holds; 0 where none."
-              },
-              "myState": {
-                "$ref": "#/$defs/MyState"
-              }
-            }
-          },
-          "description": "In order of `name`, then `badgeId`."
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -214,121 +161,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Badge": {
-      "title": "Badge",
-      "description": "A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "badgeId",
-        "kind",
-        "name",
-        "description",
-        "image",
-        "repeatable",
-        "listed",
-        "state",
-        "createdAt"
-      ],
-      "properties": {
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId"
-        },
-        "kind": {
-          "$ref": "#/$defs/BadgeKind"
-        },
-        "name": {
-          "$ref": "#/$defs/BadgeName"
-        },
-        "description": {
-          "$ref": "#/$defs/BadgeDescription"
-        },
-        "criteria": {
-          "$ref": "#/$defs/BadgeCriteria"
-        },
-        "image": {
-          "$ref": "#/$defs/CardBlobRef",
-          "description": "The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location."
-        },
-        "repeatable": {
-          "type": "boolean",
-          "description": "Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge."
-        },
-        "requestable": {
-          "type": "boolean",
-          "description": "Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false."
-        },
-        "listed": {
-          "type": "boolean",
-          "description": "Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators."
-        },
-        "shareableOutside": {
-          "type": "boolean",
-          "description": "Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false."
-        },
-        "groupId": {
-          "$ref": "#/$defs/GroupId",
-          "description": "The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer."
-        },
-        "state": {
-          "$ref": "#/$defs/BadgeState"
-        },
-        "holderCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Holders who show the badge. Only to callers who may see the holders."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "retiredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
-        }
-      }
-    },
-    "BadgeState": {
-      "title": "BadgeState",
-      "description": "`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).",
-      "type": "string",
-      "enum": [
-        "active",
-        "retired"
-      ]
-    },
-    "BadgeCriteria": {
-      "title": "BadgeCriteria",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "description": "How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text."
-    },
-    "BadgeDescription": {
-      "title": "BadgeDescription",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "description": "What the badge is for. Plain text; a reader MUST NOT treat it as instructions."
-    },
-    "BadgeName": {
-      "title": "BadgeName",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "description": "The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions."
-    },
     "BadgeKind": {
       "title": "BadgeKind",
       "description": "`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).",
@@ -337,74 +169,12 @@ export const PAYLOAD_SCHEMA = {
         "community",
         "kudos"
       ]
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
-    },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-    },
-    "CardBlobRef": {
-      "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sha256",
-        "mediaType"
-      ],
-      "properties": {
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
-        },
-        "mediaType": {
-          "type": "string",
-          "enum": [
-            "image/png",
-            "image/jpeg",
-            "image/webp",
-            "image/avif"
-          ],
-          "description": "Media type of the stored bytes."
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 262144,
-          "description": "Size in bytes of the stored bytes."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`."
-        },
-        "urlExpiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Projection only: when `url` stops working."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -663,7 +433,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

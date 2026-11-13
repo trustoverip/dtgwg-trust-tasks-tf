@@ -19,6 +19,41 @@
 use super::*;
 use serde_json::json;
 
+/// The digester the fixtures run under: the real backend where it is built,
+/// and otherwise a stand-in, so the whole suite — including the salt and
+/// digest-comparison rules, which hold under every feature set — runs in a
+/// `--no-default-features` build too.
+#[cfg(feature = "affinidi")]
+use JcsSha256Digester as TestDigester;
+
+/// A 32-byte non-cryptographic hash of `JSON(document) ‖ salt`, in a
+/// multihash-shaped wrapper, base58btc-encoded.
+///
+/// Not a digest anyone should deploy; it only has to be deterministic,
+/// salt-dependent, short and multibase, which is what [`verify`] relies on.
+/// `serde_json` without `preserve_order` writes object keys sorted, so equal
+/// documents serialize identically, and `DefaultHasher::new()` is keyed with
+/// fixed constants, so it is deterministic within a test run.
+#[cfg(not(feature = "affinidi"))]
+struct TestDigester;
+
+#[cfg(not(feature = "affinidi"))]
+impl Digester for TestDigester {
+    fn digest(&self, document: &Value, salt: &[u8]) -> Result<String, Error> {
+        use std::hash::{DefaultHasher, Hasher};
+        let mut input = serde_json::to_vec(document).unwrap();
+        input.extend_from_slice(salt);
+        let mut multihash = vec![0x12, 0x20];
+        for lane in 0u8..4 {
+            let mut h = DefaultHasher::new();
+            h.write_u8(lane);
+            h.write(&input);
+            multihash.extend_from_slice(&h.finish().to_be_bytes());
+        }
+        Ok(multibase::encode(multibase::Base::Base58Btc, multihash))
+    }
+}
+
 const DIGEST: &str = "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d";
 const ENACTMENT: &str = "urn:uuid:8f21b0c4";
 const DEFINITION: &str = "https://trusttasks.org/ceremony/vtc/member-onboarding/0.1";
@@ -96,7 +131,7 @@ fn salt_bytes(salt: Option<&str>) -> Vec<u8> {
 }
 
 fn digest_under(doc: &Value, salt: &[u8]) -> String {
-    JcsSha256Digester.digest(doc, salt).unwrap()
+    TestDigester.digest(doc, salt).unwrap()
 }
 
 fn doc(id: &str, step: &str, issuer: &str, recipient: &str, type_uri: &str) -> Value {
@@ -199,16 +234,7 @@ fn check(c: &Case) -> Outcome {
 }
 
 fn check_full(c: &Case, def: &Definition, recorder: &str, b: &Bindings) -> Outcome {
-    verify(
-        &c.receipt,
-        def,
-        DIGEST,
-        recorder,
-        b,
-        &c.held,
-        &JcsSha256Digester,
-    )
-    .unwrap()
+    verify(&c.receipt, def, DIGEST, recorder, b, &c.held, &TestDigester).unwrap()
 }
 
 // --- control -----------------------------------------------------------
@@ -867,4 +893,215 @@ fn the_published_definition_deserializes_with_every_member_verification_needs() 
     assert_eq!(def.steps["supplement"].multiplicity, Multiplicity::Single);
     assert!(is_ancestor(&def, "apply", "reciprocate"));
     assert!(!is_ancestor(&def, "reciprocate", "apply"));
+}
+
+// --- salt size -----------------------------------------------------------
+
+#[test]
+fn an_over_long_salt_is_refused_quickly() {
+    // At the bound, a salt still decodes.
+    let at_bound = format!("z{}", "2".repeat(MAX_SALT_CHARS - 1));
+    decode_salt(Some(&at_bound)).expect("a salt at the bound decodes");
+    let over = format!("z{}", "2".repeat(MAX_SALT_CHARS));
+    assert!(matches!(decode_salt(Some(&over)), Err(Error::Salt(_))));
+
+    let huge = format!("z{}", "2".repeat(1 << 20));
+    let start = std::time::Instant::now();
+    for _ in 0..100 {
+        assert!(matches!(decode_salt(Some(&huge)), Err(Error::Salt(_))));
+    }
+    let elapsed = start.elapsed();
+    assert!(
+        elapsed < std::time::Duration::from_secs(1),
+        "refusing 100 oversized salts took {elapsed:?}"
+    );
+}
+
+// --- salt and digest encoding (#1094) ------------------------------------
+//
+// These run under every feature set. Before #1094 a `--no-default-features`
+// build hashed the salt's string bytes and compared digests as strings, so the
+// digests a build computed depended on whether anything else in the graph had
+// enabled `affinidi`.
+
+/// Re-encode a multibase value in another base, keeping its bytes.
+fn reencode(value: &str, base: multibase::Base) -> String {
+    let (_, bytes) = multibase::decode(value).unwrap();
+    multibase::encode(base, bytes)
+}
+
+#[test]
+fn the_salt_is_its_multibase_decoding_under_every_feature_set() {
+    let encoded = salt();
+    assert_eq!(decode_salt(Some(&encoded)).unwrap(), vec![7u8; 16]);
+    assert_ne!(
+        decode_salt(Some(&encoded)).unwrap(),
+        encoded.as_bytes(),
+        "the salt's string bytes are not the salt"
+    );
+    // The same salt in another base is the same salt.
+    let base64url = reencode(&encoded, multibase::Base::Base64Url);
+    assert!(base64url.starts_with('u'));
+    assert_eq!(decode_salt(Some(&base64url)).unwrap(), vec![7u8; 16]);
+    // And a value that is not multibase is refused, not hashed as text.
+    assert!(matches!(
+        decode_salt(Some("not multibase!")),
+        Err(Error::Salt(_))
+    ));
+    assert_eq!(decode_salt(None).unwrap(), Vec::<u8>::new());
+}
+
+#[test]
+fn a_salt_given_in_another_base_verifies_identically() {
+    let mut c = base();
+    let salt = c.receipt.salt.take().unwrap();
+    c.receipt.salt = Some(reencode(&salt, multibase::Base::Base64Url));
+    assert_eq!(check(&c), Outcome::Complete);
+}
+
+#[test]
+fn the_digester_is_handed_the_decoded_salt() {
+    // A receipt whose digests were computed over the salt's *string* bytes —
+    // what a no-`affinidi` build used to do — does not verify.
+    let salt_value = salt();
+    let mut c = enactment(Some(salt_value.clone()));
+    let wrong = salt_value.as_bytes();
+    let apply = c.held.remove("urn:uuid:1").unwrap();
+    let mut decide = c.held.remove("urn:uuid:2").unwrap();
+    decide["ceremony"]["prev"] =
+        json!([{ "id": "urn:uuid:1", "digestMultibase": digest_under(&apply, wrong) }]);
+    c.step_mut("apply").digest_multibase = digest_under(&apply, wrong);
+    c.step_mut("decide").digest_multibase = digest_under(&decide, wrong);
+    c.hold(apply);
+    c.hold(decide);
+    match check(&c) {
+        Outcome::Invalid { reason } => assert!(reason.contains("digest mismatch"), "{reason}"),
+        other => panic!("expected Invalid, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_step_digest_in_another_base_matches() {
+    // The receipt's digest names the same multihash in base64url: the same
+    // digest, which comparing strings reported as a mismatch.
+    let mut c = base();
+    for step in ["apply", "decide"] {
+        let s = c.step_mut(step);
+        s.digest_multibase = reencode(&s.digest_multibase, multibase::Base::Base64Url);
+        assert!(s.digest_multibase.starts_with('u'));
+    }
+    assert_eq!(check(&c), Outcome::Complete);
+}
+
+#[test]
+fn a_prev_digest_in_another_base_matches() {
+    let mut c = base();
+    c.drop_held("urn:uuid:1"); // so only the chain compares this digest
+    let s = c.step_mut("apply");
+    s.digest_multibase = reencode(&s.digest_multibase, multibase::Base::Base16Lower);
+    assert!(s.digest_multibase.starts_with('f'));
+    assert_eq!(check(&c), Outcome::Complete);
+}
+
+#[test]
+fn a_definition_digest_in_another_base_matches() {
+    let c = base();
+    let other_base = reencode(DIGEST, multibase::Base::Base64Url);
+    let outcome = verify(
+        &c.receipt,
+        &definition(),
+        &other_base,
+        COMMUNITY,
+        &bindings(),
+        &c.held,
+        &TestDigester,
+    )
+    .unwrap();
+    assert_eq!(outcome, Outcome::Complete);
+}
+
+#[test]
+fn a_step_digest_that_is_not_multibase_is_invalid() {
+    let mut c = base();
+    c.step_mut("decide").digest_multibase = "not multibase!".into();
+    match check(&c) {
+        Outcome::Invalid { reason } => assert!(reason.contains("digest mismatch"), "{reason}"),
+        other => panic!("expected Invalid, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_digester_that_does_not_emit_multibase_is_an_error_not_an_outcome() {
+    // A broken backend says nothing about the receipt.
+    struct Broken;
+    impl Digester for Broken {
+        fn digest(&self, _: &Value, _: &[u8]) -> Result<String, Error> {
+            Ok("not multibase!".into())
+        }
+    }
+    let c = base();
+    let result = verify(
+        &c.receipt,
+        &definition(),
+        DIGEST,
+        COMMUNITY,
+        &bindings(),
+        &c.held,
+        &Broken,
+    );
+    assert!(
+        matches!(result, Err(Error::DigestEncoding(_))),
+        "{result:?}"
+    );
+}
+
+#[test]
+fn same_digest_compares_decoded_bytes() {
+    let z = multibase::encode(multibase::Base::Base58Btc, [1u8, 2, 3]);
+    let u = multibase::encode(multibase::Base::Base64Url, [1u8, 2, 3]);
+    let other = multibase::encode(multibase::Base::Base58Btc, [1u8, 2, 4]);
+    let shorter = multibase::encode(multibase::Base::Base58Btc, [1u8, 2]);
+    assert!(same_digest(&z, &u));
+    assert!(!same_digest(&z, &other));
+    assert!(!same_digest(&z, &shorter));
+    // A malformed value equals only itself, and never a well-formed one.
+    assert!(same_digest("not multibase!", "not multibase!"));
+    assert!(!same_digest("not multibase!", "not multibase?"));
+    assert!(!same_digest(&z, "not multibase!"));
+    assert!(!same_digest("not multibase!", &z));
+}
+
+#[test]
+fn ct_eq_is_plain_equality() {
+    assert!(ct_eq(b"", b""));
+    assert!(ct_eq(b"abc", b"abc"));
+    assert!(!ct_eq(b"abc", b"abd"));
+    assert!(!ct_eq(b"abc", b"xbc"));
+    assert!(!ct_eq(b"abc", b"ab"));
+}
+
+#[test]
+fn an_over_long_digest_is_not_decoded() {
+    // A SHA-512 multihash in base16 fits; a receipt-supplied megabyte is not
+    // handed to a quadratic decoder, and never matches a well-formed digest.
+    let sha512 = multibase::encode(multibase::Base::Base16Lower, [0u8; 66]);
+    assert!(sha512.len() <= MAX_DIGEST_CHARS);
+    assert!(decode_digest(&sha512).is_ok());
+
+    let huge = format!("z{}", "2".repeat(1 << 20));
+    let well_formed = multibase::encode(multibase::Base::Base58Btc, [0u8; 34]);
+    let start = std::time::Instant::now();
+    for _ in 0..100 {
+        assert!(decode_digest(&huge).is_err());
+        assert!(!same_digest(&huge, &well_formed));
+    }
+    let elapsed = start.elapsed();
+    assert!(
+        elapsed < std::time::Duration::from_secs(1),
+        "refusing 100 oversized digests took {elapsed:?}"
+    );
+
+    let mut c = base();
+    c.step_mut("decide").digest_multibase = huge;
+    assert!(matches!(check(&c), Outcome::Invalid { .. }));
 }

@@ -83,8 +83,13 @@ export type Response = VTAWebVHDIDsRotateKeysResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0",
   "title": "VTA WebVH DIDs Rotate-Keys — payload",
@@ -113,54 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs Rotate-Keys — response payload",
-      "description": "Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "newVersionId",
-        "newScid",
-        "newLogEntry",
-        "updateKeysCount",
-        "preRotationKeyCount",
-        "serverless"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "newVersionId": {
-          "type": "string",
-          "description": "Version id of the appended entry."
-        },
-        "newScid": {
-          "type": "string",
-          "description": "The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it."
-        },
-        "newLogEntry": {
-          "type": "string",
-          "description": "The appended entry."
-        },
-        "updateKeysCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "preRotationKeyCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "serverless": {
-          "type": "boolean",
-          "description": "True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -172,10 +129,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -238,7 +195,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

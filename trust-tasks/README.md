@@ -2,14 +2,26 @@
 
 One dependency line for the [Trust Tasks](https://trusttasks.org/) framework.
 
-```toml
-trust-tasks = { version = "0.1", features = ["https", "proof-affinidi"] }
+```sh
+cargo add trust-tasks --features https,proof-affinidi
 ```
 
-The framework ships as eight independently-versioned crates, because each
-transport binding drags in a different (and heavy) dependency tree and you
-should only pay for the one you use. That split is right for a build; it is a
-tax at the front door. This crate is the front door.
+which writes
+
+```toml
+trust-tasks = { version = "…", features = ["https", "proof-affinidi"] }
+```
+
+with the current version. No feature is on by default: you get the runtime and
+the features you name. The prebuilt specification modules (`all-specs`) are
+deprecated and opt-in; an application generates the tasks it uses instead
+(below).
+
+The framework ships as several crates, because each transport binding drags in
+a different (and heavy) dependency tree and you should only pay for the one you
+use. That split is right for a build; it is a tax at the front door. This crate
+is the front door: one name, and one version — the crates it re-exports release
+together at the same version as this one.
 
 Everything here is a `pub use`. There are no wrapper types and nothing to keep
 in step: `trust_tasks::TrustTask` **is** `trust_tasks_rs::TrustTask`, and
@@ -20,7 +32,7 @@ Dropping the facade later is a find-and-replace, not a migration.
 
 | feature | gives you | crate |
 |---|---|---|
-| *(always on)* | `TrustTask`, `consume_inbound`, `specs`, `RejectReason` at the crate root | `trust-tasks-rs` |
+| *(always on)* | `TrustTask`, `consume_inbound`, `RejectReason`, `issued_at_now` at the crate root | `trust-tasks-rs` |
 | `https` | `trust_tasks::https` — typed client + axum server | `trust-tasks-https` |
 | `didcomm` | `trust_tasks::didcomm` — DIDComm v2.1 | `trust-tasks-didcomm` |
 | `didcomm-v1` | `trust_tasks::didcomm_v1` — Aries-lineage agents | `trust-tasks-didcomm-v1` |
@@ -31,7 +43,7 @@ Dropping the facade later is a find-and-replace, not a migration.
 | `validate` | runtime JSON Schema validation of payloads | `trust-tasks-rs` |
 | `all-transports` | all four transport modules | — |
 | `https-jwt` | `trust_tasks::https::JwtBearerAuth` | `trust-tasks-https` |
-| `all-specs` *(default)* | every spec family; `default-features = false` for none | `trust-tasks-rs` |
+| `all-specs` | every prebuilt spec family under `trust_tasks::specs` — **deprecated**, and a build of minutes and over 16 GB; off by default (on by default in 0.38 and earlier) | `trust-tasks-rs` |
 
 Most deployments want **one transport plus `proof-affinidi`**: a task whose
 specification declares `proof` REQUIRED cannot be produced or consumed without a
@@ -39,8 +51,8 @@ signer and a verifier.
 
 ## What this crate does not forward
 
-`trust-tasks-rs` carries 26 per-spec-family features (`vault`, `acl`, `keys`, …).
-Only the `all-specs` umbrella is forwarded. **If you are trimming spec families,
+`trust-tasks-rs` carries one feature per prebuilt spec family (`vault`, `acl`,
+`keys`, …). Only the `all-specs` umbrella is forwarded. **If you are trimming spec families,
 or subtracting a transport crate's own defaults, depend on those crates
 directly** — that is the supported answer, not a workaround.
 
@@ -49,20 +61,18 @@ directly** — that is the supported answer, not a workaround.
 [`GETTING-STARTED.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md)
 walks a signed `acl/grant` round trip end to end, in Rust, TypeScript, Go and
 Dart, and names the traps. Its Rust is extracted from an example application
-that uses this facade with `default-features = false` and generates the one
-task it speaks, `acl/grant/0.2`, in `build.rs`
+that uses this facade with no spec family and generates the one
+task it speaks, `acl/grant/0.3`, in `build.rs`
 ([`examples/getting-started`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/getting-started)):
 
 ```sh
 cargo run -p trust-tasks-example-getting-started
 ```
 
-The facade's default feature, `all-specs`, compiles every prebuilt
-specification module; those are deprecated, and an application generates the
-tasks it uses instead (see GETTING-STARTED §1).
+The facade's `all-specs` feature compiles every prebuilt specification module;
+those are deprecated, and an application generates the tasks it uses instead
+(see GETTING-STARTED §1). That is why `all-specs` is not a default feature.
 
 ## License
 
-Apache-2.0. See
-[LICENSE.md](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/LICENSE.md)
-at the repo root.
+Apache-2.0 — see [`LICENSE`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks/LICENSE), included in the published crate.

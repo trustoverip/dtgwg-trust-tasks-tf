@@ -79,8 +79,13 @@ export type Response = AuthStepUpApproverRevokeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/step-up/approver/revoke/0.1",
   "title": "Auth — Step-up Approver Revoke — payload",
@@ -113,37 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Step-up Approver Revoke — response payload",
-      "description": "The revoked binding, when it was revoked, and how many approvers the subject still holds.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revoked",
-        "revokedAt",
-        "remainingApprovers"
-      ],
-      "properties": {
-        "revoked": {
-          "$ref": "#/$defs/Approver"
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was revoked — the original time when the approver was already revoked."
-        },
-        "remainingApprovers": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 5,
-          "description": "The subject's live approvers after the revocation. Zero is legitimate and recoverable."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -154,64 +128,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Approver": {
-      "title": "Approver",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "approverDid",
-        "subject",
-        "enrolledAt",
-        "enrolledVia"
-      ],
-      "description": "One step-up approver binding, as its subject or an administrator sees it. The binding confers nothing of its own: it is read only when the relying party checks the evidence of a step-up asked of `subject`.",
-      "properties": {
-        "approverDid": {
-          "$ref": "#/$defs/ApproverDid"
-        },
-        "subject": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The one subject DID this approver is bound to. An approver DID is bound to at most one subject at a relying party."
-        },
-        "label": {
-          "$ref": "#/$defs/ApproverLabel"
-        },
-        "enrolledAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was written."
-        },
-        "enrolledVia": {
-          "$ref": "#/$defs/EnrolledVia"
-        },
-        "lastUsedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When a statement by this approver last satisfied a step-up. Absent when it never has."
-        }
-      }
-    },
-    "EnrolledVia": {
-      "title": "EnrolledVia",
-      "type": "string",
-      "enum": [
-        "install",
-        "invite",
-        "selfService",
-        "offline"
-      ],
-      "description": "The anchor the binding rested on, recorded so an incident review can see how each factor came to exist. `install`: claimed with the community's install token (vtc/install/claim/finish/0.3). `invite`: redeemed from an administrator's invite (auth/step-up/approver/redeem/finish/0.1). `selfService`: added by the subject behind a factor they already held (auth/step-up/approver/enroll/0.1). `offline`: redeemed from an invite minted by the operator with host access while the service was stopped — an `invite`-shaped redemption whose issuer was the host rather than an administrator."
-    },
-    "ApproverLabel": {
-      "title": "ApproverLabel",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "description": "A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen."
-    },
     "ApproverDid": {
       "title": "ApproverDid",
       "type": "string",
@@ -221,10 +137,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -336,7 +252,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -67,8 +67,13 @@ export type Response = VTNGraphMemberNetworkResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/graph/member/0.1",
   "title": "VTN Graph — Member Network — payload",
@@ -92,24 +97,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Graph — Member Network — response payload",
-      "description": "The member network's graph, from its verified signed index.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "graph"
-      ],
-      "properties": {
-        "graph": {
-          "$ref": "#/$defs/Graph"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -120,172 +107,21 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Graph": {
-      "description": "The graph.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "nodes",
-        "edges"
-      ],
-      "properties": {
-        "nodes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Node"
-          },
-          "description": "The parties."
-        },
-        "edges": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Edge"
-          },
-          "description": "The credentials."
-        }
-      }
-    },
-    "Edge": {
-      "description": "One credential, from issuer to subject. A membership is two edges: the grant and the acknowledgement.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "source",
-        "target",
-        "role",
-        "credType",
-        "status",
-        "credential"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The credential's `id`."
-        },
-        "source": {
-          "$ref": "#/$defs/Did",
-          "description": "The issuer."
-        },
-        "target": {
-          "$ref": "#/$defs/Did",
-          "description": "The subject."
-        },
-        "role": {
-          "$ref": "#/$defs/EdgeRole"
-        },
-        "credType": {
-          "type": "string",
-          "maxLength": 100,
-          "description": "The credential's DTG type, e.g. `MembershipCredential`."
-        },
-        "status": {
-          "$ref": "#/$defs/EdgeStatus"
-        },
-        "credential": {
-          "$ref": "#/$defs/Credential",
-          "description": "The credential itself."
-        }
-      }
-    },
-    "EdgeStatus": {
-      "type": "string",
-      "enum": [
-        "valid",
-        "suspended",
-        "revoked",
-        "unchecked"
-      ],
-      "description": "The credential's status as far as this network can determine it. `unchecked` is a credential whose status list this network does not hold."
-    },
-    "EdgeRole": {
-      "type": "string",
-      "enum": [
-        "listing",
-        "grant",
-        "acknowledgement",
-        "repudiation"
-      ],
-      "description": "Which credential an edge is."
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
     "Did": {
       "type": "string",
       "pattern": "^did:[a-z0-9]+:.+$",
       "maxLength": 2048,
       "description": "A DID."
     },
-    "Node": {
-      "description": "A party.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "kind",
-        "root"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/Did",
-          "description": "The party's DID."
-        },
-        "kind": {
-          "$ref": "#/$defs/NodeKind"
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "Its name."
-        },
-        "state": {
-          "$ref": "#/$defs/EntryState",
-          "description": "Its entry's state; absent for the root."
-        },
-        "root": {
-          "type": "boolean",
-          "description": "Whether this is the network whose graph it is."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where a member network is reached, so a viewer can expand it."
-        }
-      }
-    },
-    "NodeKind": {
-      "type": "string",
-      "enum": [
-        "network",
-        "community"
-      ],
-      "description": "What a node is."
-    },
-    "EntryState": {
-      "type": "string",
-      "enum": [
-        "listed",
-        "acknowledged",
-        "repudiated",
-        "suspended",
-        "removed",
-        "departed"
-      ],
-      "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
-    },
     "Membership": {
       "type": "object",
       "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -473,13 +309,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "departed"
       ],
       "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

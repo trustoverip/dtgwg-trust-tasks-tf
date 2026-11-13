@@ -129,8 +129,13 @@ export type Response = ServerConfigResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/server/config/0.1",
   "title": "Server Config — payload",
@@ -142,185 +147,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Server Config — response payload",
-      "description": "The hosting service's effective, non-secret configuration. Members the deployment does not configure are absent; nothing here is a secret, and a consumer MUST NOT add one under ext.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "serviceDid",
-        "softwareVersion",
-        "deploymentMode",
-        "transports",
-        "enabledMethods",
-        "agentNames"
-      ],
-      "properties": {
-        "serviceDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The service's own DID — the issuer of its replies."
-        },
-        "softwareVersion": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The running implementation's version string."
-        },
-        "deploymentMode": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Implementation-defined deployment shape (e.g. a single-process daemon, or a control plane driving remote edges)."
-        },
-        "publicUrl": {
-          "type": "string",
-          "format": "uri",
-          "description": "Base URL of the service's own web surface. Absent when not configured."
-        },
-        "didHostingUrl": {
-          "type": "string",
-          "format": "uri",
-          "description": "Base URL hosted DIDs are published under. Absent when not configured."
-        },
-        "mediatorDid": {
-          "type": "string",
-          "description": "The messaging mediator the service is reached through. Absent when it runs without one."
-        },
-        "transports": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "tsp",
-            "didcomm"
-          ],
-          "description": "Which messaging transports the configuration enables.",
-          "properties": {
-            "tsp": {
-              "type": "boolean"
-            },
-            "didcomm": {
-              "type": "boolean"
-            }
-          }
-        },
-        "advertisedServices": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "`service[].type` values of the service's own resolved DID document. Absent when it could not be resolved. What the configuration enables and what the document advertises can differ; both are shown so an operator can see it."
-        },
-        "enabledMethods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "DID methods this build can host."
-        },
-        "agentNames": {
-          "type": "boolean",
-          "description": "Whether agent-name redirects (`/@name`) are served."
-        },
-        "listenAddress": {
-          "type": "string",
-          "description": "The address the service's HTTP listener is bound to."
-        },
-        "vta": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "The verifiable trust agent holding the service's identity. Absent for a self-managed deployment.",
-          "properties": {
-            "did": {
-              "type": "string"
-            },
-            "url": {
-              "type": "string",
-              "format": "uri"
-            }
-          }
-        },
-        "registry": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "healthCheckIntervalSeconds",
-            "configuredInstances"
-          ],
-          "properties": {
-            "healthCheckIntervalSeconds": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "configuredInstances": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Instances seeded from configuration rather than registered."
-            }
-          }
-        },
-        "sessions": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "accessTokenSeconds",
-            "refreshTokenSeconds",
-            "adminIdleTimeoutSeconds",
-            "passkeyEnrollmentSeconds"
-          ],
-          "properties": {
-            "accessTokenSeconds": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "refreshTokenSeconds": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "adminIdleTimeoutSeconds": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "passkeyEnrollmentSeconds": {
-              "type": "integer",
-              "minimum": 1
-            }
-          }
-        },
-        "storage": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "dataDir"
-          ],
-          "properties": {
-            "dataDir": {
-              "type": "string"
-            }
-          }
-        },
-        "logging": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "level",
-            "format"
-          ],
-          "properties": {
-            "level": {
-              "type": "string"
-            },
-            "format": {
-              "type": "string"
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -332,10 +158,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -529,7 +355,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

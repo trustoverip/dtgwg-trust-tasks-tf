@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Membership filter with an empty changes list — omit it to select both.",
+    "payload": {
+      "membership": {
+        "changes": []
+      }
+    }
+  },
+  {
+    "note": "Membership filter with an unknown source.",
+    "payload": {
+      "membership": {
+        "sources": ["proxy"]
+      }
+    }
+  },
+  {
+    "note": "Unknown member in the membership filter.",
+    "payload": {
+      "membership": {
+        "principals": ["did:web:phone.example"]
+      }
+    }
+  }
+]

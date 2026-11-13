@@ -293,8 +293,13 @@ export type Response = ProvisionIntegrationResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/provision/integration/0.3",
   "title": "Provision Integration — payload",
@@ -565,123 +570,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Provision Integration — response payload",
-      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundle",
-        "summary"
-      ],
-      "properties": {
-        "bundle": {
-          "type": "string",
-          "minLength": 1,
-          "description": "OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey."
-        },
-        "digestMultibase": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Digest over the armored ciphertext, for holders that pin the bundle out-of-band. Taken over the armored bytes exactly as carried in `bundle`, not over a canonicalization: the armor is the artifact, and re-armoring the same ciphertext does not have to reproduce the same bytes."
-        },
-        "summary": {
-          "$ref": "#/$defs/ProvisionSummary",
-          "description": "Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "ProvisionSummary": {
-      "$anchor": "provision-summary",
-      "title": "ProvisionSummary",
-      "description": "Audit-grade metadata about the provisioning outcome. Mirrors the existing `vta_sdk::provision_integration::http::ProvisionSummary` Rust type but uses camelCase wire fields per Trust Task convention.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "clientDid",
-        "bundleIdHex",
-        "secretCount",
-        "outputCount"
-      ],
-      "properties": {
-        "clientDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Ephemeral did:key the holder signed the VP with and opens the sealed bundle with. Echo of `request.holder`."
-        },
-        "adminDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Long-term admin DID after this provisioning. Equals `clientDid` when no admin rollover occurred (TemplateBootstrap with no `adminTemplate`); equals the freshly-minted admin DID when `adminTemplate` was used or when the ask was `adminRotation`. Maintainers that pre-date admin rollover MAY omit this; consumers SHOULD default it to `clientDid` for backward compatibility."
-        },
-        "adminRolledOver": {
-          "type": "boolean",
-          "default": false,
-          "description": "True when the maintainer minted a fresh long-term admin DID and bound the authorization VC + ACL row to it (i.e. `adminDid != clientDid`)."
-        },
-        "integrationDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "DID rendered from the integration template. Absent for `adminRotation` (no integration was rendered)."
-        },
-        "templateName": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Name of the integration template that was rendered. Absent for `adminRotation`."
-        },
-        "templateKind": {
-          "type": "string",
-          "minLength": 1,
-          "description": "`kind` of the integration template (e.g. `mediator`, `did-hosting-control`, `app`). Absent for `adminRotation`."
-        },
-        "adminTemplateName": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Name of the admin template that was rendered. Present when an admin DID was minted (either via `TemplateBootstrap.adminTemplate` or `adminRotation`)."
-        },
-        "bundleIdHex": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{32}$",
-          "description": "VP nonce as lowercase hex (32 characters = 16 bytes). MUST equal the `Bundle-Id` armor header of `bundle`. Cross-check anchor: a holder that decodes the VP nonce can verify the bundle they opened matches the one the maintainer minted for them."
-        },
-        "secretCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of DIDs the sealed bundle carries private key material for. `templateBootstrap` with no adminTemplate typically yields 1 (the integration DID's keys). `adminRotation` yields 0 (the `admin` field is top-level, not under `secrets`)."
-        },
-        "outputCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of template-declared side outputs the sealed bundle carries (`did.jsonl` logs, DIDComm service advertisements, etc.). Always 0 for `adminRotation`."
-        },
-        "webvhServerId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Identifier of the registered webvh hosting server the maintainer published the integration's `did.jsonl` to, if any. Absent when the integration is self-hosted or when the template did not declare a webvh server var."
-        },
-        "contextCreated": {
-          "type": "boolean",
-          "default": false,
-          "description": "True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false)."
-        },
-        "context": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The context the integration was provisioned into — `payload.context` verbatim when it was sent, otherwise the one \"Context inference\" resolved. Present so a producer that omitted `context` learns where it landed, rather than re-deriving it from its own view of the maintainer's layout and being wrong in exactly the deployments the inference rules exist for. Absent from maintainers that predate this member."
-        },
-        "adminScope": {
-          "type": "string",
-          "enum": [
-            "context",
-            "unrestricted"
-          ],
-          "description": "The scope of the ACL entry the maintainer actually wrote for `adminDid`. Echoed rather than assumed: a maintainer that does not implement `payload.adminScope` ignores an `unrestricted` ask and writes a `context`-scoped entry, and a producer that read its own request back would record authority it does not have. Absent from maintainers that predate this member, which a producer MUST read as `context`."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -691,241 +579,15 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "BootstrapRequest": {
-      "$anchor": "bootstrap-request",
-      "title": "BootstrapRequest",
-      "description": "W3C Verifiable Presentation 2.0 (§6.1: VPs MAY omit `verifiableCredential`). Custom members `nonce`, `validUntil`, `label`, and `ask` sit alongside the standard VP fields and are covered by the same DataIntegrityProof.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "@context",
-        "type",
-        "id",
-        "holder",
-        "nonce",
-        "validUntil",
-        "ask",
-        "proof"
-      ],
-      "properties": {
-        "@context": {
-          "type": "array",
-          "minItems": 2,
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "description": "JSON-LD contexts. MUST contain both `https://www.w3.org/ns/credentials/v2` and `https://openvtc.org/contexts/bootstrap-v1`. Maintainers verifying the proof MAY refuse other shapes."
-        },
-        "type": {
-          "type": "array",
-          "minItems": 2,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "VP types. MUST contain both `VerifiablePresentation` and `BootstrapRequest`. Additional task-specific types MAY be present."
-        },
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "URN-shaped identifier for this presentation. `urn:uuid:<v4>` is RECOMMENDED."
-        },
-        "holder": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The integration's ephemeral did:key (Ed25519). Identifies the party the returned bundle is HPKE-sealed for; the VP proof verifies under this DID's verification method."
-        },
-        "nonce": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{22}$",
-          "description": "16 random bytes encoded as base64url-no-pad (22 characters). The maintainer treats this as the sealed bundle's `bundleId` (decoded to hex, exposed in `summary.bundleIdHex`) and SHOULD enforce one-shot semantics — a second provisioning with the same nonce MUST be refused as a replay."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Freshness bound for the VP. RFC 3339 UTC. Maintainers SHOULD allow ±5 minutes of clock skew."
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Optional human-readable label carried into the maintainer's audit log."
-        },
-        "ask": {
-          "$ref": "#/$defs/BootstrapAsk",
-          "description": "What the holder is asking the maintainer to do. Tagged on `type`; see `TemplateBootstrapAsk` and `AdminRotationAsk`."
-        },
-        "proof": {
-          "$ref": "#/$defs/DataIntegrityProof",
-          "description": "Data Integrity proof signed by the holder's Ed25519 key. Cryptosuite MUST equal `eddsa-jcs-2022`. `proofPurpose` MUST equal `authentication`. `verificationMethod` MUST resolve under `holder`. Signs the JCS canonicalisation of the VP with `proof` removed."
-        }
-      }
-    },
-    "BootstrapAsk": {
-      "$anchor": "bootstrap-ask",
-      "title": "BootstrapAsk",
-      "description": "Discriminated union of bootstrap intents. Extensible — future minor versions MAY add variants.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/TemplateBootstrapAsk"
-        },
-        {
-          "$ref": "#/$defs/AdminRotationAsk"
-        }
-      ]
-    },
-    "TemplateBootstrapAsk": {
-      "$anchor": "template-bootstrap-ask",
-      "title": "TemplateBootstrapAsk",
-      "description": "Mint an integration DID from `template`, and (when `adminTemplate` is present) atomically roll over the holder to a fresh long-term admin DID minted from `adminTemplate`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "template"
-      ],
-      "properties": {
-        "type": {
-          "const": "templateBootstrap"
-        },
-        "contextHint": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Hint for the integration's target context. The wire `payload.context` is authoritative; this hint exists for documentation / cross-check only."
-        },
-        "template": {
-          "$ref": "#/$defs/DidTemplateRef",
-          "description": "Integration template. MUST be registered at the maintainer; MUST declare a `kind` other than `\"admin\"`."
-        },
-        "adminTemplate": {
-          "$ref": "#/$defs/DidTemplateRef",
-          "description": "Optional admin-DID template. When present, the maintainer mints a fresh long-term admin DID + keys, binds the authorization VC + ACL row to it, and rolls the holder over from the ephemeral did:key in the same transaction. When absent, the authorization VC's subject and ACL row are bound to the ephemeral `holder`, which the operator is expected to swap via `acl/swap-key/0.1` before steady-state operation. MUST declare `kind == \"admin\"` when present."
-        },
-        "note": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Free-form operator note carried into the maintainer's audit log."
-        }
-      }
-    },
-    "AdminRotationAsk": {
-      "$anchor": "admin-rotation-ask",
-      "title": "AdminRotationAsk",
-      "description": "Admin-only mint. No integration DID is produced. Used by holders that bring (or will mint elsewhere) their own integration-side identity and only need an admin credential at this maintainer.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "adminTemplate"
-      ],
-      "properties": {
-        "type": {
-          "const": "adminRotation"
-        },
-        "contextHint": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Hint for the admin grant's target context. The wire `payload.context` is authoritative."
-        },
-        "adminTemplate": {
-          "$ref": "#/$defs/DidTemplateRef",
-          "description": "Admin-DID template. MUST be registered at the maintainer and MUST declare `kind == \"admin\"`."
-        },
-        "note": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Free-form operator note carried into the maintainer's audit log."
-        }
-      }
-    },
-    "DidTemplateRef": {
-      "$anchor": "did-template-ref",
-      "title": "DidTemplateRef",
-      "description": "Reference to a DID template already registered at the maintainer. Inline template definitions are deliberately not supported — templates must be uploaded out-of-band first (operator-authored or built-in) so the maintainer can validate `vars` against the template's declared schema.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Template name as registered at the maintainer (built-in or operator-uploaded). Examples of built-ins shipped with VTA deployments: `didcomm-mediator`, `vta-admin`, `did-hosting-control`, `did-hosting-daemon`, `did-hosting-server`."
-        },
-        "vars": {
-          "type": "object",
-          "additionalProperties": true,
-          "default": {},
-          "description": "Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`."
-        }
-      }
-    },
-    "DataIntegrityProof": {
-      "$anchor": "data-integrity-proof",
-      "title": "DataIntegrityProof",
-      "description": "W3C Data Integrity proof. Spec body pins cryptosuite and proofPurpose; this schema permits the standard property bag so future cryptosuites can ride the same shape.",
-      "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "type",
-        "cryptosuite",
-        "verificationMethod",
-        "proofPurpose",
-        "proofValue"
-      ],
-      "properties": {
-        "type": {
-          "const": "DataIntegrityProof"
-        },
-        "cryptosuite": {
-          "type": "string",
-          "minLength": 1,
-          "description": "This version pins `eddsa-jcs-2022`. Maintainers MUST reject other values until a future minor extends the allowlist."
-        },
-        "verificationMethod": {
-          "type": "string",
-          "minLength": 1,
-          "description": "DID URL with fragment. The DID portion (left of `#`) MUST equal `holder`."
-        },
-        "created": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "proofPurpose": {
-          "const": "authentication"
-        },
-        "proofValue": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Multibase-encoded Ed25519 signature."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Provision Integration — response payload",
@@ -1064,7 +726,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

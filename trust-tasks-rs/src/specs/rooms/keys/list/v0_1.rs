@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/list/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/list/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/list/0.2")]
+#[deprecated(note = "superseded by rooms/keys/list/0.3")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -145,7 +145,7 @@ impl Payload {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/list/0.2")]
+#[deprecated(note = "superseded by rooms/keys/list/0.3")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -344,7 +344,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/list. Type https://trusttasks.org/spec/rooms/keys/list/0.1#response. The rooms this key holder can open, which is a different set from the rooms its principal is a member of: membership is a credential the room issued, and this is key custody. A room whose group state was never delivered is absent here and the principal may still hold a perfectly good VMC for it.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"rooms\":{\"description\":\"One entry per room, in no guaranteed order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"earliestReadableEpoch\":{\"description\":\"The earliest epoch this key holder can derive a key for, walking the epoch key chain it holds. Equal to `epoch` means it reads only from where it joined; `1` means the room's whole retained history. Anything between is a chain that has been delivered in part, or one deliberately severed below that point.\",\"minimum\":1,\"type\":\"integer\"},\"epoch\":{\"description\":\"The epoch this key holder is at. Behind the room's own epoch means a commit has not been delivered, and records sealed since will not open.\",\"minimum\":1,\"type\":\"integer\"},\"roomId\":{\"description\":\"The room's identifier.\",\"type\":\"string\"}},\"required\":[\"roomId\",\"epoch\",\"earliestReadableEpoch\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"rooms\"],\"title\":\"Rooms Keys List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"Rooms Keys List — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"Rooms Keys List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {

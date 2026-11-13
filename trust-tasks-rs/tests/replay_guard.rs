@@ -13,6 +13,7 @@
 // in favour of generating the tasks an application uses (trust-tasks-build).
 #![allow(deprecated)]
 
+use std::future::Future;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -393,6 +394,7 @@ async fn an_unboundable_document_is_refused_rather_than_executed() {
     let checks = ConsumeChecks {
         freshness: FreshnessPolicy::default().with_max_age(TimeDelta::minutes(5)),
         replay: ReplayPolicy::Guard(&guard),
+        ..ConsumeChecks::not_consequential()
     };
     let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
         &NoopHandler::new(),
@@ -459,4 +461,322 @@ async fn a_guard_that_cannot_reach_its_store_fails_closed() {
         other => panic!("expected Rejected(unavailable), got {other:?}"),
     }
     assert_eq!(executions.count(), 0, "executed without a usable record");
+}
+
+/// Polls `fut` once with a waker that never fires. Enough to drive the
+/// pipeline into a handler that panics synchronously or suspends forever,
+/// without a runtime that would need the future to be `'static`.
+fn poll_once<F: std::future::Future>(fut: F) -> std::task::Poll<F::Output> {
+    let mut fut = std::pin::pin!(fut);
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    fut.as_mut().poll(&mut cx)
+}
+
+/// A handler that panics never says the effect happened. The claim it held is
+/// released, so the producer's bit-for-bit resend runs again rather than being
+/// absorbed as an in-flight duplicate until the record expires. The panic
+/// itself still reaches the caller.
+#[tokio::test]
+async fn a_panicking_handler_releases_the_claim_so_a_resend_runs() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        poll_once(consume_inbound(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(&guard),
+            doc.clone(),
+            ME,
+            now,
+            || "err-1".to_string(),
+            |req: TrustTask<grant::Payload>, _parties| async move {
+                if req.id == "req-1" {
+                    panic!("handler failed part-way");
+                }
+                Ok::<_, ErrorResponse>(req.respond_with("resp-1", response("admin")))
+            },
+        ))
+    }));
+    assert!(panicked.is_err(), "the handler's panic must propagate");
+    assert_eq!(
+        guard.len(),
+        0,
+        "the panicking handler's claim was left in flight"
+    );
+
+    let resend = consume(&guard, &executions, doc.clone(), now).await;
+    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
+    assert_eq!(executions.count(), 1);
+
+    // The successful execution's record stands: a further resend is absorbed.
+    let again = consume(&guard, &executions, doc, now).await;
+    assert!(
+        matches!(
+            again,
+            ConsumeOutcome::Duplicate {
+                in_flight: false,
+                ..
+            }
+        ),
+        "{again:?}"
+    );
+    assert_eq!(executions.count(), 1);
+}
+
+/// Dropping the pipeline's future while the handler is awaited — a request
+/// timeout, a client that disconnects — leaves the claim **in flight**. The
+/// handler may have committed its effect before the await it was cancelled
+/// at; releasing the claim would let a resend execute it a second time. A
+/// resend is answered as an in-flight duplicate and the handler does not run.
+#[tokio::test]
+async fn a_handler_cancelled_after_committing_is_not_executed_again() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let committed = &executions;
+    let pending = poll_once(consume_inbound(
+        &NoopHandler::new(),
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |_req: TrustTask<grant::Payload>, _parties| async move {
+            // The effect commits, then the handler awaits something that
+            // never finishes — and is cancelled there.
+            committed.0.fetch_add(1, Ordering::SeqCst);
+            std::future::pending::<Result<TrustTask<grant::Response>, ErrorResponse>>().await
+        },
+    ));
+    assert!(pending.is_pending(), "the handler should still be running");
+    assert_eq!(executions.count(), 1);
+    // `poll_once` dropped the future on return.
+    assert_eq!(guard.len(), 1, "the cancelled handler's claim was released");
+
+    let resend = consume(&guard, &executions, doc, now).await;
+    assert!(
+        matches!(
+            resend,
+            ConsumeOutcome::Duplicate {
+                in_flight: true,
+                prior_response: None
+            }
+        ),
+        "{resend:?}"
+    );
+    assert_eq!(executions.count(), 1, "the effect ran a second time");
+}
+
+/// While the claim is held — the handler still running — a resend is an
+/// in-flight duplicate, not a second execution. The guard only releases what
+/// was abandoned.
+#[tokio::test]
+async fn a_resend_while_the_handler_runs_is_still_an_in_flight_duplicate() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+    let transport = NoopHandler::new();
+
+    let mut running = std::pin::pin!(consume_inbound(
+        &transport,
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |_req: TrustTask<grant::Payload>, _parties| async move {
+            std::future::pending::<Result<TrustTask<grant::Response>, ErrorResponse>>().await
+        },
+    ));
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    assert!(running.as_mut().poll(&mut cx).is_pending());
+
+    let resend = consume(&guard, &executions, doc, now).await;
+    assert!(
+        matches!(
+            resend,
+            ConsumeOutcome::Duplicate {
+                in_flight: true,
+                ..
+            }
+        ),
+        "{resend:?}"
+    );
+    assert_eq!(executions.count(), 0);
+}
+
+/// The acceptance window is half-open and ends where the record does: at
+/// exactly `issuedAt + max_age + skew` the record may be gone, so the document
+/// must already be refused. A millisecond earlier it is still a duplicate.
+#[tokio::test]
+async fn the_window_closes_at_the_instant_the_record_may_be_dropped() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let issued = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", issued);
+    let end = FreshnessPolicy::consequential()
+        .record_expiry(&doc, issued)
+        .unwrap();
+
+    consume(&guard, &executions, doc.clone(), issued).await;
+
+    let just_before = consume(
+        &guard,
+        &executions,
+        doc.clone(),
+        end - TimeDelta::milliseconds(1),
+    )
+    .await;
+    assert!(
+        matches!(just_before, ConsumeOutcome::Duplicate { .. }),
+        "{just_before:?}"
+    );
+
+    let at_end = consume(&guard, &executions, doc, end).await;
+    match at_end {
+        ConsumeOutcome::Rejected(err) => assert_eq!(err.payload.code, StandardCode::Expired.into()),
+        other => panic!("expected Rejected(expired), got {other:?}"),
+    }
+    assert_eq!(executions.count(), 1);
+}
+
+/// A response whose `Serialize` impl panics.
+struct UnserialisableResponse;
+
+impl serde::Serialize for UnserialisableResponse {
+    fn serialize<S: serde::Serializer>(&self, _: S) -> Result<S::Ok, S::Error> {
+        panic!("response cannot be serialised");
+    }
+}
+
+/// The handler returned, so the effect happened. A response that panics while
+/// being serialised for the record still settles the claim — with no response
+/// to hand back — and the panic still reaches the caller. A resend is absorbed
+/// as a completed duplicate, neither left in flight nor executed again.
+#[tokio::test]
+async fn a_panicking_response_serialiser_settles_the_claim() {
+    let guard = InMemoryReplayGuard::new(64);
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+    let executions = AtomicUsize::new(0);
+    let executions = &executions;
+
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        poll_once(consume_inbound(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(&guard),
+            doc.clone(),
+            ME,
+            now,
+            || "err-1".to_string(),
+            |req: TrustTask<grant::Payload>, _parties| async move {
+                executions.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, ErrorResponse>(req.respond_with("resp-1", UnserialisableResponse))
+            },
+        ))
+    }));
+    assert!(panicked.is_err(), "the serialiser's panic must propagate");
+    assert_eq!(executions.load(Ordering::SeqCst), 1);
+
+    let unused = Executions::default();
+    match consume(&guard, &unused, doc, now).await {
+        ConsumeOutcome::Duplicate {
+            prior_response: None,
+            in_flight: false,
+        } => {}
+        other => panic!("expected a settled duplicate with no response, got {other:?}"),
+    }
+    assert_eq!(unused.count(), 0);
+}
+
+/// A guard whose `release` suspends until told to finish, standing in for a
+/// store round trip that is in progress when the pipeline is dropped.
+struct SlowReleaseGuard {
+    inner: InMemoryReplayGuard,
+}
+
+#[async_trait::async_trait]
+impl ReplayGuard for SlowReleaseGuard {
+    async fn claim(
+        &self,
+        id: &str,
+        digest: &trust_tasks_rs::DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<trust_tasks_rs::ReplayVerdict, trust_tasks_rs::ReplayGuardError> {
+        self.inner.claim(id, digest, retain_until, now).await
+    }
+    async fn record_response(
+        &self,
+        id: &str,
+        response: Option<&serde_json::Value>,
+    ) -> Result<(), trust_tasks_rs::ReplayGuardError> {
+        self.inner.record_response(id, response).await
+    }
+    async fn release(
+        &self,
+        _id: &str,
+        _digest: &trust_tasks_rs::DocumentDigest,
+    ) -> Result<(), trust_tasks_rs::ReplayGuardError> {
+        std::future::pending().await
+    }
+    fn release_abandoned(&self, id: &str, digest: &trust_tasks_rs::DocumentDigest) {
+        self.inner.release_abandoned(id, digest);
+    }
+}
+
+/// A retryable refusal releases the claim with an awaited `release`. If the
+/// pipeline is dropped while that release is pending, the claim is still
+/// released, through `release_abandoned`, so the invited retry runs.
+#[tokio::test]
+async fn a_pipeline_dropped_mid_release_still_releases_the_claim() {
+    let guard = SlowReleaseGuard {
+        inner: InMemoryReplayGuard::new(64),
+    };
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let pending = poll_once(consume_inbound(
+        &NoopHandler::new(),
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |req: TrustTask<grant::Payload>, _parties| async move {
+            Err::<TrustTask<grant::Response>, _>(req.reject_with(
+                "err-1",
+                trust_tasks_rs::RejectReason::Unavailable { retry_after: None },
+            ))
+        },
+    ));
+    assert!(
+        pending.is_pending(),
+        "the release should still be in progress"
+    );
+    assert_eq!(
+        guard.inner.len(),
+        0,
+        "the claim was left in flight when the release was cancelled"
+    );
+
+    let executions = Executions::default();
+    let resend = consume(&guard.inner, &executions, doc, now).await;
+    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
+    assert_eq!(executions.count(), 1);
 }

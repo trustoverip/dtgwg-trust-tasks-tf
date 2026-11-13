@@ -109,8 +109,13 @@ export type Response = VTNRegistryCheckResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/registry/check/0.1",
   "title": "VTN Registry — Check — payload",
@@ -130,87 +135,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Actions": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "listed"
-      ],
-      "properties": {
-        "member": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The action acknowledged members are published under."
-        },
-        "listed": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The action listed parties are published under, where the network publishes them."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Registry — Check — response payload",
-      "description": "What the registry answered, and its own answer document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registry",
-        "authority",
-        "resource",
-        "actions",
-        "did",
-        "reachable"
-      ],
-      "properties": {
-        "registry": {
-          "$ref": "#/$defs/Did",
-          "description": "The trust registry asked."
-        },
-        "authority": {
-          "$ref": "#/$defs/Did",
-          "description": "The network's DID: the authority of its records."
-        },
-        "resource": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The TRQP resource the network's records are published under."
-        },
-        "actions": {
-          "$ref": "#/$defs/Actions"
-        },
-        "did": {
-          "$ref": "#/$defs/Did",
-          "description": "The party asked about."
-        },
-        "reachable": {
-          "type": "boolean",
-          "description": "Whether the registry answered. `false` is indeterminate, never \"not a member\"."
-        },
-        "member": {
-          "type": "boolean",
-          "description": "Whether the registry holds an authorised member record for the party. Absent when not reachable."
-        },
-        "listed": {
-          "type": "boolean",
-          "description": "Whether the registry holds an authorised listed record for the party. Absent when not reachable."
-        },
-        "answer": {
-          "type": "object",
-          "description": "The registry's answer document, verbatim and signed by the registry."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Why the registry could not be asked, when not reachable."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -228,10 +152,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -333,7 +257,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

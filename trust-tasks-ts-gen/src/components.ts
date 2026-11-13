@@ -375,6 +375,13 @@ function nameComponents(components: readonly Component[]): Map<string, NamedEntr
       while (byName.has(`${name}_${n}`)) n++;
       name = `${name}_${n}`;
     }
+    // The name is written into the modules as code (a `tsType`, an import and
+    // an export clause), so it must be an identifier. A shared definition
+    // without a `title` is named from its `defOrigins` entry, which is bundle
+    // text.
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) {
+      throw new Error(`shared definition ${group.sources[0]!.origin} would be named ${JSON.stringify(name)}, which is not a TypeScript identifier`);
+    }
     const representative = group.sources[0]!;
     byName.set(name, { name, baseName: group.baseName, fragment: representative.fragment, representative });
     for (const c of group.sources) c.tsName = name;
@@ -476,7 +483,19 @@ async function compileComponents(
   if (missing.length) {
     throw new Error(`the components module does not declare ${missing.join(", ")} — json-schema-to-typescript renamed them`);
   }
-  const numbered = [...declared].filter((n) => /\d$/.test(n) && !names.includes(n) && declared.has(n.replace(/\d+$/, "")));
+  // A component whose schema has a `type` beside an `anyOf` (acl's `Purpose`)
+  // compiles to an intersection of numbered parts — `Purpose = Purpose1 &
+  // Purpose2` — which are the component's own, not a renamed duplicate. The
+  // package qualifies that name over the whole registry (`Purpose_AclV0_3`),
+  // so its parts never look numbered there; a lock reaching one shape of it
+  // names it bare, and they do.
+  const parts = new Set<string>();
+  for (const m of ts.matchAll(/^export type ([A-Za-z0-9_$]+) = ([A-Za-z0-9_$]+(?: & [A-Za-z0-9_$]+)+);$/gm)) {
+    for (const part of m[2]!.split(" & ")) if (part.replace(/\d+$/, "") === m[1]) parts.add(part);
+  }
+  const numbered = [...declared].filter(
+    (n) => /\d$/.test(n) && !names.includes(n) && !parts.has(n) && declared.has(n.replace(/\d+$/, "")),
+  );
   if (numbered.length) throw new Error(`the components module declares counter-suffixed duplicates: ${numbered.join(", ")}`);
 
   const lines = ts.replace(/\/\*[\s\S]*?\*\//g, "").split("\n");

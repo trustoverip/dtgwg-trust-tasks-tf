@@ -76,8 +76,13 @@ export type Response = ProvisionVTARedeemResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/provision/vta/redeem/0.1",
   "title": "Provision — VTA Redeem — payload",
@@ -96,55 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Provision — VTA Redeem — response payload",
-      "description": "The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "handle",
-        "vtaDid",
-        "operation"
-      ],
-      "properties": {
-        "handle": {
-          "$ref": "#/$defs/Handle"
-        },
-        "vtaDid": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 2048,
-          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-          "description": "The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`."
-        },
-        "operation": {
-          "type": "string",
-          "enum": [
-            "provisionVta",
-            "grantAcl"
-          ],
-          "description": "What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it."
-        },
-        "mediatorDid": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 2048,
-          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-          "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document."
-        },
-        "didLogUrl": {
-          "type": "string",
-          "minLength": 9,
-          "maxLength": 2048,
-          "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
-          "description": "Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -164,10 +120,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -239,7 +195,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

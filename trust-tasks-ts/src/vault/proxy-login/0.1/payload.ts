@@ -94,8 +94,13 @@ export type Response = VaultProxyLoginResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/proxy-login/0.1",
   "title": "Vault Proxy-Login — payload",
@@ -140,24 +145,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Proxy-Login — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sealedSessionBlob"
-      ],
-      "properties": {
-        "sealedSessionBlob": {
-          "$ref": "#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -166,97 +153,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SealedEnvelope": {
-      "title": "SealedEnvelope",
-      "description": "Discriminated by `envelope`. Exactly one variant matches per document.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/DidcommAuthcryptEnvelope"
-        },
-        {
-          "$ref": "#/$defs/HpkeArmoredEnvelope"
-        },
-        {
-          "$ref": "#/$defs/TspMessageEnvelope"
-        }
-      ]
-    },
-    "TspMessageEnvelope": {
-      "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "envelope",
-        "message"
-      ],
-      "properties": {
-        "envelope": {
-          "const": "tsp-message"
-        },
-        "message": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format"
-        }
-      }
-    },
-    "HpkeArmoredEnvelope": {
-      "title": "HpkeArmoredEnvelope",
-      "description": "OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "envelope",
-        "armored",
-        "recipientKeyId"
-      ],
-      "properties": {
-        "envelope": {
-          "const": "hpke-armored"
-        },
-        "armored": {
-          "type": "string",
-          "minLength": 1,
-          "description": "ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24."
-        },
-        "recipientKeyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key."
-        },
-        "producerAssertion": {
-          "type": "string",
-          "enum": [
-            "did-signed",
-            "attested",
-            "pinned-only"
-          ],
-          "default": "did-signed",
-          "description": "Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production)."
-        }
-      }
-    },
-    "DidcommAuthcryptEnvelope": {
-      "title": "DidcommAuthcryptEnvelope",
-      "description": "DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "envelope",
-        "jwe"
-      ],
-      "properties": {
-        "envelope": {
-          "const": "didcomm-authcrypt"
-        },
-        "jwe": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON."
-        }
       }
     },
     "StepUpProof": {
@@ -418,10 +314,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -543,167 +439,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON."
         }
       }
-    },
-    "StepUpProof": {
-      "title": "StepUpProof",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "proof",
-        "challengeId"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "webauthn-uv",
-            "push-approval",
-            "totp"
-          ]
-        },
-        "proof": {
-          "type": "string",
-          "description": "Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code."
-        },
-        "challengeId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Maintainer-issued challenge id the proof responds to."
-        }
-      }
-    },
-    "ConsumerContext": {
-      "title": "ConsumerContext",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "deviceId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity."
-        },
-        "lastUserVerificationAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds."
-        },
-        "networkClass": {
-          "type": "string",
-          "enum": [
-            "unknown",
-            "home",
-            "corp",
-            "public",
-            "vpn"
-          ],
-          "description": "Producer-supplied network classification. Advisory."
-        }
-      }
-    },
-    "SiteTarget": {
-      "title": "SiteTarget",
-      "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
-      "oneOf": [
-        {
-          "title": "WebOrigin",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "origin"
-          ],
-          "properties": {
-            "kind": {
-              "const": "web-origin"
-            },
-            "origin": {
-              "type": "string",
-              "format": "uri",
-              "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard."
-            }
-          }
-        },
-        {
-          "title": "Did",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "did"
-          ],
-          "properties": {
-            "kind": {
-              "const": "did"
-            },
-            "did": {
-              "type": "string",
-              "minLength": 1,
-              "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry."
-            }
-          }
-        },
-        {
-          "title": "IosApp",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "bundleId"
-          ],
-          "properties": {
-            "kind": {
-              "const": "ios-app"
-            },
-            "bundleId": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[A-Za-z0-9.-]+$",
-              "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration)."
-            },
-            "teamId": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[A-Z0-9]+$",
-              "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices."
-            }
-          }
-        },
-        {
-          "title": "AndroidApp",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "packageName",
-            "sha256CertFingerprints"
-          ],
-          "properties": {
-            "kind": {
-              "const": "android-app"
-            },
-            "packageName": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
-              "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\")."
-            },
-            "sha256CertFingerprints": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "string",
-                "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
-              },
-              "uniqueItems": true,
-              "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing)."
-            }
-          }
-        }
-      ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -107,8 +107,13 @@ export type Response = VTNRegistryStatusResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/registry/status/0.1",
   "title": "VTN Registry — Status — payload",
@@ -121,160 +126,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Sync": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "expected",
-        "put",
-        "deleted",
-        "failed"
-      ],
-      "properties": {
-        "reconciledAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the reconcile ran."
-        },
-        "expected": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Records the entries project."
-        },
-        "put": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Records written, by party."
-        },
-        "deleted": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Records deleted, as `party action`."
-        },
-        "failed": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Writes that failed, as `party: why`."
-        },
-        "blocked": {
-          "type": "string",
-          "description": "Why nothing could be written at all, when so."
-        }
-      }
-    },
-    "Row": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "result"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Did"
-        },
-        "projected": {
-          "type": "string",
-          "description": "The action the entries project, if any."
-        },
-        "held": {
-          "type": "string",
-          "description": "The action the registry holds, if any."
-        },
-        "result": {
-          "enum": [
-            "ok",
-            "missing",
-            "stale",
-            "wrong"
-          ]
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Registry — Status — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registry",
-        "authority",
-        "resource",
-        "actions",
-        "publishes",
-        "writer",
-        "connected",
-        "reachable"
-      ],
-      "properties": {
-        "registry": {
-          "$ref": "#/$defs/Did"
-        },
-        "authority": {
-          "$ref": "#/$defs/Did"
-        },
-        "resource": {
-          "type": "string",
-          "minLength": 1
-        },
-        "actions": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "member",
-            "listed"
-          ],
-          "properties": {
-            "member": {
-              "type": "string",
-              "minLength": 1
-            },
-            "listed": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        },
-        "publishes": {
-          "enum": [
-            "members",
-            "membersAndListed"
-          ]
-        },
-        "writer": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "connected": {
-          "type": "boolean"
-        },
-        "lastSync": {
-          "$ref": "#/$defs/Sync"
-        },
-        "reachable": {
-          "type": "boolean"
-        },
-        "records": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Row"
-          }
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -284,18 +135,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -470,7 +315,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

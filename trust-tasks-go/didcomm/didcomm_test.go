@@ -177,7 +177,7 @@ func (h harness) receive(t *testing.T, wire []byte) *Received[echo] {
 	return got
 }
 
-func codeOf(t *testing.T, r *Received[echo]) string {
+func codeOf[R any](t *testing.T, r *Received[R]) string {
 	t.Helper()
 	if r.Reply == nil {
 		return ""
@@ -388,4 +388,147 @@ func upper(s string) string {
 		}
 	}
 	return string(b)
+}
+
+// Two members differing only by case would be one field to encoding/json and
+// two to every other reader, so the document is refused before decode.
+func TestConsumerCaseFoldedDuplicateMembers(t *testing.T) {
+	for name, edit := range map[string]func(map[string]any){
+		"payload":  func(m map[string]any) { m["payload"] = map[string]any{"text": "reader", "Text": "admin"} },
+		"envelope": func(m map[string]any) { m["issuedAt"] = fixedIssuedAt; m["IssuedAt"] = fixedIssuedAt },
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t)
+			r := h.receive(t, h.seal(t, echoDoc(defaultID, "hello", edit)))
+			if code := codeOf(t, r); code != "malformedRequest" {
+				t.Fatalf("code = %q, want malformedRequest", code)
+			}
+			if len(*h.calls) != 0 {
+				t.Fatal("handler ran")
+			}
+		})
+	}
+	// A member differing other than by case is an ordinary unknown member.
+	h := newHarness(t)
+	r := h.receive(t, h.seal(t, echoDoc(defaultID, "hello", func(m map[string]any) {
+		m["payload"] = map[string]any{"text": "hello", "text_note": "kept"}
+	})))
+	if r.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("outcome = %s, reply=%s", r.Outcome.Kind, r.Reply)
+	}
+}
+
+// SPEC §5.2 (#1117): a consumer of rooms/records/put/0.4 reads a 0.5 document —
+// which declares extends: "0.4" in the registry — as 0.4, its payload pruned to
+// what 0.4's schema knows, and answers it as 0.5. An undeclared later version
+// of the same slug is unsupportedVersion; another slug is unsupportedType.
+func TestConsumerReadsAnExtendingVersionForward(t *testing.T) {
+	const base = "https://trusttasks.org/spec/rooms/records/put/"
+	spec := tt.SpecPolicy{
+		TypeURI:       base + "0.4",
+		PayloadSchema: `{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}}}`,
+	}
+	type note struct {
+		Text  string  `json:"text"`
+		Extra *string `json:"extra,omitempty"`
+	}
+	run := func(typeURI string) (*Received[note], *note) {
+		h := newHarness(t)
+		var seen *note
+		handler := func(_ context.Context, doc *tt.Document[note], _ tt.ResolvedParties) (*tt.Document[note], error) {
+			seen = &doc.Payload
+			return tt.RespondWith[note, note](doc, NewMessageID(), note{Text: "ok"}, nil), nil
+		}
+		wire := h.seal(t, echoDoc(defaultID, "hello", func(d map[string]any) {
+			d["type"] = typeURI
+			d["payload"] = map[string]any{"text": "hello", "extra": "0.5 only"}
+		}))
+		decode := func(raw json.RawMessage) (note, error) {
+			var n note
+			err := json.Unmarshal(raw, &n)
+			return n, err
+		}
+		got, err := Receive(context.Background(), h.consumer, wire, h.resolve, spec, decode, handler)
+		if err != nil {
+			t.Fatalf("receive: %v", err)
+		}
+		return got, seen
+	}
+
+	got, seen := run(base + "0.5")
+	if got.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("0.5 outcome = %s, reply=%s", got.Outcome.Kind, got.Reply)
+	}
+	if seen == nil || seen.Text != "hello" || seen.Extra != nil {
+		t.Fatalf("the handler saw %+v, want the payload pruned to 0.4's members", seen)
+	}
+	if want := base + "0.5#response"; got.Outcome.Response.Type != want {
+		t.Fatalf("response typed %s, want %s", got.Outcome.Response.Type, want)
+	}
+
+	if got, _ := run(base + "0.99"); codeOf(t, got) != string(tt.CodeUnsupportedVersion) {
+		t.Fatalf("undeclared later version: reply=%s", got.Reply)
+	}
+	if got, _ := run("https://trusttasks.org/spec/rooms/records/get/0.4"); codeOf(t, got) != string(tt.CodeUnsupportedType) {
+		t.Fatalf("another slug: reply=%s", got.Reply)
+	}
+}
+
+// SPEC §5.2, §6.5 (#1117): a third-party specification's extends chain is not
+// in the registry index, so it is followed only through Consumer.Extends. With
+// the lookup a 0.3 document reaches the implemented 0.1 along 0.3 → 0.2 → 0.1,
+// is pruned, and is answered as 0.3; without it, it is unsupportedVersion and
+// no handler runs.
+func TestConsumerFollowsACallerSuppliedExtendsChain(t *testing.T) {
+	const base = "https://example.com/spec/vector/grant/"
+	spec := tt.SpecPolicy{
+		TypeURI:       base + "0.1",
+		PayloadSchema: `{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}}}`,
+	}
+	lookup := func(typeURI string) string {
+		return map[string]string{base + "0.3": "0.2", base + "0.2": "0.1"}[typeURI]
+	}
+	type note struct {
+		Text  string  `json:"text"`
+		Extra *string `json:"extra,omitempty"`
+	}
+	run := func(extends tt.ExtendsLookup) (*Received[note], *note) {
+		h := newHarness(t)
+		h.consumer.Extends = extends
+		var seen *note
+		handler := func(_ context.Context, doc *tt.Document[note], _ tt.ResolvedParties) (*tt.Document[note], error) {
+			seen = &doc.Payload
+			return tt.RespondWith[note, note](doc, NewMessageID(), note{Text: "ok"}, nil), nil
+		}
+		wire := h.seal(t, echoDoc(defaultID, "hello", func(d map[string]any) {
+			d["type"] = base + "0.3"
+			d["payload"] = map[string]any{"text": "hello", "extra": "0.3 only"}
+		}))
+		decode := func(raw json.RawMessage) (note, error) {
+			var n note
+			err := json.Unmarshal(raw, &n)
+			return n, err
+		}
+		got, err := Receive(context.Background(), h.consumer, wire, h.resolve, spec, decode, handler)
+		if err != nil {
+			t.Fatalf("receive: %v", err)
+		}
+		return got, seen
+	}
+
+	got, seen := run(lookup)
+	if got.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("outcome = %s, reply=%s", got.Outcome.Kind, got.Reply)
+	}
+	if seen == nil || seen.Text != "hello" || seen.Extra != nil {
+		t.Fatalf("the handler saw %+v, want the payload pruned to 0.1's members", seen)
+	}
+	if want := base + "0.3#response"; got.Outcome.Response.Type != want {
+		t.Fatalf("response typed %s, want %s", got.Outcome.Response.Type, want)
+	}
+
+	got, seen = run(nil)
+	if codeOf(t, got) != string(tt.CodeUnsupportedVersion) || seen != nil {
+		t.Fatalf("registry lookup only: reply=%s, handler saw %+v", got.Reply, seen)
+	}
 }

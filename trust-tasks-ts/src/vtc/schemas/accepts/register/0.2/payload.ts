@@ -69,8 +69,13 @@ export type Response = VTCSchemasAcceptsRegisterResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/register/0.2",
   "title": "VTC Schemas — Accepts — Register — payload",
@@ -110,23 +115,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — Accepts — Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "criterion"
-      ],
-      "properties": {
-        "criterion": {
-          "$ref": "#/$defs/AcceptsCriterion"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -135,63 +123,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AcceptsCriterion": {
-      "title": "AcceptsCriterion",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "admission",
-        "createdAt",
-        "createdByDid"
-      ],
-      "dependentRequired": {
-        "query": [
-          "credentialIssuers"
-        ],
-        "credentialIssuers": [
-          "query"
-        ]
-      },
-      "description": "One way into the community: what an applicant must present, and how a submission that presents it is decided. Every requirement it states must be met; requirements it does not state are not requirements. A criterion stating none is met by every submission. A community's criteria are alternatives: a submission is decided under the one it names. What vtc/join-requests/manifest/0.3 publishes to applicants as a `Criterion` is derived from this.",
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/AcceptsCriterionId"
-        },
-        "admission": {
-          "$ref": "#/$defs/Admission"
-        },
-        "query": {
-          "$ref": "#/$defs/DcqlQuery",
-          "description": "The credentials an applicant must present, as a DCQL query. Absent: the criterion requires no credential."
-        },
-        "credentialIssuers": {
-          "$ref": "#/$defs/CredentialIssuers",
-          "description": "Whose credentials meet `query`. Present exactly when `query` is."
-        },
-        "invitationRequired": {
-          "type": "boolean",
-          "description": "True: a submission meets the criterion only when it carries a valid, unconsumed invitation credential this community issued to the applicant. Absent or false: an invitation plays no part in meeting this criterion (another criterion may still require one)."
-        },
-        "description": {
-          "$ref": "#/$defs/CriterionDescription"
-        },
-        "vetting": {
-          "$ref": "#/$defs/VettingRequirements"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this criterion was last registered. Registering an existing id replaces it."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the criterion."
-        }
       }
     },
     "VettingRequirements": {
@@ -449,10 +380,10 @@ export const PAYLOAD_SCHEMA = {
       "query"
     ]
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -787,7 +718,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

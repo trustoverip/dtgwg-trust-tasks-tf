@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/mux/connections/0.1",
+  "title": "Messaging — Mux Connections — payload",
+  "description": "An administrator lists a mediator's live mux connections a page at a time, each with its principal, wire, and the member DIDs it carries. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "principal": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+      "description": "Only connections authenticated as this principal DID."
+    },
+    "member": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+      "description": "Only connections carrying this member DID, active or not; each connection's `members` then holds that member's entry alone."
+    },
+    "memberLimit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "The most member entries the page carries, summed over all its connections; the responder's default is 1000. `0` returns connections without members — `memberCount` is still exact."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the requester and the other request members; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most connections to return, at most 100; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "MuxWire": {
+      "title": "MuxWire",
+      "type": "string",
+      "enum": [
+        "didcomm",
+        "tsp"
+      ],
+      "description": "The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated `tsp-mux`."
+    },
+    "MuxCoverage": {
+      "title": "MuxCoverage",
+      "type": "string",
+      "enum": [
+        "allInstances",
+        "thisInstance"
+      ],
+      "description": "Which live connections the answer covers. `allInstances`: every instance of the mediator, so a connection the answer does not list is not open anywhere. `thisInstance`: only the instance that answered; connections held by other instances of a horizontally scaled mediator are not listed, and their absence says nothing."
+    },
+    "ConnectionMember": {
+      "title": "ConnectionMember",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "source",
+        "scope",
+        "expiresAt",
+        "deliveryActive"
+      ],
+      "description": "One member DID carried by a live mux connection.",
+      "properties": {
+        "did": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+          "description": "The member DID."
+        },
+        "source": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxSource",
+          "description": "Whether the member rides the connection through a stored grant or a session attach."
+        },
+        "grantId": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/GrantId",
+          "description": "Present exactly when `source` is `grant`: the grant the member is attached through."
+        },
+        "scope": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxScope",
+          "description": "The scope in force for the member on this connection."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the membership lapses: the grant's effective expiry, or the attach statement's `exp`."
+        },
+        "deliveryActive": {
+          "type": "boolean",
+          "description": "False while the member's live traffic goes elsewhere — to the member DID's own direct connection, or to a newer connection of the same kind — so that this connection carries it inactive (a `superseded` member)."
+        }
+      }
+    },
+    "MuxConnection": {
+      "title": "MuxConnection",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "principal",
+        "wire",
+        "openedAt",
+        "memberCount",
+        "members"
+      ],
+      "description": "One live mux connection: an authenticated connection the mediator has sent a `ready` event on and that has not closed.",
+      "properties": {
+        "sessionId": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/SessionId",
+          "description": "The connection's identifier, as its `ready` event announced it."
+        },
+        "principal": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+          "description": "The DID the connection is authenticated as."
+        },
+        "wire": {
+          "$ref": "#/$defs/MuxWire"
+        },
+        "openedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the mediator sent the connection's `ready` event."
+        },
+        "memberCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many members the connection carries, active or not, when the page was drawn; exact even when `members` holds fewer."
+        },
+        "members": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/ConnectionMember"
+          },
+          "description": "A contiguous run of the connection's members, ordered by member DID: all of them, or — when the page's member budget ran out — the first of them, the rest following on the next page under the same `sessionId`. With `member` in the request, only that member's entry."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Mux Connections — response payload",
+      "description": "The success response to a messaging/mux/connections request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/connections/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connections",
+        "coverage"
+      ],
+      "properties": {
+        "connections": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/MuxConnection"
+          },
+          "description": "Live mux connections, ordered by `openedAt` then `sessionId`. The first connection of a page may continue one the previous page split."
+        },
+        "coverage": {
+          "$ref": "#/$defs/MuxCoverage"
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

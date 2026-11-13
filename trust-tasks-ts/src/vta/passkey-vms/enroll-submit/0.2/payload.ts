@@ -112,8 +112,13 @@ export type Response = VTAPasskeyVMEnrollSubmitResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.2",
   "title": "VTA Passkey-VM Enroll Submit — payload",
@@ -190,32 +195,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Passkey-VM Enroll Submit — response payload",
-      "description": "Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verificationMethod",
-        "webvhVersion"
-      ],
-      "properties": {
-        "verificationMethod": {
-          "$ref": "#/$defs/PasskeyVerificationMethod",
-          "description": "The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative."
-        },
-        "webvhVersion": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The WebVH log-entry version that recorded the change (e.g. \"3-Qm…\")."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -225,65 +204,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "PasskeyVerificationMethod": {
-      "title": "PasskeyVerificationMethod",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "type",
-        "controller",
-        "publicKeyMultibase",
-        "webauthnCredentialId"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`."
-        },
-        "type": {
-          "type": "string",
-          "const": "Multikey",
-          "description": "Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it."
-        },
-        "controller": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DID this verificationMethod is published on (the DID being augmented)."
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit)."
-        },
-        "webauthnCredentialId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment."
-        },
-        "webauthnTransports": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints."
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Optional operator-supplied human-readable label (e.g. \"MacBook Touch ID\"). Informational; not authoritative and not a security input."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -377,7 +303,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -7,7 +7,7 @@
 //! - In-band `issuer` / `recipient` values are authoritative when present.
 //! - Transport-derived identity fills in absent members.
 //! - When both are present, they MUST be consistent — a mismatch is a
-//!   validation failure (the standard error code is `identity_mismatch`,
+//!   validation failure (the standard error code is `identityMismatch`,
 //!   §8.3).
 //!
 //! A handler implementation supplies the *transport-derived* values it
@@ -49,7 +49,7 @@ pub struct TransportContext {
 }
 
 /// Errors raised when in-band and transport-derived identity disagree
-/// (SPEC.md §7.2 item 6; standard code `identity_mismatch`, §8.3).
+/// (SPEC.md §7.2 item 6; standard code `identityMismatch`, §8.3).
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum ConsistencyError {
     /// The in-band `issuer` does not match the transport-authenticated sender.
@@ -112,7 +112,7 @@ pub trait TransportHandler {
     /// Returns [`ConsistencyError`] when an in-band member is present and
     /// disagrees with the transport-derived value for the same party. The
     /// caller is responsible for translating the error into an
-    /// `identity_mismatch` error response (SPEC.md §8.3).
+    /// `identityMismatch` error response (SPEC.md §8.3).
     fn resolve_parties<P>(&self, doc: &TrustTask<P>) -> Result<ResolvedParties, ConsistencyError> {
         let ctx = self.derive_parties();
 
@@ -150,15 +150,23 @@ pub trait TransportHandler {
     /// in-band issuer.
     ///
     /// Returns `Some(ErrorResponse)` when a routable recipient exists, and
-    /// `None` when the rejection is `identity_mismatch` and the transport
+    /// `None` when the rejection is `identityMismatch` and the transport
     /// has no authenticated sender for the inbound document — per §8.1, the
     /// consumer SHOULD NOT emit a response in that case.
+    ///
+    /// The response's `issuer` is the consumer that emits it (§8.1): the
+    /// transport's own identity ([`TransportContext::recipient`]) where the
+    /// transport has one. Otherwise it is the rejected document's in-band
+    /// `recipient`, except under `wrongRecipient`, where that value is by
+    /// definition not this consumer and the `issuer` is left out.
     fn reject<P>(
         &self,
         doc: &TrustTask<P>,
         id: impl Into<String>,
         reason: RejectReason,
     ) -> Option<ErrorResponse> {
+        let not_me = matches!(reason, RejectReason::WrongRecipient { .. });
+        let local = self.derive_parties().recipient;
         let recipient = match &reason {
             RejectReason::IdentityMismatch(_) => {
                 // §8.1: transport-authenticated sender only. If the
@@ -170,6 +178,10 @@ pub trait TransportHandler {
             }
             _ => doc.issuer.clone(),
         };
-        Some(doc.reject_with_recipient(id, reason, recipient))
+        let mut response = doc.reject_with_recipient(id, reason, recipient);
+        if local.is_some() || not_me {
+            response.issuer = local;
+        }
+        Some(response)
     }
 }

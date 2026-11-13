@@ -80,8 +80,13 @@ export type Response = VTCGroupsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/groups/create/0.1",
   "title": "VTC Groups — Create — payload",
@@ -134,24 +139,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Groups — Create — response payload",
-      "description": "The success response to a vtc/groups/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/create/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "group"
-      ],
-      "properties": {
-        "group": {
-          "$ref": "#/$defs/Group"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -160,106 +147,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Group": {
-      "title": "Group",
-      "description": "A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "groupId",
-        "groupDid",
-        "name",
-        "kind",
-        "visibility",
-        "showMembers",
-        "issuesCredentials",
-        "carriesAuthority",
-        "createdAt"
-      ],
-      "properties": {
-        "groupId": {
-          "$ref": "#/$defs/GroupId"
-        },
-        "groupDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description."
-        },
-        "name": {
-          "$ref": "#/$defs/GroupName"
-        },
-        "description": {
-          "$ref": "#/$defs/GroupDescription"
-        },
-        "kind": {
-          "$ref": "#/$defs/GroupKind"
-        },
-        "rule": {
-          "$ref": "#/$defs/DynamicRule",
-          "description": "Present exactly when `kind` is `dynamic`."
-        },
-        "joinPolicy": {
-          "$ref": "#/$defs/JoinPolicy",
-          "description": "Present exactly when `kind` is `static`."
-        },
-        "visibility": {
-          "$ref": "#/$defs/GroupAudience",
-          "description": "Who may see that the group exists, and its name and description."
-        },
-        "showMembers": {
-          "$ref": "#/$defs/GroupAudience",
-          "description": "Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`."
-        },
-        "issuesCredentials": {
-          "type": "boolean",
-          "description": "Whether the group's DID issues its members a membership credential. Default true."
-        },
-        "carriesAuthority": {
-          "type": "boolean",
-          "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
-        },
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId",
-          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
-        },
-        "memberCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Active members. Only to callers who may see the member list."
-        },
-        "managers": {
-          "type": "array",
-          "maxItems": 256,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/EntryId"
-          },
-          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record."
-        },
-        "credentialAuthorityValidUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community's authorization credential to the group expires. The community renews it well before."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "$ref": "#/$defs/EntryId",
-          "description": "The creating administrator's directory entry, where they have one."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
-        }
       }
     },
     "GroupAudience": {
@@ -397,30 +284,12 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "description": "The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text."
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-    },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -707,7 +576,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

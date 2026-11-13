@@ -182,14 +182,15 @@ The relying party answers with the pending step-up and the operation it is bound
       }
     },
     "operation": {
-      "type": "https://trusttasks.org/spec/acl/grant/0.2",
+      "type": "https://trusttasks.org/spec/acl/grant/0.3",
       "payload": {
         "entry": {
           "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
           "role": "moderator",
           "act": { "scope": "all" },
           "capabilities": { "scope": "ceiling" },
-          "keys": { "scope": "none" }
+          "keys": { "scope": "none" },
+          "purposes": { "scope": "any" }
         },
         "reason": "Moderation help for the autumn intake"
       }

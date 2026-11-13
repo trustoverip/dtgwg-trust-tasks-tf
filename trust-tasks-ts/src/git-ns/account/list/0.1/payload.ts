@@ -115,8 +115,13 @@ export type Response = GitNamespacesListLinkedForgeAccountsResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/account/list/0.1",
   "title": "Git Namespaces — List Linked Forge Accounts — payload",
@@ -147,65 +152,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "AccountRow": {
-      "title": "AccountRow",
-      "description": "One member's account on one forge, as linked through git-ns/account/link.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "account",
-        "memberCurrent"
-      ],
-      "properties": {
-        "member": {
-          "$ref": "#/$defs/Did",
-          "description": "The member the account is linked to."
-        },
-        "account": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "The linked account. `id` is authoritative; `login` is as the forge last reported it — display only."
-        },
-        "linkedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC recorded the link. Absent for a link recorded before this member was tracked."
-        },
-        "memberCurrent": {
-          "type": "boolean",
-          "description": "Whether `member` is still a current member. One whose access lapsed keeps the link — nobody else may link the account — but it projects no forge role, and a forge role it holds cannot be adopted as a right."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — List Linked Forge Accounts — response payload",
-      "description": "The matching links, ordered by member then forge.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accounts"
-      ],
-      "properties": {
-        "accounts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AccountRow"
-          },
-          "description": "Links matching `member` and `forge`, ordered by `member` then `account.forge`. At most one per member per forge."
-        },
-        "nextCursor": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Continuation token for the next page, or `null` when this is the last."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -215,38 +161,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ForgeAccount": {
-      "title": "ForgeAccount",
-      "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "id",
-        "login"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "id": {
-          "$ref": "#/$defs/ForgeId"
-        },
-        "login": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "The account's current login, as the forge reported it when last seen. Display only."
-        }
-      }
-    },
-    "ForgeId": {
-      "title": "ForgeId",
-      "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
     },
     "ForgeHost": {
       "title": "ForgeHost",
@@ -264,10 +178,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -388,7 +302,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

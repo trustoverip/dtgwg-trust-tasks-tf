@@ -70,8 +70,13 @@ export type Response = VTCRoomsCommunityMembersAddResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/add/0.2",
   "title": "VTC Rooms Community Members Add — payload",
@@ -113,24 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Community Members Add — response payload",
-      "description": "Success response to vtc/rooms/community/members/add. Type https://trusttasks.org/spec/vtc/rooms/community/members/add/0.2#response. The member as recorded, in state `offered`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member"
-      ],
-      "properties": {
-        "member": {
-          "$ref": "#/$defs/RoomMemberV2"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -140,65 +127,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoomMemberV2": {
-      "title": "RoomMemberV2",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "actions",
-        "validUntil",
-        "state",
-        "offeredAt"
-      ],
-      "description": "`RoomMember` with `MemberStateV2`, and `suspendedAt`.",
-      "properties": {
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "actions": {
-          "$ref": "#/$defs/MemberActions"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the member's authority credential expires."
-        },
-        "state": {
-          "$ref": "#/$defs/MemberStateV2"
-        },
-        "offeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "admittedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "removedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "suspendedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present exactly when `state` is `suspended`."
-        }
-      }
-    },
-    "MemberStateV2": {
-      "title": "MemberStateV2",
-      "type": "string",
-      "enum": [
-        "offered",
-        "admitted",
-        "suspended",
-        "removed"
-      ],
-      "description": "`MemberState` plus `suspended`. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `suspended`: admitted, but the room was archived with `noAccess` (or scheduled for removal), so the room's host refuses the member's credentials; on a sealed tier they are still in the room's group. Restored to `admitted` with freshly issued credentials when the room leaves that state, and never restored if it is removed. `removed`: an administrator removed them, or withdrew their offer — archiving withdraws every open offer; on a sealed tier the room has advanced past an admitted member."
     },
     "MemberActions": {
       "title": "MemberActions",
@@ -229,10 +157,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -343,16 +271,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "curate"
       ],
       "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
-    },
-    "Reason": {
-      "title": "Reason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

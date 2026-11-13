@@ -95,8 +95,13 @@ export type Response = VTCJoinRequestsSubmitResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
   "title": "VTC Join-Requests Submit — payload",
@@ -152,30 +157,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Submit — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "verdict"
-      ],
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Id of the created join request (a UUID)."
-        },
-        "verdict": {
-          "$ref": "#/$defs/Verdict",
-          "description": "What the community decided about this submission.\n\n`0.1` returned `status: \"pending\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -185,89 +166,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Verdict": {
-      "$anchor": "verdict",
-      "title": "Verdict",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "effect",
-        "with"
-      ],
-      "description": "A ceremony decision: the effect, plus its effect-dependent detail.",
-      "properties": {
-        "effect": {
-          "$ref": "#/$defs/VerdictEffect"
-        },
-        "with": {
-          "$ref": "#/$defs/VerdictWith"
-        }
-      }
-    },
-    "VerdictWith": {
-      "$anchor": "verdictWith",
-      "title": "VerdictWith",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "The effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
-      "properties": {
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The granted local role. `allow` only."
-        },
-        "obligations": {
-          "type": "object",
-          "description": "Conditions attached to the grant. `allow` only."
-        },
-        "bundleRef": {
-          "type": "object",
-          "description": "Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only."
-        },
-        "code": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Stable refusal code, safe to branch on. `deny` only."
-        },
-        "reason": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024,
-          "description": "Elaboration in prose, when the decider gave one. `deny` and `refer`."
-        },
-        "queue": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only."
-        },
-        "needs": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only."
-        },
-        "presentationDefinition": {
-          "type": "object",
-          "description": "A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only."
-        }
-      }
-    },
-    "VerdictEffect": {
-      "$anchor": "verdictEffect",
-      "title": "VerdictEffect",
-      "type": "string",
-      "enum": [
-        "allow",
-        "deny",
-        "refer",
-        "requestMore"
-      ],
-      "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",
@@ -280,10 +178,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -403,19 +301,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "requestMore"
       ],
       "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

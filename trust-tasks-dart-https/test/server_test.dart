@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 // The specimen is a prebuilt library, deprecated in favour of generating the
 // tasks an application uses (dart run trust_tasks:generate).
 // ignore: deprecated_member_use
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_3/payload.dart' as acl_grant;
 // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) -----------------------
 // Delete these three imports, and the group marked the same way below, when the
 // withdrawal batch removes 0.1 and 0.2.
@@ -219,6 +219,38 @@ void main() {
       );
       expect(codeOf(reply), 'expired');
     });
+
+    test(
+        'an unattributed sender gets the same answer for a registered and an '
+        'unregistered type', () async {
+      final s = echoServer();
+      final types = [
+        echoType,
+        '$echoType#response',
+        'https://trusttasks.org/spec/example/other/0.1',
+        'https://trusttasks.org/spec/example/echo/9.9',
+      ];
+      for (final type in types) {
+        final reply = await s.handle(post(echoDoc(type: type), token: null));
+        expect(reply.status, 422, reason: type);
+        expect(codeOf(reply), 'proofRequired', reason: type);
+      }
+      // A payload the registered type's decoder would refuse is not read
+      // before the gate either.
+      final malformed = echoDoc()..['payload'] = {'text': 7};
+      expect(
+        codeOf(await s.handle(post(malformed, token: null))),
+        'proofRequired',
+      );
+    });
+
+    test('an authenticated sender still learns the type is unsupported',
+        () async {
+      final reply = await echoServer().handle(
+        post(echoDoc(type: 'https://trusttasks.org/spec/example/other/0.1')),
+      );
+      expect(codeOf(reply), 'unsupportedType');
+    });
   });
 
   group('proofs', () {
@@ -259,6 +291,71 @@ void main() {
       final reply = await s.handle(post(echoDoc(proof: proof(alice))));
       expect(codeOf(reply), 'proofInvalid');
       expect(verifier.calls, 0);
+    });
+
+    group('DID-method screen default', () {
+      const didKey = 'did:key:z6MkExample';
+
+      test('is did:key only', () {
+        expect(defaultAllowedDidMethods, {'key'});
+      });
+
+      test('with a verifier and no choice, admits did:key only', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(verifier: verifier, allowAnyDidMethod: false);
+        expect(s.allowedDidMethods, defaultAllowedDidMethods);
+
+        final web = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(codeOf(web), 'proofInvalid');
+        expect(verifier.calls, 0);
+
+        final key = await s.handle(
+          post(
+            echoDoc(
+              id: 'urn:uuid:00000000-0000-4000-8000-0000000000d1',
+              proof: proof(didKey),
+            ),
+          ),
+        );
+        expect(key.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('allowAnyDidMethod lifts it', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(verifier: verifier, allowAnyDidMethod: true);
+        expect(s.allowedDidMethods, isNull);
+        final reply = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(reply.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('an explicit allowedDidMethods replaces it', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(
+          verifier: verifier,
+          allowedDidMethods: {'web'},
+          allowAnyDidMethod: false,
+        );
+        final reply = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(reply.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('a server with no verifier screens nothing', () {
+        expect(echoServer(allowAnyDidMethod: false).allowedDidMethods, isNull);
+      });
+
+      test('allowedDidMethods with allowAnyDidMethod is an ArgumentError', () {
+        expect(
+          () => HttpsServer(
+            proofVerifier: FakeVerifier(),
+            allowedDidMethods: {'key'},
+            allowAnyDidMethod: true,
+          ),
+          throwsArgumentError,
+        );
+      });
     });
 
     test('a proof-REQUIRED specification refuses a proofless document',
@@ -363,6 +460,31 @@ void main() {
       expect(calls, ['crash', 'crash']);
     });
 
+    // #1119: handle() is documented "Never throws". An encoder whose output
+    // jsonEncode cannot write used to escape it from outside the try.
+    for (final (name, encodeResponse) in <(String, Object? Function(Echo))>[
+      ('throws', (_) => throw StateError('encoder failed')),
+      ('returns what jsonEncode cannot write', (_) => Object()),
+    ]) {
+      test('a response encoder that $name is internalError, not a throw',
+          () async {
+        final s = HttpsServer(
+          localVid: server,
+          auth: StaticBearerAuth({aliceToken: alice}),
+          clock: () => fixedNow,
+        )..on<Echo, Echo>(
+            spec: echoSpec,
+            decode: Echo.fromJson,
+            encode: (p) => p.toJson(),
+            encodeResponse: encodeResponse,
+            handler: (doc, ctx) async => doc.payload,
+          );
+        final reply = await s.handle(post(echoDoc()));
+        expect(reply.status, 500);
+        expect(codeOf(reply), 'internalError');
+      });
+    }
+
     test('a store that cannot be consulted fails closed with unavailable/503',
         () async {
       final calls = <String>[];
@@ -449,9 +571,11 @@ void main() {
       final read = discovery.Response.fromJson(payload);
       expect(read.supportedTypes, contains(echoType));
       expect(read.frameworkVersion, '0.6.1');
-      // echoServer keeps the consequential posture: five minutes, 60 s skew.
+      // echoServer keeps the consequential posture: five minutes, 60 s skew,
+      // and a stated expiresAt honoured up to thirty days.
       expect(read.acceptanceWindow?.maxAgeSeconds, 300);
       expect(read.acceptanceWindow?.clockSkewSeconds, 60);
+      expect(read.acceptanceWindow?.expiryHorizonSeconds, 30 * 24 * 60 * 60);
     });
 
     test('a request outside the 0.4 request schema is refused', () async {
@@ -485,9 +609,34 @@ void main() {
         requireIssuedAt: true,
       )))['acceptanceWindow'];
       // Never wider than enforced (responder rule 1): fractions round down.
-      // No expiryHorizonSeconds: FreshnessPolicy has no horizon, so the
-      // maximum age applies to every document, which is what its absence says.
+      // No expiryHorizonSeconds: this policy sets no horizon, and the
+      // member's absence says the maximum age applies to every document —
+      // narrower than the policy, which honours any stated expiresAt.
       expect(window, {'maxAgeSeconds': 90, 'clockSkewSeconds': 5});
+
+      // The expiry horizon is advertised, rounded down the same way, so a
+      // producer can see a stated expiresAt is honoured up to it.
+      expect(
+        (await ask(const FreshnessPolicy(
+          maxAge: Duration(seconds: 90),
+          expiryHorizon: Duration(days: 1, milliseconds: 900),
+        )))['acceptanceWindow'],
+        {
+          'maxAgeSeconds': 90,
+          'clockSkewSeconds': 60,
+          'expiryHorizonSeconds': 86400,
+        },
+      );
+      // A horizon under a second has no spelling that is not wider than the
+      // window enforced, so no window is stated.
+      expect(
+        (await ask(const FreshnessPolicy(
+          maxAge: Duration(seconds: 90),
+          expiryHorizon: Duration.zero,
+        )))
+            .containsKey('acceptanceWindow'),
+        isFalse,
+      );
 
       // An unbounded window has no spelling, so none is stated.
       expect(

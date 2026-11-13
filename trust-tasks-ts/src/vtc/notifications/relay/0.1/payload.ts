@@ -69,8 +69,13 @@ export type Response = VTCNotificationsRelayResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/notifications/relay/0.1",
   "title": "VTC Notifications — Relay — payload",
@@ -97,33 +102,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Notifications — Relay — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "recordId",
-        "revision",
-        "recipientCount"
-      ],
-      "properties": {
-        "recordId": {
-          "$ref": "#/$defs/RecordId"
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000000,
-          "description": "The revision of the notification the decision relays."
-        },
-        "recipientCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many parties this decision added to those the notification is relayed to, each of which the community has queued one relay for. Zero when the selection reaches no member an earlier decision had not."
-        }
-      }
-    },
     "RecordId": {
       "title": "RecordId",
       "description": "The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.",
@@ -220,10 +198,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -261,96 +239,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 16,
       "maxLength": 128,
       "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Recipients": {
-      "title": "Recipients",
-      "description": "The members a relay decision reaches, resolved by the community from its own records when the decision is made (VTI-NTF-072). `groupId` is present exactly when `scope` is `group`, and `role` exactly when `scope` is `role`. Whatever the scope, the community never relays to itself, to the notification's originator, or to any relayer the received chain names (VTI-NTF-047), and relays to each party at most once per revision.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "scope"
-      ],
-      "properties": {
-        "scope": {
-          "$ref": "#/$defs/RecipientScope"
-        },
-        "groupId": {
-          "$ref": "#/$defs/GroupId",
-          "description": "The community group whose active members the relay reaches."
-        },
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`."
-        }
-      },
-      "dependentSchemas": {
-        "scope": {
-          "anyOf": [
-            {
-              "required": [
-                "groupId"
-              ]
-            },
-            {
-              "required": [
-                "role"
-              ]
-            },
-            {
-              "properties": {
-                "scope": {
-                  "const": "allMembers"
-                }
-              }
-            }
-          ]
-        },
-        "groupId": {
-          "properties": {
-            "scope": {
-              "const": "group"
-            }
-          }
-        },
-        "role": {
-          "properties": {
-            "scope": {
-              "const": "role"
-            }
-          }
-        }
-      }
-    },
-    "RecipientScope": {
-      "title": "RecipientScope",
-      "description": "Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.",
-      "type": "string",
-      "enum": [
-        "allMembers",
-        "group",
-        "role"
-      ]
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

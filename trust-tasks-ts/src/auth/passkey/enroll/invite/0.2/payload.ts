@@ -117,8 +117,13 @@ export type Response = AuthPasskeyEnrollInviteResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2",
   "title": "Auth — Passkey Enroll (invite)",
@@ -170,67 +175,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Enroll Invite — response payload",
-      "description": "The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "invite",
-        "subject",
-        "purpose",
-        "expiresAt",
-        "claimCode"
-      ],
-      "properties": {
-        "invite": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "token",
-            "url"
-          ],
-          "properties": {
-            "token": {
-              "type": "string",
-              "minLength": 16,
-              "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy."
-            },
-            "url": {
-              "type": "string",
-              "format": "uri",
-              "description": "Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the redemption ceremony (auth/passkey/enroll/redeem/start). Carries the token. MUST NOT carry the claim code."
-            }
-          }
-        },
-        "subject": {
-          "type": "string",
-          "description": "Echo of the invitee's VID."
-        },
-        "purpose": {
-          "type": "string",
-          "enum": [
-            "session",
-            "stepUp"
-          ],
-          "description": "Echo of the purpose the redeemed credential will have."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        },
-        "claimCode": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 64,
-          "description": "A short code the invitee types at redemption, returned exactly once. The administrator delivers it over a different channel from `url`, so that intercepting one channel is not enough to redeem. The consumer stores only a slow hash of it."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -242,10 +186,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -321,7 +265,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

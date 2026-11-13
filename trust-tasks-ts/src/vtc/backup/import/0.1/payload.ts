@@ -82,8 +82,13 @@ export type Response = VTCBackupImportResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/backup/import/0.1",
   "title": "VTC Backup Import — payload",
@@ -113,50 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Backup Import — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status",
-        "counts",
-        "message"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "preview",
-            "imported"
-          ],
-          "description": "`preview` when `confirm` was not set; `imported` after a restore."
-        },
-        "sourceDid": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The community DID the envelope was taken from."
-        },
-        "counts": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "description": "Per-keyspace row counts written, or that would be written on a preview."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Human-readable summary for the operator."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -291,10 +252,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -351,132 +312,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "BackupEnvelope": {
-      "$anchor": "backupEnvelope",
-      "title": "BackupEnvelope",
-      "description": "Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "version",
-        "format",
-        "createdAt",
-        "sourceVersion",
-        "kdf",
-        "encryption",
-        "includesAudit",
-        "ciphertext"
-      ],
-      "properties": {
-        "version": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Envelope schema version."
-        },
-        "format": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Envelope format tag, e.g. `vtc-backup-v1`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the export was taken."
-        },
-        "sourceDid": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "DID of the community exported from, when it has one. An import cross-checks this against the running community."
-        },
-        "sourceVersion": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Version of the software that produced the envelope."
-        },
-        "kdf": {
-          "$ref": "#/$defs/KdfParams"
-        },
-        "encryption": {
-          "$ref": "#/$defs/EncryptionParams"
-        },
-        "includesAudit": {
-          "type": "boolean",
-          "description": "Whether the audit log and its signed checkpoints are inside `ciphertext`."
-        },
-        "ciphertext": {
-          "type": "string",
-          "minLength": 1,
-          "description": "base64url(AEAD(JSON(payload)))."
-        }
-      }
-    },
-    "EncryptionParams": {
-      "$anchor": "encryptionParams",
-      "title": "EncryptionParams",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "algorithm",
-        "nonce"
-      ],
-      "properties": {
-        "algorithm": {
-          "type": "string",
-          "minLength": 1,
-          "description": "AEAD identifier, e.g. `aes-256-gcm`."
-        },
-        "nonce": {
-          "type": "string",
-          "minLength": 1,
-          "description": "base64url, 12 bytes."
-        }
-      }
-    },
-    "KdfParams": {
-      "$anchor": "kdfParams",
-      "title": "KdfParams",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "algorithm",
-        "salt",
-        "mCost",
-        "tCost",
-        "pCost"
-      ],
-      "properties": {
-        "algorithm": {
-          "type": "string",
-          "minLength": 1,
-          "description": "KDF identifier, e.g. `argon2id`."
-        },
-        "salt": {
-          "type": "string",
-          "minLength": 1,
-          "description": "base64url, 32 bytes."
-        },
-        "mCost": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Argon2id memory cost (KiB)."
-        },
-        "tCost": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Argon2id time cost (iterations)."
-        },
-        "pCost": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Argon2id parallelism."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -96,8 +96,13 @@ export type Response = VTCRoomsStorageMigrateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1",
   "title": "VTC Rooms — Storage — Migrate — payload",
@@ -131,74 +136,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Storage — Migrate — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "migrationId",
-        "roomId",
-        "toConfig",
-        "fromConfigs",
-        "state",
-        "totalFiles",
-        "totalBytes",
-        "doneFiles",
-        "doneBytes"
-      ],
-      "properties": {
-        "migrationId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Community-generated handle for this room's migration."
-        },
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier, as its owner minted it."
-        },
-        "toConfig": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "fromConfigs": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/StorageConfigId"
-          }
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "running",
-            "paused",
-            "complete",
-            "failed"
-          ]
-        },
-        "totalFiles": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "totalBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "doneFiles": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "doneBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -208,20 +145,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "StorageConfigId": {
-      "title": "StorageConfigId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-      "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -312,7 +241,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

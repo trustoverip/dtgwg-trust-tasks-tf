@@ -16,6 +16,25 @@ CapabilityDocument reply(
       payload: payload,
     );
 
+/// The reply a conforming consumer sends to [request] (SPEC §4.9, §8.1), or
+/// one re-addressed by [issuer] / [recipient].
+CapabilityDocument answer(
+  CapabilityDocument request,
+  String type,
+  Map<String, dynamic> payload, {
+  String? issuer,
+  String? recipient,
+  bool omitIssuer = false,
+}) =>
+    TrustTaskDocument<Map<String, dynamic>>(
+      id: 'urn:uuid:answer',
+      type: type,
+      threadId: correlationThread(request),
+      issuer: omitIssuer ? null : (issuer ?? request.recipient),
+      recipient: recipient ?? request.issuer,
+      payload: payload,
+    );
+
 /// A JSON envelope body (what an inbound dispatch holds).
 Map<String, dynamic> body(CapabilityDocument doc) => doc.toJson((p) => p);
 
@@ -68,6 +87,14 @@ void main() {
     expect(next.payload, previous.payload);
     expect(next.type, previous.type);
     expect(next.threadId, 'urn:thread:1'); // an explicit threadId is preserved
+  });
+
+  test('issuedAt is stamped in whole seconds, UTC (#1114)', () {
+    // CLAUDE.md "Instants the libraries write": never full precision.
+    final wholeSeconds = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$');
+    final built = buildListDocument('did:me', 'did:vtc');
+    expect(built.issuedAt, matches(wholeSeconds));
+    expect(newAttempt(built).issuedAt, matches(wholeSeconds));
   });
 
   test('typeUri slug and response variant', () {
@@ -160,7 +187,6 @@ void main() {
           'enabled': false,
           'manifest': {'capability': 'audit', 'version': '1.0'}
         },
-        {'enabled': true}, // no manifest — dropped
       ],
     });
     final r = parseCapabilityReply(doc, 'urn:thread:1');
@@ -205,5 +231,115 @@ void main() {
     // A git-trust revoke #response is a write reply, not a capability reply.
     final write = reply('$gitTrustRevokeType#response', 'urn:thread:9', {});
     expect(parseEnvelopeReply(body(write), 'urn:thread:9'), isNull);
+  });
+
+  test('a reply answers only the request it was made for', () {
+    final grant = buildGitTrustGrant('did:a', 'did:r', 'did:s', 'org');
+    final ok = answer(grant, '$gitTrustGrantType#response', {});
+    expect(answersRequest(ok, grant), isTrue);
+    expect(classifyGitTrustReplyTo(ok, grant), isA<WriteSuccess>());
+
+    for (final other in [
+      answer(grant, '$gitTrustGrantType#response', {},
+          issuer: 'did:someone-else'),
+      answer(grant, '$gitTrustGrantType#response', {},
+          recipient: 'did:someone-else'),
+      answer(grant, '$gitTrustGrantType#response', {}, omitIssuer: true),
+      // A revoke's response on the grant's thread.
+      answer(grant, '$gitTrustRevokeType#response', {}),
+    ]) {
+      expect(classifyGitTrustReplyTo(other, grant), isNull);
+    }
+
+    final already =
+        answer(grant, errorType, {'code': gitTrustAlreadyGrantedCode});
+    expect(
+        classifyGitTrustReplyTo(already, grant), isA<WriteIdempotentSuccess>());
+    CapabilityDocument naming(String id) => answer(grant, errorType, {
+          'code': gitTrustAlreadyGrantedCode,
+          'inResponseTo': {'id': id},
+        });
+    expect(classifyGitTrustReplyTo(naming(grant.id), grant),
+        isA<WriteIdempotentSuccess>());
+    expect(classifyGitTrustReplyTo(naming('urn:uuid:another'), grant), isNull);
+
+    final toggle = buildToggleDocument('did:me', 'did:vtc', 'git-trust', '0.1',
+        enable: true);
+    final ack = answer(toggle, '$capabilityEnableType#response',
+        {'capability': 'git-trust', 'enabled': true});
+    expect(parseCapabilityReplyTo(ack, toggle), isA<CapabilityToggled>());
+    expect(
+        parseCapabilityReplyTo(
+            answer(toggle, '$capabilityEnableType#response',
+                {'capability': 'git-trust', 'enabled': true},
+                issuer: 'did:someone-else'),
+            toggle),
+        isNull);
+    expect(parseCapabilityReplyTo(already, grant), isNull);
+    final list = buildListDocument('did:me', 'did:vtc');
+    expect(
+        classifyGitTrustReplyTo(
+            answer(list, '$capabilityListType#response',
+                {'capabilities': <Object?>[]}),
+            list),
+        isNull);
+  });
+
+  test('only the registry authority is read as this family or an error', () {
+    for (final doc in [
+      reply('https://elsewhere.example/spec/trust-task-error/9.9',
+          'urn:thread:1', {'code': gitTrustAlreadyGrantedCode}),
+      reply('https://elsewhere.example/spec/git-trust/grant/0.1#response',
+          'urn:thread:1', {}),
+    ]) {
+      expect(classifyGitTrustReply(doc, 'urn:thread:1'), isNull,
+          reason: doc.type);
+    }
+    for (final doc in [
+      reply('https://elsewhere.example/spec/trust-task-error/0.5',
+          'urn:thread:1', {'code': 'permissionDenied'}),
+      reply(
+          'https://elsewhere.example/spec/governance/capability/list/0.1#response',
+          'urn:thread:1',
+          {'capabilities': <Object?>[]}),
+    ]) {
+      expect(parseCapabilityReply(doc, 'urn:thread:1'), isNull,
+          reason: doc.type);
+    }
+  });
+
+  test('a malformed governance reply reports nothing', () {
+    for (final payload in <Map<String, dynamic>>[
+      {'capability': 'git-trust'},
+      {'capability': 'git-trust', 'enabled': 'yes'},
+      {'enabled': true},
+      {'capability': 7, 'enabled': false},
+    ]) {
+      final doc =
+          reply('$capabilityEnableType#response', 'urn:thread:1', payload);
+      expect(parseCapabilityReply(doc, 'urn:thread:1'), isNull,
+          reason: '$payload');
+    }
+    for (final payload in <Map<String, dynamic>>[
+      {},
+      {'capabilities': <String, dynamic>{}},
+      {
+        'capabilities': [
+          {
+            'manifest': {'capability': 'x'}
+          }
+        ]
+      },
+      {
+        'capabilities': [
+          {'enabled': true}
+        ]
+      },
+    ]) {
+      final doc =
+          reply('$capabilityListType#response', 'urn:thread:1', payload);
+      expect(parseCapabilityReply(doc, 'urn:thread:1'), isNull,
+          reason: '$payload');
+    }
   });
 }

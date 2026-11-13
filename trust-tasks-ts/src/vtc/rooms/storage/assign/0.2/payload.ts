@@ -74,8 +74,13 @@ export type Response = VTCRoomsStorageAssignResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/storage/assign/0.2",
   "title": "VTC Rooms — Storage — Assign — payload",
@@ -108,40 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Storage — Assign — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "configId",
-        "previousConfigId",
-        "blobsOnEarlierConfigs"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier, as its owner minted it."
-        },
-        "configId": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "previousConfigId": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "blobsOnEarlierConfigs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The room's blobs now on a config other than its assigned one. vtc/rooms/storage/migrate moves them."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -161,10 +132,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -221,7 +192,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

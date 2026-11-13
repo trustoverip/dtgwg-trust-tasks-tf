@@ -1,11 +1,11 @@
 [package]
 name = "trust-tasks-https"
-version = "0.37.10"
+version = "0.39.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
-description = "HTTPS transport binding for the Trust Tasks framework — typed client + axum-based server with bearer-auth identity, suitable for demos, mockups, and end-to-end testing."
+description = "HTTPS transport binding for the Trust Tasks framework — typed client + axum-based server, secure by default (attribution, replay record, freshness bound), with pluggable bearer-token identity."
 keywords = ["trust-tasks", "https", "axum", "reqwest", "transport"]
 categories = ["network-programming", "web-programming::http-server"]
 publish = true
@@ -24,7 +24,7 @@ jwt = ["dep:jsonwebtoken"]
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.39", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
@@ -46,6 +46,7 @@ tower = { version = "0.5", optional = true, default-features = false, features =
 tokio = { version = "1", optional = true, features = [
   "net",
   "rt",
+  "rt-multi-thread",
   "macros",
   "sync",
 ] }
@@ -95,4 +96,4 @@ async-trait = "0.1"
 trust-tasks-proof = { path = "../trust-tasks-proof", features = [
   "affinidi",
 ] }
-affinidi-secrets-resolver = "0.5"
+affinidi-secrets-resolver = "0.5.18"

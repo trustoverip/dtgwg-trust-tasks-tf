@@ -1,8 +1,18 @@
 # Consumer-side generation — compile only what you use
 
-Status: **proposed** (2026-10-26); milestone 1 **implemented** — see
-[Milestone 1 — implemented](#milestone-1--implemented). Supersedes generating
-every specification into every library.
+Status: **accepted** — proposed 2026-10-26; milestones 1–4 shipped, milestone 5
+half done (deprecated, removal not yet scheduled). Supersedes generating every
+specification into every library.
+
+| Milestone | Status | Where |
+|---|---|---|
+| 1. Registry bundles + index | shipped | [Milestone 1](#milestone-1--implemented) |
+| 2. Rust end to end (`trust-tasks-build`, the CLI) | shipped | [build side](#milestone-2--rust-build-side-implemented), [the CLI](#milestone-2--the-cli) |
+| 3. TypeScript, Go, Dart generation from bundles | shipped in the 2026-10-26 releases | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) records the versions |
+| 4. Hand-written packages depend on the runtime only | shipped | [Milestone 4](#milestone-4--the-hand-written-packages) |
+| 5. Deprecate, then remove the prebuilt modules | deprecated; removal batch not chosen | [Milestone 5](#milestone-5--deprecated-removal-to-be-scheduled) |
+
+Measurements below are dated where they were taken; they are not kept current.
 
 ## The problem
 
@@ -168,8 +178,14 @@ therefore, by construction, what the generator generates from.
 | `propertyOrder` | (milestone 2) JSON Pointer of every schema object in `schema` / `responseSchema` that has `properties` → its member names in **authored** order, read from the file the definition was written in (the payload schema, or the shared file a `$defs` entry was spliced from). A reader of an older bundle treats it as `{}` |
 | `defsOrder` | (milestone 3) `/schema` and `/responseSchema` → the root `$defs` names in the order the TypeScript, Go and Dart generators declare them: the payload schema's own as authored, then each spliced definition in the order their inliners' last-in-first-out `$ref` frontier reaches it. A reader of an older bundle treats it as `{}` |
 | `defOrigins` | (milestone 3) each `$defs` entry spliced in from another document → `<that document's $id>#/$defs/<name>` (a document with no `$id`: its path under the specifications root, below the Type URI prefix). One shared component carries the same origin in every bundle, so a generator can declare it once; the payload schema's own definitions have none. A reader of an older bundle treats it as `{}` |
-| `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` |
-| `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
+| `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` before pruning (below) |
+| `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` before pruning — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
+
+Both carry every root `$defs` entry: the request schema keeps `$defs.Response`,
+and the response document a copy of the request's definitions. A generator
+emits each one pruned to the definitions its root reaches (#1098), dropping
+`$defs` when none are left, and still generates types from the whole schema.
+The bundle is not pruned, because that would change every published digest.
 
 The policy is per variant rather than the single `recipient` the sketch above
 had, because the generated libraries already hold it per variant.
@@ -198,9 +214,10 @@ output, index-vs-disk agreement and digests. `scripts/check-bundles.mjs`
 (`npm run check-bundles`, run in `deploy.yml` after the bundles are built)
 checks independently: digests, canonical form re-derived with
 `JSON.stringify`, the index against the tree, and every non-withdrawn bundle's
-schemas against the **TypeScript** generator's `PAYLOAD_SCHEMA` /
-`RESPONSE_PAYLOAD_SCHEMA`, every `defsOrder` against the order of those
-schemas' `$defs`, and every `defOrigins` entry against the `$id`s and `$defs`
+schemas, pruned as above by its own re-derivation, against the **TypeScript**
+generator's `PAYLOAD_SCHEMA` / `RESPONSE_PAYLOAD_SCHEMA`, every `defsOrder`
+against the `$defs` it points at and, restricted to the pruned ones, against
+the order of those schemas' `$defs`, and every `defOrigins` entry against the `$id`s and `$defs`
 of the shared schemas in `specs/`.
 
 Measured on main, 2026-10-26: 1,121 bundles, 14.6 MB in total, 13.0 KB
@@ -292,8 +309,8 @@ families; a second lock under `index-equivalence/` covers request and response
 size bounds, a response-only bound, a task with no response and superseded
 versions.
 
-**Example.** `examples/consumer-app` pins `acl/grant/0.2`, `keys/list/0.2` and
-`vault/get/0.3`, builds with `trust-tasks-rs` `default-features = false`, and
+**Example.** `examples/consumer-app` pins `acl/grant/0.3`, `keys/list` at
+`latest` and `vault/get/0.3` (and `vault/get/0.3` from a third-party source), builds with `trust-tasks-rs` `default-features = false`, and
 runs a round trip through a `Dispatcher` (a response, a declared error code, a
 policy refusal, and an unlocked type refused). `rust.yml`'s `consumer-app` job
 builds and runs it.

@@ -92,8 +92,13 @@ export type Response = VTCCeremoniesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/ceremonies/list/0.1",
   "title": "VTC Ceremonies List — payload",
@@ -105,83 +110,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Ceremonies List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ceremonies"
-      ],
-      "properties": {
-        "ceremonies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CeremonyManifest"
-          },
-          "description": "Every ceremony this maintainer implements."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "CeremonyManifest": {
-      "$anchor": "ceremonyManifest",
-      "title": "CeremonyManifest",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "purpose",
-        "label",
-        "nature"
-      ],
-      "properties": {
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Governance purpose this ceremony decides, e.g. join, removal."
-        },
-        "pkg": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Policy package backing the decision."
-        },
-        "nature": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Whether the ceremony is automatic, operator-driven, or advisory."
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Human-readable name for an operator UI."
-        },
-        "wired": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Whether the ceremony is actually reachable in this deployment."
-        },
-        "blurb": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "One-line explanation shown beside the label."
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          },
-          "description": "Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped."
-        },
-        "factsTemplate": {
-          "type": "object",
-          "description": "A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.\n\nWithout it a console can render a ceremony's fields but cannot show what the resulting decision input looks like — the difference between a form and a simulator. Advisory: the maintainer builds the real `Facts` server-side and never trusts a client-supplied one."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -193,10 +121,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -288,7 +216,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

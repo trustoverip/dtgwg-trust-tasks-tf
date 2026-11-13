@@ -101,8 +101,13 @@ export type Response = VTAWebVHDIDsRealignKeysResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0",
   "title": "VTA WebVH DIDs Realign-Keys — payload",
@@ -127,86 +132,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs Realign-Keys — response payload",
-      "description": "Success response to vta/webvh/dids/realign-keys. Type https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "moved",
-        "alreadyAligned",
-        "unmatched",
-        "nextFragmentId",
-        "dryRun"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "moved": {
-          "type": "array",
-          "description": "The renames performed, or in a dry run the ones that would be.",
-          "items": {
-            "$ref": "#/$defs/RealignedKey"
-          }
-        },
-        "alreadyAligned": {
-          "type": "array",
-          "description": "Verification-method identifiers whose record was already correct.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "unmatched": {
-          "type": "array",
-          "description": "Verification-method identifiers the recipient holds no key for. Not a failure — a DID may publish a method whose private half lives elsewhere — but the difference between this being empty and not is the difference between the DID being consistent and merely unchanged.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "nextFragmentId": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Where the recipient will allocate the next identifier it mints for this DID. Past everything the document already publishes, so a later rotation cannot reissue a published identifier under new key material."
-        },
-        "dryRun": {
-          "type": "boolean",
-          "description": "True when nothing was written. Echoed so a report is self-describing: a plan and a receipt are otherwise the same shape."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "RealignedKey": {
-      "title": "A record renamed onto the identifier its key is published under",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "from",
-        "to",
-        "publicKey"
-      ],
-      "properties": {
-        "from": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The identifier the record had."
-        },
-        "to": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The verification-method identifier it takes."
-        },
-        "publicKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Multibase public half of the key, which is what identified the record. Reported so the producer can check the rename against the published document rather than trusting this report."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -218,10 +143,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -316,7 +241,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -80,8 +80,13 @@ export type Response = VTCRoomsOffersAcceptResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1",
   "title": "VTC Rooms Offers Accept — payload",
@@ -109,49 +114,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Offers Accept — response payload",
-      "description": "Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "state",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier: its DID."
-        },
-        "state": {
-          "const": "admitted"
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The room epoch the caller joins at."
-        },
-        "welcome": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else."
-        },
-        "ratchetTree": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -163,10 +125,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -224,7 +186,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

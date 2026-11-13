@@ -123,8 +123,13 @@ export type Response = VTCRegistryRecordsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/registry/records/list/0.2",
   "title": "VTC Registry Records List — payload",
@@ -178,91 +183,6 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other."
     },
-    "Record": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entityId",
-        "authorityId",
-        "action",
-        "resource",
-        "recordType"
-      ],
-      "properties": {
-        "entityId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The entity the record is about."
-        },
-        "authorityId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The authority asserting it."
-        },
-        "action": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The action the assertion covers."
-        },
-        "resource": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The resource the assertion covers."
-        },
-        "recordType": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Record discriminator, as the trust registry states it."
-        },
-        "recognized": {
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "description": "Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`."
-        },
-        "authorized": {
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "description": "Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Registry Records List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items",
-        "source"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Record"
-          },
-          "description": "The matching records, in the maintainer's stable enumeration order."
-        },
-        "source": {
-          "$ref": "#/$defs/Source",
-          "description": "Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -274,10 +194,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -385,7 +305,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

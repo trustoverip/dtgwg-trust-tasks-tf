@@ -68,8 +68,13 @@ export type Response = RegistryAdminRegisterResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/registry/admin-register/0.1",
   "title": "Registry Admin Register — payload",
@@ -108,23 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Admin Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entry"
-      ],
-      "properties": {
-        "entry": {
-          "$ref": "#/$defs/ServiceInstance"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,53 +122,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ServiceInstance": {
-      "title": "ServiceInstance",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "instanceId",
-        "did"
-      ],
-      "properties": {
-        "instanceId": {
-          "type": "string",
-          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts."
-        },
-        "did": {
-          "type": "string",
-          "description": "VID identifying the registered service."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256
-        },
-        "publicUrl": {
-          "type": "string",
-          "format": "uri"
-        },
-        "servedDomains": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow."
-        },
-        "lastSeen": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -253,7 +200,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

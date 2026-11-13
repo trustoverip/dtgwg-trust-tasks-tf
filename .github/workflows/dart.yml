@@ -20,6 +20,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   # pub.dev refuses an upload whose CHANGELOG.md exceeds 262144 bytes, and it
   # says so only at publish time, after the Release PR has merged. From 0.9.11
@@ -28,9 +32,12 @@ jobs:
   # spare for the next Release PR's section.
   changelog-size:
     name: Dart CHANGELOG.md under pub.dev's limit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Check sizes
         run: |
           limit=230000
@@ -55,15 +62,18 @@ jobs:
   # installed.
   bindings-drift:
     name: build-dart-bindings drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: "npm"
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: stable
       - name: Install dependencies
@@ -72,16 +82,20 @@ jobs:
         run: npm run build-dart-bindings
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-dart/lib/specs; then
-            echo "::error::Dart bindings are stale. Run \`npm run build-dart-bindings\` and commit the diff. Do NOT bump a version — the Release PR does that; see RELEASING.md."
-            git diff --stat trust-tasks-dart/lib/specs
-            git diff trust-tasks-dart/lib/specs | head -200
+          # `git status`, not `git diff`: a package the generator newly wrote is
+          # untracked, and `git diff` cannot see an untracked file (codegen.yml).
+          if [ -n "$(git status --porcelain -- trust-tasks-dart/lib/specs)" ]; then
+            echo "::error::Dart bindings are stale. Run \`npm run build-dart-bindings\` and commit the diff, including any new files. Do NOT bump a version — the Release PR does that; see RELEASING.md."
+            git status --short -- trust-tasks-dart/lib/specs
+            git add -N -- trust-tasks-dart/lib/specs
+            git diff -- trust-tasks-dart/lib/specs | head -200
             exit 1
           fi
 
   analyze:
     name: dart analyze + format (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -90,8 +104,10 @@ jobs:
         # closed-value types use. `stable` is what most will actually use.
         sdk: ["3.3", "stable"]
     steps:
-      - uses: actions/checkout@v6
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: ${{ matrix.sdk }}
       - name: Install dependencies
@@ -134,14 +150,17 @@ jobs:
   # runtime tests do.
   test:
     name: dart test (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         sdk: ["3.3", "stable"]
     steps:
-      - uses: actions/checkout@v6
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: ${{ matrix.sdk }}
       - name: Install dependencies
@@ -161,17 +180,20 @@ jobs:
   # declaration by declaration) and fails on anything else.
   consumer-generation:
     name: consumer generation matches the prebuilt tree
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: stable
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/rust-toolchain
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Build every bundle
@@ -188,14 +210,17 @@ jobs:
   # as well, where `dart format` has no --language-version.
   consumer-app:
     name: example application (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         sdk: ["3.3", "stable"]
     steps:
-      - uses: actions/checkout@v6
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: ${{ matrix.sdk }}
       - name: Install dependencies
@@ -210,6 +235,31 @@ jobs:
       - name: Run
         working-directory: examples/consumer-app-dart
         run: dart run bin/main.dart
+      # examples/getting-started-dart: the application behind
+      # GETTING-STARTED.md §3b, a signed acl/grant round trip over
+      # trust_tasks_https that asserts its own output, and its snippets held to
+      # the document (the Dart counterpart of
+      # trust-tasks/tests/getting_started_snippets.rs). Not on the 3.3 floor:
+      # trust_tasks_proof's is 3.6, which ssi 3.9 sets.
+      - name: "Getting started: install dependencies"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart pub get
+      - name: "Getting started: generate"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
+      - name: "Getting started: analyze"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart analyze --fatal-infos
+      - name: "Getting started: run"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart run bin/main.dart
+      - name: "Getting started: GETTING-STARTED.md §3b matches the example"
+        if: matrix.sdk != '3.3'
+        run: node scripts/check-getting-started-snippets.mjs examples/getting-started-dart/bin/main.dart
 
   # The release is sized by the PR title: `feat(dart)!:` makes trust_tasks a
   # breaking release, anything else a patch. Nothing else stopped an accidental
@@ -227,24 +277,26 @@ jobs:
   api-compatibility:
     name: Dart API compatibility
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # History and tags: a break already declared since the published
           # release (trust-tasks-dart-v*) lets this PR's break through.
           fetch-depth: 0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: "npm"
       # Pinned with the tool: dart_apitool 0.23.2 analyses with analyzer 10.2,
       # and an analyzer older than the SDK it runs on is not guaranteed to read
       # that SDK's libraries. Move the two together.
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
           sdk: "3.13"
       - run: npm ci --no-audit --no-fund
@@ -268,15 +320,23 @@ jobs:
   # YAML was valid, so only a failed release showed it.
   package-lists:
     name: Dart package lists agree
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: "npm"
       - run: npm ci --no-audit --no-fund
       - run: npm run check-dart-packages
+      # The same guard for the npm, Go and crate release lists, and for
+      # commit-lint's `!` scope vocabulary against the scopes the release
+      # scripts read (#1139, #1137). Here rather than in a job of its own so the
+      # check names stay as they are.
+      - run: npm run check-release-lists
 
   # The hand-written packages built on trust_tasks: the Data Integrity proofs
   # and the HTTPS, DIDComm and TSP bindings.
@@ -293,11 +353,25 @@ jobs:
   #
   # They resolve `trust_tasks` from the tree (pubspec_overrides.yaml), so a PR
   # that changes the core and its consumer together is tested together. Whether
-  # a package also works against the *published* core is a release question,
-  # asked by `tag-dart` in publish.yml.
+  # a package's newest release works against the *published* core is a release
+  # question, asked by `tag-dart` in publish.yml.
+  #
+  # The `downgrade` legs ask the other half: does lib/ (and example/) still
+  # compile against the OLDEST core — and oldest everything else — its pubspec
+  # admits? `check-sibling-core-ranges` only checks that a range admits the
+  # newest core, and every sibling once declared `^0.9.3` while importing
+  # libraries that first shipped in 0.9.23 (#1115): a consumer on an older core
+  # got a compile error instead of a resolver error. These legs drop the
+  # in-tree override for trust_tasks, `dart pub downgrade`, and analyze. When a
+  # sibling needs newer published core API, raise its floor in the same PR.
+  # When it needs core API no published core has yet (a PR adding core API and
+  # its first use together), the leg warns — except in the Release PR, where
+  # the floor must name the core being released — and a floor naming an
+  # unpublished core (a Release PR crossing a minor) is skipped until it is.
   packages:
-    name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }})
-    runs-on: ubuntu-latest
+    name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }}${{ matrix.downgrade && ', downgrade' || '' }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -331,38 +405,121 @@ jobs:
             sdk: stable
           # Pure wire logic, no crypto or transport dep. 3.6 is its floor — the
           # minimum `lints` 5.1 (its only dev dependency) allows, same as
-          # trust-tasks-dart-proof. Tested here but NOT in the release matrices
-          # yet: its first pub.dev publish is manual, and the release wiring +
-          # website flip follow that.
+          # trust-tasks-dart-proof. Released like the other siblings (tag-dart
+          # in publish.yml, DART_PACKAGES in scripts/release-pr.sh).
           - package: trust-tasks-dart-capability-client
             sdk: "3.6"
           - package: trust-tasks-dart-capability-client
             sdk: stable
+          # The floors: every dependency at the lowest version the pubspec
+          # admits, trust_tasks from pub.dev rather than the tree.
+          - package: trust-tasks-dart-proof
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-https
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-didcomm
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-tsp
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-capability-client
+            sdk: stable
+            downgrade: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # A PR touching none of this package's inputs skips the steps below and
+      # the job still reports success (it may be a required check, so the job
+      # itself always runs). The inputs: the package, the core it resolves
+      # from the tree (and whose floor the downgrade leg reads from its
+      # pubspec), the shared fixtures, and this workflow. Push, dispatch and
+      # the Release PR always run in full; see .github/actions/changed-paths
+      # (#1141). A downgrade leg skipped here is next run on `main`, where a
+      # newly published core is picked up.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            ${{ matrix.package }}
+            trust-tasks-dart
+            fixtures
+            .github/workflows/dart.yml
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        if: steps.changes.outputs.run == 'true'
         with:
           sdk: ${{ matrix.sdk }}
       - name: Pin ssi
-        if: matrix.ssi
+        if: steps.changes.outputs.run == 'true' && (matrix.ssi)
         working-directory: ${{ matrix.package }}
         run: |
           printf '  ssi: %s\n' "${{ matrix.ssi }}" >> pubspec_overrides.yaml
-      - name: Install dependencies
+      # Drop the trust_tasks override (only that one: trust-tasks-dart-tsp's
+      # also supplies affinidi_tsp from git), as tag-dart does before verifying
+      # a release, so the floor is resolved from pub.dev.
+      - name: Use the published core
+        id: floor
+        if: steps.changes.outputs.run == 'true' && (matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: |
-          dart pub get
+          floor=$(sed -n 's/^  trust_tasks: *\^\([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
+          latest=$(curl -fsS https://pub.dev/api/packages/trust_tasks | jq -r .latest.version)
+          echo "trust_tasks floor $floor; newest on pub.dev $latest"
+          if [ "$(printf '%s\n%s\n' "$floor" "$latest" | sort -V | head -1)" != "$floor" ]; then
+            echo "::warning file=${{ matrix.package }}/pubspec.yaml::trust_tasks ^$floor is not on pub.dev yet (newest: $latest); the floor is tested once it is."
+            echo "skip=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sed -i '/^  trust_tasks:$/,/^    path: /d' pubspec_overrides.yaml
+          grep -qE '^  [a-z_]+:' pubspec_overrides.yaml || rm pubspec_overrides.yaml
+      - name: Install dependencies
+        if: steps.changes.outputs.run == 'true' && (steps.floor.outputs.skip != 'true')
+        working-directory: ${{ matrix.package }}
+        run: |
+          if [ "${{ matrix.downgrade }}" = true ]; then dart pub downgrade; else dart pub get; fi
           dart pub deps --style=compact | grep -E '^- (ssi|trust_tasks) '
       - name: Analyze
+        if: steps.changes.outputs.run == 'true' && (!matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: dart analyze --fatal-infos
+      # lib/ is what a consumer compiles and example/ is what pub.dev shows;
+      # test/ may exercise in-tree core the floor predates.
+      - name: Analyze at the floors
+        if: steps.changes.outputs.run == 'true' && (matrix.downgrade && steps.floor.outputs.skip != 'true')
+        working-directory: ${{ matrix.package }}
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -- lib
+          if [ -d example ]; then set -- lib example; fi
+          dart analyze --fatal-infos "$@" && exit 0
+          # Failing at the floor means one of two things. If the newest core
+          # on pub.dev passes, the floor is too low: raise it. If that fails
+          # too, lib/ uses core API no published core has yet — normal between
+          # a core change and its release. The Release PR is where the floor
+          # must move to the core it publishes, so fail there; warn elsewhere.
+          dart pub upgrade >/dev/null
+          if dart analyze --fatal-infos "$@" >/dev/null 2>&1; then
+            echo "::error file=${{ matrix.package }}/pubspec.yaml::lib/ does not compile against its trust_tasks floor but does against the newest published core: raise the floor."
+            exit 1
+          fi
+          if [ "$HEAD_REF" = release ]; then
+            echo "::error file=${{ matrix.package }}/pubspec.yaml::lib/ needs core API no published trust_tasks has: in the Release PR the floor must name the core this release publishes."
+            exit 1
+          fi
+          echo "::warning file=${{ matrix.package }}/pubspec.yaml::lib/ needs core API no published trust_tasks has yet; the floor is tested once that core is released."
       - name: Check formatting
-        if: matrix.sdk == 'stable' && !matrix.ssi
+        if: steps.changes.outputs.run == 'true' && (matrix.sdk == 'stable' && !matrix.ssi && !matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: |
           floor=$(sed -n 's/^ *sdk: *^\{0,1\}\([0-9]*\.[0-9]*\).*/\1/p' pubspec.yaml | head -1)
           echo "formatting at language version $floor"
           dart format --output=none --set-exit-if-changed --language-version="$floor" .
       - name: Test
+        if: steps.changes.outputs.run == 'true' && (!matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: dart test

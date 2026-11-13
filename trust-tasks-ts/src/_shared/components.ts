@@ -750,6 +750,23 @@ export type DeliveryStatus = "delivered" | "duplicate" | "refused" | "queued" | 
  */
 export type Description = string;
 /**
+ * Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants and its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked, or its access-control capabilities no longer cover the member's scope; the member leaves rather than being narrowed. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later. `connectionFull`: the grant is valid and stays stored, but this connection already carries `maxDidsPerConnection` members, so it was not attached here; it attaches on a connection with room, including this one's successor once the principal makes room and reconnects.
+ */
+export type DetachReason =
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed"
+  | "connectionFull";
+/**
  * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
  */
 export type DeviceAttestation_DeviceV0_1 =
@@ -781,11 +798,7 @@ export type DidMethodName = string;
  * A DID Core verification relationship.
  */
 export type DidVerificationRelationship =
-  | "authentication"
-  | "assertionMethod"
-  | "keyAgreement"
-  | "capabilityInvocation"
-  | "capabilityDelegation";
+  "authentication" | "assertionMethod" | "keyAgreement" | "capabilityInvocation" | "capabilityDelegation";
 /**
  * A DID, compared by exact string equality.
  */
@@ -827,12 +840,7 @@ export type DisjunctiveProof = [SigmaProof, ...SigmaProof[]];
  * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
  */
 export type DriftType =
-  | "roleAdded"
-  | "roleRemoved"
-  | "roleChanged"
-  | "requiredCheckMissing"
-  | "protectionWeakened"
-  | "bootstrapMissing";
+  "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
 /**
  * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
  */
@@ -1026,6 +1034,14 @@ export type ForgeId_GitNsV0_1 = string;
  */
 export type ForgeId_GitNsV0_6 = string;
 /**
+ * A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record.
+ */
+export type GrantId = string;
+/**
+ * A stored grant's state. `active`: valid; the member is attached whenever the principal is connected. `suspended`: the member DID proved control with a key that signed none of its active grants (the unknown-key rule); terminal — the grant cannot be resumed and must be recreated by a fresh member signature. `staleKey`: the key that signed the grant is no longer in the member DID's current authentication relationship; terminal — it does not become active again if the key reappears. `expired`: an active grant past its effective expiry; computed when read, never stored. `epochRevoked`: the member DID advanced its epoch with messaging/mux/revoke-all. A grant revoked with messaging/mux/revoke has no state: it is deleted. A dead grant (every state but `active`) stays listable for the mediator's retention window after its effective expiry, then is pruned.
+ */
+export type GrantState = "active" | "suspended" | "staleKey" | "expired" | "epochRevoked";
+/**
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
 export type GrantValiditySeconds = number;
@@ -1131,6 +1147,10 @@ export type JoinRequestId = string;
  */
 export type JoinRequestMessage = string;
 /**
+ * A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member.
+ */
+export type KeyAssuranceLevel = 1 | 2 | 3;
+/**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
  */
 export type KeyChangeKind = "planned" | "compromise" | "addition" | "recovery";
@@ -1142,13 +1162,7 @@ export type KeyChangeOutcome = "preview" | "applied" | "pendingApproval" | "awai
  * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
  */
 export type KeyChangeState =
-  | "pendingApproval"
-  | "awaitingRecoveryProof"
-  | "staged"
-  | "overlapping"
-  | "completed"
-  | "aborted"
-  | "expired";
+  "pendingApproval" | "awaitingRecoveryProof" | "staged" | "overlapping" | "completed" | "aborted" | "expired";
 /**
  * Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
  */
@@ -1241,6 +1255,10 @@ export type ListName = string;
  */
 export type ListOrder = number;
 /**
+ * The order in which a listing returns a room's records (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent: ascending `version`, the order an incremental sync reads in. `newestFirst`: descending `version`, so a reader that opens a conversation at its newest messages reads the room's head first and pages backwards; `sinceVersion` still bounds the listing from below. A cursor continues the listing in the order it was issued under, and a host refuses it under the other.
+ */
+export type ListOrder_RoomsV0_2 = "oldestFirst" | "newestFirst";
+/**
  * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
  */
 export type Listing = "listed" | "findable" | "hidden";
@@ -1260,6 +1278,27 @@ export type MemberAction = "read" | "write" | "curate";
  */
 export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [MemberAction, MemberAction, MemberAction];
 /**
+ * The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins.
+ */
+export type MemberChangeReason =
+  | "connect"
+  | "grant"
+  | "attach"
+  | "reactivated"
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed"
+  | "connectionFull";
+/**
  * Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
  */
 export type MemberState = "offered" | "admitted" | "removed";
@@ -1272,9 +1311,33 @@ export type MemberStateV2 = "offered" | "admitted" | "suspended" | "removed";
  */
 export type MembersOnly = boolean;
 /**
+ * What happened to a member DID's place on a mux connection, as messaging/mux/event reports it to the connection's principal. `attached`: the member joined the connection, or its scope or expiry there changed. `detached`: the member left the connection, or a stored grant of it was not attached on connect.
+ */
+export type MembershipChange = "attached" | "detached";
+/**
  * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
+/**
+ * Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.
+ */
+export type MemoryExpectedVersion = number;
+/**
+ * Agent-chosen identifier for an item within a context. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `vta/memory/list` is a byte-prefix comparison over the UTF-8 encoding. Agents SHOULD use `/`-delimited hierarchical keys (`contact/billing`, `preference/timezone`) so that `prefix` can address a family of items, but the delimiter is a convention between an agent and itself. A key is content as well as an address: a key naming a person, a condition or a dispute discloses something to anyone who can list the context, even without its value.
+ */
+export type MemoryKey = string;
+/**
+ * The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).
+ */
+export type MemoryPurpose = Purpose_AclV0_3;
+/**
+ * The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).
+ */
+export type MemoryValue = string;
+/**
+ * A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
+ */
+export type MemoryVersion = number;
 /**
  * An RFC 9162 audit or consistency path: the node hashes, in the order §2.1.3 / §2.1.4 define.
  *
@@ -1317,6 +1380,170 @@ export type Multibase_VotingV0_1 = string;
  * A binary value, multibase base58btc over the suite's canonical encoding.
  */
 export type Multibase_VtaV0_4 = string;
+/**
+ * A DID, carried verbatim and compared by exact string equality. Unlike the messaging family's `Vid`, never a hash: the mediator resolves it to verify a statement signed by it. For a member DID reached over TSP, the TSP VID is the DID itself.
+ */
+export type MuxDid = string;
+/**
+ * 32 random bytes, base64url without padding, that belong to exactly one connection and are never reused. Attach statements sign over it, which is what makes an attach statement unusable on any other connection.
+ */
+export type MuxNonce = string;
+/**
+ * The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated.
+ */
+export type MuxRole = "principal" | "member";
+/**
+ * A set of capabilities: a non-empty JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses into one. Never empty: an empty scope is refused, never read as "all". There is no default scope anywhere — every attach and every grant names its scope explicitly. A scope is always bounded by the member DID's own access-control capabilities at the mediator.
+ *
+ * @minItems 1
+ * @maxItems 16
+ */
+export type MuxScope =
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
+/**
+ * One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket.
+ */
+export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
+/**
+ * How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection.
+ */
+export type MuxSource = "grant" | "attach";
+/**
+ * The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`.
+ */
+export type MuxWire = "didcomm" | "tsp";
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -1539,7 +1766,7 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
- * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.
+ * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).
  */
 export type PreviewWarning =
   | "singleKeyRole"
@@ -1549,7 +1776,8 @@ export type PreviewWarning =
   | "selfPublish"
   | "noWitnesses"
   | "protectionBelowPolicy"
-  | "recoveryKeyRevealed";
+  | "recoveryKeyRevealed"
+  | "roleKeysInBackups";
 /**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
@@ -1682,6 +1910,18 @@ export type ProviderObjectPrefix = string;
  */
 export type Purpose = "login";
 /**
+ * An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.
+ */
+export type PurposeScope = PurposeScopeAny | PurposeScopeListed;
+/**
+ * What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.
+ */
+export type Purpose_AclV0_3 = Purpose_AclV0_31 & Purpose_AclV0_32;
+export type Purpose_AclV0_31 = {
+  [k: string]: unknown | undefined;
+};
+export type Purpose_AclV0_32 = string;
+/**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
 export type PushRegistration = Apns | Fcm | WebPush;
@@ -1767,6 +2007,10 @@ export type RecordId_VtcNotificationsV0_1 = string;
  */
 export type RecordKind = string;
 /**
+ * The one purpose for which a caller will use room content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. Granted only as the caller's authority grants it — `any` grants every purpose but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read. Distinct from `PermittedUse`, which is what a record's author permits and is a statement, not a grant.
+ */
+export type RecordPurpose = Purpose_AclV0_3;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -1808,6 +2052,14 @@ export type RecordValidUntil = string;
  * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
  */
 export type RecordWrittenAt = string;
+/**
+ * A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7).
+ */
+export type RecoveryCommitmentOrThreshold = RecoveryCommitment | ThresholdRecoveryCommitment;
+/**
+ * The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.
+ */
+export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -1963,16 +2215,12 @@ export type Scope_VtaV0_1 = Builtin_VtaV0_1 | Global_VtaV0_1 | Context_VtaV0_1;
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_1 =
-  | DidcommAuthcryptEnvelope_VaultV0_1
-  | HpkeArmoredEnvelope_VaultV0_1
-  | TspMessageEnvelope_VaultV0_1;
+  DidcommAuthcryptEnvelope_VaultV0_1 | HpkeArmoredEnvelope_VaultV0_1 | TspMessageEnvelope_VaultV0_1;
 /**
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_2 =
-  | DidcommAuthcryptEnvelope_VaultV0_2
-  | HpkeArmoredEnvelope_VaultV0_2
-  | TspMessageEnvelope_VaultV0_2;
+  DidcommAuthcryptEnvelope_VaultV0_2 | HpkeArmoredEnvelope_VaultV0_2 | TspMessageEnvelope_VaultV0_2;
 /**
  * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
  */
@@ -2046,14 +2294,7 @@ export type SecretFingerprint = string;
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_1 =
-  | "password"
-  | "passkey"
-  | "oauth-tokens"
-  | "did-self-issued"
-  | "didcomm-peer"
-  | "bearer-token"
-  | "ssh-key"
-  | "custom";
+  "password" | "passkey" | "oauth-tokens" | "did-self-issued" | "didcomm-peer" | "bearer-token" | "ssh-key" | "custom";
 /**
  * Discriminator for the secret type stored in the entry. Definitions:
  * - `password` — username + password (+ optional TOTP seed).
@@ -2066,14 +2307,7 @@ export type SecretKind_VaultV0_1 =
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_2 =
-  | "password"
-  | "passkey"
-  | "oauthTokens"
-  | "didSelfIssued"
-  | "didcommPeer"
-  | "bearerToken"
-  | "sshKey"
-  | "custom";
+  "password" | "passkey" | "oauthTokens" | "didSelfIssued" | "didcommPeer" | "bearerToken" | "sshKey" | "custom";
 /**
  * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
  */
@@ -2099,9 +2333,25 @@ export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
  */
 export type SessionId = string;
 /**
+ * The mediator's identifier for one authenticated connection, as announced in that connection's `ready` event.
+ */
+export type SessionId_MessagingMuxV0_1 = string;
+/**
  * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
  */
 export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
+/**
+ * Whether a room's host waits a randomised interval before sending a `rooms/changed` signal: the room's **signal delay**.
+ *
+ * `randomised` is the default and what a room without one has: the host waits a few seconds after the change that fires a watch, so that the signal's time does not mark one write exactly (`rooms/changed`, producer item 4). `none` is for a room where members expect to see a write as soon as it is made, such as a conversation: the host sends the signal as soon as the change that fires it is stored, with no wait of its own.
+ *
+ * **A room's setting, not a member's.** The delay protects the room's writers as much as its watchers. A watcher whose signal is sent at once marks, to anyone who sees both the writer's request reach the host and the signal leave it, the moment of the write and that the two parties share the room. So one watcher cannot opt out for itself without giving away something about everyone who writes, and the setting is the room's: changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every member (`rooms/info`).
+ *
+ * **What `none` gives up.** Little in a busy room, where writes are frequent enough that their rhythm is visible anyway; most in a quiet one, where a single write and a single signal line up. A surface that offers the setting SHOULD say so.
+ *
+ * Absent means `randomised`.
+ */
+export type SignalDelay = "randomised" | "none";
 /**
  * The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.
  */
@@ -2149,6 +2399,146 @@ export type Slot = string;
  * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
  */
 export type State = "active" | "dismissed";
+/**
+ * The scope a member DID signs into a statement: a JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses. It MUST NOT be empty; an empty signed scope is refused with the task's `emptyScope` code, never read as "all". Unlike MuxScope, emptiness is not a schema failure here, so that the refusal is reported per statement rather than failing the whole batch.
+ *
+ * @maxItems 16
+ */
+export type StatementScope =
+  | []
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
 /**
  * Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).
  */
@@ -2218,15 +2608,9 @@ export type StorageSettings = LocalSettings | S3Settings | GcsSettings | WalrusS
  */
 export type SweepMinutes = number;
 export type SyncEvent_SyncV0_1 =
-  | VaultUpsertedEvent_SyncV0_1
-  | VaultDeletedEvent_SyncV0_1
-  | AclChangedEvent_SyncV0_1
-  | PolicyChangedEvent_SyncV0_1;
+  VaultUpsertedEvent_SyncV0_1 | VaultDeletedEvent_SyncV0_1 | AclChangedEvent_SyncV0_1 | PolicyChangedEvent_SyncV0_1;
 export type SyncEvent_SyncV0_2 =
-  | VaultUpsertedEvent_SyncV0_2
-  | VaultDeletedEvent_SyncV0_2
-  | AclChangedEvent_SyncV0_2
-  | PolicyChangedEvent_SyncV0_2;
+  VaultUpsertedEvent_SyncV0_2 | VaultDeletedEvent_SyncV0_2 | AclChangedEvent_SyncV0_2 | PolicyChangedEvent_SyncV0_2;
 /**
  * Free-text tags the directory searches.
  *
@@ -2245,23 +2629,12 @@ export type TickLength = string;
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_1 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_2 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config"
-  | "rooms";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config" | "rooms";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
@@ -2305,14 +2678,7 @@ export type TrafficDirection = "inbound" | "outbound" | "internal";
  * What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.
  */
 export type TrafficStage =
-  | "received"
-  | "stored"
-  | "delivered"
-  | "forwarded"
-  | "refused"
-  | "deleted"
-  | "expired"
-  | "purged";
+  "received" | "stored" | "delivered" | "forwarded" | "refused" | "deleted" | "expired" | "purged";
 /**
  * Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.
  */
@@ -2546,9 +2912,7 @@ export type VetterDisplayName = string;
  * @maxItems 3
  */
 export type VetterMethods =
-  | [VettingMethod]
-  | [VettingMethod, VettingMethod]
-  | [VettingMethod, VettingMethod, VettingMethod];
+  [VettingMethod] | [VettingMethod, VettingMethod] | [VettingMethod, VettingMethod, VettingMethod];
 /**
  * A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
  */
@@ -2573,6 +2937,14 @@ export type Visibility = "open" | "attributed" | "private";
  * Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.
  */
 export type WallVisibility = "members" | "nobody";
+/**
+ * The DID class the DID belongs to (VTI specification, DID classes, VTI-KEY-190 – 193), stated when it is created and fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context, and nothing else. `persona`: a person's own identity. `service`: the durable identity of a node or a service — the VTA itself, a VTC, a VTN, a trust registry, a host service, a mediator, or an integration the VTA provisions — at key assurance level 1. A DID belongs to one class only (VTI-KEY-193): a persona or relationship DID is never adopted as a node's identity, and a service DID is never used as a person's. A service did:webs is alpha: see CONVENTIONS.md §1.
+ */
+export type WebsDidClass = "relationship" | "persona" | "service";
+/**
+ * The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.
+ */
+export type WebsSlotPath = string;
 /**
  * A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.
  */
@@ -4968,6 +5340,84 @@ export interface AclEntry_AclV0_2 {
   ext?: Ext;
 }
 /**
+ * One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).
+ *
+ * The act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer "may this subject do X"; `approve` + `approveCapabilities` answer "may this subject ratify someone else doing X". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.
+ */
+export interface AclEntry_AclV0_3 {
+  /**
+   * VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
+   */
+  subject: string;
+  /**
+   * Opaque role identifier interpreted by the ACL maintainer. A role is a CEILING, never a grant: it bounds the capabilities the entry may hold and never adds to them. A consumer that does not recognise the role MUST treat the entry as conferring no authority and MUST NOT fall back to a default role. Act scope and role are independent members; a consumer MUST NOT compute either from the other.
+   */
+  role: string;
+  /**
+   * REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{"scope": "all"}` (unrestricted — every context the maintainer has), `{"scope": "none"}` (may act nowhere), or `{"scope": "contexts", "contexts": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`.
+   */
+  act: AuthorityScope;
+  /**
+   * OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
+   */
+  approve?: AuthorityScope;
+  /**
+   * REQUIRED explicit capability scope: which capabilities this entry holds. Exactly one of `{"scope": "ceiling"}` (the role's full ceiling, unnarrowed), `{"scope": "none"}` (no capabilities), or `{"scope": "listed", "grants": [...]}` with at least one CapabilityGrant. For `listed`, the EFFECTIVE set is (the role's ceiling ∩ the non-additive grants) ∪ the additive grants; it can only narrow the ceiling, except through an explicit additive grant, which only an unrestricted granter may make. There is no implicit form: an entry without `capabilities`, or with an empty `grants` list, is malformed and MUST be refused. A non-additive grant outside the role's ceiling is refused when written, never accepted with the capability silently dropped; a capability the consumer does not recognise is never treated as granted. Producers SHOULD NOT list the same (capability, resource) pair twice; a consumer MAY refuse a list that does.
+   */
+  capabilities: CapabilityScope;
+  /**
+   * OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{"scope": "ceiling"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{"scope": "none"}`, or `{"scope": "listed", "grants": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{"scope": "none"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve.
+   */
+  approveCapabilities?: ApproveCapabilityScope;
+  /**
+   * VID of the granter whose authority this entry was delegated from and is bounded by. The entry MUST NOT hold authority the granter did not hold when it was written, and MUST NOT retain authority the granter has since lost, so a maintainer re-evaluates it when the granter's own entry narrows or is removed. Distinct from `createdBy`, which records who wrote the entry: the two differ where an entry is written on a granter's behalf (for example after an N-of-M approval, or by an offline operator). Set by the maintainer from the granter it authorized; absent on an entry that derives from no granter's authority (the first administrator, an operator-written recovery entry).
+   */
+  delegatedBy?: string;
+  /**
+   * REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
+   */
+  keys: KeyScope;
+  /**
+   * REQUIRED explicit purpose scope: what this subject may use content it reads for — the purpose a request for a purpose-bound operation (a read of content held for the principal, or a refusal that carries such content) names, and the maintainer records in that operation's audit record. Exactly one of `{"scope": "any"}` (any purpose EXCEPT `modelTraining`) or `{"scope": "listed", "purposes": [...]}` with at least one Purpose. There is no implicit form: an entry without `purposes`, or with an empty list, is malformed and MUST be refused, never read as `any`. A maintainer that adopts this version writes `any` on every entry that predates it before serving a purpose-bound operation under it (VTI-ACL-101). Delegated purposes are a subset of the granter's: a granter stating `any` MAY delegate a list; a granter stating a list MUST NOT delegate `any`, and no granter delegates `modelTraining` unless its own entry names it (acl/grant `purposeOutsideDelegator`). A maintainer MAY refuse by policy to grant a purpose, naming it, when the entry is written (acl/grant `purposeRefused`), never by writing the entry without it. A purpose is a declaration, not a proof: the maintainer cannot see what the subject does with content, and holds it to what it declared.
+   */
+  purposes: PurposeScope;
+  /**
+   * Optional human-readable label. Confers nothing.
+   */
+  label?: string;
+  createdAt?: string;
+  /**
+   * VID of the party that originally wrote this entry.
+   */
+  createdBy?: string;
+  updatedAt?: string;
+  /**
+   * VID of the party that last modified this entry.
+   */
+  updatedBy?: string;
+  /**
+   * Optional time after which the entry confers no authority. Evaluated at every authorization decision, not only when a session is established.
+   */
+  expiresAt?: string;
+  /**
+   * Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry). Carried forward from 0.1 unchanged.
+   */
+  stepUp?: {
+    /**
+     * VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
+     */
+    approver?: string;
+    /**
+     * Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+     */
+    require?: "self" | "delegated";
+  };
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
+   */
+  ext?: Ext;
+}
+/**
  * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
  */
 export interface Action_VtcAdminActionsV0_1 {
@@ -5008,13 +5458,7 @@ export interface Action_VtcAdminActionsV0_1 {
    * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused.
    */
   closedReason?:
-    | "thresholdMet"
-    | "declined"
-    | "expired"
-    | "cancelledByRequester"
-    | "invalidated"
-    | "failedRecheck"
-    | "acknowledged";
+    "thresholdMet" | "declined" | "expired" | "cancelledByRequester" | "invalidated" | "failedRecheck" | "acknowledged";
   /**
    * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).
    */
@@ -5595,6 +6039,57 @@ export interface ApproverBinding {
    * Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.
    */
   routeHint?: string;
+}
+/**
+ * A member DID's statement that the named principal may carry its traffic on one connection — the one whose `sessionId` and `muxNonce` it names — until `exp`, within `scope`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface AttachStatement {
+  /**
+   * Always `muxAttach`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxAttach";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The principal DID the connection is authenticated as. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  sessionId: SessionId_MessagingMuxV0_1;
+  muxNonce: MuxNonce;
+  scope: StatementScope;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * One session attach on a connection.
+ */
+export interface AttachView {
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  scope: MuxScope;
+  /**
+   * When the attach lapses: its signed `exp`.
+   */
+  expiresAt: string;
+  /**
+   * False while live traffic for the member goes elsewhere — to the member DID's own direct connection, which takes precedence over a mux connection.
+   */
+  deliveryActive: boolean;
 }
 export interface AttachmentRef_VaultV0_1 {
   /**
@@ -7734,6 +8229,42 @@ export interface DeferredPresentation {
    */
   expiresAt: string;
 }
+/**
+ * A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.
+ */
+export interface DesignatedService {
+  /**
+   * The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused.
+   */
+  id: string;
+  /**
+   * The service type, matched by peers on its value, never on `id`.
+   */
+  type: string | [string, ...string[]];
+  /**
+   * A URI, a map, or a set of either, as the DID document data model allows.
+   */
+  serviceEndpoint:
+    | string
+    | {
+        [k: string]: unknown | undefined;
+      }
+    | [
+        (
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        ),
+        ...(
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        )[]
+      ];
+  [k: string]: unknown | undefined;
+}
 export interface WebAuthnAttestation_DeviceV0_1 {
   kind: "webauthn";
   /**
@@ -8756,12 +9287,7 @@ export interface DriftItem_GitNsV0_1 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_1;
   /**
    * Whose role differs, for the three role types.
@@ -8784,12 +9310,7 @@ export interface DriftItem_GitNsV0_6 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_6;
   /**
    * Whose role differs, for the three role types.
@@ -9998,6 +10519,82 @@ export interface GitNamespace_GitNsV0_6 {
   state: "pending" | "bound";
 }
 /**
+ * Identifies one stored grant and the two parties to it.
+ */
+export interface GrantRef {
+  grantId: GrantId;
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  /**
+   * The principal DID the grant delegates to.
+   */
+  principal: MuxDid;
+}
+/**
+ * A member DID's standing statement that the named principal may carry its traffic at this mediator, on any connection, until `exp`, within `scope`, under the member's current `epoch`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`, and stored verbatim by the mediator as the only evidence of the delegation.
+ */
+export interface GrantStatement {
+  /**
+   * Always `muxGrant`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxGrant";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  grantId: GrantId;
+  /**
+   * The principal DID that may carry the member's traffic. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  scope: StatementScope;
+  /**
+   * The member DID's current epoch at the mediator. Only messaging/mux/revoke-all advances it.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * The mediator's view of one stored grant, as messaging/mux/list and messaging/mux/update return it: the grant statement verbatim, with the state and the effective scope and expiry beside it.
+ */
+export interface GrantView {
+  /**
+   * The grant statement exactly as the member signed it and the mediator stored it, proof included, so either party can re-verify it.
+   */
+  statement: GrantStatement;
+  state: GrantState;
+  /**
+   * The effective scope: the signed scope, or the narrower one messaging/mux/update set.
+   */
+  scope: MuxScope;
+  /**
+   * The effective expiry: the signed `exp` rendered as RFC 3339, or the earlier one messaging/mux/update set.
+   */
+  expiresAt: string;
+  /**
+   * True when messaging/mux/update narrowed the effective scope or expiry below what the statement signs.
+   */
+  narrowed?: boolean;
+  /**
+   * Principal view only: whether the member is attached through this grant to the connection that carried the list request.
+   */
+  attachedNow?: boolean;
+}
+/**
  * A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.
  */
 export interface GrantsBindingSpec {
@@ -10411,7 +11008,7 @@ export interface IdeaOpening {
 }
 export interface IdentityChange {
   /**
-   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level.
    */
   op:
     | "addKey"
@@ -10420,13 +11017,18 @@ export interface IdentityChange {
     | "rotateUpdateKey"
     | "commitUpdateKey"
     | "replaceRecoveryCommitment"
-    | "useRecoveryKey";
+    | "useRecoveryKey"
+    | "declareAssuranceLevel";
   role: IdentityKeyRole;
   verificationMethod?: string;
   keyType?: KeyType;
   publicKeyMultibase?: string;
   commitment?: string;
   relationships?: DidVerificationRelationship[];
+  /**
+   * `declareAssuranceLevel` only: the level declared.
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
@@ -10456,6 +11058,10 @@ export interface IdentityChangePreview {
    */
   updateKeyRotates: boolean;
   recoverySigning?: RecoverySigningRequest;
+  /**
+   * The key assurance level the resulting document declares (CONVENTIONS.md §3.4).
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
@@ -10467,7 +11073,7 @@ export interface IdentityKeyCustody {
   keyId?: string;
   origin?: KeyOrigin;
   /**
-   * Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+   * Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
    */
   exportable: boolean;
   /**
@@ -10475,7 +11081,7 @@ export interface IdentityKeyCustody {
    */
   neverExportable: boolean;
   /**
-   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5).
    */
   inBackups: boolean;
   protection: ProtectionClass;
@@ -10487,6 +11093,10 @@ export interface IdentityKeyCustody {
    * True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
    */
   destroyed?: boolean;
+  /**
+   * The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published.
+   */
+  custodian?: RecoveryCustodian;
 }
 /**
  * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
@@ -11048,7 +11658,7 @@ export interface KeyRoleSummary {
    */
   keys: IdentityRoleKey[];
   /**
-   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides.
+   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where `false` is a defect the VTA reports rather than hides; always `false` at level 2.
    */
   recoveryCommitted?: boolean;
   /**
@@ -11429,6 +12039,68 @@ export interface MemberResponse {
  */
 export interface Membership {}
 /**
+ * Opts a monitor subscription in to mux membership events and selects which. Its presence is the opt-in: a subscription without one receives no membership events. Every member present narrows the selection (members are ANDed; values within one member are ORed); an empty object selects every membership event the requester is entitled to see.
+ */
+export interface MembershipFilter {
+  /**
+   * Only events whose `principal` or `member` is one of these accounts.
+   *
+   * @minItems 1
+   * @maxItems 100
+   */
+  dids?: [Vid, ...Vid[]];
+  /**
+   * @minItems 1
+   */
+  changes?: [MembershipChange, ...MembershipChange[]];
+  /**
+   * @minItems 1
+   */
+  wires?: [MuxWire, ...MuxWire[]];
+  /**
+   * @minItems 1
+   */
+  sources?: [MuxSource, ...MuxSource[]];
+}
+/**
+ * A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
+ */
+export interface MemoryRecord {
+  /**
+   * The VTA context the item is scoped to; the isolation boundary.
+   */
+  contextId: string;
+  key: MemoryKey;
+  /**
+   * The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
+   */
+  version: MemoryVersion;
+  /**
+   * The remembered text. Absent when this is a tombstone or a metadata-only view.
+   */
+  value?: MemoryValue;
+  /**
+   * Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
+   */
+  valueBytes?: number;
+  /**
+   * True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`.
+   */
+  deleted: boolean;
+  /**
+   * When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions.
+   */
+  createdAt?: string;
+  /**
+   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
+   */
+  updatedAt: string;
+  /**
+   * When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
+   */
+  deletedAt?: string;
+}
+/**
  * Metadata of one stored message. Never carries the message body.
  */
 export interface MessageMeta {
@@ -11759,6 +12431,63 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
+}
+/**
+ * One change to the membership of one mux connection at the mediator: a member DID attached to or detached from a principal's connection. Not a step in the life of a message, so it is not a MonitorEvent and carries none of its members. Carries metadata only — never a message, a signed statement, a nonce or key material.
+ */
+export interface MonitorMembershipEvent {
+  /**
+   * When the change took effect, with sub-second precision where the mediator has it.
+   */
+  occurredAt: string;
+  change: MembershipChange;
+  /**
+   * The DID the connection is authenticated as, in the same form the mediator uses for accounts.
+   */
+  principal: Vid;
+  /**
+   * The member DID that attached or detached, in the same form the mediator uses for accounts.
+   */
+  member: Vid;
+  wire: MuxWire;
+  /**
+   * Whether the member rides, or rode, the connection through a stored grant or a session attach.
+   */
+  source: MuxSource;
+  /**
+   * Why, exactly as the messaging/mux/event entry for the change reports it: an AttachReason value when `change` is `attached`, a DetachReason value when it is `detached`.
+   */
+  reason: MemberChangeReason;
+  /**
+   * The connection's identifier, as its `ready` event announced it and messaging/mux/connections lists it. Absent when the mediator does not report it.
+   */
+  sessionId?: SessionId_MessagingMuxV0_1;
+}
+/**
+ * The W3C Data Integrity proof embedded in a mux statement, made by the member DID: the format and verifier Trust Tasks already use for document proofs (SPEC §4.7). The proof covers the whole statement except `proof` itself, as the cryptosuite defines. Closed: a member Data Integrity defines but this list omits is refused.
+ */
+export interface MuxDataIntegrityProof {
+  type: "DataIntegrityProof";
+  /**
+   * The W3C Data Integrity EdDSA cryptosuite used.
+   */
+  cryptosuite: "eddsa-jcs-2022" | "eddsa-rdfc-2022";
+  /**
+   * The DID URL of the verification method that signed. MUST be controlled by the statement's `issuer` and listed in that DID's current `authentication` relationship.
+   */
+  verificationMethod: string;
+  /**
+   * MUST be `authentication`. Any other value is refused with `messaging/mux:proofPurposeInvalid` — a proof made for another relationship (an `assertionMethod` credential signature, say) is never accepted as control of the DID.
+   */
+  proofPurpose: string;
+  /**
+   * OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
+   */
+  created?: string;
+  /**
+   * The multibase (base58btc) signature.
+   */
+  proofValue: string;
 }
 /**
  * A badge as its holder sees it in their own list: the wall entry plus what only the holder knows — whether they hid it, their position for it, and the credential that evidences it.
@@ -12698,6 +13427,25 @@ export interface PurgeProgress {
    */
   lastError?: string;
 }
+/**
+ * Any purpose except `modelTraining` (training, fine-tuning or evaluating a machine-learning model on the content), which `any` never grants (VTI-ACL-105).
+ */
+export interface PurposeScopeAny {
+  scope: "any";
+}
+/**
+ * Exactly the listed purposes. A request naming any other purpose is refused.
+ */
+export interface PurposeScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty set of purposes. An empty array is invalid (it is not `any`).
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  purposes: [Purpose_AclV0_3, ...Purpose_AclV0_3[]];
+}
 export interface Apns {
   platform: "apns";
   /**
@@ -12891,6 +13639,19 @@ export interface QueueSummary {
   accountType?: AccountType;
   receive: QueueDepth;
   send: QueueDepth;
+}
+/**
+ * Where a member has seen one room's conversation up to: the room version they have seen it to, and the host's `createdAt` of the newest message they have seen. A reader that keeps a copy of the room counts as unread a message first stored after `version`; a reader that keeps no copy counts one whose `createdAt` (else `updatedAt`) is after `createdAt` (rooms/changed, What a reader does with a signal, step 4). Markers are ordered by `version`, then by `createdAt` (an absent `createdAt` before any present one): the greater is further on. Carries nothing about which messages, who wrote them, or when the member read them.
+ */
+export interface ReadMarker {
+  /**
+   * The highest room version the member has seen the conversation to: every message the room held at or below this version has been shown to them. `0` means none: the member has seen nothing in the room, which is what marking a whole room unread sets. A room version as rooms/records/list returns it, never a count of messages.
+   */
+  version: number;
+  /**
+   * The host's `createdAt` of the newest message the member has seen, the member's own included — else its `updatedAt` where the host kept no `createdAt` for it — exactly as the host returned it. For a reader that keeps no copy of the room. Absent when the member has seen no message in the room. Never the author's `writtenAt`, which a writer chooses, and never when the member read it.
+   */
+  createdAt?: string;
 }
 /**
  * What the agent checked on the member's behalf, and what it found.
@@ -13283,7 +14044,7 @@ export interface RecordedApproval {
   recordedAt?: string;
 }
 /**
- * A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).
+ * A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).
  */
 export interface RecoveryCommitment {
   keyType: KeyType;
@@ -13299,6 +14060,27 @@ export interface RecoveryCommitment {
    * Operator-facing name of the custodian. Custody projection only; never published.
    */
   label?: string;
+  custodian?: RecoveryCustodian;
+}
+/**
+ * What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).
+ */
+export interface RecoveryCustodian {
+  kind: RecoveryCustodianKind;
+  /**
+   * `vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band.
+   */
+  did?: string;
+  /**
+   * `thresholdGroup` only, in custody records: the members' VTA DIDs where members are VTAs. n is at least three, because 2 ≤ t < n (VTI-KEY-210).
+   *
+   * @minItems 3
+   */
+  participants?: [string, string, string, ...string[]];
+  /**
+   * `thresholdGroup` only: t, the number of members that must authorize. MUST be less than the number of members.
+   */
+  threshold?: number;
 }
 /**
  * What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.
@@ -13780,6 +14562,36 @@ export interface RevocationReceipt {
    * When the revocation was recorded.
    */
   revokedAt: string;
+}
+/**
+ * A member DID's statement, proving current control of it, that every grant on it signed under `epoch` or earlier is void. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface RevokeAllStatement {
+  /**
+   * Always `muxRevokeAll`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxRevokeAll";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The epoch being voided: the member DID's current one.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
 }
 /**
  * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.
@@ -15792,6 +16604,47 @@ export interface Sync_GitNsV0_6 {
    */
   drift: DriftItem_GitNsV0_6[];
 }
+/**
+ * A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.
+ */
+export interface ThresholdRecoveryCommitment {
+  /**
+   * t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`.
+   */
+  threshold: number;
+  /**
+   * The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211).
+   *
+   * @minItems 3
+   */
+  members: [ThresholdRecoveryMember, ThresholdRecoveryMember, ThresholdRecoveryMember, ...ThresholdRecoveryMember[]];
+  /**
+   * Operator-facing name of the group. Custody projection only; never published.
+   */
+  label?: string;
+}
+/**
+ * One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).
+ */
+export interface ThresholdRecoveryMember {
+  keyType: KeyType;
+  /**
+   * The recovery key's public half. Not published by the VTA where the method commits by hash.
+   */
+  publicKeyMultibase: string;
+  /**
+   * Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.
+   */
+  proofOfPossession?: string;
+  /**
+   * Operator-facing name of the custodian. Custody projection only; never published.
+   */
+  label?: string;
+  /**
+   * Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published.
+   */
+  custodian?: RecoveryCustodian;
+}
 export interface Tier {
   /**
    * How the menu names it: desk, busy-desk.
@@ -16747,6 +17600,98 @@ export interface WalrusSettings {
    * How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.
    */
   extendBeforeEpochs: number;
+}
+/**
+ * A did:webs DID as the VTA holds it. The DID document is not here: the host derives it from `keri.cesr`, which `vta/webs/dids/get` returns on request. Every key named here is public, and every key id names a key the VTA holds and never returns.
+ */
+export interface WebsDidRecord {
+  /**
+   * The DID: `did:webs:<domain>:<path segments>:<AID>`, a port in the domain written `%3A<port>`.
+   */
+  did: string;
+  /**
+   * The KERI autonomic identifier: the self-addressing digest of the inception event, and the DID's final segment. It never changes: a rotation changes the keys, not the AID.
+   */
+  aid: string;
+  /**
+   * Context the DID belongs to. Its keys were derived in it, and deleting that context destroys them.
+   */
+  contextId: string;
+  /**
+   * The VTA's id for the hosting server that serves the slot.
+   */
+  serverId: string;
+  /**
+   * The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.
+   */
+  domain: string;
+  /**
+   * The slot on the hosting server: the path segments, then the AID, separated by `/`.
+   */
+  slot: string;
+  /**
+   * Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.
+   */
+  keriCesrUrl: string;
+  /**
+   * Where the derived document is served: `https://<domain>/<slot>/did.json`.
+   */
+  didJsonUrl: string;
+  /**
+   * Operator-facing label. Never published.
+   */
+  label?: string;
+  /**
+   * Whether this is its context's primary DID.
+   */
+  primary?: boolean;
+  /**
+   * Sequence number of the latest event in the key event log.
+   */
+  sequenceNumber: number;
+  /**
+   * The latest event as `<sequence number>:<SAID>`, the form `expectedVersionId` is compared against (vta/dids method profile `webs`, §3). Both parts are compared: a sequence number alone does not distinguish two events at the same position.
+   */
+  versionId: string;
+  /**
+   * The VTA's id for the current signing key, the one key of the key state (`kt` 1). It signs the DID's key events and what the DID signs as itself. After deactivation, the key the final rotation installed, which the VTA signs nothing more with.
+   */
+  signingKeyId: string;
+  /**
+   * The current signing key in CESR (an Ed25519 key, `D…`). The document's verification method for it is `<did>#<signingKey>`.
+   */
+  signingKey: string;
+  /**
+   * The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.
+   */
+  nextKeyId?: string;
+  /**
+   * The VTA's id for the designated key agreement key.
+   */
+  keyAgreementKeyId: string;
+  /**
+   * The designated key agreement key in CESR (an X25519 key, `C…`). Never the X25519 key converted from a signing key.
+   */
+  keyAgreementKey: string;
+  /**
+   * The designated aliases in force, the DID itself first. The did:webs resolution of the DID requires the AID to designate it, so the list is never empty while the DID is live.
+   */
+  alsoKnownAs: string[];
+  /**
+   * The designated services in force, `#didcomm` and `#tsp` included when present.
+   */
+  services: DesignatedService[];
+  /**
+   * True once `vta/webs/dids/delete` has published the rotation to no next keys. Irreversible.
+   */
+  deactivated: boolean;
+  /**
+   * When the deactivating rotation was published. Present exactly when `deactivated` is true.
+   */
+  deactivatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  ext?: Ext;
 }
 /**
  * A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.

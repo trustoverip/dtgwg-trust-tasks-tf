@@ -1,0 +1,41 @@
+[
+  {
+    "note": "An order that is neither `oldestFirst` nor `newestFirst`. The two orders are a closed set, passed through to the host as they are.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": "latestFirst"
+    }
+  },
+  {
+    "note": "`order` as a boolean. It names an order, `oldestFirst` or `newestFirst`; a flag cannot say which way `true` points.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": true
+    }
+  },
+  {
+    "note": "`maxPages` of zero. A browse that may read no page lists nothing and could only answer `complete: false`; the least is one page.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": "newestFirst",
+      "maxPages": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A null nextCursor. A listing read to its end omits nextCursor; it is never null.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "records": [],
+      "complete": true,
+      "nextCursor": null,
+      "verification": {
+        "priorRoots": "noneHeld",
+        "count": "notOffered"
+      }
+    }
+  }
+]

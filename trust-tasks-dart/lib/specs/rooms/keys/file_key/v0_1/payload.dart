@@ -14,7 +14,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to rooms/keys/file-key. Type
 /// https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.
-@Deprecated('superseded by rooms/keys/file-key/0.2')
+@Deprecated('superseded by rooms/keys/file-key/0.3')
 class Response {
   const Response({
     required this.key,
@@ -65,7 +65,7 @@ extension type const PayloadPurpose(String value) {
 /// A caller asks the party holding its principal's room keys for the key of ONE file
 /// in a room: derived from the room's storage key for an epoch, bound to the room, the
 /// epoch and the file's identifier, and opening that file and nothing else.
-@Deprecated('superseded by rooms/keys/file-key/0.2')
+@Deprecated('superseded by rooms/keys/file-key/0.3')
 class Payload {
   const Payload({
     required this.roomId,
@@ -127,7 +127,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/file-key/0.2';
+const String? deprecation = 'superseded by rooms/keys/file-key/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/file-key/0.1';
@@ -154,7 +154,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/rooms/keys/file-key/0.1","title":"Rooms Keys File Key — payload","description":"A caller asks the party holding its principal\'s room keys for the key of ONE file in a room: derived from the room\'s storage key for an epoch, bound to the room, the epoch and the file\'s identifier, and opening that file and nothing else.","type":"object","additionalProperties":false,"required":["roomId","fileId","purpose"],"properties":{"roomId":{"type":"string","description":"The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another."},"fileId":{"type":"string","pattern":"^[A-Za-z0-9_-]{43}\$","description":"The file\'s identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record\'s file manifest."},"purpose":{"type":"string","enum":["seal","open"],"description":"`seal`: a key for a file about to be uploaded, derived under the room\'s CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names."},"epoch":{"type":"integer","minimum":1,"description":"The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Response":{"\$anchor":"response","title":"Rooms Keys File Key — response payload","description":"Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.","type":"object","additionalProperties":false,"required":["key","epoch"],"properties":{"key":{"type":"string","pattern":"^[A-Za-z0-9_-]{43}\$","description":"The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it."},"epoch":{"type":"integer","minimum":1,"description":"The epoch the key was derived under. For `seal`, the room\'s current epoch, which the caller writes into the file\'s manifest; for `open`, the epoch requested."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/rooms/keys/file-key/0.1","title":"Rooms Keys File Key — payload","description":"A caller asks the party holding its principal\'s room keys for the key of ONE file in a room: derived from the room\'s storage key for an epoch, bound to the room, the epoch and the file\'s identifier, and opening that file and nothing else.","type":"object","additionalProperties":false,"required":["roomId","fileId","purpose"],"properties":{"roomId":{"type":"string","description":"The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another."},"fileId":{"type":"string","pattern":"^[A-Za-z0-9_-]{43}\$","description":"The file\'s identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record\'s file manifest."},"purpose":{"type":"string","enum":["seal","open"],"description":"`seal`: a key for a file about to be uploaded, derived under the room\'s CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names."},"epoch":{"type":"integer","minimum":1,"description":"The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

@@ -10,12 +10,16 @@ use proc_macro2::{Group, Literal, Punct, Spacing, TokenStream, TokenTree};
 
 use crate::bundle::Bundle;
 use crate::lock::Lockfile;
-use crate::names::is_reserved_slug;
+use crate::names::{is_reserved_slug, module_name};
 use crate::passes::{
     desugar_oneof_with_compound_not, drop_anyof_of_required_members,
     flatten_unevaluated_compositions, migrate_defs_to_definitions, normalize_titles,
+    prune_unreachable_defs,
 };
-use crate::render::{apply_deprecation, apply_non_exhaustive, indent_safe_docs, render_module};
+use crate::render::{
+    apply_deprecation, apply_non_exhaustive, indent_safe_docs, render_module,
+    strip_doc_schema_blocks,
+};
 
 /// The crates generated code names besides the runtime. typify's output uses
 /// each of them by absolute path (`::serde::Deserialize`, `::regress::Regex`,
@@ -126,11 +130,14 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     // Compact, not pretty-printed: it is read by a validator, never by a
     // person, and indentation was a quarter of its bytes in a crate that sits
     // near crates.io's 10 MB upload limit.
-    let raw = serde_json::to_string(&schema)? + "\n";
+    // Each side keeps only the `$defs` its root reaches (#1098): the request
+    // drops `Response` and what only it uses, the response what only the
+    // request uses. The bundle itself is untouched.
+    let raw = serde_json::to_string(&prune_unreachable_defs(&schema))? + "\n";
     let response_raw = bundle
         .response_schema
         .as_ref()
-        .map(|doc| serde_json::to_string(doc).map(|s| s + "\n"))
+        .map(|doc| serde_json::to_string(&prune_unreachable_defs(doc)).map(|s| s + "\n"))
         .transpose()?;
 
     let has_response = normalize_titles(&mut schema)?;
@@ -203,10 +210,11 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
         apply_deprecation(&mut parsed, note);
     }
     indent_safe_docs(&mut parsed);
+    strip_doc_schema_blocks(&mut parsed);
     if let Some(prefix) = &target.dependencies {
         apply_serde_crate(&mut parsed, &format!("{prefix}::serde"));
     }
-    Ok(strip_doc_schema_blocks(&prettyplease::unparse(&parsed)))
+    Ok(prettyplease::unparse(&parsed))
 }
 
 /// Rewrite every absolute path to one of [`DEPENDENCIES`] (`::serde::…`) to
@@ -437,14 +445,15 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
         let mut node = &mut root;
         let mut path: Vec<String> = Vec::new();
         if let Some(source) = &task.source {
-            let ident = source.replace('-', "_");
+            let ident = module_name(source);
             syn::parse_str::<syn::Ident>(&ident)
                 .map_err(|_| anyhow!("{id}: source name {source:?} is not a Rust module name"))?;
             path.push(ident.clone());
             node = node.children.entry(ident).or_default();
         }
         for segment in bundle.slug.split('/') {
-            let ident = segment.replace('-', "_");
+            // A keyword segment (`keys/move`) is a raw identifier.
+            let ident = module_name(segment);
             syn::parse_str::<syn::Ident>(&ident).map_err(|_| {
                 anyhow!(
                     "{}: slug segment {segment:?} is not a Rust module name",
@@ -480,6 +489,17 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
          //     }}\n\n",
         env!("CARGO_PKG_VERSION")
     ));
+    if let Some(private) = &target.dependencies {
+        source.push_str(&format!(
+            "// The runtime contract this file was generated for. An unresolved\n\
+             // `{abi}` on the next line means the trust-tasks-rs in this build does not\n\
+             // provide it — it predates trust-tasks-build {build}, or has moved to a\n\
+             // newer contract. Upgrade whichever of the two is behind.\n\
+             const _: () = {private}::{abi};\n\n",
+            abi = RUNTIME_ABI,
+            build = env!("CARGO_PKG_VERSION"),
+        ));
+    }
     for (name, node) in &root.children {
         source.push_str(ALLOWS);
         write_node(&mut source, name, node);
@@ -513,6 +533,14 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
 
 /// The module [`Target::index`] writes, beside the families.
 const INDEX_MODULE: &str = "schema_index";
+
+/// The runtime contract a generated file names: an item of the runtime's
+/// `__private` module (`trust_tasks_rs::__private::ABI_V1`) that exists in
+/// every `trust-tasks-rs` able to compile this generator's output (#1101). A
+/// mismatched pair then fails to compile on the line naming it. Move it
+/// together with the runtime's item when generated code comes to need
+/// something an older runtime lacks.
+pub(crate) const RUNTIME_ABI: &str = "ABI_V1";
 
 /// One locked version, as the index names it.
 struct IndexEntry {
@@ -639,33 +667,4 @@ fn write_node(out: &mut String, name: &str, node: &ModNode) {
         write_node(out, child, child_node);
     }
     out.push_str("}\n");
-}
-
-/// Remove the `<details><summary>JSON schema</summary> … </details>` block
-/// typify writes into every generated type's doc comment.
-///
-/// Each one restates the type's own JSON schema, nested types included, so the
-/// same schema text appeared once per enclosing type — 11–14 MB of a crate that
-/// reached 9.96 MB of crates.io's 10 MB upload limit. The schema a reader wants
-/// is the published one at the specification's Type URI, which every module's
-/// documentation already links, and the one a program wants is
-/// `Payload::PAYLOAD_SCHEMA`. The prose description typify draws from each
-/// schema's `description` is kept.
-fn strip_doc_schema_blocks(text: &str) -> String {
-    let mut out = String::with_capacity(text.len());
-    let mut skipping = false;
-    for line in text.split_inclusive('\n') {
-        if line.contains("<details><summary>JSON schema</summary>") {
-            skipping = true;
-            continue;
-        }
-        if skipping {
-            if line.contains("</details>") {
-                skipping = false;
-            }
-            continue;
-        }
-        out.push_str(line);
-    }
-    out
 }

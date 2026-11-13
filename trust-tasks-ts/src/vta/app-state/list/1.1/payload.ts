@@ -112,8 +112,13 @@ export type Response = VTAApplicationStateListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/app-state/list/1.1",
   "title": "VTA Application State List — payload",
@@ -167,42 +172,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Application State List — response payload",
-      "description": "Success response to vta/app-state/list. Type https://trusttasks.org/spec/vta/app-state/list/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "records"
-      ],
-      "properties": {
-        "records": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AppStateRecord"
-          },
-          "description": "Matching records in ascending key order in snapshot mode, and ascending version order in change-feed mode — the latter so that a consumer applying them in order reaches the same state as the maintainer. May be empty."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Opaque continuation token for the next page, sent back as the request's `cursor`. Present when more matching records exist beyond this page; absent on the last page."
-        },
-        "highWatermark": {
-          "$ref": "#/$defs/Version",
-          "description": "The namespace's current counter value. Present whenever `namespace` was supplied. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `records`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page — the one with no `nextCursor` — because the pages of one feed share this value and adopting it early would skip the records still to come."
-        },
-        "tombstoneRetentionSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How long this maintainer retains tombstones before reaping them. Advisory, and present at the maintainer's discretion, so a consumer can schedule its syncs to stay inside the window rather than discovering it has fallen out of it via vta/app-state/list:watermarkTooOld."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -213,78 +182,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "AppStateRecord": {
-      "title": "AppStateRecord",
-      "description": "A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "namespace",
-        "key",
-        "version",
-        "deleted",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VTA context the record is scoped to; the isolation boundary."
-        },
-        "namespace": {
-          "$ref": "#/$defs/Namespace"
-        },
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between."
-        },
-        "value": {
-          "description": "The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone."
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write that produced this `version` was applied. For a tombstone, when the delete was applied."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
-        }
-      }
-    },
-    "Key": {
-      "title": "Key",
-      "description": "Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 512,
-      "pattern": "^[^\\u0000]+$"
-    },
     "Namespace": {
       "title": "Namespace",
       "description": "Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.",
@@ -294,10 +191,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -428,7 +325,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

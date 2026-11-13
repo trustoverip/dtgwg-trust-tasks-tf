@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/signal-delay/set/0.1",
+  "title": "Rooms Signal Delay Set — payload",
+  "description": "A holder of `admin` changes whether the room's host waits a randomised interval before sending a `rooms/changed` signal — the room's signal delay.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation", "signalDelay", "reason"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose signal delay to change. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.2/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope: the setting changes what the timing of every member's signals gives away, so it takes the grant that decides the room's other terms."
+    },
+    "signalDelay": {
+      "$ref": "../../../_shared/0.2/room.schema.json#/$defs/SignalDelay",
+      "description": "The room's signal delay from now on. Always stated: a request that left it out cannot be read as one that meant either value."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. REQUIRED: turning the delay off changes what the timing of every member's signals reveals, so the change carries its own account of intent. Plain text; it MUST NOT name a member or quote a record."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Signal Delay Set — response payload",
+      "description": "Success response to rooms/signal-delay/set. Type https://trusttasks.org/spec/rooms/signal-delay/set/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "signalDelay", "previous"],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "signalDelay": {
+          "$ref": "../../../_shared/0.2/room.schema.json#/$defs/SignalDelay",
+          "description": "The signal delay now in force, as the host recorded it — what `rooms/info` will serve every member."
+        },
+        "previous": {
+          "$ref": "../../../_shared/0.2/room.schema.json#/$defs/SignalDelay",
+          "description": "The signal delay it replaced — `randomised` for a room that had never set one. Returned so that a surface can say whether anything changed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

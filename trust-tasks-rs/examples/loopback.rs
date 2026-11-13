@@ -153,7 +153,7 @@ fn main() {
     );
     request.issuer = Some(CHANGING_AUTHORITY.into());
     request.recipient = Some(MAINTAINER.into());
-    request.issued_at = Some(Utc::now());
+    request.issued_at = Some(trust_tasks_rs::issued_at_now());
     producer.prepare_outbound(&mut request);
     println!(
         "REQUEST (wire form, in-band parties stripped since transport conveys them):\n{}",
@@ -181,7 +181,7 @@ fn main() {
     );
     stale.issuer = Some(CHANGING_AUTHORITY.into());
     stale.recipient = Some(MAINTAINER.into());
-    stale.issued_at = Some(Utc::now());
+    stale.issued_at = Some(trust_tasks_rs::issued_at_now());
     match handle(stale, &consumer) {
         Ok(_) => unreachable!("a fromRole that disagrees with the ACL must be rejected"),
         Err(err) => println!(

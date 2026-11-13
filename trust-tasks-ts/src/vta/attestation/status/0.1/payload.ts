@@ -73,8 +73,13 @@ export type Response = VTAAttestationStatusResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/attestation/status/0.1",
   "title": "VTA Attestation — Status — payload",
@@ -88,41 +93,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Status — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "teeType",
-        "detected"
-      ],
-      "properties": {
-        "teeType": {
-          "type": "string",
-          "enum": [
-            "nitro",
-            "sev-snp",
-            "simulated"
-          ],
-          "description": "The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."
-        },
-        "detected": {
-          "type": "boolean",
-          "description": "Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence."
-        },
-        "platformVersion": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The platform's own version string, when it reports one. Informational."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,10 +104,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -187,7 +157,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -10,6 +10,126 @@ Publishing is triggered by the `trust-tasks-dart-didcomm-v<version>` tag,
 because pub.dev only accepts an automated publish from a tag-triggered
 workflow. See `RELEASING.md`.
 
+## 0.2.0 — 2026-11-13
+
+
+### Added
+
+- **dart,dart-https,dart-didcomm**: JSON priorResponse, observability hook, forward routing and per-type size bounds (#1242)
+
+* feat(dart,dart-https,dart-didcomm)!: JSON priorResponse, observability hook, forward routing and per-type size bounds
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector (#1263)
+
+Size bounds (#1121). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends (#1117). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof (#1092). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.11.0 (was ^0.10.0), the core released beside it.
+
+## 0.1.4 — 2026-11-12
+
+
+### Fixed
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth (#1171)
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+- **proof, ts-proof, dart-proof, dart-didcomm, ceremony**: Bound multibase decoding of unauthenticated values (#1167)
+
+* fix(proof, ts-proof, dart-proof): bound base58 decoding of proofValue and did:key
+
+  The Rust, TypeScript and Dart proof verifiers decode a proof's proofValue
+  and its did:key multikey with base58btc decoders whose cost grows with
+  the square of the input length, and they do so before any signature is
+  checked. A 1 MiB value took about 50 s per field in trust-tasks-proof
+  (release build), and would take minutes in the Dart package and in the
+  TypeScript package on @scure/base 2.0-2.3 (2.4 refuses over 4096
+  characters itself).
+
+  Each verifier now refuses a base58btc value longer than 175 characters
+  before decoding it, or one that decodes to more than 128 bytes - the
+  bounds the Go module adopts in #1166. The largest value any of them reads
+  is a 96-byte P-384 signature; a did:key multikey is at most 51 bytes;
+  175 = ceil(128 * log 256 / log 58).
+
+  Nothing that could verify before is refused: a value over the bounds
+  always decoded to more bytes than any supported key or signature.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.10.0 (was ^0.9.23), the core released beside it.
+
 ## 0.1.3 — 2026-11-04
 
 

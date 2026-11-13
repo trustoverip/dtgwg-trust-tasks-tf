@@ -82,8 +82,13 @@ export type Response = ConsentListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/consent/list/1.1",
   "title": "Consent List — payload",
@@ -114,32 +119,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent List — response payload",
-      "description": "The grants the requesting bridge is authorized to enforce.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "grants"
-      ],
-      "properties": {
-        "grants": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ConsentGrant"
-          },
-          "description": "Matching consent grants."
-        },
-        "nextSyncToken": {
-          "type": "string",
-          "description": "Optional opaque incremental-sync token; pass it back as the request's `syncToken` to receive only grants changed after this response. Omitted, never `null`, when the responder has no token to offer."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -149,64 +128,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ConsentGrant": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "effect",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "description": "A recorded consent decision over a ConsentSubject.",
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/ConsentSubject"
-        },
-        "effect": {
-          "$ref": "#/$defs/Effect"
-        },
-        "scope": {
-          "$ref": "#/$defs/Scope",
-          "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`."
-        },
-        "grantedBy": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID of the approver who made the decision."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 time the decision was recorded."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Optional. After this time the grant lapses and the subject must be re-consented."
-        },
-        "evidence": {
-          "type": "string",
-          "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
-        }
-      }
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "receive",
-        "converse"
-      ],
-      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
-    },
-    "Effect": {
-      "type": "string",
-      "enum": [
-        "allow",
-        "deny"
-      ],
-      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
     },
     "ConsentSubject": {
       "type": "object",
@@ -249,10 +170,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -391,7 +312,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

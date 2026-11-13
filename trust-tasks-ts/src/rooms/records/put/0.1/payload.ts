@@ -6,7 +6,7 @@
 import type { AuthorityPresentation, Ext, SealedRecord } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/records/put/0.5 */
+/** @deprecated superseded by rooms/records/put/0.6 */
 export interface RoomsRecordsPutPayload {
   /**
    * The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential.
@@ -48,7 +48,7 @@ export interface RoomsRecordsPutPayload {
 /**
  * Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.1#response.
  *
- * @deprecated superseded by rooms/records/put/0.5
+ * @deprecated superseded by rooms/records/put/0.6
  */
 export interface RoomsRecordsPutResponsePayload {
   /**
@@ -86,12 +86,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/records/put/0.5";
+export const DEPRECATION: string | null = "superseded by rooms/records/put/0.6";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/records/put/0.5
+ * @deprecated superseded by rooms/records/put/0.6
  */
 export type Payload = RoomsRecordsPutPayload;
 
@@ -101,7 +101,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/records/put/0.5
+ * @deprecated superseded by rooms/records/put/0.6
  */
 export type Response = RoomsRecordsPutResponsePayload;
 
@@ -113,8 +113,13 @@ export type Response = RoomsRecordsPutResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/records/put/0.1",
   "title": "Rooms Records Put — payload",
@@ -184,36 +189,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Records Put — response payload",
-      "description": "Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "version"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "The stored record's key."
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The version assigned, monotonic per room."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The epoch the record was stored under."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -285,10 +260,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -331,69 +306,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "SealedRecord": {
-      "title": "SealedRecord",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ciphertext",
-        "nonce",
-        "epoch"
-      ],
-      "description": "A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.",
-      "properties": {
-        "ciphertext": {
-          "type": "string",
-          "description": "The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise."
-        },
-        "nonce": {
-          "type": "string",
-          "description": "AEAD nonce, base64url."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key."
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\n\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\n\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for."
-        }
-      }
-    },
-    "AuthorityPresentation": {
-      "title": "AuthorityPresentation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "membership",
-        "authority"
-      ],
-      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-      "properties": {
-        "membership": {
-          "type": "string",
-          "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile."
-        },
-        "authority": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 8,
-          "items": {
-            "type": "string"
-          },
-          "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent."
-        },
-        "subjectBinding": {
-          "type": "string",
-          "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

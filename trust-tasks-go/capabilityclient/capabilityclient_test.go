@@ -2,6 +2,7 @@ package capabilityclient
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -200,7 +201,6 @@ func TestParseCapabilityReplyListing(t *testing.T) {
 				"manifest":  map[string]any{"capability": "git-trust", "title": "Git Trust", "version": "0.1"},
 			},
 			map[string]any{"enabled": false, "manifest": map[string]any{"capability": "audit", "version": "1.0"}},
-			map[string]any{"enabled": true}, // no manifest — dropped
 		},
 	})
 	r, ok := ParseCapabilityReply(doc, "urn:thread:1")
@@ -244,5 +244,137 @@ func TestParseEnvelopeReply(t *testing.T) {
 	}
 	if _, ok := ParseEnvelopeReply(body, "wrong"); ok {
 		t.Error("wrong thread must not parse")
+	}
+}
+
+// answer is the reply a conforming consumer sends to request (SPEC §4.9, §8.1).
+func answer(t *testing.T, request *Document, typeURI string, payload map[string]any) *Document {
+	t.Helper()
+	d := reply(t, typeURI, CorrelationThread(request), payload)
+	d.Issuer = request.Recipient
+	d.Recipient = request.Issuer
+	return d
+}
+
+func TestReplyAnswersOnlyItsRequest(t *testing.T) {
+	grant := BuildGitTrustGrant("did:a", "did:r", "did:s", "org")
+	ok := answer(t, grant, GitTrustGrantType+"#response", map[string]any{})
+	if !AnswersRequest(ok, grant) {
+		t.Fatal("a conforming reply must answer its request")
+	}
+	if o, got := ClassifyGitTrustReplyTo(ok, grant, ReplyPolicy{}); !got || o.Kind != WriteSuccess {
+		t.Fatalf("success: %v %+v", got, o)
+	}
+
+	other := "did:someone-else"
+	elsewhere := *ok
+	elsewhere.Issuer = &other
+	misaddressed := *ok
+	misaddressed.Recipient = &other
+	unnamed := *ok
+	unnamed.Issuer = nil
+	revokeAck := *ok
+	revokeAck.Type = GitTrustRevokeType + "#response"
+	for name, d := range map[string]*Document{
+		"another issuer":    &elsewhere,
+		"another recipient": &misaddressed,
+		"no issuer":         &unnamed,
+		"a revoke response": &revokeAck,
+	} {
+		if _, got := ClassifyGitTrustReplyTo(d, grant, ReplyPolicy{}); got {
+			t.Errorf("%s must not answer the grant", name)
+		}
+	}
+
+	already := answer(t, grant, errorType, map[string]any{"code": GitTrustAlreadyGrantedCode})
+	if o, got := ClassifyGitTrustReplyTo(already, grant, ReplyPolicy{}); !got || o.Kind != WriteIdempotentSuccess {
+		t.Errorf("idempotent: %v %+v", got, o)
+	}
+	naming := func(id string) *Document {
+		return answer(t, grant, errorType, map[string]any{
+			"code": GitTrustAlreadyGrantedCode, "inResponseTo": map[string]any{"id": id},
+		})
+	}
+	if _, got := ClassifyGitTrustReplyTo(naming(grant.ID), grant, ReplyPolicy{}); !got {
+		t.Error("an error naming this request answers it")
+	}
+	if _, got := ClassifyGitTrustReplyTo(naming("urn:uuid:another"), grant, ReplyPolicy{}); got {
+		t.Error("an error naming another request does not answer this one")
+	}
+
+	toggle := BuildToggleDocument("did:me", "did:vtc", "git-trust", "0.1", true)
+	ack := answer(t, toggle, CapabilityEnableType+"#response", map[string]any{"capability": "git-trust", "enabled": true})
+	if r, got := ParseCapabilityReplyTo(ack, toggle); !got || r.Kind != ReplyToggled || !r.Enabled {
+		t.Errorf("toggle: %v %+v", got, r)
+	}
+	ackElsewhere := *ack
+	ackElsewhere.Issuer = &other
+	if _, got := ParseCapabilityReplyTo(&ackElsewhere, toggle); got {
+		t.Error("a toggle ack from another party must not answer")
+	}
+	if _, got := ParseCapabilityReplyTo(already, grant); got {
+		t.Error("a git-trust request is not a governance one")
+	}
+	list := BuildListDocument("did:me", "did:vtc")
+	listing := answer(t, list, CapabilityListType+"#response", map[string]any{"capabilities": []any{}})
+	if _, got := ClassifyGitTrustReplyTo(listing, list, ReplyPolicy{}); got {
+		t.Error("a governance request is not a git-trust one")
+	}
+}
+
+func TestOnlyTheRegistryAuthorityIsThisFamilyOrAnError(t *testing.T) {
+	for _, d := range []*Document{
+		reply(t, "https://elsewhere.example/spec/trust-task-error/9.9", "urn:thread:1", map[string]any{"code": GitTrustAlreadyGrantedCode}),
+		reply(t, "https://elsewhere.example/spec/git-trust/grant/0.1#response", "urn:thread:1", map[string]any{}),
+	} {
+		if _, ok := ClassifyGitTrustReply(d, "urn:thread:1"); ok {
+			t.Errorf("%s must not be classified", d.Type)
+		}
+	}
+	for _, d := range []*Document{
+		reply(t, "https://elsewhere.example/spec/trust-task-error/0.5", "urn:thread:1", map[string]any{"code": "permissionDenied"}),
+		reply(t, "https://elsewhere.example/spec/governance/capability/list/0.1#response", "urn:thread:1", map[string]any{"capabilities": []any{}}),
+	} {
+		if _, ok := ParseCapabilityReply(d, "urn:thread:1"); ok {
+			t.Errorf("%s must not be classified", d.Type)
+		}
+	}
+}
+
+func TestMalformedGovernanceReplyReportsNothing(t *testing.T) {
+	for _, p := range []map[string]any{
+		{"capability": "git-trust"},
+		{"capability": "git-trust", "enabled": "yes"},
+		{"enabled": true},
+		{"capability": 7, "enabled": false},
+	} {
+		d := reply(t, CapabilityEnableType+"#response", "urn:thread:1", p)
+		if _, ok := ParseCapabilityReply(d, "urn:thread:1"); ok {
+			t.Errorf("toggle %v must not be classified", p)
+		}
+	}
+	for _, p := range []map[string]any{
+		{},
+		{"capabilities": map[string]any{}},
+		{"capabilities": []any{map[string]any{"manifest": map[string]any{"capability": "x"}}}},
+		{"capabilities": []any{map[string]any{"enabled": true}}},
+	} {
+		d := reply(t, CapabilityListType+"#response", "urn:thread:1", p)
+		if _, ok := ParseCapabilityReply(d, "urn:thread:1"); ok {
+			t.Errorf("listing %v must not be classified", p)
+		}
+	}
+}
+
+// #1114: issuedAt is UTC in whole seconds, on build and on a new attempt.
+func TestIssuedAtWholeSeconds(t *testing.T) {
+	wholeSeconds := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)
+	built := BuildListDocument("did:me", "did:vtc")
+	if built.IssuedAt == nil || !wholeSeconds.MatchString(*built.IssuedAt) {
+		t.Errorf("built issuedAt not whole seconds: %v", built.IssuedAt)
+	}
+	next := NewAttempt(built)
+	if next.IssuedAt == nil || !wholeSeconds.MatchString(*next.IssuedAt) {
+		t.Errorf("new attempt issuedAt not whole seconds: %v", next.IssuedAt)
 	}
 }

@@ -128,4 +128,16 @@ await assert.rejects(
   "an omitted payloadPolicy must name itself, not fail on a property read",
 );
 
+// Through the `exports` map, by package name (a package may name itself), as a
+// consumer resolves it — both `import` and `require()`. Until #1108 the map
+// carried only an `import` condition, so `require("@openvtc/trust-tasks/runtime")`
+// failed with ERR_PACKAGE_PATH_NOT_EXPORTED even on a Node that can require ESM.
+{
+  const { createRequire } = await import("node:module");
+  const imported = await import("@openvtc/trust-tasks/runtime");
+  assert.equal(typeof imported.consumeInbound, "function", "import of ./runtime by name");
+  const required = createRequire(import.meta.url)("@openvtc/trust-tasks/runtime");
+  assert.equal(required.consumeInbound, imported.consumeInbound, "require() of ./runtime by name");
+}
+
 console.log(`dist root import OK — ${Object.keys(pkg).length} exports, pipeline reachable`);

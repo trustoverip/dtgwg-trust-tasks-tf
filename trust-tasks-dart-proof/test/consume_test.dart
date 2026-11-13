@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 // The specimen is a prebuilt library, deprecated in favour of generating the
 // tasks an application uses (dart run trust_tasks:generate).
 // ignore: deprecated_member_use
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_3/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_proof/trust_tasks_proof.dart';
 
@@ -32,6 +32,7 @@ Future<ConsumeOutcome<acl_grant.Response>> consume(
     now: DateTime.parse('2026-01-01T00:00:30Z'),
     newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     handler: (accepted, parties) async =>
         respondWith<acl_grant.Payload, acl_grant.Response>(
       accepted,
@@ -54,6 +55,7 @@ Map<String, dynamic> grant(String issuer, {String role = 'admin'}) => {
           'act': {'scope': 'all'},
           'keys': {'scope': 'all'},
           'capabilities': {'scope': 'ceiling'},
+          'purposes': {'scope': 'any'},
         },
       },
     };

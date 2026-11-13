@@ -68,8 +68,13 @@ export type Response = DeviceRegisterResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/device/register/0.2",
   "title": "Device Register — payload",
@@ -109,23 +114,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Device Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "binding"
-      ],
-      "properties": {
-        "binding": {
-          "$ref": "#/$defs/DeviceBinding"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -135,118 +123,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "DeviceBinding": {
-      "title": "DeviceBinding",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "deviceId",
-        "consumerKind",
-        "displayName",
-        "registeredAt",
-        "consumerDid"
-      ],
-      "properties": {
-        "deviceId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe."
-        },
-        "consumerDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration."
-        },
-        "consumerKind": {
-          "$ref": "#/$defs/ConsumerKind"
-        },
-        "displayName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Human-readable name (e.g. \"Glenn's MacBook — Chrome\", \"iPhone 17\")."
-        },
-        "platform": {
-          "type": "string",
-          "description": "Free-form platform descriptor (e.g. \"macOS 16 / Chrome 142\", \"iOS 19.1\", \"Android 16\", \"Linux/x86_64\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat."
-        },
-        "attestation": {
-          "$ref": "#/$defs/DeviceAttestation"
-        },
-        "pushCapable": {
-          "type": "boolean",
-          "description": "Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device."
-        },
-        "keyCustody": {
-          "$ref": "#/$defs/KeyCustody",
-          "description": "How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md."
-        },
-        "capabilities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Capability"
-          },
-          "uniqueItems": true,
-          "description": "Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "lastSeenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Updated on every device/heartbeat and on any successful auth."
-        },
-        "disabledAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit."
-        },
-        "wipedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Capability": {
-      "title": "Capability",
-      "type": "string",
-      "enum": [
-        "vaultRead",
-        "vaultWrite",
-        "proxyLogin",
-        "fillRelease",
-        "policyAdmin",
-        "deviceAdmin",
-        "sign",
-        "keyMint",
-        "signTrustTask",
-        "credentialWrite",
-        "memoryRead",
-        "memoryWrite",
-        "roomPresent",
-        "roomOpen",
-        "keyExport",
-        "signSshsig",
-        "signJws",
-        "signCsr",
-        "signDocument",
-        "externalAccountsManage",
-        "externalAuthUse",
-        "pcsVetter",
-        "pcsApplicant",
-        "witnessRequest",
-        "pcsVoter",
-        "pcsTrustee",
-        "credentialPresent"
-      ],
-      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
     "KeyCustody": {
       "title": "KeyCustody",
@@ -443,10 +319,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -784,7 +660,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

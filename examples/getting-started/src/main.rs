@@ -1,4 +1,4 @@
-//! A signed `acl/grant/0.2` round trip over HTTPS, both ends in one process.
+//! A signed `acl/grant/0.3` round trip over HTTPS, both ends in one process.
 //!
 //! ```sh
 //! cargo run -p trust-tasks-example-getting-started
@@ -28,7 +28,7 @@ use trust_tasks::TrustTask;
 mod tasks {
     include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
 }
-use tasks::acl::grant::v0_2 as grant;
+use tasks::acl::grant::v0_3 as grant;
 // GETTING-STARTED:end imports
 
 const ADDR: &str = "127.0.0.1:3000";
@@ -101,20 +101,24 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // validating newtype rather than a bare `String`, so the bound is checked
     // where the value is authored instead of at the far end of the wire.
     //
-    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // acl/grant/0.3 states every authority axis explicitly — there is no
     // default and no implicit form. Carol may act everywhere, may use no
-    // keys, and holds the full ceiling of the `moderator` role.
+    // keys, holds the full ceiling of the `moderator` role, and may use what
+    // she reads for any purpose (`any` never includes `modelTraining`).
     let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
     let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
     let capabilities = grant::CapabilityScopeCeiling::try_from(
         grant::CapabilityScopeCeiling::builder().scope("ceiling"),
     )?;
+    let purposes =
+        grant::PurposeScopeAny::try_from(grant::PurposeScopeAny::builder().scope("any"))?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
         .act(act)
         .keys(keys)
         .capabilities(capabilities)
+        .purposes(purposes)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -134,7 +138,7 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // server rejects as `proofInvalid`.
     request.issuer = Some(my_did.to_string());
     request.recipient = Some("did:web:maintainer.example".into());
-    request.issued_at = Some(chrono::Utc::now());
+    request.issued_at = Some(trust_tasks::issued_at_now()); // whole seconds, UTC
     request.sign(secret, SignOptions::new()).await?;
 
     println!("  [client] POST /trust-tasks  id={}", request.id);

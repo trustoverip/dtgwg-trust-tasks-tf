@@ -136,8 +136,13 @@ export type Response = AuthStepUpApproveResponseRelyingPartyAck;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/step-up/approve-response/0.6",
   "title": "Auth — Step-up Approve Response",
@@ -248,44 +253,6 @@ export const PAYLOAD_SCHEMA = {
         }
       ]
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Step-up Approve Response — relying party ack",
-      "description": "Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "elevated",
-            "recorded",
-            "rejected"
-          ],
-          "description": "`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied."
-        },
-        "session": {
-          "$ref": "#/$defs/Session",
-          "description": "Present when status is `elevated`. Absent for `recorded`, which changes no session."
-        },
-        "boundTo": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Present when status is `rejected`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -294,58 +261,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Session": {
-      "$anchor": "session",
-      "title": "Session",
-      "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "subject",
-        "issuedAt",
-        "expiresAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The authenticated party's VID (typically a DID URL)."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session was created."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after."
-        },
-        "amr": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used."
-        },
-        "acr": {
-          "type": "string",
-          "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
       }
     },
     "AttestStatement": {
@@ -414,70 +329,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Evidence": {
-      "$anchor": "evidence",
-      "title": "Step-up Evidence",
-      "description": "Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.",
-      "oneOf": [
-        {
-          "title": "DidSigned",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind"
-          ],
-          "properties": {
-            "kind": {
-              "const": "didSigned"
-            }
-          },
-          "description": "The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \"vta\"/\"did\"."
-        },
-        {
-          "title": "WebAuthn",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "assertion"
-          ],
-          "properties": {
-            "kind": {
-              "const": "webauthn"
-            },
-            "assertion": {
-              "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \"passkey\"."
-            }
-          }
-        },
-        {
-          "title": "ApproverSigned",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "statement"
-          ],
-          "properties": {
-            "kind": {
-              "const": "approverSigned"
-            },
-            "statement": {
-              "$ref": "#/$defs/AttestStatement",
-              "description": "A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \"approver\"."
-            }
-          }
-        }
-      ]
-    },
     "Response": {
       "$anchor": "response",
       "title": "Auth Step-up Approve Response — relying party ack",
@@ -577,74 +435,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
-    },
-    "AttestStatement": {
-      "title": "AttestStatement",
-      "type": "object",
-      "minProperties": 1,
-      "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break."
-    },
-    "AssertionResponse": {
-      "$anchor": "assertionResponse",
-      "title": "AuthenticatorAssertionResponse (login)",
-      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "rawId",
-        "type",
-        "response"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "rawId": {
-          "type": "string"
-        },
-        "type": {
-          "const": "public-key"
-        },
-        "response": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "clientDataJSON",
-            "authenticatorData",
-            "signature"
-          ],
-          "properties": {
-            "clientDataJSON": {
-              "type": "string"
-            },
-            "authenticatorData": {
-              "type": "string"
-            },
-            "signature": {
-              "type": "string"
-            },
-            "userHandle": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        },
-        "authenticatorAttachment": {
-          "enum": [
-            "platform",
-            "cross-platform"
-          ]
-        },
-        "clientExtensionResults": {
-          "type": "object"
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

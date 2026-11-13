@@ -3,6 +3,64 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.38.0...trust-tasks-capability-client-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+
+
+### Fixed
+
+- **capability-client,ts-capability-client,go-capabilityclient,dart-capability-client**: Bind a capability reply to the request it answers ([#1248](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1248))
+
+* fix(capability-client,ts-capability-client,go-capabilityclient,dart-capability-client): bind a capability reply to the request it answers
+
+  The capability clients matched a reply to a request by thread id and slug alone. All four ports gain request-bound classifiers (classify_git_trust_reply_to / parse_capability_reply_to and their TS, Go and Dart counterparts) that also require the reply's issuer to be the request's recipient, its recipient to be the request's issuer, and its type to be the request's own #response or the framework error type, as the HTTPS clients do. The thread-only classifiers now read trust-task-error and family responses only under the registry's authority, and a toggle or listing reply missing a required member is no longer read as reporting defaults. TypeScript parses a body as a document only when its payload is an object. Rust adds try_build_document for a caller-supplied Type URI.
+
+
+
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.15...trust-tasks-capability-client-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.14...trust-tasks-capability-client-v0.37.15) — 2026-11-11
+
+
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.13...trust-tasks-capability-client-v0.37.14) — 2026-11-10
+
+
+## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.12...trust-tasks-capability-client-v0.37.13) — 2026-11-10
+
+
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.11...trust-tasks-capability-client-v0.37.12) — 2026-11-09
+
+
+## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.10...trust-tasks-capability-client-v0.37.11) — 2026-11-09
+
+
 ## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.37.9...trust-tasks-capability-client-v0.37.10) — 2026-11-08
 
 

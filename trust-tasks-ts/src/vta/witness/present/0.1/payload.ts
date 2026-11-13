@@ -80,8 +80,13 @@ export type Response = VTAWitnessPresentResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/witness/present/0.1",
   "title": "VTA Witness — Present — payload",
@@ -105,29 +110,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Witness — Present — response payload",
-      "description": "The witness/session/submit document to send.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "document"
-      ],
-      "properties": {
-        "sessionId": {
-          "$ref": "#/$defs/SessionId"
-        },
-        "document": {
-          "$ref": "#/$defs/CarriedDocument",
-          "description": "The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -152,10 +134,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 256
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -206,7 +188,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 256
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

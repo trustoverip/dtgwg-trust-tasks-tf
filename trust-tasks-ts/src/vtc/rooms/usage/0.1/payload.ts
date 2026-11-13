@@ -139,8 +139,13 @@ export type Response = VTCRoomsUsageResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/usage/0.1",
   "title": "VTC Rooms — Usage — payload",
@@ -237,117 +242,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "UsageRow": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One group's figures. Holdings as of the read (or the end of the day, on a `day` row); activity over the range (or the day).",
-      "required": [
-        "files",
-        "bytes",
-        "reservedBytes",
-        "uploads",
-        "downloads",
-        "egressBytes"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Present on a `room` row."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Present on a `member` row."
-        },
-        "storageConfig": {
-          "$ref": "#/$defs/StorageConfigId",
-          "description": "Present on a `storageConfig` row, and on a `room` row as the room's assigned config."
-        },
-        "date": {
-          "type": "string",
-          "format": "date",
-          "description": "Present on a `day` row."
-        },
-        "files": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "bytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "reservedBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "uploads": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "downloads": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "egressBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "limits": {
-          "$ref": "#/$defs/ScopeLimits",
-          "description": "On a `room` row the room's limits, on a `member` row (one room selected) that member's."
-        },
-        "capacityBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "On a `storageConfig` row, the config's capacity when it has one."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Usage — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "asOf",
-        "from",
-        "to",
-        "items"
-      ],
-      "properties": {
-        "asOf": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "from": {
-          "type": "string",
-          "format": "date"
-        },
-        "to": {
-          "type": "string",
-          "format": "date"
-        },
-        "items": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/UsageRow"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Present when more remain; pass it as `cursor`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -356,30 +250,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ScopeLimits": {
-      "title": "ScopeLimits",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.",
-      "properties": {
-        "maxFiles": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The number of committed blobs the scope may hold. 0 refuses every upload at this scope."
-        },
-        "maxFileBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1073741824,
-          "description": "The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest)."
-        },
-        "maxBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The total size of the committed and reserved blobs the scope may hold."
-        }
       }
     },
     "StorageConfigId": {
@@ -391,10 +261,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -552,7 +422,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

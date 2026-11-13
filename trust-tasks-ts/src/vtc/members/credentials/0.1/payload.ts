@@ -92,8 +92,13 @@ export type Response = VTCMembersCredentialsResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/members/credentials/0.1",
   "title": "VTC Members — Credentials",
@@ -114,51 +119,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Credentials — response payload",
-      "description": "The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "memberVmcBound"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Did",
-          "description": "The member these documents belong to."
-        },
-        "membershipCredential": {
-          "type": "object",
-          "minProperties": 1,
-          "description": "The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
-        },
-        "roleCredential": {
-          "type": "object",
-          "minProperties": 1,
-          "description": "The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
-        },
-        "memberVmc": {
-          "type": "object",
-          "minProperties": 1,
-          "description": "The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
-        },
-        "memberVmcReceivedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other."
-        },
-        "memberVmcBound": {
-          "type": "boolean",
-          "description": "Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Did": {
       "type": "string",
       "pattern": "^did:[a-z0-9]+:.+$",
@@ -175,10 +135,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -243,7 +203,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

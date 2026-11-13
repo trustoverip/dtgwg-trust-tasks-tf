@@ -488,11 +488,54 @@ fn check_is_offline() {
 }
 
 #[test]
+fn a_plain_http_registry_is_refused_unless_loopback_or_allowed() {
+    let mut reg = TestRegistry::new();
+    reg.publish_real();
+    let app = App::new(&reg);
+    let r = app
+        .run(&[
+            "--registry",
+            "http://registry.example",
+            "add",
+            "vault/upsert/0.4",
+        ])
+        .fails();
+    assert!(r.stderr.contains("must be https://"), "{}", r.stderr);
+    assert!(r.stderr.contains("--allow-http-registry"), "{}", r.stderr);
+    assert!(
+        !app.path("trust-tasks.lock").exists(),
+        "a refused registry wrote a lock"
+    );
+
+    // Loopback is accepted: the command gets as far as connecting (nothing
+    // listens on port 9) rather than refusing the scheme.
+    let r = app
+        .run(&[
+            "--registry",
+            "http://127.0.0.1:9",
+            "add",
+            "vault/upsert/0.4",
+        ])
+        .fails();
+    assert!(!r.stderr.contains("must be https://"), "{}", r.stderr);
+}
+
+#[test]
 fn check_reports_a_lock_resolved_against_another_registry() {
     let mut reg = TestRegistry::new();
     reg.publish_real();
     let app = App::new(&reg);
-    app.run(&["add", "vault/upsert/0.4"]).ok();
+    // The registry came from TRUST_TASKS_REGISTRY, not the manifest: `add`
+    // says the choice is not recorded where a later command will look.
+    let r = app.run(&["add", "vault/upsert/0.4"]).ok();
+    assert!(
+        r.stderr.contains(&format!(
+            "To keep {}, set `registry = \"{}\"` in trust-tasks.toml",
+            app.registry, app.registry
+        )),
+        "{}",
+        r.stderr
+    );
     let r = app
         .run(&["--registry", "https://mirror.example", "check"])
         .fails();
@@ -501,6 +544,40 @@ fn check_reports_a_lock_resolved_against_another_registry() {
             .contains("but the registry is https://mirror.example"),
         "{}",
         r.stdout
+    );
+    // The hint says how to keep the lock's registry, not only how to leave it.
+    assert!(
+        r.stdout.contains(&format!(
+            "set `registry = \"{}\"` in trust-tasks.toml",
+            app.registry
+        )),
+        "{}",
+        r.stdout
+    );
+    assert!(
+        r.stdout.contains("run `trust-tasks update`"),
+        "{}",
+        r.stdout
+    );
+
+    // Following it: with the registry in the manifest, a bare `check` passes.
+    let manifest = app.read("trust-tasks.toml");
+    std::fs::write(
+        app.path("trust-tasks.toml"),
+        format!("registry = \"{}\"\n{manifest}", app.registry),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_trust-tasks"))
+        .arg("-C")
+        .arg(app.dir.path())
+        .arg("check")
+        .env_remove("TRUST_TASKS_REGISTRY")
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stdout)
     );
 }
 
@@ -923,13 +1000,50 @@ fn generate_runs_the_generator_after_check() {
         r.stderr
     );
 
-    // Rust generates in build.rs; the command says so after checking.
-    let r = generate(&["generate", "--lang", "rs"], empty.path().as_os_str()).ok();
+    // Rust runs trust-tasks-build in-process: no tool on PATH, and the file
+    // build.rs would write lands in --out.
+    let r = generate(&["generate", "--lang", "rs"], empty.path().as_os_str()).fails();
+    assert!(r.stderr.contains("--out <dir> is required"), "{}", r.stderr);
+    let rs_out = TempDir::new().unwrap();
+    let out_arg = rs_out.path().join("gen");
+    let r = generate(
+        &[
+            "generate",
+            "--lang",
+            "rs",
+            "--out",
+            out_arg.to_str().unwrap(),
+            "--",
+            "--index",
+        ],
+        empty.path().as_os_str(),
+    )
+    .ok();
     assert!(
-        r.stdout.contains("trust_tasks_build::Config"),
+        r.stdout.contains("trust_tasks_generated.rs"),
         "{}",
         r.stdout
     );
+    let source = std::fs::read_to_string(out_arg.join("trust_tasks_generated.rs")).unwrap();
+    assert!(source.contains("pub mod vault {"), "{source}");
+    assert!(source.contains("pub mod v0_4 {"), "{source}");
+    assert!(source.contains("pub mod schema_index {"), "{source}");
+    // An option the Rust generator does not take is refused, not ignored.
+    let r = generate(
+        &[
+            "generate",
+            "--lang",
+            "rs",
+            "--out",
+            out_arg.to_str().unwrap(),
+            "--",
+            "--package",
+            "x",
+        ],
+        empty.path().as_os_str(),
+    )
+    .fails();
+    assert!(r.stderr.contains("not `--package`"), "{}", r.stderr);
 
     // A lock that does not verify generates nothing.
     std::fs::remove_file(&record).unwrap();

@@ -29,10 +29,13 @@ name: Publish Dart
 #   trust_tasks_proof  trust-tasks-dart-proof/   trust-tasks-dart-proof-v{{version}}
 #   trust_tasks_https  trust-tasks-dart-https/   trust-tasks-dart-https-v{{version}}
 #   trust_tasks_didcomm trust-tasks-dart-didcomm/ trust-tasks-dart-didcomm-v{{version}}
+#   trust_tasks_capability_client
+#                      trust-tasks-dart-capability-client/
+#                                                trust-tasks-dart-capability-client-v{{version}}
 #
 # The patterns cannot collide: `trust-tasks-dart-v` never prefixes
-# `trust-tasks-dart-proof-v`, `trust-tasks-dart-https-v` or
-# `trust-tasks-dart-didcomm-v`. Adding a package means a row here, a tag pattern
+# `trust-tasks-dart-proof-v`, `trust-tasks-dart-https-v`,
+# `trust-tasks-dart-didcomm-v` or `trust-tasks-dart-capability-client-v`. Adding a package means a row here, a tag pattern
 # below, a `case` arm in `resolve`, an entry in the `tag-dart` matrix in
 # publish.yml, and one in DART_PACKAGES in scripts/release-pr.sh.
 #
@@ -51,6 +54,10 @@ on:
       - "trust-tasks-dart-didcomm-v[0-9]+.[0-9]+.[0-9]+"
       - "trust-tasks-dart-capability-client-v[0-9]+.[0-9]+.[0-9]+"
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   # Which package the tag names, and whether that version is already on pub.dev.
   #
@@ -59,7 +66,10 @@ jobs:
   # its tag — and without this check that tag would run a publish pub.dev is
   # certain to refuse, leaving a red run on a release that in fact succeeded.
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
     outputs:
       directory: ${{ steps.pkg.outputs.directory }}
       published: ${{ steps.pkg.outputs.published }}
@@ -67,8 +77,18 @@ jobs:
       - id: pkg
         env:
           TAG: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # Publish only a commit that is on main: a release tag pushed on any
+          # other commit is refused.
+          on_main=$(gh api "repos/$REPO/compare/main...$SHA" --jq .status)
+          case "$on_main" in
+            identical|behind) ;;
+            *) echo "::error::$TAG points at $SHA, which is not on main ($on_main)"; exit 1 ;;
+          esac
           case "$TAG" in
             trust-tasks-dart-proof-v*) dir=trust-tasks-dart-proof; name=trust_tasks_proof; version=${TAG#trust-tasks-dart-proof-v} ;;
             trust-tasks-dart-https-v*) dir=trust-tasks-dart-https; name=trust_tasks_https; version=${TAG#trust-tasks-dart-https-v} ;;
@@ -95,6 +115,6 @@ jobs:
     # tag against pubspec.yaml, and runs a dry run before the real publish.
     permissions:
       id-token: write # required for OIDC; no long-lived pub.dev credential exists
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
     with:
       working-directory: ${{ needs.resolve.outputs.directory }}

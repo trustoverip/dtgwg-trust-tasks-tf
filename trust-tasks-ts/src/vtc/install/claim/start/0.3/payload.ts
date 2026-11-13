@@ -83,8 +83,13 @@ export type Response = VTCInstallClaimStartResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/install/claim/start/0.3",
   "title": "VTC Install Claim Start — payload",
@@ -113,55 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Install Claim Start — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "claimId",
-        "adminDid",
-        "challenge",
-        "audience",
-        "expiresAt"
-      ],
-      "properties": {
-        "claimId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Opaque, single-use handle for this claim. Echoed in claim/finish, and the `boundTo` of the approver's enrolment statement."
-        },
-        "adminDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The DID the install token names — the DID that must sign claim/finish and that becomes the first administrator. Returned so the installer need not decode the token."
-        },
-        "challenge": {
-          "type": "string",
-          "minLength": 16,
-          "maxLength": 512,
-          "description": "A fresh challenge (≥128 bits) the founder's step-up approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`."
-        },
-        "audience": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The community's DID, which the statement names as its `audience` and `recipient`, and to which claim/finish is addressed."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this claim ceremony lapses (not the install token)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -173,10 +129,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -240,7 +196,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

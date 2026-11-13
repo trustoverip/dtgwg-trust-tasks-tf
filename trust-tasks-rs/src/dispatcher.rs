@@ -152,7 +152,7 @@ impl<R> Dispatcher<R> {
         match forward_target(&doc.type_uri, &self.handlers) {
             Some(target) => {
                 if let Some(schema) = self.schemas.get(&target).copied().flatten() {
-                    crate::extension::prune_payload(&mut doc.payload, schema);
+                    crate::extension::prune_forward(&mut doc.payload, schema)?;
                 }
                 self.handlers[&target](doc)
             }
@@ -161,7 +161,7 @@ impl<R> Dispatcher<R> {
     }
 
     /// The Type URIs this dispatcher currently routes for, in canonical
-    /// form and sorted for stable output. Handy for `unsupported_type`
+    /// form and sorted for stable output. Handy for `unsupportedType`
     /// error responses that list what the consumer *does* implement.
     pub fn registered_uris(&self) -> Vec<&str> {
         let mut v: Vec<&str> = self.handlers.keys().map(String::as_str).collect();
@@ -186,7 +186,7 @@ impl<R> Dispatcher<R> {
     /// handler registered for this Type URI) and
     /// [`RejectReason::MalformedRequest`] (payload failed to deserialize
     /// into the registered `P`). Both are routed to the original producer
-    /// per SPEC.md §8.1 — neither carries the `identity_mismatch`
+    /// per SPEC.md §8.1 — neither carries the `identityMismatch`
     /// transport-routing exception, so the safe default in
     /// [`TrustTask::reject_with`] applies.
     ///
@@ -341,6 +341,9 @@ pub(crate) struct RouteFacts {
     pub(crate) schema: Option<&'static str>,
     /// `SpecPolicy::of::<P>()` — items 5b, 7A and 8, and §7.3 item 17.
     pub(crate) policy: crate::SpecPolicy,
+    /// `P::MAX_DOCUMENT_BYTES` — the size bound the specification declares
+    /// (SPEC §12.4), held against `ConsumeChecks::received_bytes`.
+    pub(crate) max_document_bytes: Option<usize>,
     /// Whether a payload deserializes into `P`, with the rejection
     /// [`downcast_payload`] would give.
     pub(crate) check: fn(&Value) -> Result<(), RejectReason>,
@@ -351,6 +354,7 @@ impl RouteFacts {
         Self {
             schema: P::PAYLOAD_SCHEMA,
             policy: crate::SpecPolicy::of::<P>(),
+            max_document_bytes: P::MAX_DOCUMENT_BYTES,
             check: check_payload::<P>,
         }
     }
@@ -360,13 +364,15 @@ impl RouteFacts {
 fn check_payload<P: Payload>(payload: &Value) -> Result<(), RejectReason> {
     P::deserialize(payload)
         .map(drop)
-        .map_err(|e| malformed_payload::<P>(&e))
+        .map_err(|e| malformed_payload(&e))
 }
 
-fn malformed_payload<P: Payload>(e: &serde_json::Error) -> RejectReason {
-    RejectReason::MalformedRequest {
-        reason: format!("payload does not match {}: {e}", P::TYPE_URI),
-    }
+/// The category of the failure, not `serde_json`'s rendering of it: that names
+/// the member, the offending value and the byte offset, which on the wire
+/// describes this consumer's type layout to anyone who sends a bad payload
+/// (SPEC §10.4). The detail belongs in the operator's log.
+fn malformed_payload(e: &serde_json::Error) -> RejectReason {
+    RejectReason::malformed_from_serde(e)
 }
 
 /// SPEC §5.2 / §8.3 routing over a handler table: the registered key `type_uri`
@@ -412,7 +418,7 @@ where
         extra,
     } = doc;
 
-    let payload: P = serde_json::from_value(payload).map_err(|e| malformed_payload::<P>(&e))?;
+    let payload: P = serde_json::from_value(payload).map_err(|e| malformed_payload(&e))?;
 
     Ok(TrustTask {
         id,
@@ -456,7 +462,7 @@ mod tests {
 
     #[test]
     fn dispatch_or_reject_unsupported_type_routes_back_to_original_issuer() {
-        // Dispatcher has no handler at all; any inbound doc → unsupported_type.
+        // Dispatcher has no handler at all; any inbound doc → unsupportedType.
         let dispatcher: Dispatcher<()> = Dispatcher::new();
         let mut doc = TrustTask::for_payload("req-9", payload());
         doc.issuer = Some("did:web:org.example".into());

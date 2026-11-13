@@ -133,8 +133,13 @@ export type Response = VTCNetworksPreviewResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/networks/preview/0.1",
   "title": "VTC Networks — Preview — payload",
@@ -162,136 +167,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Role": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "required"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The role's name, as `vtc/networks/join` assigns a group to it."
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether the network admits a member only once a group is registered for this role."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "What the network uses the role for."
-        }
-      }
-    },
-    "Framework": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "iri",
-        "version"
-      ],
-      "properties": {
-        "iri": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The network's governance framework."
-        },
-        "version": {
-          "type": "string",
-          "maxLength": 64,
-          "description": "The framework version the network operates under."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Networks — Preview — response payload",
-      "description": "The network, as the community found it at `url`, and where the community stands with it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "network",
-        "url",
-        "name",
-        "roles",
-        "listed"
-      ],
-      "properties": {
-        "network": {
-          "type": "string",
-          "pattern": "^did:[a-z0-9]+:.+$",
-          "maxLength": 2048,
-          "description": "The DID the network at `url` answers as."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "The URL the network was read at."
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "The network's name, from its profile."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 4096,
-          "description": "The network's description, from its profile."
-        },
-        "owner": {
-          "type": "string",
-          "maxLength": 512,
-          "description": "The network's identified owner (VTI-VTN-002), from its profile."
-        },
-        "framework": {
-          "$ref": "#/$defs/Framework"
-        },
-        "roles": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/Role"
-          },
-          "description": "The roles the network asks members to register a group for. `vtc/networks/join` must assign a group to each one marked `required`."
-        },
-        "listed": {
-          "type": "boolean",
-          "description": "`true` only when the network holds an entry for the community whose listing verifies as the network's and lists the community as a community."
-        },
-        "entryState": {
-          "type": "string",
-          "enum": [
-            "listed",
-            "acknowledged",
-            "repudiated",
-            "suspended"
-          ],
-          "description": "The network's state for the community's entry, when it holds a published one: `listed` (not yet acknowledged), `acknowledged` (a member), `repudiated` (the community rejected the listing) or `suspended`."
-        },
-        "notListedReason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Why `listed` is `false`, in words for an administrator."
-        },
-        "membershipState": {
-          "type": "string",
-          "enum": [
-            "acknowledged",
-            "repudiated",
-            "departed"
-          ],
-          "description": "The community's own record of the membership, when it holds one (`vtc/networks/show`)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -303,10 +178,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -451,7 +326,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

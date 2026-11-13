@@ -92,8 +92,13 @@ export type Response = VTAApplicationStateDeleteResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/app-state/delete/1.0",
   "title": "VTA Application State Delete — payload",
@@ -127,49 +132,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Application State Delete — response payload",
-      "description": "Success response to vta/app-state/delete. Type https://trusttasks.org/spec/vta/app-state/delete/1.0#response. Deleting an address that holds nothing is a success, not an error — that is what makes the task converge under replay.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "namespace",
-        "key",
-        "existed"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "namespace": {
-          "$ref": "#/$defs/Namespace"
-        },
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "existed": {
-          "type": "boolean",
-          "description": "True when a live record was removed by this request. False when the address already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way."
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the address held nothing and no tombstone was written."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the deletion was recorded. Absent on the same terms as `version`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -179,12 +141,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Key": {
       "title": "Key",
@@ -209,10 +165,10 @@ export const PAYLOAD_SCHEMA = {
       "minimum": 0
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -290,15 +246,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 64,
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \"absent\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.",
-      "type": "integer",
-      "minimum": 0
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

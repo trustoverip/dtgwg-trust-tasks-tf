@@ -29,11 +29,13 @@
 //! the identical document-minus-`proof` contract on the sign side, so
 //! what it emits is what [`Verifier`] verifies.
 
+mod bounds;
 mod purpose;
 mod resolver;
 mod sign;
+pub use bounds::check_proof_bounds;
 pub use purpose::{ProofPurpose, ProofPurposeResolver, PurposeBound};
-pub use resolver::CachedDidResolver;
+pub use resolver::{CachedDidResolver, DEFAULT_RESOLUTION_TIMEOUT};
 pub use sign::{sign_trust_task, SignError};
 
 use std::sync::Arc;
@@ -42,7 +44,8 @@ use affinidi_data_integrity::{
     DataIntegrityError, DataIntegrityProof, DidKeyResolver, SignatureFailure, VerifyOptions,
 };
 use async_trait::async_trait;
-use serde::Serialize;
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 use trust_tasks_rs::{ProofVerifier, TrustTask, VerificationError};
 
@@ -70,7 +73,11 @@ pub use affinidi_data_integrity::{crypto_suites::CryptoSuite, SignOptions};
 pub struct Verifier {
     resolver: Arc<dyn ProofPurposeResolver>,
     options: VerifyOptions,
+    clock: Clock,
 }
+
+/// The clock a [`Verifier`] reads `expires` against.
+pub type Clock = Arc<dyn Fn() -> chrono::DateTime<chrono::Utc> + Send + Sync>;
 
 impl Verifier {
     /// Verifier that resolves `did:key:` URIs locally; rejects every other
@@ -91,7 +98,15 @@ impl Verifier {
         Self {
             resolver,
             options: VerifyOptions::default(),
+            clock: Arc::new(chrono::Utc::now),
         }
+    }
+
+    /// Override the clock `expires` is checked against (default:
+    /// `chrono::Utc::now`). For tests.
+    pub fn with_clock(mut self, clock: Clock) -> Self {
+        self.clock = clock;
+        self
     }
 
     /// Override the [`VerifyOptions`] (expected proof purpose, expected
@@ -134,25 +149,48 @@ impl Verifier {
     /// member dropped by the payload type — any of those makes a genuine
     /// proof fail. A receiver holding the raw JSON should verify that.
     ///
-    /// Checks, in order: a `proof` member is present and well-formed; the
-    /// document names an `issuer` controlling the proof's verificationMethod
-    /// (SPEC §4.8, exact string equality); the `proofPurpose` names a signing
+    /// Checks, in order: a `proof` member is present and well-formed, its
+    /// `created`, if any, has every field in range, and its `expires`, if
+    /// any, has not passed; the document names an `issuer` controlling the proof's verificationMethod
+    /// (SPEC §4.8, exact string equality); a proof `@context`, if any, equals
+    /// the document's (see `check_proof_context`); the `proofPurpose` names a signing
     /// relationship and the issuer lists the verificationMethod under it
     /// (W3C Data Integrity / Controlled Identifiers §3.3); the signature
     /// verifies over the document minus its `proof`.
     pub async fn verify_raw(&self, doc: &Value) -> Result<(), VerificationError> {
         // ─── 1. Extract the proof.
-        let proof_value = doc.get("proof").cloned().ok_or_else(|| {
+        let proof_value = doc.get("proof").ok_or_else(|| {
             VerificationError::MalformedProof("document carries no proof member".to_string())
         })?;
-        let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
+        // `expires` is read from the proof as received: the upstream proof
+        // type has no member for it and drops it when parsing. A malformed or
+        // passed one is refused as such; any other is refused as unsupported,
+        // because the signature checked below would not cover it.
+        check_expires(proof_value, (self.clock)())?;
+        check_created(proof_value)?;
+        if proof_value.get("expires").is_some() {
+            return Err(VerificationError::MalformedProof(
+                UNSUPPORTED_EXPIRES.to_string(),
+            ));
+        }
+        // The upstream proof type holds `@context` only as an array of
+        // strings; another form would fail to parse with a message that does
+        // not say why.
+        if proof_value
+            .get("@context")
+            .is_some_and(|c| !c.as_array().is_some_and(|a| a.iter().all(Value::is_string)))
+        {
+            return Err(VerificationError::MalformedProof(
+                UNSUPPORTED_CONTEXT.to_string(),
+            ));
+        }
+        let parsed_proof = DataIntegrityProof::deserialize(proof_value)
             .map_err(|e| VerificationError::MalformedProof(format!("parse proof: {e}")))?;
 
-        // ─── 2. The document minus its proof, exactly as given.
-        let mut doc_value = doc.clone();
-        if let Some(obj) = doc_value.as_object_mut() {
-            obj.remove("proof");
-        }
+        // ─── 2. The document minus its proof, exactly as given — a view that
+        //        serialises every member but `proof`, so the document is not
+        //        copied just to drop one member.
+        let doc_value = WithoutProof(doc);
 
         // ─── 3. Bind the proof to the in-band issuer (SPEC §4.7 / §4.8 /
         //        §7.2 item 7). A valid signature proves only that *some* key
@@ -162,7 +200,7 @@ impl Verifier {
         //        to `issuer` by exact string equality — no normalization, per
         //        §4.8.
         let vm = &parsed_proof.verification_method;
-        match doc_value.get("issuer").and_then(|v| v.as_str()) {
+        match doc.get("issuer").and_then(|v| v.as_str()) {
             None => {
                 return Err(VerificationError::IssuerMismatch(
                     "document carries a proof but no in-band issuer to bind it to".to_string(),
@@ -177,6 +215,14 @@ impl Verifier {
                 }
             }
         }
+
+        // ─── 3a. Bound the encoded values before the Affinidi crates decode
+        //        them: base58 decoding costs the square of a value's length,
+        //        and both arrive before any signature is checked.
+        check_proof_bounds(&parsed_proof)?;
+
+        // ─── 3b. The proof's `@context`, if any, must equal the document's.
+        check_proof_context(doc, proof_value)?;
 
         // ─── 4. The key must be one the issuer authorised for the purpose
         //        the proof declares: `keyAgreement` and unknown purposes are
@@ -193,10 +239,199 @@ impl Verifier {
     }
 }
 
+/// A received document seen without its `proof` member — what the signature
+/// covers (Data Integrity §4.2: the unsecured document). Serialises the
+/// members of the document it borrows, `proof` skipped, in their order; a
+/// document that is not an object serialises as it is.
+struct WithoutProof<'a>(&'a Value);
+
+impl Serialize for WithoutProof<'_> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let Some(members) = self.0.as_object() else {
+            return self.0.serialize(serializer);
+        };
+        let len = members.len() - usize::from(members.contains_key("proof"));
+        let mut map = serializer.serialize_map(Some(len))?;
+        for (name, value) in members.iter().filter(|(name, _)| *name != "proof") {
+            map.serialize_entry(name, value)?;
+        }
+        map.end()
+    }
+}
+
+/// Why [`Verifier::verify_raw`] refuses a proof whose `@context` is not an
+/// array of strings.
+///
+/// `affinidi-data-integrity` 0.8's proof type holds `@context` as
+/// `Vec<String>`, so a single-string or inline-object context cannot be
+/// re-hashed as it was signed. The Go, TypeScript and Dart verifiers accept
+/// one that equals the document's; the shared vector
+/// `eddsa-jcs-2022-context-string.json` records the gap.
+const UNSUPPORTED_CONTEXT: &str =
+    "a proof @context that is not an array of strings is not supported by this verifier: affinidi-data-integrity's proof type cannot carry it";
+
+/// Refuse a proof whose `@context` disagrees with the document's.
+///
+/// eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4: "If proofOptions.@context
+/// exists: Check that the securedDocument.@context starts with all values
+/// contained in the proofOptions.@context in the same order. Otherwise, set
+/// verified to false". A proof without `@context` is hashed as received
+/// (step 4 does not apply).
+///
+/// This verifier requires the two to be **equal**, not only the proof's to be
+/// a prefix. The cryptosuite verifies a longer document `@context` by hashing
+/// the proof's in its place (step 4.2) and returning that rewritten document
+/// as the verified one; a [`ProofVerifier`] returns no document, so the caller
+/// would go on to act on `@context` entries no signature covers. The Go,
+/// TypeScript and Dart verifiers apply the same rule.
+fn check_proof_context(doc: &Value, proof: &Value) -> Result<(), VerificationError> {
+    let Some(proof_context) = proof.get("@context") else {
+        return Ok(());
+    };
+    match doc.get("@context") {
+        None => Err(VerificationError::MalformedProof(
+            "proof carries @context but the document has none".to_string(),
+        )),
+        // `serde_json::Value` equality is structural: member order in an
+        // inline context does not matter, array order does.
+        Some(doc_context) if doc_context == proof_context => Ok(()),
+        Some(_) => Err(VerificationError::MalformedProof(
+            "proof @context does not equal the document's @context".to_string(),
+        )),
+    }
+}
+
+/// Why [`Verifier::verify_raw`] refuses a proof carrying an unexpired,
+/// well-formed `expires`.
+///
+/// `affinidi-data-integrity` 0.8's proof type has no `expires` member and
+/// drops it when parsing, so the signature this crate recomputes would leave
+/// out a member the signer covered (or, if the member was added after
+/// signing, accept a value nobody signed). Until the upstream type carries
+/// it, such a proof is refused here — the Go, TypeScript and Dart verifiers
+/// accept it. The shared vector `eddsa-jcs-2022-expires-future.json` records
+/// the gap.
+pub const UNSUPPORTED_EXPIRES: &str =
+    "proof.expires is not supported by this verifier: affinidi-data-integrity's proof type does not carry it, so the signature check could not cover it";
+
+/// Refuse a proof whose `expires` (VC Data Integrity §2.1) is not a
+/// `dateTimeStamp` — a date-time ending in `Z` or an explicit `±hh:mm` offset,
+/// every field in range — or has passed at `now`. No clock-skew allowance
+/// applies: the signer chose the instant. The same rule as the Go, TypeScript
+/// and Dart verifiers.
+fn check_expires(
+    proof: &Value,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Result<(), VerificationError> {
+    let Some(expires) = proof.get("expires") else {
+        return Ok(());
+    };
+    let at = expires
+        .as_str()
+        .and_then(parse_date_time_stamp)
+        .ok_or_else(|| {
+            VerificationError::MalformedProof(format!(
+                "proof.expires must be a dateTimeStamp with Z or an offset: {expires}"
+            ))
+        })?;
+    if now > at {
+        return Err(VerificationError::MalformedProof(format!(
+            "proof.expires {expires} has passed"
+        )));
+    }
+    Ok(())
+}
+
+/// Refuse a proof whose `created` is present but is not a `dateTimeStamp`
+/// with every field in range — the rule [`check_expires`] applies, and the
+/// one the Go, TypeScript and Dart verifiers apply to `created`. chrono, which
+/// the upstream proof type parses `created` with, would take a leap second
+/// and a lower-case `t`/`z`. Only the form is checked here; `created` is not
+/// compared with the clock.
+fn check_created(proof: &Value) -> Result<(), VerificationError> {
+    let Some(created) = proof.get("created") else {
+        return Ok(());
+    };
+    match created.as_str().and_then(parse_date_time_stamp) {
+        Some(_) => Ok(()),
+        None => Err(VerificationError::MalformedProof(format!(
+            "proof.created must be a dateTimeStamp with Z or an offset: {created}"
+        ))),
+    }
+}
+
+/// `YYYY-MM-DDThh:mm:ss[.f+](Z|±hh:mm)` with every field in range — month
+/// 1-12, a day the month has (leap years included), hour 0-23, minute and
+/// second 0-59 (no leap second), an offset of at most 14:00 with minutes 0-59.
+/// The Go, TypeScript and Dart verifiers apply the same ranges. chrono's RFC
+/// 3339 parser alone would also take a lower-case `t`/`z`, a space separator,
+/// and a leap second.
+fn parse_date_time_stamp(s: &str) -> Option<chrono::DateTime<chrono::Utc>> {
+    use chrono::{NaiveDate, TimeZone};
+    let b = s.as_bytes();
+    let num = |r: std::ops::Range<usize>| -> Option<u32> {
+        let d = b.get(r)?;
+        d.iter()
+            .all(u8::is_ascii_digit)
+            .then(|| d.iter().fold(0u32, |n, c| n * 10 + u32::from(c - b'0')))
+    };
+    if b.len() < 20
+        || b[4] != b'-'
+        || b[7] != b'-'
+        || b[10] != b'T'
+        || b[13] != b':'
+        || b[16] != b':'
+    {
+        return None;
+    }
+    let (year, month, day) = (num(0..4)?, num(5..7)?, num(8..10)?);
+    let (hour, minute, second) = (num(11..13)?, num(14..16)?, num(17..19)?);
+    if hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+    let date = NaiveDate::from_ymd_opt(i32::try_from(year).ok()?, month, day)?;
+    let mut rest = &b[19..];
+    let mut nanos = 0u32;
+    if let Some(fraction) = rest.strip_prefix(b".") {
+        let n = fraction.iter().take_while(|c| c.is_ascii_digit()).count();
+        if n == 0 {
+            return None;
+        }
+        for i in 0..9 {
+            nanos = nanos * 10
+                + fraction
+                    .get(i)
+                    .filter(|_| i < n)
+                    .map_or(0, |c| u32::from(c - b'0'));
+        }
+        rest = &fraction[n..];
+    }
+    let offset_minutes: i64 = match rest {
+        [b'Z'] => 0,
+        [sign @ (b'+' | b'-'), ..] if rest.len() == 6 && rest[3] == b':' => {
+            let oh = num(b.len() - 5..b.len() - 3)?;
+            let om = num(b.len() - 2..b.len())?;
+            if oh > 14 || om > 59 || (oh == 14 && om != 0) {
+                return None;
+            }
+            let m = i64::from(oh * 60 + om);
+            if *sign == b'+' {
+                m
+            } else {
+                -m
+            }
+        }
+        _ => return None,
+    };
+    let local = date.and_hms_nano_opt(hour, minute, second, nanos)?;
+    let utc = chrono::Utc.from_utc_datetime(&local);
+    utc.checked_sub_signed(chrono::TimeDelta::minutes(offset_minutes))
+}
+
 /// Map [`DataIntegrityError`] variants into the framework's
 /// [`VerificationError`] taxonomy. The mapping aligns with SPEC.md §8.3:
-/// every failure surfaces as `proof_invalid` to the wire, distinguished
-/// from `proof_required` (which our caller raises) — `VerificationError`
+/// every failure surfaces as `proofInvalid` to the wire, distinguished
+/// from `proofRequired` (which our caller raises) — `VerificationError`
 /// is what the framework returns when a proof IS present but fails to
 /// verify.
 fn map_error(err: DataIntegrityError) -> VerificationError {
@@ -235,4 +470,83 @@ fn map_error(err: DataIntegrityError) -> VerificationError {
 pub fn parse_data_integrity_proof(value: &Value) -> Result<DataIntegrityProof, VerificationError> {
     serde_json::from_value(value.clone())
         .map_err(|e| VerificationError::MalformedProof(format!("parse DataIntegrityProof: {e}")))
+}
+
+#[cfg(test)]
+mod expires_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn at(s: &str) -> chrono::DateTime<chrono::Utc> {
+        s.parse().unwrap()
+    }
+
+    #[test]
+    fn offsets_are_applied() {
+        assert_eq!(
+            parse_date_time_stamp("2026-06-01T14:00:00+02:00"),
+            Some(at("2026-06-01T12:00:00Z"))
+        );
+        assert_eq!(
+            parse_date_time_stamp("2026-06-01T10:30:00.25-01:30"),
+            Some(at("2026-06-01T12:00:00.25Z"))
+        );
+    }
+
+    #[test]
+    fn absent_expires_is_accepted() {
+        assert!(check_expires(&json!({}), at("2026-06-01T12:00:00Z")).is_ok());
+    }
+
+    #[test]
+    fn unexpired_and_boundary_expires_are_accepted() {
+        let now = at("2026-06-01T12:00:00Z");
+        for expires in [
+            "2026-06-01T12:00:01Z",
+            "2026-06-01T12:00:00Z",
+            "2026-06-01T14:00:00.5+02:00",
+            "2028-02-29T00:00:00Z",
+            "2027-01-01T00:00:00+14:00",
+            "2027-01-01T00:00:00-12:59",
+            "2027-01-01T23:59:59.999999999Z",
+        ] {
+            assert!(
+                check_expires(&json!({ "expires": expires }), now).is_ok(),
+                "{expires}"
+            );
+        }
+    }
+
+    #[test]
+    fn passed_or_malformed_expires_is_refused() {
+        let now = at("2026-06-01T12:00:00Z");
+        for expires in [
+            json!("2026-06-01T11:59:59Z"),
+            json!("2026-06-01T13:59:59+02:00"),
+            json!("2027-01-01T00:00:00"),
+            json!("2027-01-01t00:00:00z"),
+            json!("2027-01-01 00:00:00Z"),
+            json!(1767225600),
+            json!("tomorrow"),
+            json!("2027-01-01"),
+            json!("2027-13-01T00:00:00Z"),
+            json!("2027-02-30T00:00:00Z"),
+            json!("2027-02-29T00:00:00Z"),
+            json!("2027-01-01T24:00:00Z"),
+            json!("2027-01-01T00:60:00Z"),
+            json!("2027-01-01T00:00:60Z"),
+            json!("2027-01-01T00:00:00+24:00"),
+            json!("2027-01-01T00:00:00+23:60"),
+            json!("2027-01-01T00:00:00+14:01"),
+            json!("2027-01-01T00:00:00-99:00"),
+            json!(""),
+        ] {
+            let err = check_expires(&json!({ "expires": expires }), now)
+                .expect_err(&format!("{expires} should be refused"));
+            assert!(
+                matches!(err, VerificationError::MalformedProof(_)),
+                "{expires}: {err:?}"
+            );
+        }
+    }
 }

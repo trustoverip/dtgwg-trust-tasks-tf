@@ -73,8 +73,13 @@ export type Response = VTCMembersListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/members/list/0.2",
   "title": "VTC Members List — payload",
@@ -101,37 +106,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MemberResponse"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
-        },
-        "totalEstimate": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "description": "Approximate total matching members, when the maintainer can cheaply estimate it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -141,121 +115,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MemberResponse": {
-      "$anchor": "memberResponse",
-      "title": "MemberResponse",
-      "description": "One community member as the maintainer sees it: the membership record joined with its ACL role.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "role",
-        "joinedAt",
-        "publishConsent",
-        "departurePreference",
-        "extensions"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member's DID."
-        },
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member's role in wire form (e.g. `admin`, `moderator`, `custom:editor`)."
-        },
-        "label": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 256,
-          "description": "Optional human-readable label."
-        },
-        "joinedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "publishConsent": {
-          "type": "boolean",
-          "description": "Whether the member consented to being published in the community directory."
-        },
-        "departurePreference": {
-          "type": "string",
-          "enum": [
-            "purge",
-            "tombstone",
-            "historical",
-            "policydefault"
-          ],
-          "description": "How the member's record is handled on departure."
-        },
-        "statusListIndex": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "description": "The member's slot on the community's membership status list, when allocated."
-        },
-        "currentVmcId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Id of the member's current Verifiable Membership Credential, if issued."
-        },
-        "currentRoleVacId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`."
-        },
-        "personhood": {
-          "type": "boolean",
-          "description": "Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision."
-        },
-        "personhoodAssertedAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag."
-        },
-        "joinedViaInvitation": {
-          "type": "boolean",
-          "description": "Whether this member joined by presenting an invitation credential rather than by an admin's decision on an open request. The two routes to membership carry different evidence, and an operator reviewing a roster can otherwise not tell them apart."
-        },
-        "memberVmcId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "`id` of the member-issued reciprocal membership credential — the member half of the pair — once the member has sent it. Absent until then, which is the useful signal: it distinguishes a membership the community has asserted from one the member has acknowledged. The credential body is not echoed here."
-        },
-        "memberVmcReceivedAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When that reciprocal credential was received. Paired with `memberVmcId`."
-        },
-        "extensions": {
-          "type": "object",
-          "description": "Opaque community-defined extension bag. Keys are maintainer-defined; the maintainer caps its size (16 KiB in the reference implementation)."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -410,7 +275,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

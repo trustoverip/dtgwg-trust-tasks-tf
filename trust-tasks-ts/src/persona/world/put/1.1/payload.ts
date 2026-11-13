@@ -95,8 +95,13 @@ export type Response = PersonaWorldPutResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/world/put/1.1",
   "title": "Persona — World Put — payload",
@@ -156,42 +161,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona World Put — response payload",
-      "description": "Success response to persona/world/put. Type https://trusttasks.org/spec/persona/world/put/1.1#response. A failed precondition is not a success: it is a trust-task-error carrying persona/world/put:versionConflict.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "worldId",
-        "version",
-        "wasCreated",
-        "updatedAt"
-      ],
-      "properties": {
-        "worldId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "wasCreated": {
-          "type": "boolean",
-          "description": "True when this write created the world, false when it replaced one. A producer that omitted `worldId` can still be told which happened, because a retried create with a supplied id is a replacement."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -201,12 +170,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Ulid": {
       "title": "Ulid",
@@ -236,10 +199,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -300,30 +263,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "WorldColour": {
-      "title": "WorldColour",
-      "description": "A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.",
-      "type": "string",
-      "enum": [
-        "slate",
-        "indigo",
-        "teal",
-        "moss",
-        "sand",
-        "clay",
-        "rose",
-        "plum"
-      ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

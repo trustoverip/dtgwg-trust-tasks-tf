@@ -52,6 +52,13 @@ type Consumer struct {
 
 	// Now supplies the clock. Defaults to time.Now.
 	Now func() time.Time
+
+	// Extends is the lookup forward routing follows (SPEC §5.2 "Declared
+	// extension"): a later version whose chain reaches the implemented one is
+	// read as it. Nil means [tt.RegistryExtends], the generated registry index;
+	// pass a lookup that also knows a third-party (§6.5) specification's
+	// declarations to follow its chain.
+	Extends tt.ExtendsLookup
 }
 
 // NewConsumer returns a Consumer with the record on, an in-process guard and the
@@ -94,10 +101,15 @@ type Received[R any] struct {
 }
 
 // Receive opens wire addressed to the consumer's Recipient, resolving the
-// sender's key from the envelope's authenticated skid via resolve, and runs the
-// document through §7.2 for the specification spec.
+// sender's key via resolve from the bare DID of the envelope's skid, and runs the
+// document through §7.2 for the specification spec. The skid is authenticated
+// by that key: a forged one derives a key-encryption key that fails to unwrap.
 //
-// decode reads the request payload from JSON; handler returns the response
+// decode reads the request payload from JSON. A document holding two members
+// whose names differ only by case is refused malformedRequest before decode
+// runs; decode itself sees exact names only as far as it checks them — pass one
+// built on trusttasks.CheckMemberNames once this module requires a core that
+// has it; handler returns the response
 // document (build it with [tt.RespondWith]), nil for a fire-and-forget spec, or
 // a [tt.Refusal] error.
 //
@@ -172,7 +184,42 @@ func Consume[P, R any](
 		}), nil
 	}
 
-	payload, err := decode(raw.Payload)
+	// Two members differing only by case would be read as one by encoding/json
+	// and as two by every other reader; see caseFoldedDuplicate.
+	if _, dup := caseFoldedDuplicate(unpacked.Document); dup {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "document has two members whose names differ only by case",
+		}), nil
+	}
+
+	// SPEC §5.2 "Declared extension": a later version whose extends chain
+	// (per c.Extends; nil is the registry's) reaches spec's is read as spec's
+	// version, its payload pruned to the members spec's schema knows, as the
+	// Rust dispatcher and the Dart bindings read it (#1117). Another
+	// specification is unsupportedType, an unreached version of this one
+	// unsupportedVersion, and a payload too complex to prune malformedRequest
+	// — each routed to the authenticated sender. The proof and the item-11
+	// digest stay over the document as received (Received below).
+	reading, reason, err := tt.ReadForSpecWith(unpacked.Document, spec, c.Extends)
+	if err != nil {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "envelope body is not a Trust Task document",
+		}), nil
+	}
+	if reason != nil {
+		return refused(&raw, *reason), nil
+	}
+	var read tt.Document[json.RawMessage]
+	if err := json.Unmarshal(reading, &read); err != nil {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "envelope body is not a Trust Task document",
+		}), nil
+	}
+
+	payload, err := decode(read.Payload)
 	if err != nil {
 		return refused(&raw, tt.RejectReason{
 			Code:    tt.CodeMalformedRequest,
@@ -204,10 +251,17 @@ func Consume[P, R any](
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
 		Doc:           doc,
-		MyVID:         transport.Local,
-		Now:           now,
-		NewErrorID:    c.newID,
-		Handler:       handler,
+		// The document as it arrived: the item-11 digest is over it, so a
+		// member the payload type does not model still tells two documents
+		// under one id apart.
+		// It is also what SPEC §12.4's maxDocumentBytes bounds, where the core
+		// enforces it.
+		Received:   unpacked.Document,
+		Extends:    c.Extends,
+		MyVID:      transport.Local,
+		Now:        now,
+		NewErrorID: c.newID,
+		Handler:    handler,
 	})
 	if err != nil {
 		// A handler error that is not a Refusal, or a misconfiguration. The core

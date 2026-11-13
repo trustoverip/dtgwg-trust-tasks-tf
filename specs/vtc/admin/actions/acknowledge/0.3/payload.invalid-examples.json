@@ -24,7 +24,7 @@
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "notice",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.3",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -48,6 +48,7 @@
             "role": "admin",
             "act": { "scope": "all" },
             "keys": { "scope": "all" },
+            "purposes": { "scope": "any" },
             "capabilities": { "scope": "ceiling" }
           }
         },
@@ -64,7 +65,7 @@
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "acknowledge",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.3",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -92,6 +93,7 @@
             "role": "admin",
             "act": { "scope": "all" },
             "keys": { "scope": "all" },
+            "purposes": { "scope": "any" },
             "capabilities": { "scope": "ceiling" }
           }
         },

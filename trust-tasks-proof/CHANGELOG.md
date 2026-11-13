@@ -6,6 +6,241 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.38.0...trust-tasks-proof-v0.39.0) — 2026-11-13
+
+
+### Build & CI
+
+- **proof, didcomm**: Affinidi-crypto 0.3 and the matching Affinidi releases ([#1265](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1265))
+
+* build(proof,didcomm): affinidi-crypto 0.3 and the matching Affinidi releases
+
+  trust-tasks-proof requires affinidi-crypto 0.3, affinidi-data-integrity
+  0.8.7, affinidi-did-common 0.4.7 and affinidi-did-resolver-cache-sdk
+  0.8.53, the releases built on affinidi-crypto 0.3, so its KeyType is the
+  one those crates use. The trust-tasks-didcomm dev dependencies move to
+  affinidi-crypto 0.3 and affinidi-messaging-didcomm 0.15.14, and the
+  affinidi-secrets-resolver dev dependencies to 0.5.18.
+
+  The mediator integration test leaves the tree for now: the published
+  test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto 0.2 and
+  no longer compile beside affinidi-messaging-didcomm 0.15.14.
+
+- Catch superseded versions and drifted counts in the docs ([#1268](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1268))
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows ([#1251](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1251))
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+
+
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.15...trust-tasks-proof-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **proof,ts-proof,go-proof,dart-proof**: Follow the JCS cryptosuites' @context rule in all four proof backends ([#1233](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1233))
+
+Signers copy a document's @context into the proof (eddsa-jcs-2022 /
+  ecdsa-jcs-2019 section 3.3.1 step 2). Verifiers hash the proof
+  configuration as received, and refuse a proof whose @context is not
+  exactly the document's (section 3.3.2 step 4, held to equality because a
+  ProofVerifier returns no verified document). The Dart verifier no longer
+  lets ssi copy the document's @context into the configuration, which made
+  it refuse what the other three signers emit. Documents without @context
+  get byte-identical proofs. Six shared vectors in fixtures/proof pin the
+  behaviour in every library.
+
+- **rs,ts,go,dart,proof,ts-proof,go-proof,dart-proof**: Refuse out-of-range timestamp fields instead of rolling them over ([#1210](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1210))
+
+issuedAt and expiresAt, and a proof's created, are now read with every
+  field range-checked after the shared pattern: month 1-12, a day the month
+  has, hour 0-23, minute and second 0-59 (no leap second), and an offset of
+  at most 23:59 (14:00 for a proof's dateTimeStamp, as for expires).
+
+  Before, the four runtimes disagreed on the same bytes. TypeScript's
+  Date.parse read 2026-02-30 as 2 March and 24:00 as the next day; Dart's
+  DateTime.tryParse rolled 2026-13-45T25:61:61Z over into 2027 and took any
+  offset; Rust's chrono read :60 as a leap second and accepted a space for
+  the T; Go's time.Parse accepted +24:00 and +23:60. In the TypeScript proof
+  verifier a regex-valid but unparseable created (month 13) gave NaN, which
+  never compares later than the clock-skew horizon, so it was accepted.
+
+  New shared vectors: fixtures/consume/timestamps.json, run by all four
+  runtimes, and five correctly signed created-* proof vectors.
+
+- **https,proof**: Verify client response proofs as received, hold error responses to them, and bound DID resolution by default ([#1204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1204))
+
+* fix(https,proof)!: verify client response proofs as received, hold error responses to them, and bound DID resolution by default
+
+  HttpsClient verified a response's proof over the parsed and re-serialised
+  document, so a valid signature over, for example, an issuedAt written with
+  +00:00 was refused. It now verifies over the body exactly as received, as
+  the server already does.
+
+  With a response verifier configured, a trust-task-error response is now
+  returned as TrustTaskError only when its proof verifies and its issuer and
+  recipient match the configured VIDs. Otherwise it is returned as the new
+  ClientError::UnverifiedErrorResponse, which keeps the document for
+  diagnostics but marks it as unattested. ClientError is now non_exhaustive.
+
+  HttpsServer with a verifier and no explicit DID-method choice now accepts
+  did:key only (DEFAULT_ALLOWED_DID_METHODS). allowed_did_methods widens it;
+  the new allow_any_did_method lifts it. A server without a verifier is
+  unchanged.
+
+  CachedDidResolver now gives every resolution a deadline
+  (DEFAULT_RESOLUTION_TIMEOUT, 10 s, with_timeout) and refuses a DID naming
+  localhost or a loopback, private-network or link-local address before the
+  client is called (allow_private_hosts opts out). with_host_filter adds a
+  caller-supplied host allow-list.
+
+- **go-proof, ts-proof, dart-proof**: Check proofPurpose and expires, and sign with authentication by default ([#1168](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1168))
+
+* fix(go-proof, ts-proof, dart-proof)!: check proofPurpose and expires, and sign with authentication by default
+
+  The Go, TypeScript and Dart proof verifiers accepted any non-empty
+  proofPurpose, including keyAgreement, and none of the four read a proof's
+  expires. They now apply the rule trust-tasks-proof (Rust) already applies
+  (SPEC §4.7.3):
+
+  - proofPurpose must be authentication, assertionMethod,
+    capabilityInvocation or capabilityDelegation; keyAgreement and any other
+    value are malformedProof.
+  - Dart's withResolver path checks that the issuer's DID document lists the
+    exact verificationMethod under the relationship proofPurpose names (by
+    absolute reference, relative fragment, or embedded), defines it under
+    verificationMethod, and names the issuer as its controller. The document
+    is resolved once per verification and shared with ssi.
+  - expires, when present, must be a dateTimeStamp (Z or an explicit offset)
+    that has not passed; no clock-skew allowance. All four runtimes.
+  - The Go, TypeScript and Dart signers default proofPurpose to
+    authentication, as the Rust signer does, and refuse a purpose naming no
+    signing relationship.
+  - TypeScript verifies Ed25519 with RFC 8032 decoding ({ zip215: false }),
+    as Go, Rust and Dart do.
+
+  Three shared vectors (fixtures/proof) are correctly signed and must fail in
+  every runtime: proofPurpose keyAgreement, an unrecognised proofPurpose, and
+  a passed expires.
+
+- **proof, ts-proof, dart-proof, dart-didcomm, ceremony**: Bound multibase decoding of unauthenticated values ([#1167](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1167))
+
+* fix(proof, ts-proof, dart-proof): bound base58 decoding of proofValue and did:key
+
+  The Rust, TypeScript and Dart proof verifiers decode a proof's proofValue
+  and its did:key multikey with base58btc decoders whose cost grows with
+  the square of the input length, and they do so before any signature is
+  checked. A 1 MiB value took about 50 s per field in trust-tasks-proof
+  (release build), and would take minutes in the Dart package and in the
+  TypeScript package on @scure/base 2.0-2.3 (2.4 refuses over 4096
+  characters itself).
+
+  Each verifier now refuses a base58btc value longer than 175 characters
+  before decoding it, or one that decodes to more than 128 bytes - the
+  bounds the Go module adopts in #1166. The largest value any of them reads
+  is a 96-byte P-384 signature; a did:key multikey is at most 51 bytes;
+  175 = ceil(128 * log 256 / log 58).
+
+  Nothing that could verify before is refused: a value over the bounds
+  always decoded to more bytes than any supported key or signature.
+
+
+
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.14...trust-tasks-proof-v0.37.15) — 2026-11-11
+
+
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.13...trust-tasks-proof-v0.37.14) — 2026-11-10
+
+
+## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.12...trust-tasks-proof-v0.37.13) — 2026-11-10
+
+
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.11...trust-tasks-proof-v0.37.12) — 2026-11-09
+
+
+## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.10...trust-tasks-proof-v0.37.11) — 2026-11-09
+
+
 ## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.9...trust-tasks-proof-v0.37.10) — 2026-11-08
 
 

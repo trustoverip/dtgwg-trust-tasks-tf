@@ -84,8 +84,13 @@ export type Response = VTCWebsiteFilesShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/website/files/show/0.1",
   "title": "VTC Website — Files — Show — payload",
@@ -118,55 +123,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Website — Files — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "path",
-        "etag",
-        "sizeBytes",
-        "contentType",
-        "offset",
-        "data",
-        "complete"
-      ],
-      "properties": {
-        "path": {
-          "$ref": "#/$defs/WebsitePath"
-        },
-        "etag": {
-          "$ref": "#/$defs/WebsiteEtag"
-        },
-        "sizeBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The whole file's size."
-        },
-        "contentType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255,
-          "description": "The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown."
-        },
-        "offset": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Echoed."
-        },
-        "data": {
-          "$ref": "#/$defs/FileData"
-        },
-        "complete": {
-          "type": "boolean",
-          "description": "Whether this range reached the end of the file."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -176,13 +132,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "FileData": {
-      "title": "FileData",
-      "type": "string",
-      "maxLength": 349526,
-      "pattern": "^[A-Za-z0-9_-]*$",
-      "description": "A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling."
     },
     "WebsiteEtag": {
       "title": "WebsiteEtag",
@@ -199,10 +148,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -287,7 +236,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -316,4 +265,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: false,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 360448,
 } as const;

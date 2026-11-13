@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) -----------------------
 // Delete these three imports, and the block marked the same way below, when the
@@ -16,10 +17,19 @@ import 'package:trust_tasks/trust_tasks.dart';
 
 import 'binding.dart';
 
-/// Largest request body the server reads (SPEC §12.2). Trust Task documents are
-/// small, and the body is parsed before the sender is authenticated, so an
-/// unbounded read would be a pre-authentication memory exhaustion vector.
+/// The default per-document bound (SPEC §12.4), in bytes: what a document of a
+/// specification that declares no `maxDocumentBytes` may be, and the floor of
+/// [HttpsServer.bodyLimitBytes]. The body is parsed before the sender is
+/// authenticated, so an unbounded read would be a pre-authentication memory
+/// exhaustion vector. Override it with `HttpsServer(defaultMaxDocumentBytes:)`.
 const int maxBodyBytes = 256 * 1024;
+
+/// Wire message for a document larger than its specification's declared
+/// `maxDocumentBytes` (or [HttpsServer.defaultMaxDocumentBytes] where it
+/// declares none). Names no number: the bound is in the registry for anyone
+/// who wants it, and the configured default is deployment detail.
+const String documentTooLargeWireMessage =
+    'document exceeds the size bound for its type (SPEC §12.4)';
 
 /// Wire message for a body that is not a Trust Task document at all, and for
 /// the suppressed `identityMismatch` answer (§8.1) — the same words for both, so
@@ -111,10 +121,25 @@ final class RequestContext {
       Refusal(rejectWith(_request, newUrnUuid(), toErrorPayload(reason)));
 }
 
+/// The acceptance window a server advertises, in whole seconds.
+typedef _Window = ({
+  int maxAgeSeconds,
+  int clockSkewSeconds,
+  int? expiryHorizonSeconds,
+});
+
 typedef _Dispatch = Future<HttpsReply> Function(
   Map<String, dynamic> json,
   _Exchange exchange,
 );
+
+/// A registered specification and what answers it.
+final class _Route {
+  const _Route(this.spec, this.dispatch);
+
+  final SpecPolicy spec;
+  final _Dispatch dispatch;
+}
 
 /// Per-request state shared between the envelope checks and a route.
 final class _Exchange {
@@ -123,6 +148,12 @@ final class _Exchange {
   final HttpsTransport transport;
   final DateTime now;
 }
+
+/// The DID methods a server with a [HttpsServer.proofVerifier] accepts in
+/// `proof.verificationMethod` when neither `allowedDidMethods` nor
+/// `allowAnyDidMethod: true` is passed: `did:key`, whose key is in the
+/// identifier, so verifying it never leaves the process.
+const Set<String> defaultAllowedDidMethods = {'key'};
 
 /// A Trust Tasks server for the HTTPS binding (`bindings/https/0.2`).
 ///
@@ -155,18 +186,44 @@ final class _Exchange {
 /// 2. `Content-Type: application/json`, else `415`. `text/plain` is a type a
 ///    browser may POST cross-origin without a preflight; requiring JSON makes
 ///    the browser refuse on this server's behalf.
-/// 3. Body within [maxBodyBytes], else `413`; parses as a Trust Task document,
-///    else `400`.
+/// 3. Body within [bodyLimitBytes], else `413`; parses as a Trust Task
+///    document, else `400`.
 /// 4. Bearer token → transport-authenticated sender.
-/// 5. Route lookup: an unregistered `type` is `unsupportedType`.
-/// 6. Payload decode; expiry and recipient; freshness; identity cross-check
-///    (§4.8.1) — §7.2 order, as `consumeInbound` runs them. With no
+/// 5. Expiry and recipient; freshness; identity cross-check (§4.8.1) — §7.2
+///    order, as `consumeInbound` runs them, over the envelope. With no
 ///    authenticated sender the identity cross-check runs first, so a
 ///    misaddressed document is suppressed (§8.1).
-/// 7. Attribution gate — see [requireAttribution].
-/// 8. DID-method pre-screen — see [allowedDidMethods].
-/// 9. Proof verification, the per-specification policy, the duplicate-execution
-///    claim (§7.2 item 11), and the handler — `consumeInbound`.
+/// 6. Attribution gate — see [requireAttribution].
+/// 7. Route lookup. A `type` registered as it is routes to its handler; a
+///    later version of a registered specification whose declared `extends`
+///    chain (SPEC §5.2) reaches a registered version routes to the highest
+///    such version, read as that version ([readForVersion]). Any other
+///    version of a registered specification is `unsupportedVersion`; a
+///    specification with no registered version is `unsupportedType`.
+/// 8. The body against the route's `maxDocumentBytes` (or
+///    [defaultMaxDocumentBytes]), else `malformedRequest`. A document read
+///    forward along `extends` is held only to [bodyLimitBytes]: its own
+///    version may declare a larger bound than the one it is read as.
+/// 9. Payload decode, then the DID-method pre-screen — see
+///    [allowedDidMethods]. With a verifier and no explicit choice, only
+///    `did:key` passes.
+/// 10. Proof verification, the per-specification policy, the
+///    duplicate-execution claim (§7.2 item 11), and the handler —
+///    `consumeInbound`.
+///
+/// Steps 5 and 6 depend on nothing a route holds. They run before the lookup
+/// so that a sender the attribution gate refuses gets the same answer whether
+/// or not its `type` is registered: the route table is not readable without
+/// attribution, just as [enableDiscovery] keeps it unreadable without
+/// authentication. The lookup still precedes every step that can make an
+/// outbound request.
+///
+/// ## Observability
+///
+/// Pass [onEvent] to see what the wire deliberately does not say — the
+/// exception behind an `internalError`, the identity disagreement behind a
+/// suppressed refusal, why a proof failed. See [ServerEvent]. The hook never
+/// changes an answer, and whatever it throws is dropped.
 final class HttpsServer {
   /// [proofVerifier] null means proof-bearing documents are refused with
   /// `malformedRequest` rather than accepted unverified — silently dropping a
@@ -181,15 +238,51 @@ final class HttpsServer {
     this.freshness = FreshnessPolicy.consequential,
     this.requireAttribution = true,
     Set<String>? allowedDidMethods,
+    bool allowAnyDidMethod = false,
     String basePath = '',
     DateTime Function() clock = DateTime.now,
-  })  : auth = auth ?? StaticBearerAuth(const {}),
+    this.onEvent,
+    int defaultMaxDocumentBytes = maxBodyBytes,
+    this.extendsIndex,
+  })  : defaultMaxDocumentBytes = _positiveBound(defaultMaxDocumentBytes),
+        auth = auth ?? StaticBearerAuth(const {}),
         replayGuard = replayGuard ?? InMemoryReplayGuard(),
-        allowedDidMethods = allowedDidMethods == null
-            ? null
-            : Set.unmodifiable(allowedDidMethods),
+        allowedDidMethods = _didMethodScreen(
+          allowedDidMethods,
+          allowAny: allowAnyDidMethod,
+          hasVerifier: proofVerifier != null,
+        ),
         _path = _normalizePath('$basePath$trustTasksPath'),
         _clock = clock;
+
+  /// A bound of zero or less would refuse every document of a specification
+  /// that declares none — a misconfiguration, refused where it is made.
+  static int _positiveBound(int bytes) {
+    if (bytes <= 0) {
+      throw ArgumentError.value(
+          bytes, 'defaultMaxDocumentBytes', 'must be > 0');
+    }
+    return bytes;
+  }
+
+  static Set<String>? _didMethodScreen(
+    Set<String>? explicit, {
+    required bool allowAny,
+    required bool hasVerifier,
+  }) {
+    if (explicit != null) {
+      if (allowAny) {
+        throw ArgumentError.value(
+          allowAny,
+          'allowAnyDidMethod',
+          'cannot be combined with allowedDidMethods',
+        );
+      }
+      return Set.unmodifiable(explicit);
+    }
+    if (allowAny || !hasVerifier) return null;
+    return defaultAllowedDidMethods;
+  }
 
   /// This server's VID: the transport-authenticated recipient (§3), and what an
   /// in-band `recipient` is checked against.
@@ -232,15 +325,114 @@ final class HttpsServer {
   /// off only for local development.
   final bool requireAttribution;
 
-  /// When set, a `proof.verificationMethod` whose DID method is not listed
-  /// (`{'key'}`, `{'web', 'webvh'}`) is refused before the verifier runs.
-  /// Verifying means resolving, and resolving a `did:web` is an outbound request
-  /// to a host the sender picked; this bounds where that can go.
+  /// The DID methods a `proof.verificationMethod` may name; any other
+  /// (`{'key'}`, `{'web', 'webvh'}`) is refused before the verifier runs, as is
+  /// a `verificationMethod` that is not a DID URL at all. Verifying means
+  /// resolving, and resolving a `did:web` is an outbound request to a host the
+  /// sender picked; this bounds where that can go. Null screens nothing.
+  ///
+  /// **Default:** with a [proofVerifier] and neither `allowedDidMethods` nor
+  /// `allowAnyDidMethod: true` passed, this is [defaultAllowedDidMethods]
+  /// (`did:key` only) — a method that resolves over the network is opt-in,
+  /// never implied by plugging in a resolving verifier. Pass
+  /// `allowAnyDidMethod: true` to screen nothing, only for a verifier that
+  /// never resolves over the network or whose resolver bounds where it goes
+  /// (a host allow-list, private addresses refused, a deadline per
+  /// resolution). Passing both is an [ArgumentError]. A server with no
+  /// [proofVerifier] screens nothing by default: it refuses proof-bearing
+  /// documents outright and never resolves.
   final Set<String>? allowedDidMethods;
+
+  /// Told what happened to each request, for logs and metrics; see
+  /// [ServerEvent]. Null reports nothing. Never changes an answer: it is called
+  /// after the decision, not awaited, and whatever it throws is dropped.
+  final ServerEventHook? onEvent;
+
+  /// The size bound, in bytes of the request body, for a document whose
+  /// specification declares no `maxDocumentBytes` — and the floor of
+  /// [bodyLimitBytes]. Defaults to [maxBodyBytes] (256 KiB).
+  final int defaultMaxDocumentBytes;
+
+  /// The `extends` index forward routing follows; null uses the generated one,
+  /// which covers the public registry. A server of third-party (§6.5)
+  /// specifications passes its own, keyed the same way (see [extensionChain]).
+  final Map<String, String>? extendsIndex;
 
   final String _path;
   final DateTime Function() _clock;
-  final Map<String, _Dispatch> _routes = {};
+  final Map<String, _Route> _routes = {};
+  int _bodyLimit = 0;
+
+  /// The largest request body this server reads, in bytes: the largest
+  /// `maxDocumentBytes` among the registered request specifications, and never
+  /// less than [defaultMaxDocumentBytes]. A larger body is answered `413`
+  /// before a byte of it is parsed.
+  ///
+  /// Derived from the registrations, so a server that registers no task
+  /// declaring a large bound never reads a large body; the per-type bound is
+  /// then applied once the document's `type` is known (step 6 of the
+  /// pipeline). SPEC §12.4: a consumer **MUST NOT** refuse a document within
+  /// its specification's bound on grounds of size alone.
+  int get bodyLimitBytes => math.max(defaultMaxDocumentBytes, _bodyLimit);
+
+  void _register(SpecPolicy spec, _Dispatch dispatch) {
+    _routes[routingKey(spec.typeUri)] = _Route(spec, dispatch);
+    _bodyLimit = _routes.values
+        .map((r) => r.spec.maxDocumentBytes ?? 0)
+        .fold(0, math.max);
+  }
+
+  /// The route for a document typed [type], or why there is none.
+  ///
+  /// An exact registration wins. Otherwise a later version of a registered
+  /// specification (same authority, form, slug and variant) routes to the
+  /// highest registered version its declared `extends` chain reaches — the
+  /// nearest link first — as the Rust dispatcher routes it.
+  ({_Route? route, RejectReason? refusal}) _lookup(String type) {
+    final exact = _routes[routingKey(type)];
+    if (exact != null) return (route: exact, refusal: null);
+
+    final received = TypeUri.tryParse(type);
+    if (received != null) {
+      final versions = <String, _Route>{};
+      for (final route in _routes.values) {
+        final implemented = TypeUri.tryParse(route.spec.typeUri);
+        if (implemented != null &&
+            implemented.isSameSpecification(received) &&
+            implemented.isResponse == received.isResponse) {
+          versions[implemented.version] = route;
+        }
+      }
+      if (versions.isNotEmpty) {
+        final index = extendsIndex;
+        final chain = index == null
+            ? extensionChain(type)
+            : extensionChain(type, index: index);
+        for (final version in chain) {
+          final route = versions[version];
+          if (route != null) return (route: route, refusal: null);
+        }
+        return (
+          route: null,
+          refusal: RejectReason(
+            code: StandardCode.unsupportedVersion,
+            message: 'version ${received.version} is not supported, and does '
+                'not declare that it extends a version this server implements '
+                '(SPEC §5.2)',
+          ),
+        );
+      }
+    }
+    return (
+      route: null,
+      refusal: const RejectReason(
+        code: StandardCode.unsupportedType,
+        message: 'no handler is registered for this type',
+      ),
+    );
+  }
+
+  void _emit(ServerEvent event) => emitServerEvent(onEvent, event);
 
   /// Register [handler] for the specification [spec] describes.
   ///
@@ -248,6 +440,12 @@ final class HttpsServer {
   /// replay digest and proof verification), and [encodeResponse] writes what
   /// [handler] returns, which the server wraps in the `#response` document.
   /// Throw `ctx.refuse(...)` from the handler to refuse.
+  ///
+  /// A later version whose declared `extends` chain reaches [spec]'s version
+  /// is answered here too, its payload read as [spec]'s (step 5), unless that
+  /// later version is registered itself. Its response is typed
+  /// `<received type>#response`. Registering a [spec] that declares
+  /// `maxDocumentBytes` raises [bodyLimitBytes] to it.
   void on<P, R>({
     required SpecPolicy spec,
     required P Function(Map<String, dynamic> json) decode,
@@ -256,19 +454,22 @@ final class HttpsServer {
     required Future<R> Function(TrustTaskDocument<P> doc, RequestContext ctx)
         handler,
   }) {
-    _routes[routingKey(spec.typeUri)] = (json, exchange) => _dispatch<P, R>(
-          json: json,
-          exchange: exchange,
-          spec: spec,
-          decode: decode,
-          encode: encode,
-          encodeResponse: encodeResponse,
-          handler: (doc, ctx) async => respondWith<P, R>(
-            doc,
-            newUrnUuid(),
-            await handler(doc, ctx),
-          ),
-        );
+    _register(
+      spec,
+      (json, exchange) => _dispatch<P, R>(
+        json: json,
+        exchange: exchange,
+        spec: spec,
+        decode: decode,
+        encode: encode,
+        encodeResponse: encodeResponse,
+        handler: (doc, ctx) async => respondWith<P, R>(
+          doc,
+          newUrnUuid(),
+          await handler(doc, ctx),
+        ),
+      ),
+    );
   }
 
   /// Register [handler] for a fire-and-forget specification — one that defines
@@ -280,19 +481,21 @@ final class HttpsServer {
     required Future<void> Function(TrustTaskDocument<P> doc, RequestContext ctx)
         handler,
   }) {
-    _routes[routingKey(spec.typeUri)] =
-        (json, exchange) => _dispatch<P, Object?>(
-              json: json,
-              exchange: exchange,
-              spec: spec,
-              decode: decode,
-              encode: encode,
-              encodeResponse: (r) => r,
-              handler: (doc, ctx) async {
-                await handler(doc, ctx);
-                return null;
-              },
-            );
+    _register(
+      spec,
+      (json, exchange) => _dispatch<P, Object?>(
+        json: json,
+        exchange: exchange,
+        spec: spec,
+        decode: decode,
+        encode: encode,
+        encodeResponse: (r) => r,
+        handler: (doc, ctx) async {
+          await handler(doc, ctx);
+          return null;
+        },
+      ),
+    );
   }
 
   /// Answer `trust-task-discovery` (SPEC §10), versions 0.4, 0.3, 0.2 and 0.1,
@@ -313,12 +516,19 @@ final class HttpsServer {
   /// A 0.4 or 0.3 response also states the acceptance window this server
   /// applies — [freshness]'s `maxAge` and `skew`, in whole seconds rounded
   /// down, so the advertised window is never wider than the one enforced
-  /// (trust-task-discovery/0.4, *Acceptance window*, responder rule 1). It
-  /// states no `expiryHorizonSeconds`: [FreshnessPolicy] has no expiry
-  /// horizon, so the window says the maximum age applies to every document.
+  /// (trust-task-discovery/0.4, *Acceptance window*, responder rule 1). A 0.4
+  /// window also states [freshness]'s `expiryHorizon` as
+  /// `expiryHorizonSeconds`, rounded down the same way: a stated `expiresAt`
+  /// is honoured in place of the maximum age up to that horizon. With no
+  /// horizon the member is absent, which says the maximum age applies to
+  /// every document — narrower than the window enforced, which honours any
+  /// stated `expiresAt`, and so permitted. A 0.3 window cannot carry the
+  /// member and is narrower in the same way.
   /// Every route shares [freshness], so the window is stated once, at the top
   /// level. It is omitted when [freshness] sets no `maxAge` — an unbounded
-  /// window has no spelling — and when [advertiseAcceptanceWindow] is false, for a
+  /// window has no spelling — when its horizon is under one second, which a
+  /// window cannot state without claiming a wider one than enforced, and when
+  /// [advertiseAcceptanceWindow] is false, for a
   /// deployment whose configured window would fingerprint it (the
   /// specification's *Correlation* section).
   void enableDiscovery({
@@ -343,6 +553,7 @@ final class HttpsServer {
               : discovery_v0_4.AcceptanceWindow(
                   maxAgeSeconds: window.maxAgeSeconds,
                   clockSkewSeconds: window.clockSkewSeconds,
+                  expiryHorizonSeconds: window.expiryHorizonSeconds,
                 ),
         );
       },
@@ -351,14 +562,21 @@ final class HttpsServer {
   }
 
   /// [freshness] as an acceptance window, or null when it has none to state.
-  ({int maxAgeSeconds, int clockSkewSeconds})? _acceptanceWindow() {
+  _Window? _acceptanceWindow() {
     final maxAge = freshness.maxAge;
     if (maxAge == null || maxAge.inSeconds < 1 || freshness.skew.isNegative) {
       return null;
     }
+    final horizon = freshness.expiryHorizon;
+    // A horizon under a second clamps every stated expiry nearer than the
+    // window could say: omitting the member would claim the maximum age, and
+    // zero is not a valid `expiryHorizonSeconds`. State nothing rather than a
+    // window wider than the one enforced (responder rule 1).
+    if (horizon != null && horizon.inSeconds < 1) return null;
     return (
       maxAgeSeconds: maxAge.inSeconds,
       clockSkewSeconds: freshness.skew.inSeconds,
+      expiryHorizonSeconds: horizon?.inSeconds,
     );
   }
 
@@ -370,7 +588,7 @@ final class HttpsServer {
   void _enableSupersededDiscovery(
     bool public,
     List<int>? release,
-    ({int maxAgeSeconds, int clockSkewSeconds})? window,
+    _Window? window,
   ) {
     // ignore: deprecated_member_use
     on<discovery_v0_3.Payload, discovery_v0_3.Response>(
@@ -458,7 +676,21 @@ final class HttpsServer {
   }
 
   /// Answer one request. Never throws.
+  ///
+  /// Anything that escapes the pipeline — an encoder that throws on the
+  /// response, a payload `jsonEncode` cannot write, an authenticator or route
+  /// failing in a way the steps below do not anticipate — is answered as
+  /// `internalError` (`500`), never propagated into the caller's HTTP stack.
   Future<HttpsReply> handle(HttpsRequest request) async {
+    try {
+      return await _handle(request);
+    } on Object catch (error, stackTrace) {
+      _emit(InternalFailure(error: error, stackTrace: stackTrace));
+      return _internalErrorReply();
+    }
+  }
+
+  Future<HttpsReply> _handle(HttpsRequest request) async {
     if (_normalizePath(request.path) != _path) return const HttpsReply(404);
     if (request.method.toUpperCase() != 'POST') {
       return const HttpsReply(405, headers: {'allow': 'POST'});
@@ -466,14 +698,15 @@ final class HttpsServer {
     if (!_isJson(request.headers['content-type'])) {
       return const HttpsReply(415);
     }
-    if (request.body.length > maxBodyBytes) return const HttpsReply(413);
+    if (request.body.length > bodyLimitBytes) return const HttpsReply(413);
 
     final Map<String, dynamic> json;
     final TrustTaskDocument<Object?> envelope;
     try {
       json = jsonDecode(utf8.decode(request.body)) as Map<String, dynamic>;
       envelope = TrustTaskDocument<Object?>.fromJson(json, (p) => p);
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      _emit(DocumentMalformed(error: error, stackTrace: stackTrace));
       return _malformedBody();
     }
 
@@ -484,8 +717,9 @@ final class HttpsServer {
       if (token != null) {
         try {
           peer = await auth.resolve(token);
-        } on Object {
+        } on Object catch (error, stackTrace) {
           // An authenticator that fails has authenticated nobody.
+          _emit(AuthenticatorFailed(error: error, stackTrace: stackTrace));
           peer = null;
         }
       }
@@ -496,58 +730,50 @@ final class HttpsServer {
       _clock(),
     );
 
-    final route = _routes[routingKey(envelope.type)];
-    if (route == null) {
-      return _reject(
-        exchange.transport,
-        envelope,
-        const RejectReason(
-          code: StandardCode.unsupportedType,
-          message: 'no handler is registered for this type',
-        ),
-      );
-    }
-    return route(json, exchange);
-  }
-
-  Future<HttpsReply> _dispatch<P, R>({
-    required Map<String, dynamic> json,
-    required _Exchange exchange,
-    required SpecPolicy spec,
-    required P Function(Map<String, dynamic> json) decode,
-    required Object? Function(P payload) encode,
-    required Object? Function(R payload) encodeResponse,
-    required Future<TrustTaskDocument<R>?> Function(
-      TrustTaskDocument<P> doc,
-      RequestContext ctx,
-    ) handler,
-  }) async {
     final transport = exchange.transport;
-    final now = exchange.now;
+    final refused = _envelopeChecks(transport, envelope, exchange.now);
+    if (refused != null) return refused;
 
-    final TrustTaskDocument<P> doc;
-    try {
-      doc = TrustTaskDocument<P>.fromJson(
-        json,
-        (p) => decode(p! as Map<String, dynamic>),
-      );
-    } on Object {
-      // The decoder's own words name members and types — this consumer's
-      // internal layout (SPEC §12.4). The category is what a producer can act on.
+    final (:route, :refusal) = _lookup(envelope.type);
+    if (route == null) return _reject(transport, envelope, refusal!);
+
+    // SPEC §12.4, two-sided: within the declared bound a document MUST NOT be
+    // refused for its size, and above it SHOULD be refused `malformedRequest`.
+    //
+    // A document read forward along `extends` is NOT held to the implemented
+    // version's bound: its own (later) version may declare a larger one, and
+    // a document within that must not be refused for its size. This server has
+    // no index of other versions' bounds, so such a document is held only to
+    // [bodyLimitBytes], already checked before parsing.
+    final forward = routingKey(route.spec.typeUri) != routingKey(envelope.type);
+    final bound = route.spec.maxDocumentBytes ?? defaultMaxDocumentBytes;
+    if (!forward && request.body.length > bound) {
       return _reject(
         transport,
-        TrustTaskDocument<Object?>.fromJson(json, (p) => p),
+        envelope,
         const RejectReason(
           code: StandardCode.malformedRequest,
-          message: 'payload does not match the specification',
+          message: documentTooLargeWireMessage,
         ),
       );
     }
+    return route.dispatch(json, exchange);
+  }
 
+  /// Steps 5 and 6: the checks that depend on nothing a route holds — expiry,
+  /// recipient, freshness and identity, in §7.2 order, then the attribution
+  /// gate. Null when the document passes them.
+  ///
+  /// They run before the route lookup, so an unattributed sender cannot tell a
+  /// registered `type` from an unregistered one by its answer.
+  HttpsReply? _envelopeChecks(
+    HttpsTransport transport,
+    TrustTaskDocument<Object?> doc,
+    DateTime now,
+  ) {
     // The cheap, local checks, in §7.2 order, which is consumeInbound's and the
     // Rust server's: a document that fails two of them is refused for the same
-    // reason by each. consumeInbound repeats them below; they are pure, so the
-    // repeat changes nothing.
+    // reason by each.
     //
     // Except with no authenticated sender. Then the only identity that can
     // disagree is the recipient, and §8.1 suppresses that refusal: there is
@@ -558,7 +784,12 @@ final class HttpsServer {
     final resolution = resolveParties(transport, doc);
     HttpsReply? identity() => resolution.error == null
         ? null
-        : _reject(transport, doc, identityMismatchReason(resolution.error!));
+        : _reject(
+            transport,
+            doc,
+            identityMismatchReason(resolution.error!),
+            consistency: resolution.error,
+          );
 
     final unattributed = transport.peer == null;
     if (unattributed) {
@@ -582,6 +813,77 @@ final class HttpsServer {
           code: StandardCode.proofRequired,
           message: attributionRequiredWireMessage,
         ),
+      );
+    }
+
+    return null;
+  }
+
+  Future<HttpsReply> _dispatch<P, R>({
+    required Map<String, dynamic> json,
+    required _Exchange exchange,
+    required SpecPolicy spec,
+    required P Function(Map<String, dynamic> json) decode,
+    required Object? Function(P payload) encode,
+    required Object? Function(R payload) encodeResponse,
+    required Future<TrustTaskDocument<R>?> Function(
+      TrustTaskDocument<P> doc,
+      RequestContext ctx,
+    ) handler,
+  }) async {
+    final transport = exchange.transport;
+    final now = exchange.now;
+
+    // Read as [spec]'s version: unchanged for that version itself, pruned to
+    // what [spec]'s schema knows for a later one whose declared `extends` chain
+    // reached it (the route lookup established that). `json` stays as
+    // received, and the proof and the item-11 digest are taken over it.
+    final VersionRead<P> read;
+    try {
+      P payloadFromJson(Object? p) => decode(p! as Map<String, dynamic>);
+      final index = extendsIndex;
+      read = index == null
+          ? readForVersion<P>(json, spec, payloadFromJson)
+          : readForVersion<P>(json, spec, payloadFromJson, index: index);
+    } on Object catch (error, stackTrace) {
+      final envelope = TrustTaskDocument<Object?>.fromJson(json, (p) => p);
+      _emit(PayloadDecodeFailed(
+        documentId: envelope.id,
+        type: envelope.type,
+        error: error,
+        stackTrace: stackTrace,
+      ));
+      // The decoder's own words name members and types — this consumer's
+      // internal layout (SPEC §12.4). The category is what a producer can act on.
+      return _reject(
+        transport,
+        envelope,
+        const RejectReason(
+          code: StandardCode.malformedRequest,
+          message: 'payload does not match the specification',
+        ),
+      );
+    }
+    final TrustTaskDocument<P> doc;
+    switch (read) {
+      case VersionRefused(:final document, :final reason):
+        return _reject(transport, document, reason);
+      case VersionAccepted(doc: final accepted):
+        doc = accepted;
+    }
+
+    // Steps 5 and 6 ran over the envelope before the route lookup (see
+    // [_envelopeChecks]). The typed read leaves the members they look at as
+    // received, so this identity resolution agrees with that one.
+    // consumeInbound repeats the §7.2 checks below; they are pure, so the
+    // repeat changes nothing.
+    final resolution = resolveParties(transport, doc);
+    if (resolution.error != null) {
+      return _reject(
+        transport,
+        doc,
+        identityMismatchReason(resolution.error!),
+        consistency: resolution.error,
       );
     }
 
@@ -611,6 +913,7 @@ final class HttpsServer {
 
     final verifier = proofVerifier;
     final validator = payloadValidator;
+    var handlerFailed = false;
     final ConsumeOutcome<R> outcome;
     try {
       outcome = await consumeInbound<P, R>(
@@ -618,7 +921,18 @@ final class HttpsServer {
         spec: spec,
         proofPolicy: verifier == null
             ? const ProofPolicy.rejectIfPresent()
-            : ProofPolicy.verify(_AsReceived(verifier, json)),
+            : ProofPolicy.verify(
+                _AsReceived(
+                  verifier,
+                  json,
+                  onRejected: (error, stackTrace) => _emit(ProofRejected(
+                    documentId: doc.id,
+                    type: doc.type,
+                    error: error,
+                    stackTrace: stackTrace,
+                  )),
+                ),
+              ),
         payloadPolicy: validator == null
             ? const PayloadPolicy.acceptUnvalidated()
             : PayloadPolicy.validate(validator),
@@ -634,9 +948,31 @@ final class HttpsServer {
         newErrorId: newUrnUuid,
         payloadToJson: encode,
         responseToJson: encodeResponse,
-        handler: (accepted, parties) => handler(accepted, ctx),
+        // The document as it arrived: the item-11 digest is over it, so a member
+        // the payload type does not model still tells two documents apart.
+        received: json,
+        extendsIndex: extendsIndex,
+        handler: (accepted, parties) async {
+          try {
+            return await handler(accepted, ctx);
+          } on Refusal {
+            rethrow;
+          } on Object catch (error, stackTrace) {
+            handlerFailed = true;
+            _emit(HandlerFailed(
+              documentId: accepted.id,
+              type: accepted.type,
+              error: error,
+              stackTrace: stackTrace,
+            ));
+            rethrow;
+          }
+        },
       );
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      if (!handlerFailed) {
+        _emit(InternalFailure(error: error, stackTrace: stackTrace));
+      }
       return _reject(
         transport,
         doc,
@@ -647,6 +983,46 @@ final class HttpsServer {
       );
     }
 
+    switch (outcome) {
+      case Rejected(:final error):
+        _emit(DocumentRejected(
+          documentId: doc.id,
+          type: doc.type,
+          error: error,
+        ));
+      case Suppressed(:final reason):
+        _emit(DocumentSuppressed(
+          documentId: doc.id,
+          type: doc.type,
+          reason: reason,
+          consistency: resolveParties(transport, doc).error,
+        ));
+      case Handled() || Accepted() || DuplicateOutcome():
+        break;
+    }
+
+    // Encoding the answer runs the caller's encoder and jsonEncode, either of
+    // which can throw; that is an internalError, not an escape from handle.
+    // consumeInbound has already settled the item-11 claim either way.
+    try {
+      return _replyFor(outcome, encodeResponse);
+    } on Object catch (error, stackTrace) {
+      _emit(InternalFailure(error: error, stackTrace: stackTrace));
+      return _reject(
+        transport,
+        doc,
+        const RejectReason(
+          code: StandardCode.internalError,
+          message: internalErrorWireMessage,
+        ),
+      );
+    }
+  }
+
+  HttpsReply _replyFor<R>(
+    ConsumeOutcome<R> outcome,
+    Object? Function(R payload) encodeResponse,
+  ) {
     switch (outcome) {
       case Handled(:final response):
         return HttpsReply.json(200, response.toJson(encodeResponse));
@@ -662,15 +1038,10 @@ final class HttpsServer {
       case DuplicateOutcome(:final priorResponse, :final inFlight):
         // §5.1 item 4 and the §4 table: the first execution's result under the
         // status it earned, else 202 while that execution runs, else 204.
-        final prior = switch (priorResponse) {
-          final TrustTaskDocument<R> d => d.toJson(encodeResponse),
-          final Map<String, dynamic> m => m,
-          _ => null,
-        };
-        if (prior != null) {
-          return _isErrorDocument(prior)
-              ? HttpsReply.json(_statusOf(prior), prior)
-              : HttpsReply.json(200, prior);
+        if (priorResponse != null) {
+          return outcome.isError
+              ? HttpsReply.json(_statusOf(priorResponse), priorResponse)
+              : HttpsReply.json(200, priorResponse);
         }
         return HttpsReply(inFlight ? 202 : 204);
     }
@@ -679,16 +1050,51 @@ final class HttpsServer {
   HttpsReply _reject<P>(
     HttpsTransport transport,
     TrustTaskDocument<P> doc,
-    RejectReason reason,
-  ) {
+    RejectReason reason, {
+    ConsistencyError? consistency,
+  }) {
     final error = reject(transport, doc, newUrnUuid(), reason);
-    return error == null ? _malformedBody() : _errorReply(error);
+    if (error == null) {
+      _emit(DocumentSuppressed(
+        documentId: doc.id,
+        type: doc.type,
+        reason: reason,
+        consistency: consistency,
+      ));
+      return _malformedBody();
+    }
+    _emit(DocumentRejected(documentId: doc.id, type: doc.type, error: error));
+    return _errorReply(error);
   }
 
   HttpsReply _errorReply(ErrorResponse error) => HttpsReply.json(
         statusForCode(error.payload.code),
         error.toJson((p) => p.toJson()),
       );
+
+  /// The last-resort answer when the pipeline itself threw: an
+  /// `internalError` addressed to nobody (the request may not even have
+  /// parsed). Built from constants, so it cannot throw in turn; the bare `500`
+  /// is a belt-and-braces fallback.
+  HttpsReply _internalErrorReply() {
+    try {
+      return HttpsReply.json(
+        statusForCode('internalError'),
+        ErrorResponse(
+          id: newUrnUuid(),
+          type: trustTaskErrorTypeUri,
+          issuedAt: systemClock(),
+          payload: const ErrorPayload(
+            code: 'internalError',
+            retryable: false,
+            message: internalErrorWireMessage,
+          ),
+        ).toJson((p) => p.toJson()),
+      );
+    } on Object {
+      return const HttpsReply(500);
+    }
+  }
 
   HttpsReply _malformedBody() => HttpsReply.json(
         400,
@@ -710,19 +1116,29 @@ final class HttpsServer {
 /// MINOR (§5.2) — is dropped by decoding, and a signature over the original
 /// bytes would then fail for a document that is perfectly valid. The Rust server
 /// verifies the untyped document for the same reason.
+///
+/// [onRejected] hears of a proof the verifier refused — what it threw, or
+/// nulls when it returned false — for [ProofRejected]. A throw still reaches
+/// `consumeInbound`, which answers `proofInvalid` as before.
 final class _AsReceived implements ProofVerifier {
-  const _AsReceived(this.inner, this.json);
+  const _AsReceived(this.inner, this.json, {required this.onRejected});
 
   final ProofVerifier inner;
   final Map<String, dynamic> json;
+  final void Function(Object? error, StackTrace? stackTrace) onRejected;
 
   @override
-  Future<bool> verify(Map<String, dynamic> doc) => inner.verify(json);
-}
-
-bool _isErrorDocument(Map<String, dynamic> doc) {
-  final type = doc['type'];
-  return type is String && bareTypeUri(type).contains('/trust-task-error/');
+  Future<bool> verify(Map<String, dynamic> doc) async {
+    final bool ok;
+    try {
+      ok = await inner.verify(json);
+    } on Object catch (error, stackTrace) {
+      onRejected(error, stackTrace);
+      rethrow;
+    }
+    if (!ok) onRejected(null, null);
+    return ok;
+  }
 }
 
 int _statusOf(Map<String, dynamic> errorDoc) {

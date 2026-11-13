@@ -118,8 +118,13 @@ export type Response = VTCRegistrySyncJobsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.2",
   "title": "VTC Registry Sync Jobs List — payload",
@@ -155,115 +160,6 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "`failed` is terminal: the reconciler has abandoned the job and will not retry it without an operator. `pending` and `inFlight` are moving on their own."
     },
-    "Kind": {
-      "type": "string",
-      "enum": [
-        "publishMember",
-        "updateMember",
-        "deleteMember",
-        "markDeparted"
-      ],
-      "description": "Which mutation the job carries to the registry."
-    },
-    "Job": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jobId",
-        "kind",
-        "memberDid",
-        "state",
-        "attempts",
-        "createdAt"
-      ],
-      "properties": {
-        "jobId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Identifier of the queued job. The handle `vtc/registry/sync-jobs/retry` and `.../discard` take."
-        },
-        "kind": {
-          "$ref": "#/$defs/Kind"
-        },
-        "memberDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member whose registry record the job carries. In the clear, because an operator holding a hash cannot tell who stopped publishing."
-        },
-        "state": {
-          "$ref": "#/$defs/State"
-        },
-        "attempts": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Attempts made so far. `1` on a failed job means the registry answered and refused; a value at the maintainer's retry ceiling means it never answered."
-        },
-        "lastError": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024,
-          "description": "The registry's last answer, verbatim. Diagnostic prose for an operator; a consumer MUST NOT parse it."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the job was enqueued."
-        },
-        "lastAttemptedAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When it was last dispatched."
-        },
-        "nextAttemptAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When it is next due. Null on a failed job: nothing is scheduled."
-        },
-        "purgeDueAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When the maintainer's retention sweep will delete this row. A deadline, not a fix — the member stays unpublished."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Registry Sync Jobs List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Job"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -275,10 +171,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -411,7 +307,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

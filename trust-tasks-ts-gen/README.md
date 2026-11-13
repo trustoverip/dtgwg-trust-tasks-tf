@@ -24,6 +24,9 @@ declareExtends(); // once at start-up: the locked versions' `extends` declaratio
 The `trust-tasks` command comes from `cargo install trust-tasks-cli`. A complete
 application is [`examples/consumer-app-ts`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/consumer-app-ts).
 
+Requires **Node.js 20.19 or later** (`engines`), the same floor as the runtime
+packages.
+
 ## What it does
 
 - Reads `trust-tasks.lock` (strictly: the shape the CLI writes, nothing else) and,

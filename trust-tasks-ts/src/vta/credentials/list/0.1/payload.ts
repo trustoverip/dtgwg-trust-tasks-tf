@@ -137,8 +137,13 @@ export type Response = VTACredentialsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/credentials/list/0.1",
   "title": "VTA Credentials — List",
@@ -178,89 +183,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Credentials List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentials",
-        "truncated"
-      ],
-      "properties": {
-        "credentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/IssuedCredentialSummary"
-          },
-          "description": "One summary per matching credential. Empty when nothing matched — a successful answer, not an error."
-        },
-        "truncated": {
-          "type": "boolean",
-          "description": "The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued."
-        },
-        "cursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4096,
-          "description": "Pass to the next request to continue. Absent when the page is the last."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
-    "IssuedCredentialSummary": {
-      "title": "IssuedCredentialSummary",
-      "description": "A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "holder",
-        "issuedAt",
-        "expiresAt",
-        "status"
-      ],
-      "properties": {
-        "credentialId": {
-          "$ref": "#/$defs/CredentialId",
-          "description": "The id `vta/credentials/revoke` is keyed on."
-        },
-        "holder": {
-          "$ref": "#/$defs/Did",
-          "description": "Who the credential was issued to."
-        },
-        "credentialType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The type tag beyond `VerifiableCredential`, when the credential carries one."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "$ref": "#/$defs/IssuedCredentialStatus"
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present iff `status` is `revoked`."
-        },
-        "revocationReason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy."
-        }
-      }
-    },
     "IssuedCredentialStatus": {
       "type": "string",
       "enum": [
@@ -275,13 +197,6 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^did:[a-z0-9]+:.+$",
       "maxLength": 2048
     },
-    "CredentialId": {
-      "$anchor": "credentialId",
-      "title": "CredentialId",
-      "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
-      "type": "string",
-      "minLength": 1
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -293,10 +208,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -415,7 +330,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

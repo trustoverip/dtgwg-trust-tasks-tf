@@ -62,6 +62,18 @@ authenticated sender as the transport identity (§3). `received.outcome` is the
 core library's sealed `ConsumeOutcome`; `received.reply` is the document to seal
 back, or null when §8.1 or §7.1 says to stay silent.
 
+A later version of the specification whose declared `extends` chain (SPEC
+§5.2) reaches `spec`'s version is read as `spec`'s — pruned to the members its
+schema knows, answered as `<received type>#response`; any other version is
+`unsupportedVersion`, and another specification `unsupportedType`. Pass
+`extendsIndex:` for third-party specifications.
+
+Pass `onEvent:` to see what the reply deliberately does not say — a handler's
+exception (which still propagates to you), why a proof failed, the identity
+disagreement behind a suppressed refusal. It receives a `ServerEvent` from
+`package:trust_tasks`, never changes the outcome, and whatever it throws is
+dropped.
+
 ### What is refused
 
 Before the pipeline, with no reply possible — TSP has no anonymous sender, so
@@ -80,6 +92,13 @@ Inside the pipeline, answered with a `trust-task-error` sealed back to the
 authenticated sender: a body that does not deserialise is `malformedRequest`
 (§4); an in-band `issuer` that is not the authenticated sender is
 `identityMismatch`, sealed to the sender that actually authenticated.
+
+A document larger than its specification's declared `maxDocumentBytes` (SPEC
+§12.4) is `malformedRequest` too — checked once its `type` is routed, before the
+duplicate record is written, and measured as the compact JSON encoding of the
+document the envelope carried. A document read forward along `extends` is not
+held to the implemented version's bound (its own version may declare a larger
+one), and a specification that declares no bound gets none here.
 
 ### Duplicates
 

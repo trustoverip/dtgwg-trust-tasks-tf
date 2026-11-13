@@ -37,7 +37,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/acl/grant/0.2#request",
+        "type": "https://trusttasks.org/spec/acl/grant/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {

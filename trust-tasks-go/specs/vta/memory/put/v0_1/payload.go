@@ -13,6 +13,8 @@ import (
 
 // Response Success response to vta/memory/put. Type
 // https://trusttasks.org/spec/vta/memory/put/0.1#response.
+//
+// Deprecated: superseded by vta/memory/put/0.3
 type Response struct {
 	// The stored item's key.
 	Key string `json:"key"`
@@ -24,6 +26,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTA Memory Put — payload
+//
+// Deprecated: superseded by vta/memory/put/0.3
 type Payload struct {
 	// The VTA context the memory item is scoped to (the isolation boundary).
 	ContextID string `json:"contextId"`
@@ -53,7 +57,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/memory/put/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/memory/put/0.1#response"
@@ -65,7 +69,7 @@ const ResponseTypeURI = "https://trusttasks.org/spec/vta/memory/put/0.1#response
 // schema's constraints — not minLength, not pattern, not the oneOf mutual
 // exclusion — so without it every such rule is unenforced. Cross-file $refs are
 // already inlined, so it needs no resolver.
-const PayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$id\":\"https://trusttasks.org/spec/vta/memory/put/0.1\",\"title\":\"VTA Memory Put — payload\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"contextId\",\"key\",\"value\"],\"properties\":{\"contextId\":{\"type\":\"string\",\"description\":\"The VTA context the memory item is scoped to (the isolation boundary).\"},\"key\":{\"type\":\"string\",\"description\":\"Agent-chosen identifier for the item; re-putting the same key upserts.\"},\"value\":{\"type\":\"string\",\"description\":\"Opaque memory text (a fact, summary, or preference).\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"title\":\"VTA Memory Put — response payload\",\"description\":\"Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.1#response.\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"key\"],\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"The stored item's key.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}}},\"Ext\":{\"title\":\"Ext\",\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"type\":\"object\",\"minProperties\":1,\"additionalProperties\":true,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"}}}}"
+const PayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$id\":\"https://trusttasks.org/spec/vta/memory/put/0.1\",\"title\":\"VTA Memory Put — payload\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"contextId\",\"key\",\"value\"],\"properties\":{\"contextId\":{\"type\":\"string\",\"description\":\"The VTA context the memory item is scoped to (the isolation boundary).\"},\"key\":{\"type\":\"string\",\"description\":\"Agent-chosen identifier for the item; re-putting the same key upserts.\"},\"value\":{\"type\":\"string\",\"description\":\"Opaque memory text (a fact, summary, or preference).\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"$defs\":{\"Ext\":{\"title\":\"Ext\",\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"type\":\"object\",\"minProperties\":1,\"additionalProperties\":true,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"}}}}"
 
 // ResponsePayloadSchemaJSON is PayloadSchemaJSON for the success-response variant.
 const ResponsePayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$ref\":\"#/$defs/Response\",\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"title\":\"VTA Memory Put — response payload\",\"description\":\"Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.1#response.\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"key\"],\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"The stored item's key.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}}},\"Ext\":{\"title\":\"Ext\",\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"type\":\"object\",\"minProperties\":1,\"additionalProperties\":true,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"}}}}"

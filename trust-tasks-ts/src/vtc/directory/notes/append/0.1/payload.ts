@@ -66,8 +66,13 @@ export type Response = VTCDirectoryNotesAppendResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/directory/notes/append/0.1",
   "title": "VTC Directory — Notes — Append — payload",
@@ -108,24 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Notes — Append — response payload",
-      "description": "The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "note"
-      ],
-      "properties": {
-        "note": {
-          "$ref": "#/$defs/AdminNote"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,52 +121,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AdminNote": {
-      "title": "AdminNote",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "noteId",
-        "entryId",
-        "author",
-        "createdAt"
-      ],
-      "properties": {
-        "noteId": {
-          "$ref": "#/$defs/NoteId"
-        },
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "author": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "DID of the administrator who wrote the note."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "text": {
-          "$ref": "#/$defs/NoteText",
-          "description": "The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written."
-        },
-        "followUp": {
-          "type": "string",
-          "format": "date",
-          "description": "Optional date by which the note asks for a follow-up."
-        },
-        "redacts": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a redaction: the earlier note this one withdraws."
-        },
-        "redactedBy": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a note that a later note redacted."
-        }
       }
     },
     "NoteId": {
@@ -202,10 +143,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -303,7 +244,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

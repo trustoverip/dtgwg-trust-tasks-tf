@@ -19,20 +19,14 @@ path = "src/main.rs"
 # Path-only, because this crate is never published.
 trust-tasks-build = { path = "../trust-tasks-build", features = ["publish"] }
 anyhow = "1"
-serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1"
-typify = "0.6"
-# Pinned to 0.8 by `typify`: this crate hands typify a `schemars::RootSchema`,
-# so our schemars major must match typify's. typify (through 0.7) still depends
-# on schemars 0.8, so schemars 1.x is not adoptable here until typify migrates.
-# This is a `publish = false` build tool with no security advisory on schemars.
-schemars = "0.8"
+# The conformance tests are built as tokens and printed; the schemas go
+# through typify in `trust-tasks-build`, not here.
 prettyplease = "0.2"
-syn = { version = "2", features = ["full", "visit-mut"] }
+syn = { version = "2", features = ["full"] }
 proc-macro2 = "1"
 quote = "1"
-heck = "0.5"
 
 [dev-dependencies]
 walkdir = "2"

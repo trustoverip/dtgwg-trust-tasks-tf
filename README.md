@@ -24,7 +24,7 @@ The framework that governs Trust Task documents — versioning, namespace, confo
 
 ## Submitting a new Trust Task specification
 
-The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.1` ↔ `specs/acl/grant/0.1/`). Each folder contains two files:
+The registry is organized as one folder per spec at `specs/<slug>/<MAJOR.MINOR>/`, mirroring the canonical *Type URI* (e.g., `https://trusttasks.org/spec/acl/grant/0.3` ↔ `specs/acl/grant/0.3/`). Each folder contains two files:
 
 - `spec.md` — YAML front matter (the spec's normative declarations) followed by the human-readable specification.
 - `payload.schema.json` — a JSON Schema 2020-12 document describing the `payload` member of conforming Trust Task documents.
@@ -33,7 +33,7 @@ To propose a new spec:
 
 1. **Fork** this repository and create a working branch.
 2. **Create your folder** under `specs/<slug>/<version>/`. The slug grammar (lowercase, hyphen-separated, optionally hierarchical) and reserved prefixes are defined in [SPEC.md §6.1](SPEC.md#61-type-uri).
-3. **Add `spec.md`** with the required YAML front matter (slug, version, title, summary, status, target framework version, category, keywords, authors, parties, proof requirement; optional `errorCodes`, `related`) followed by your specification prose. Include a `## Request` section with at least one complete example *Trust Task document*, and — if your spec defines a success response — a `## Response` section with paired response examples. See `specs/acl/grant/0.1/spec.md` for a worked example.
+3. **Add `spec.md`** with the required YAML front matter (slug, version, title, summary, status, target framework version, category, keywords, authors, parties, proof requirement; optional `errorCodes`, `related`) followed by your specification prose. Include a `## Request` section with at least one complete example *Trust Task document*, and — if your spec defines a success response — a `## Response` section with paired response examples. See the latest version under [`specs/acl/grant/`](specs/acl/grant/) for a worked example.
 4. **Add `payload.schema.json`** — `$id` set to your spec's Type URI; `$schema` set to `https://json-schema.org/draft/2020-12/schema`. Where you define a success response, place its sub-schema under `$defs.Response` with `$anchor: "response"` so the `#response` fragment on a response document's `type` resolves to the right shape.
 5. **Validate locally:**
    ```sh
@@ -41,13 +41,13 @@ To propose a new spec:
    npm run build      # parses front matter, validates schemas, regenerates the website registry
    ```
    `npm run validate` runs the same checks without touching the website tree.
-6. **Commit with DCO sign-off** (`git commit -s`) and **open a pull request** against `main`. `CODEOWNERS` routes review to the editors responsible for your slug's namespace.
+6. **Commit with DCO sign-off** (`git commit -s`) and **open a pull request** against `main`. `.github/CODEOWNERS` requests review from the maintainers.
 
 See [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md) for the full authoring guide — slug grammar, version rules, the meta-schema, request/response schemas, error-code namespacing, and how a spec graduates from `draft` to `candidate` to `standard`.
 
 ## Building the registry locally
 
-Requires Node 20 or later.
+Requires Node 24 or later (the `engines` floor in `package.json`).
 
 ```sh
 npm install
@@ -61,15 +61,16 @@ CI runs the build on every pull request (validation only) and on every push to `
 
 Contributions are governed by the ToIP Foundation's contribution process:
 
+- Participation is governed by the LF Decentralized Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct), which the ToIP community follows.
 - Every commit **MUST** carry a DCO `Signed-off-by` trailer. Use `git commit -s`.
 - By opening a pull request, contributors agree to the Open Web Foundation **Contributor License Agreement** in [`CONTRIBUTING.md`](CONTRIBUTING.md). That agreement grants the patent and copyright rights necessary to incorporate contributions into the published specification.
-- Source code in this repository (`scripts/`, `website/`, build tooling) is contributed under the license in [`SOURCE_CODE.md`](SOURCE_CODE.md).
+- Source code in this repository — the client libraries, `scripts/`, `website/` and build tooling — is contributed under the license in [`SOURCE_CODE.md`](SOURCE_CODE.md) (Apache-2.0).
 
-The framework specification is maintained in [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec); `SPEC.md` here is generated from it. For changes to the build pipeline or the registry website the contributor guide is the present file plus [`CONTRIBUTING.md`](CONTRIBUTING.md). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
+The framework specification is maintained in [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec); `SPEC.md` here is generated from it. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to contribute. For changes to the build pipeline, the registry website or the client libraries, the developer guide — with a map of the repository — is [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and the per-library notes are in [`docs/packages/`](docs/packages/). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
 
 ## Licensing
 
-The published Trust Tasks specification is licensed under the Open Web Foundation **Final Specification Agreement** in [`LICENSE.md`](LICENSE.md). That license grants downstream implementers the patent and copyright rights needed to build conforming products against the specification. Source code in this repository is published under [`SOURCE_CODE.md`](SOURCE_CODE.md).
+The published Trust Tasks specification is licensed under the Open Web Foundation **Final Specification Agreement** in [`LICENSE.md`](LICENSE.md). That license grants downstream implementers the patent and copyright rights needed to build conforming products against the specification. Source code in this repository is published under the Apache License 2.0, in [`SOURCE_CODE.md`](SOURCE_CODE.md). That includes the client libraries — the Rust crates, the npm, Go and Dart packages — each of which carries the same Apache-2.0 text as its own `LICENSE` file, so a published package includes it.
 
 The distinction between [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`LICENSE.md`](LICENSE.md) is the direction of the grant:
 
@@ -77,7 +78,7 @@ The distinction between [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`LICENSE.md`](
 |---|---|---|
 | `CONTRIBUTING.md` | *Contributor → Working Group* | Rights you grant when you contribute to the specification. |
 | `LICENSE.md` | *Working Group → Implementer* | Rights granted to anyone implementing the published specification. |
-| `SOURCE_CODE.md` | Both directions, for code | License covering source code in this repository (tooling, website, scripts). |
+| `SOURCE_CODE.md` | Both directions, for code | Apache-2.0, covering source code in this repository (client libraries, tooling, website, scripts). |
 
 ## Getting involved
 

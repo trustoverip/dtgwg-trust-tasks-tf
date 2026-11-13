@@ -70,8 +70,13 @@ export type Response = ConfigPatchResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/config/patch/0.1",
   "title": "Config Patch — payload",
@@ -92,47 +97,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Config Patch — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "applied",
-        "pendingRestart",
-        "rejected"
-      ],
-      "properties": {
-        "applied": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "Keys whose new value is now in effect."
-        },
-        "pendingRestart": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true)."
-        },
-        "rejected": {
-          "type": "array",
-          "description": "Keys that were not applied, each with a reason. Empty when every override succeeded.",
-          "items": {
-            "$ref": "#/$defs/RejectedKey"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -142,35 +106,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RejectedKey": {
-      "$anchor": "rejectedKey",
-      "title": "RejectedKey",
-      "description": "A key a patch declined to apply, with the reason.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "reason"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "minLength": 1
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -249,7 +190,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

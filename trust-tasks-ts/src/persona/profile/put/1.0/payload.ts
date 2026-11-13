@@ -110,8 +110,13 @@ export type Response = PersonaProfilePutResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/profile/put/1.0",
   "title": "Persona Profile Put — payload",
@@ -162,64 +167,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Profile Put — response payload",
-      "description": "Success response to persona/profile/put. Type https://trusttasks.org/spec/persona/profile/put/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "version",
-        "created",
-        "updatedAt"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "created": {
-          "type": "boolean"
-        },
-        "correlation": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "severity"
-          ],
-          "description": "Advisory correlation result for the composition as a whole, returned on the write so a builder can warn while the holder is still composing. Advisory only: the write has applied, and a maintainer MUST NOT refuse a composition on correlation grounds.",
-          "properties": {
-            "severity": {
-              "type": "string",
-              "enum": [
-                "none",
-                "low",
-                "high"
-              ]
-            },
-            "sharedAttributeCount": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "How many of this profile's entries present a value that another profile also presents. A count rather than a list; identifiers come from persona/correlation/analyze."
-            }
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -534,10 +481,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -620,300 +567,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "FaceReach": {
-      "title": "FaceReach",
-      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind"
-          ],
-          "properties": {
-            "kind": {
-              "const": "anywhere"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "contextIds"
-          ],
-          "properties": {
-            "kind": {
-              "const": "only"
-            },
-            "contextIds": {
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 256,
-              "uniqueItems": true,
-              "items": {
-                "type": "string",
-                "minLength": 1
-              }
-            }
-          }
-        }
-      ]
-    },
-    "ProfileEntry": {
-      "title": "ProfileEntry",
-      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.\n\nAny form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.",
-      "type": "object",
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "required": [
-            "ref"
-          ],
-          "properties": {
-            "ref": {
-              "$ref": "#/$defs/Ulid"
-            },
-            "slot": {
-              "$ref": "#/$defs/Slot"
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "ref",
-            "pinVersion"
-          ],
-          "properties": {
-            "ref": {
-              "$ref": "#/$defs/Ulid"
-            },
-            "pinVersion": {
-              "$ref": "#/$defs/Version"
-            },
-            "slot": {
-              "$ref": "#/$defs/Slot"
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "ref",
-            "override"
-          ],
-          "properties": {
-            "ref": {
-              "$ref": "#/$defs/Ulid"
-            },
-            "override": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "value"
-              ],
-              "properties": {
-                "value": {},
-                "label": {
-                  "type": "string",
-                  "maxLength": 128
-                }
-              },
-              "description": "Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested."
-            },
-            "slot": {
-              "$ref": "#/$defs/Slot"
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "inline"
-          ],
-          "properties": {
-            "inline": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "type",
-                "valueType",
-                "value",
-                "provenance"
-              ],
-              "properties": {
-                "type": {
-                  "$ref": "#/$defs/ClaimType"
-                },
-                "valueType": {
-                  "$ref": "#/$defs/ValueType"
-                },
-                "value": {},
-                "label": {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                "provenance": {
-                  "$ref": "#/$defs/Provenance"
-                }
-              }
-            },
-            "slot": {
-              "$ref": "#/$defs/Slot"
-            }
-          }
-        }
-      ]
-    },
-    "Slot": {
-      "title": "Slot",
-      "type": "string",
-      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
-      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
-    },
-    "Provenance": {
-      "title": "Provenance",
-      "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\n\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\n\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.",
-      "type": "object",
-      "required": [
-        "kind"
-      ],
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "required": [
-            "kind"
-          ],
-          "properties": {
-            "kind": {
-              "const": "selfAsserted"
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "credentialId",
-            "claimPath"
-          ],
-          "properties": {
-            "kind": {
-              "const": "credentialBacked"
-            },
-            "credentialId": {
-              "type": "string",
-              "minLength": 1,
-              "description": "Vault identifier of the backing credential."
-            },
-            "claimPath": {
-              "type": "string",
-              "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$",
-              "description": "RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`."
-            },
-            "issuerDid": {
-              "type": "string",
-              "minLength": 1,
-              "description": "Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member."
-            },
-            "proof": {
-              "$ref": "#/$defs/ProofRung",
-              "description": "The disclosure rung this claim was, or will be, presented at."
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "generator"
-          ],
-          "properties": {
-            "kind": {
-              "const": "generated"
-            },
-            "generator": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "description": "Names the minting scheme, e.g. `relayEmail`. Maintainer-defined."
-            },
-            "perVerifier": {
-              "type": "boolean",
-              "default": true,
-              "description": "When true (the default and the only useful setting), a distinct value is minted for each verifier."
-            }
-          }
-        },
-        {
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "source",
-            "derivedAt"
-          ],
-          "properties": {
-            "kind": {
-              "const": "derived"
-            },
-            "source": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[a-z][A-Za-z0-9.-]*$",
-              "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share."
-            },
-            "derivedAt": {
-              "type": "string",
-              "format": "date-time",
-              "description": "When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it."
-            }
-          }
-        }
-      ]
-    },
-    "ProofRung": {
-      "title": "ProofRung",
-      "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
-      "type": "string",
-      "enum": [
-        "predicate",
-        "derived",
-        "selectiveDisclosure",
-        "whole"
-      ]
-    },
-    "ValueType": {
-      "title": "ValueType",
-      "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-      "type": "string",
-      "enum": [
-        "string",
-        "number",
-        "boolean",
-        "date",
-        "object"
-      ]
-    },
-    "ClaimType": {
-      "title": "ClaimType",
-      "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

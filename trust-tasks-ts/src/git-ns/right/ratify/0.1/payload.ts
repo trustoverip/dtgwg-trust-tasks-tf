@@ -91,8 +91,13 @@ export type Response = GitNamespacesRatifyBreakGlassResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/right/ratify/0.1",
   "title": "Git Namespaces — Ratify Break-Glass — payload",
@@ -132,25 +137,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Ratify Break-Glass — response payload",
-      "description": "The ratified record.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "right"
-      ],
-      "properties": {
-        "right": {
-          "$ref": "#/$defs/RightRecord",
-          "description": "The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -159,96 +145,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RightRecord": {
-      "title": "RightRecord",
-      "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "right",
-        "resource",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts."
-        },
-        "right": {
-          "$ref": "#/$defs/Right"
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "grantedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right lapses. Absent: no expiry."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it."
-        },
-        "breakGlass": {
-          "$ref": "#/$defs/BreakGlass",
-          "description": "Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record."
-        }
-      }
-    },
-    "BreakGlass": {
-      "title": "BreakGlass",
-      "description": "How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "by",
-        "at",
-        "justification"
-      ],
-      "properties": {
-        "by": {
-          "$ref": "#/$defs/Did",
-          "description": "Who broke the glass: always the record's `subject`, restated so the flag reads on its own."
-        },
-        "at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC recorded the break-glass."
-        },
-        "justification": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "\\S",
-          "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published."
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so."
-        },
-        "ratifiedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The administrator who ratified the record — never its subject. Absent while unratified."
-        },
-        "ratifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was ratified. Present exactly when `ratifiedBy` is."
-        }
       }
     },
     "Did": {
@@ -265,18 +161,6 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 455,
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
     },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
-    },
     "ElevatedRight": {
       "title": "ElevatedRight",
       "description": "The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.",
@@ -288,10 +172,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -439,19 +323,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "git.repo.maintain",
         "git.commit.sign"
       ]
-    },
-    "ElevatedRight": {
-      "title": "ElevatedRight",
-      "description": "The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own"
-      ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

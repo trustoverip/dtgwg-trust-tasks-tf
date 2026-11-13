@@ -75,8 +75,13 @@ export type Response = PolicyActiveResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/policy/active/0.1",
   "title": "Policy Active — payload",
@@ -99,120 +104,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Policy Active — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bindings"
-      ],
-      "properties": {
-        "bindings": {
-          "type": "array",
-          "description": "The active (contextId, purpose) -> policy bindings that matched the request. Zero entries when the requested purpose has no active policy; the full set when purpose is omitted. Unpaginated — the active set has one entry per purpose, which is small by construction.",
-          "items": {
-            "$ref": "#/$defs/ActiveBinding"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "ActiveBinding": {
-      "$anchor": "activeBinding",
-      "title": "ActiveBinding",
-      "description": "One active-policy binding: the policy currently authoritative for a (contextId, purpose) decision slot.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "purpose",
-        "policy"
-      ],
-      "properties": {
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128
-        },
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Present when the binding is context-scoped."
-        },
-        "policy": {
-          "$ref": "#/$defs/PolicyModule"
-        }
-      }
-    },
-    "PolicyModule": {
-      "title": "PolicyModule",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "module",
-        "version",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "module": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
-        },
-        "appliesTo": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
-        },
-        "priority": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000,
-          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
-        },
-        "enabled": {
-          "type": "boolean",
-          "default": true
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -224,10 +115,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -356,7 +247,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

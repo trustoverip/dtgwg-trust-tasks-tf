@@ -54,9 +54,7 @@ void main() {
       }),
       base: 'https://maintainer.example/tt/',
     );
-    await sendEcho(client, request()).catchError(
-      (Object _) => request(),
-    );
+    await sendEcho(client, request()).catchError((Object _) => request());
     expect(seen.url.toString(), 'https://maintainer.example/tt/trust-tasks');
     expect(seen.headers['content-type'], startsWith('application/json'));
     expect(seen.headers['authorization'], 'Bearer $aliceToken');
@@ -96,8 +94,11 @@ void main() {
     await expectLater(
       sendEcho(client, request()),
       throwsA(
-        isA<DuplicateAbsorbedException>()
-            .having((e) => e.inFlight, 'inFlight', isFalse),
+        isA<DuplicateAbsorbedException>().having(
+          (e) => e.inFlight,
+          'inFlight',
+          isFalse,
+        ),
       ),
     );
   });
@@ -108,8 +109,9 @@ void main() {
     );
     await expectLater(
       sendEcho(client, request()),
-      throwsA(isA<HttpStatusException>()
-          .having((e) => e.httpStatus, 'status', 502)),
+      throwsA(
+        isA<HttpStatusException>().having((e) => e.httpStatus, 'status', 502),
+      ),
     );
   });
 
@@ -192,12 +194,285 @@ void main() {
       );
       await expectLater(
         sendEcho(client, request(text: 'refuse')),
-        throwsA(isA<ResponseMismatchException>().having(
-          (e) => e.binding,
-          'binding',
-          ResponseBinding.inResponseTo,
-        )),
+        throwsA(
+          isA<ResponseMismatchException>().having(
+            (e) => e.binding,
+            'binding',
+            ResponseBinding.inResponseTo,
+          ),
+        ),
       );
+    });
+  });
+
+  group('transport limits', () {
+    test('a plain http base is refused unless loopback or allowed', () {
+      expect(
+        () => HttpsClient(base: Uri.parse('http://maintainer.example')),
+        throwsArgumentError,
+      );
+      expect(
+        HttpsClient(
+          base: Uri.parse('http://maintainer.example'),
+          allowInsecureHttp: true,
+        ).endpoint.toString(),
+        'http://maintainer.example/trust-tasks',
+      );
+      for (final base in [
+        'http://127.0.0.1:8080',
+        'http://localhost:3000',
+        'http://[::1]:3000',
+      ]) {
+        HttpsClient(base: Uri.parse(base), token: aliceToken).close();
+      }
+    });
+
+    test('a bearer token is never sent over non-loopback http', () {
+      expect(
+        () => HttpsClient(
+          base: Uri.parse('http://maintainer.example'),
+          token: aliceToken,
+          allowInsecureHttp: true,
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('a response verifier needs a server VID', () {
+      expect(
+        () => HttpsClient(
+          base: Uri.parse('https://maintainer.example'),
+          responseVerifier: FakeVerifier(),
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('redirects are not followed', () async {
+      late http.BaseRequest seen;
+      final client = clientFor(
+        MockClient((r) async {
+          seen = r;
+          return http.Response(
+            '',
+            307,
+            headers: {'location': 'https://elsewhere.example/trust-tasks'},
+          );
+        }),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(
+          isA<HttpStatusException>().having((e) => e.httpStatus, 'status', 307),
+        ),
+      );
+      expect(seen.followRedirects, isFalse);
+    });
+
+    test('a body over maxResponseBytes is refused', () async {
+      final client = HttpsClient(
+        base: Uri.parse('https://maintainer.example'),
+        serverVid: server,
+        myVid: alice,
+        maxResponseBytes: 1024,
+        httpClient: MockClient.streaming((r, _) async {
+          return http.StreamedResponse(
+            Stream.fromIterable(
+              List.generate(8, (_) => List<int>.filled(512, 0x20)),
+            ),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(
+          isA<ResponseTooLargeException>().having(
+            (e) => e.limit,
+            'limit',
+            1024,
+          ),
+        ),
+      );
+    });
+
+    test('a declared Content-Length over the cap is refused unread', () async {
+      final client = HttpsClient(
+        base: Uri.parse('https://maintainer.example'),
+        serverVid: server,
+        myVid: alice,
+        maxResponseBytes: 16,
+        httpClient: MockClient((_) async => http.Response('x' * 64, 200)),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(isA<ResponseTooLargeException>()),
+      );
+    });
+
+    test('any client error is a TransportException', () async {
+      final client = clientFor(
+        MockClient((_) async => throw const FormatException('handshake')),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(isA<TransportException>()),
+      );
+    });
+
+    test('error text does not quote the response body', () async {
+      final secretish = 'BODY-${'z' * 600}';
+      final client = clientFor(
+        MockClient((_) async => http.Response(secretish, 502)),
+      );
+      final error = await sendEcho(
+        client,
+        request(),
+      ).then<Object?>((_) => null, onError: (Object e) => e);
+      expect(error, isA<HttpStatusException>());
+      expect(error.toString(), isNot(contains('BODY-')));
+      expect(
+        (error! as HttpStatusException).body.length,
+        lessThanOrEqualTo(512),
+      );
+
+      final decoding = clientFor(
+        MockClient((_) async => http.Response('{"BODY-', 200)),
+      );
+      final decodeError = await sendEcho(
+        decoding,
+        request(),
+      ).then<Object?>((_) => null, onError: (Object e) => e);
+      expect(decodeError, isA<ResponseDecodeException>());
+      expect(decodeError.toString(), isNot(contains('BODY-')));
+    });
+  });
+
+  group('error responses with a response verifier', () {
+    const requestId = 'urn:uuid:00000000-0000-4000-8000-0000000000e1';
+
+    /// The echo server's genuine refusal of [requestId], as JSON.
+    Future<Map<String, dynamic>> refusal() async => bodyOf(
+          await echoServer().handle(
+            post(echoDoc(id: requestId, text: 'refuse')),
+          ),
+        );
+
+    HttpsClient answering(
+      Map<String, dynamic> body, {
+      ProofVerifier? verifier,
+    }) =>
+        clientFor(
+          MockClient(
+            (_) async => http.Response(
+              jsonEncode(body),
+              403,
+              headers: {'content-type': 'application/json'},
+            ),
+          ),
+          responseVerifier: verifier ?? FakeVerifier(),
+        );
+
+    Future<Object?> outcome(HttpsClient client) => sendEcho(
+          client,
+          request(id: requestId, text: 'refuse'),
+        ).then<Object?>((_) => null, onError: (Object e) => e);
+
+    test('an unsigned error is unverified, not the server answer', () async {
+      final error = await outcome(answering(await refusal()));
+      expect(
+        error,
+        isA<UnverifiedErrorResponseException>()
+            .having((e) => e.httpStatus, 'status', 403)
+            .having((e) => e.reason, 'reason', contains('no proof'))
+            .having(
+              (e) => e.error.payload.code,
+              'code (kept for diagnostics)',
+              'permissionDenied',
+            ),
+      );
+      expect(error.toString(), isNot(contains('permissionDenied')));
+    });
+
+    test('an error whose proof does not verify is unverified', () async {
+      final body = await refusal()
+        ..['proof'] = proof(server, value: 'bad');
+      expect(
+        await outcome(answering(body)),
+        isA<UnverifiedErrorResponseException>()
+            .having((e) => e.reason, 'reason', contains('did not verify')),
+      );
+    });
+
+    test('a verifier that throws leaves the error unverified', () async {
+      final body = await refusal()
+        ..['proof'] = proof(server);
+      expect(
+        await outcome(answering(body, verifier: _Throwing())),
+        isA<UnverifiedErrorResponseException>(),
+      );
+    });
+
+    test('a valid error from another party is unverified', () async {
+      final body = await refusal()
+        ..['issuer'] = mallory
+        ..['proof'] = proof(mallory);
+      expect(
+        await outcome(answering(body)),
+        isA<UnverifiedErrorResponseException>()
+            .having((e) => e.reason, 'reason', contains('issuer')),
+      );
+    });
+
+    test('a valid error addressed to someone else is unverified', () async {
+      final body = await refusal()
+        ..['recipient'] = mallory
+        ..['proof'] = proof(server);
+      expect(
+        await outcome(answering(body)),
+        isA<UnverifiedErrorResponseException>()
+            .having((e) => e.reason, 'reason', contains('addressed')),
+      );
+    });
+
+    test('a signed error from the server is its answer', () async {
+      final body = await refusal()
+        ..['proof'] = proof(server);
+      expect(
+        await outcome(answering(body)),
+        isA<TrustTaskErrorException>()
+            .having((e) => e.httpStatus, 'status', 403)
+            .having((e) => e.error.payload.code, 'code', 'permissionDenied'),
+      );
+    });
+
+    test('the proof is verified over the body as received', () async {
+      // A member the typed model does not carry, and an offset spelled
+      // `+00:00`: a re-serialised document would differ from what was signed.
+      final body = await refusal()
+        ..['issuedAt'] = '2026-06-01T12:00:00+00:00'
+        ..['extension'] = {'kept': true}
+        ..['proof'] = proof(server);
+      Map<String, dynamic>? seen;
+      final error = await outcome(
+        answering(body, verifier: _Capture((doc) => seen = doc)),
+      );
+      expect(error, isA<TrustTaskErrorException>());
+      expect(seen, body);
+    });
+
+    test('without a verifier, an unsigned error is still returned', () async {
+      final client = clientFor(
+        MockClient(
+          (_) async => http.Response(
+            jsonEncode(await refusal()),
+            403,
+            headers: {'content-type': 'application/json'},
+          ),
+        ),
+      );
+      expect(await outcome(client), isA<TrustTaskErrorException>());
     });
   });
 
@@ -208,8 +483,13 @@ void main() {
     );
     await expectLater(
       sendEcho(client, request()),
-      throwsA(isA<ResponseProofException>()
-          .having((e) => e.missing, 'missing', isTrue)),
+      throwsA(
+        isA<ResponseProofException>().having(
+          (e) => e.missing,
+          'missing',
+          isTrue,
+        ),
+      ),
     );
   });
 }
@@ -231,4 +511,20 @@ Future<http.Response> inProcessReply(http.BaseRequest r) async {
     reply.status,
     headers: reply.headers,
   );
+}
+
+class _Throwing implements ProofVerifier {
+  @override
+  Future<bool> verify(Map<String, dynamic> doc) async =>
+      throw StateError('resolver unavailable');
+}
+
+class _Capture implements ProofVerifier {
+  _Capture(this.onVerify);
+  final void Function(Map<String, dynamic> doc) onVerify;
+  @override
+  Future<bool> verify(Map<String, dynamic> doc) async {
+    onVerify(doc);
+    return true;
+  }
 }

@@ -74,8 +74,13 @@ export type Response = VTAAttestationMnemonicStatusResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.2",
   "title": "VTA Attestation — Mnemonic Status — payload",
@@ -88,41 +93,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation — Mnemonic Status — response payload",
-      "description": "The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "windowActive",
-        "alreadyExported",
-        "entropyAvailable",
-        "windowRemainingSeconds"
-      ],
-      "properties": {
-        "windowActive": {
-          "type": "boolean",
-          "description": "Whether the export window is currently open."
-        },
-        "alreadyExported": {
-          "type": "boolean",
-          "description": "Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time."
-        },
-        "entropyAvailable": {
-          "type": "boolean",
-          "description": "Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once."
-        },
-        "windowRemainingSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Seconds remaining in the export window; 0 once it has expired or was never active."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,10 +104,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -187,7 +157,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

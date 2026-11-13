@@ -6,6 +6,239 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.38.0...trust-tasks-https-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs,https**: Build the HTTPS server on consume_dispatched; async handlers and auth ([#1244](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1244))
+
+* feat(rs,https)!: build the HTTPS server on consume_dispatched; async handlers and auth
+
+  HttpsServer now runs every framework check through
+  trust_tasks_rs::consume_dispatched_answer and keeps only the HTTP steps.
+  The checks only it had become ConsumeChecks options (require_attribution,
+  proof_did_methods, received_bytes). Adds on_async/on_ack_async, an
+  AsyncAuth trait every Auth satisfies, extends forward routing with
+  unsupportedVersion, and per-type maxDocumentBytes enforcement with a body
+  limit derived from the registered tasks.
+
+
+
+### Build & CI
+
+- **proof, didcomm**: Affinidi-crypto 0.3 and the matching Affinidi releases ([#1265](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1265))
+
+* build(proof,didcomm): affinidi-crypto 0.3 and the matching Affinidi releases
+
+  trust-tasks-proof requires affinidi-crypto 0.3, affinidi-data-integrity
+  0.8.7, affinidi-did-common 0.4.7 and affinidi-did-resolver-cache-sdk
+  0.8.53, the releases built on affinidi-crypto 0.3, so its KeyType is the
+  one those crates use. The trust-tasks-didcomm dev dependencies move to
+  affinidi-crypto 0.3 and affinidi-messaging-didcomm 0.15.14, and the
+  affinidi-secrets-resolver dev dependencies to 0.5.18.
+
+  The mediator integration test leaves the tree for now: the published
+  test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto 0.2 and
+  no longer compile beside affinidi-messaging-didcomm 0.15.14.
+
+- Catch superseded versions and drifted counts in the docs ([#1268](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1268))
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+
+
+### Fixed
+
+- **rs,https,dart-https**: Run the attribution gate before the route lookup ([#1246](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1246))
+
+Both HTTPS servers looked the route up before the attribution gate, so a sender with neither a bearer token nor a proof could tell a registered type (proofRequired) from an unregistered one (unsupportedType).
+
+  The Rust server now runs on consume_dispatched_answer, so the reorder is made there: the checks that read only the envelope (expiry, recipient, freshness, identity) and the attribution gate move out of consume_core into envelope_checks, which consume_inbound and consume_dispatched_answer both run ahead of their item-3 type check. The route lookup still precedes the DID-method screen and proof verification, so an unregistered type never reaches a resolver.
+
+  The Dart server runs the same checks before the route lookup and before decoding the payload.
+
+
+
+### Performance
+
+- **rs,https**: Hash, compare and route each inbound document once ([#1259](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1259))
+
+* test(rs,https): time the inbound path and pin the item-11 digest values
+
+
+
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.15...trust-tasks-https-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **rs,build,cli,codegen**: Review fixes — declared guard code, SchemaValidator, keyword slugs, generate --lang rs, registry hints, docs.rs ([#1215](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1215))
+
+* fix(rs): declared acl/revoke code in the guard, a caching SchemaValidator, docs.rs metadata
+
+  - guards::acl::reject_last_authority returns acl/revoke:lastAuthorityProtected,
+    the code every acl/revoke version declares (was snake_case); new
+    LAST_AUTHORITY_PROTECTED constant, pinned to the generated declarations ([#1093](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1093)).
+  - validate::SchemaValidator: a PayloadValidator compiling each schema once,
+    cached by the schema text's address and confirmed against its content;
+    validate_value and check_details use a shared one; prune_payload reuses a
+    parsed-schema cache; PayloadPolicy::accept_unvalidated() ([#1091](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1091)).
+  - docs.rs builds trust-tasks-rs with validate + acl and the facade with its
+    non-spec features, and trust-tasks-rs / trust-tasks-https enable doc_cfg
+    under docsrs, without which the docs.rs build cannot compile ([#1106](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1106)).
+
+- **https,proof**: Verify client response proofs as received, hold error responses to them, and bound DID resolution by default ([#1204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1204))
+
+* fix(https,proof)!: verify client response proofs as received, hold error responses to them, and bound DID resolution by default
+
+  HttpsClient verified a response's proof over the parsed and re-serialised
+  document, so a valid signature over, for example, an issuedAt written with
+  +00:00 was refused. It now verifies over the body exactly as received, as
+  the server already does.
+
+  With a response verifier configured, a trust-task-error response is now
+  returned as TrustTaskError only when its proof verifies and its issuer and
+  recipient match the configured VIDs. Otherwise it is returned as the new
+  ClientError::UnverifiedErrorResponse, which keeps the document for
+  diagnostics but marks it as unattested. ClientError is now non_exhaustive.
+
+  HttpsServer with a verifier and no explicit DID-method choice now accepts
+  did:key only (DEFAULT_ALLOWED_DID_METHODS). allowed_did_methods widens it;
+  the new allow_any_did_method lifts it. A server without a verifier is
+  unchanged.
+
+  CachedDidResolver now gives every resolution a deadline
+  (DEFAULT_RESOLUTION_TIMEOUT, 10 s, with_timeout) and refuses a DID naming
+  localhost or a loopback, private-network or link-local address before the
+  client is called (allow_private_hosts opts out). with_host_filter adds a
+  caller-supplied host allow-list.
+
+- **https,dart-https**: Cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors ([#1205](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1205))
+
+* fix(https,dart-https)!: cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors
+
+  Rust HttpsClient and Dart HttpsClient:
+
+  - The response body is read up to a cap (256 KiB by default,
+    max_response_bytes / maxResponseBytes) and refused beyond it, with a new
+    ResponseTooLarge error. A declared Content-Length over the cap is refused
+    before reading.
+  - server_url / base must be https. Plain http is accepted for a loopback
+    host, or elsewhere with allow_insecure_http / allowInsecureHttp, but a
+    bearer token is never sent over non-loopback http.
+  - Redirects are not followed by default; a 3xx is returned as an HTTP status
+    error so the signed document is never re-posted elsewhere. Rust can opt
+    into same-origin redirects with follow_redirects(true); an https client
+    never downgrades to http.
+  - Error text no longer quotes the response body: HttpStatus keeps at most
+    512 bytes in its field and leaves it out of Display; decode errors keep
+    only the category and position.
+
+  Dart only: every error the HTTP client raises (TLS included) is wrapped as
+  TransportException; the timeout now covers reading the body and cancels the
+  read when it fires; a responseVerifier requires a serverVid; a platform
+  client that followed a redirect anyway is detected by its final URL.
+
+- **runtime**: Settle or release the item-11 claim on every remaining path ([#1177](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1177))
+
+- Rust: the claim stays armed across a retryable refusal's awaited
+    release and is disarmed on the next statement, so a pipeline dropped
+    mid-release still releases it. A response or refusal whose `Serialize`
+    panics is recorded with no response before the panic continues.
+  - HTTPS server: `release_claim` holds a drop guard across its awaited
+    release, on both the refusal and the panic branch.
+  - `ReplayGuard::release_abandoned` documents that it must not block,
+    require a runtime context or panic, and the default's degradation for a
+    `release` that suspends, which a test now pins.
+  - Go: a `MarshalJSON` panic in `settle` records the claim with no
+    response, then the panic continues.
+  - Dart: a final refusal that cannot be encoded releases the claim, so a
+    resend is evaluated again, before the error is rethrown.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth ([#1171](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1171))
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+
+
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.14...trust-tasks-https-v0.37.15) — 2026-11-11
+
+
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.13...trust-tasks-https-v0.37.14) — 2026-11-10
+
+
+## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.12...trust-tasks-https-v0.37.13) — 2026-11-10
+
+
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.11...trust-tasks-https-v0.37.12) — 2026-11-09
+
+
+## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.10...trust-tasks-https-v0.37.11) — 2026-11-09
+
+
 ## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.9...trust-tasks-https-v0.37.10) — 2026-11-08
 
 

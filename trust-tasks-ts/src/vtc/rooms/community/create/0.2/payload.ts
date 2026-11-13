@@ -93,8 +93,13 @@ export type Response = VTCRoomsCommunityCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/community/create/0.2",
   "title": "VTC Rooms Community Create — payload",
@@ -143,24 +148,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Community Create — response payload",
-      "description": "Success response to vtc/rooms/community/create. Type https://trusttasks.org/spec/vtc/rooms/community/create/0.2#response. The room as created, owned by the community.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "room"
-      ],
-      "properties": {
-        "room": {
-          "$ref": "#/$defs/CommunityRoomV2"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -169,70 +156,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "CommunityRoomV2": {
-      "title": "CommunityRoomV2",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "room",
-        "label",
-        "admitted",
-        "offered"
-      ],
-      "description": "What vtc/rooms/community/{create,get,list}/0.2 and vtc/rooms/community/update/0.1 return: `CommunityRoom` plus the details an administrator keeps track of a room by — `description`, `tags`, and who last changed them and when. A separate definition, not a change to `CommunityRoom`, so that the 0.1 versions of those tasks keep the exact shape they published. The room's creation is `room.createdAt` and `createdBy`.",
-      "properties": {
-        "room": {
-          "$ref": "#/$defs/HostedRoom"
-        },
-        "label": {
-          "$ref": "#/$defs/RoomLabel"
-        },
-        "description": {
-          "$ref": "#/$defs/RoomDescription",
-          "description": "Absent when the room has none."
-        },
-        "tags": {
-          "$ref": "#/$defs/RoomTags",
-          "description": "Absent or empty when the room has none."
-        },
-        "storageConfig": {
-          "$ref": "#/$defs/StorageConfigId",
-          "description": "The storage config receiving the room's new uploads."
-        },
-        "admitted": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Members in state `admitted`."
-        },
-        "offered": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Offers not yet accepted or withdrawn."
-        },
-        "ownerAuthorityValidUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before."
-        },
-        "createdBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who created it."
-        },
-        "detailsUpdatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When `label`, `description` or `tags` last changed. Absent until the first change after creation. Distinct from `room.updatedAt`, which is the host record's and moves with the room's epoch and lifecycle."
-        },
-        "detailsUpdatedBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who made that change. Present exactly when `detailsUpdatedAt` is. The earlier values and who set them are in the community's audit trail, not here."
-        }
       }
     },
     "RoomTags": {
@@ -275,75 +198,6 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
       "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     },
-    "HostedRoom": {
-      "title": "HostedRoom",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "ownerDid",
-        "visibility",
-        "retentionPolicy",
-        "epoch",
-        "lifecycle",
-        "retentionDays",
-        "createdAt",
-        "updatedAt"
-      ],
-      "description": "One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.",
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512
-        },
-        "ownerDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "visibility": {
-          "$ref": "#/$defs/Visibility"
-        },
-        "retentionPolicy": {
-          "$ref": "#/$defs/RetentionPolicy"
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "lifecycle": {
-          "type": "string",
-          "enum": [
-            "live",
-            "lapsed",
-            "dormant",
-            "reclaimable"
-          ]
-        },
-        "epochExpiresAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "retentionDays": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "mirrorOf": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
-        },
-        "createdAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "updatedAt": {
-          "type": "integer",
-          "minimum": 0
-        }
-      }
-    },
     "RetentionPolicy": {
       "title": "RetentionPolicy",
       "type": "string",
@@ -372,10 +226,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -599,16 +453,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "private"
       ],
       "description": "How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything."
-    },
-    "Reason": {
-      "title": "Reason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -111,8 +111,13 @@ export type Response = PersonaContactListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/contact/list/1.1",
   "title": "Persona Contact List — payload",
@@ -167,88 +172,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Contact List — response payload",
-      "description": "Success response to persona/contact/list. Type https://trusttasks.org/spec/persona/contact/list/1.1#response. Summaries carry no claim values: a list is for finding a contact, and finding one does not require disclosing every contact's details. They do carry the holder's own annotations, which a client needs to sort, badge and filter, and which go to no one but the holder's own client.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contacts"
-      ],
-      "properties": {
-        "contacts": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "contactId",
-              "knownByPersona",
-              "rev",
-              "receivedAt",
-              "starred"
-            ],
-            "properties": {
-              "contactId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "subjectDid": {
-                "type": "string",
-                "minLength": 1,
-                "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form)."
-              },
-              "knownByPersona": {
-                "type": "string",
-                "minLength": 1
-              },
-              "rev": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "displayName": {
-                "type": "string",
-                "maxLength": 256,
-                "description": "A rendering hint drawn from the contact's own disclosed display-name claim, so a list is legible. Absent when they disclosed none; a producer MUST NOT substitute the DID — or the petname — silently as though it were the contact's own name."
-              },
-              "claimCount": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "receivedAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "hasUnreviewedChange": {
-                "type": "boolean",
-                "description": "True when the current revision superseded another and the holder has not yet acknowledged the difference."
-              },
-              "starred": {
-                "type": "boolean",
-                "description": "Whether the holder starred the contact. Always present."
-              },
-              "petname": {
-                "$ref": "#/$defs/Petname"
-              },
-              "lists": {
-                "$ref": "#/$defs/ListIds"
-              },
-              "directoryRef": {
-                "$ref": "#/$defs/DirectoryRef"
-              }
-            }
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -259,73 +182,17 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "DirectoryRef": {
-      "title": "DirectoryRef",
-      "description": "Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vtcDid",
-        "entryId"
-      ],
-      "properties": {
-        "vtcDid": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "^did:[a-z0-9]+:",
-          "description": "The DID of the community whose directory holds the entry."
-        },
-        "entryId": {
-          "$ref": "#/$defs/DirectoryEntryId",
-          "description": "The entry, as that community's directory identifies it."
-        }
-      }
-    },
-    "DirectoryEntryId": {
-      "title": "DirectoryEntryId",
-      "description": "A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z0-9_-]+$"
-    },
-    "ListIds": {
-      "title": "ListIds",
-      "description": "The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \"none\".",
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 64,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/$defs/ListId"
-      }
-    },
     "ListId": {
       "title": "ListId",
       "description": "Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "Petname": {
-      "title": "Petname",
-      "description": "The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -484,7 +351,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -61,8 +61,13 @@ export type Response = VTCSchemasRegisterResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/schemas/register/0.1",
   "title": "VTC Schemas — Register — payload",
@@ -94,23 +99,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "schema"
-      ],
-      "properties": {
-        "schema": {
-          "$ref": "#/$defs/SchemaEntry"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -119,46 +107,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SchemaEntry": {
-      "title": "SchemaEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "typeUri",
-        "kind",
-        "createdAt",
-        "createdByDid"
-      ],
-      "description": "One registered credential type, as the community stores it.",
-      "properties": {
-        "typeUri": {
-          "$ref": "#/$defs/CredentialTypeUri"
-        },
-        "dtgType": {
-          "$ref": "#/$defs/DtgType"
-        },
-        "credentialSchema": {
-          "$ref": "#/$defs/CredentialSchema"
-        },
-        "kind": {
-          "$ref": "#/$defs/SchemaKind"
-        },
-        "description": {
-          "$ref": "#/$defs/SchemaDescription"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the entry."
-        }
       }
     },
     "SchemaDescription": {
@@ -198,10 +146,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -309,7 +257,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -324,6 +272,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 262144,
 } as const;
 
 /**
@@ -338,4 +287,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 327680,
 } as const;

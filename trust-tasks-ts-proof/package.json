@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-proof",
-  "version": "0.1.6",
+  "version": "0.2.1",
   "description": "W3C Data Integrity proof verification and signing for Trust Tasks: a ProofVerifier for @openvtc/trust-tasks, on @noble.",
   "type": "module",
   "license": "Apache-2.0",
@@ -13,8 +13,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "files": [
     "dist"
@@ -29,14 +32,14 @@
   "dependencies": {
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
-    "@scure/base": "^2.0.0"
+    "@scure/base": "^2.4.0"
   },
   "peerDependencies": {
-    "@openvtc/trust-tasks": "^0.28.0"
+    "@openvtc/trust-tasks": "^0.30.0"
   },
   "devDependencies": {
-    "@openvtc/trust-tasks": "^0.28.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.6.0"
+    "@openvtc/trust-tasks": "^0.30.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   }
 }

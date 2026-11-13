@@ -1,0 +1,59 @@
+name: Add swap
+description: >-
+  Give a hosted runner swap, so a build whose peak exceeds the runner's 16 GB
+  pages out instead of being killed (exit 143, "The runner has received a
+  shutdown signal", no compile error in the log). Shared by the Rust jobs that
+  compile trust-tasks-rs's generated tree (#1141); each caller says why it needs
+  it.
+
+inputs:
+  mode:
+    description: >-
+      `fixed`: a 10 GB /swapfile, the original margin for the test and clippy
+      jobs. `adaptive`: stops systemd-oomd and puts up to 16 GB on whichever of
+      / and /mnt has more room, leaving 8 GB for the build (none below 4 GB) —
+      the runner image's disk layout is not ours to assume. Used by the jobs
+      that were still killed with the fixed margin (doc, package, semver).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Add swap (fixed, 10 GB)
+      if: inputs.mode == 'fixed'
+      shell: bash
+      run: |
+        sudo swapoff -a || true
+        sudo fallocate -l 10G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        free -h
+    - name: Add swap (adaptive, up to 16 GB)
+      if: inputs.mode == 'adaptive'
+      shell: bash
+      run: |
+        sudo systemctl stop systemd-oomd || true
+        sudo swapoff -a
+        sudo rm -f /mnt/swapfile /swapfile
+        root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+        mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+        if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+        size=$(( free - 8 < 16 ? free - 8 : 16 ))
+        if [ "$size" -lt 4 ]; then
+          echo "::warning::only ${free}G free; not adding swap"
+        else
+          sudo fallocate -l "${size}G" "$dir/swapfile"
+          sudo chmod 600 "$dir/swapfile"
+          sudo mkswap "$dir/swapfile"
+          sudo swapon "$dir/swapfile"
+        fi
+        free -h
+    - name: Reject an unknown mode
+      if: inputs.mode != 'fixed' && inputs.mode != 'adaptive'
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+      run: |
+        echo "::error::add-swap: unknown mode '$MODE' (expected fixed or adaptive)"
+        exit 1

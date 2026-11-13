@@ -18,9 +18,11 @@ on:
         description: "Withdraw what is due as of this date (YYYY-MM-DD); empty for today"
         required: false
 
+# Read-only by default. `batch` runs `npm ci`, cargo build scripts and all four
+# generators — third-party code — so it has no token to write with; `open-pr`
+# runs only git and gh, and is the one job that holds the release token.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: withdraw
@@ -32,17 +34,19 @@ env:
 
 jobs:
   batch:
-    name: open the withdrawal pull request
-    runs-on: ubuntu-latest
+    name: prepare the withdrawal batch
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
+    outputs:
+      as_of: ${{ steps.flip.outputs.as_of }}
+      due: ${{ steps.flip.outputs.due }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # Full history: the script dates each supersession and retirement from git.
           fetch-depth: 0
-          # The PR must trigger CI, which a GITHUB_TOKEN push does not.
-          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
       - run: npm ci --no-audit --no-fund
@@ -64,15 +68,13 @@ jobs:
           else
             echo "due=$(git diff --name-only -- specs | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
           fi
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: ./.github/actions/rust-toolchain
         if: steps.flip.outputs.due != '0'
-        with:
-          components: rustfmt
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         if: steps.flip.outputs.due != '0'
         with:
           go-version: stable
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         if: steps.flip.outputs.due != '0'
         with:
           sdk: stable
@@ -87,14 +89,59 @@ jobs:
           npm run build-dart-bindings
           npm run validate
           npm run check-bindings
-      - name: Open the pull request
+      - name: Save the batch
         if: steps.flip.outputs.due != '0'
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-          AS_OF: ${{ steps.flip.outputs.as_of }}
-          DUE: ${{ steps.flip.outputs.due }}
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/batch"
+          git add -A
+          git diff --cached --binary > "$RUNNER_TEMP/batch/changes.patch"
+          git rev-parse HEAD > "$RUNNER_TEMP/batch/base"
+          cp "$RUNNER_TEMP/readiness.txt" "$RUNNER_TEMP/withdrawn.txt" "$RUNNER_TEMP/batch/"
+      - name: Upload the batch
+        if: steps.flip.outputs.due != '0'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: withdrawal-batch
+          path: ${{ runner.temp }}/batch/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  open-pr:
+    name: open the withdrawal pull request
+    needs: batch
+    if: needs.batch.outputs.due != '0'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # The commit the batch was computed against; applying the patch needs no
+      # history.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download the batch
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: withdrawal-batch
+          path: ${{ runner.temp }}/batch
+      - name: Open the pull request
+        env:
+          # The PR must trigger CI, which a GITHUB_TOKEN push does not.
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          AS_OF: ${{ needs.batch.outputs.as_of }}
+          DUE: ${{ needs.batch.outputs.due }}
+        run: |
+          set -euo pipefail
+          batch="$RUNNER_TEMP/batch"
+          if [ "$(git rev-parse HEAD)" != "$(cat "$batch/base")" ]; then
+            echo "::error::the batch was computed against $(cat "$batch/base"), not $(git rev-parse HEAD)"
+            exit 1
+          fi
           # Author as the token's owner, not the bot: EasyCLA authorises the commit
           # author and github-actions[bot] has signed no CLA (as release-pr.sh does).
           if ! author_json=$(gh api user 2>/dev/null); then
@@ -104,13 +151,17 @@ jobs:
           git config user.name "$(jq -r '.name // .login' <<<"$author_json")"
           git config user.email "$(jq -r '.id' <<<"$author_json")+$(jq -r '.login' <<<"$author_json")@users.noreply.github.com"
           branch="withdraw/$AS_OF"
+          # Only the spec folders and the generated trees, checked from this
+          # checkout before the patch is applied. After `git apply` nothing from
+          # the working tree runs: the push below is inline for that reason.
+          ./scripts/check-patch-paths.sh withdraw "$batch/changes.patch"
           git switch -C "$branch"
-          git add -A
+          git apply --index --binary "$batch/changes.patch"
           # A sibling package whose (superseded) block this batch deletes breaks too,
           # so its scope joins the title. `rs` is what makes the crates' release breaking:
           # release-plz sizes it from the commit's `!`.
           scopes="rs, ts, go, dart"
-          grep -q 'trust-tasks-dart-https/' "$RUNNER_TEMP/readiness.txt" && scopes="$scopes, dart-https"
+          grep -q 'trust-tasks-dart-https/' "$batch/readiness.txt" && scopes="$scopes, dart-https"
           title="feat($scopes)!: withdraw $DUE specification versions superseded or retired for 90 days as of $AS_OF"
           {
             echo "The quarterly withdrawal batch (SPEC \"Superseded and Withdrawn Versions\")."
@@ -122,26 +173,43 @@ jobs:
             echo "libraries have marked each one deprecated, with that successor, since it was superseded."
             echo
             echo '```'
-            grep -v '^$' "$RUNNER_TEMP/withdrawn.txt"
+            grep -v '^$' "$batch/withdrawn.txt"
             echo '```'
-            if grep -q 'batch PR deletes' "$RUNNER_TEMP/readiness.txt"; then
+            if grep -q 'batch PR deletes' "$batch/readiness.txt"; then
               echo
               echo "**Before merging, delete the hand-written support kept for these versions** — every block"
               echo "opened by a \`… (superseded)\` comment and closed by \`--- end\`, then \`cargo fmt --all\`"
               echo "and \`dart format\`. This PR's CI fails until they are gone:"
               echo
-              grep 'batch PR deletes' "$RUNNER_TEMP/readiness.txt"
+              grep 'batch PR deletes' "$batch/readiness.txt"
             fi
-            if grep -q '::\(warning\|error\)' "$RUNNER_TEMP/readiness.txt"; then
+            if grep -q '::\(warning\|error\)' "$batch/readiness.txt"; then
               echo
               echo "**Other hand-written code still imports a withdrawn version** — move it to the successor:"
               echo
               echo '```'
-              grep '::\(warning\|error\)' "$RUNNER_TEMP/readiness.txt" | sed -E 's/^::[a-z]+ //'
+              grep '::\(warning\|error\)' "$batch/readiness.txt" | sed -E 's/^::[a-z]+ //'
               echo '```'
             fi
           } > "$RUNNER_TEMP/body.md"
           { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
           git commit -s -q -F "$RUNNER_TEMP/message.txt"
-          git push -f origin "$branch"
-          gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          { set +x; } 2>/dev/null
+          auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$auth"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git push -f origin "$branch"
+          # A re-run for the same as-of date finds its PR already open: refresh
+          # it rather than fail at `gh pr create` after the branch was rewritten.
+          # REST, not `gh pr edit`, for the reason release-pr.sh gives (the
+          # token has `repo` only; `gh pr edit` asks GraphQL for `read:org`).
+          existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
+              -f title="$title" -f body="$(cat "$RUNNER_TEMP/body.md")"
+            echo "::notice::updated PR #$existing"
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi

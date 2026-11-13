@@ -83,8 +83,13 @@ export type Response = VTCBoardsDeleteResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/boards/delete/0.1",
   "title": "VTC Boards — Delete — payload",
@@ -110,61 +115,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Boards — Delete — response payload",
-      "description": "The success response to a vtc/boards/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/delete/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "boardId",
-        "ideasRemoved",
-        "notesRemoved",
-        "electionsRemoved",
-        "tombstones"
-      ],
-      "properties": {
-        "boardId": {
-          "$ref": "#/$defs/BoardId"
-        },
-        "ideasRemoved": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "notesRemoved": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "electionsRemoved": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Elections whose content the community removed. Each keeps a tombstone unless the retention is zero."
-        },
-        "tombstones": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kept"
-          ],
-          "description": "What the community keeps of the board's elections (VTI-BRD-007, VTI-BRD-008).",
-          "properties": {
-            "kept": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Tombstones kept: each an election's identifier, manifest digest and the board heads the community kept. Zero when the retention is zero."
-            },
-            "removeAt": {
-              "type": "string",
-              "format": "date-time",
-              "description": "When they are removed. Absent when the retention is unbounded, or when none was kept."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -182,10 +132,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^brd_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -261,7 +211,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^brd_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

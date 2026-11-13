@@ -34,6 +34,7 @@ import {
   sha256Hex,
   type PayloadValidator,
   type ProofVerifier,
+  type SpecPolicy,
   type TrustTaskDocument,
 } from "../src/_runtime/index.js";
 import * as V01 from "./specimens/authenticate-0.1.js";
@@ -112,11 +113,15 @@ function doc03(over: Partial<TrustTaskDocument<V03.Payload>> = {}): TrustTaskDoc
   };
 }
 
-async function consume01(doc: TrustTaskDocument<V01.Payload>, guard = new InMemoryReplayGuard()) {
+async function consume01(
+  doc: TrustTaskDocument<V01.Payload>,
+  guard = new InMemoryReplayGuard(),
+  spec: SpecPolicy = V01.SPEC,
+) {
   let seen: TrustTaskDocument<V01.Payload> | undefined;
   const outcome = await consumeInbound<V01.Payload, V01.Response>({
     transport: new StaticTransport({ issuer: PEER }),
-    spec: V01.SPEC,
+    spec,
     proofPolicy: { kind: "verify", verify: hashVerifier },
     payloadPolicy: { kind: "validate", validate: closedRootValidator },
     checks: consequentialChecks(guard),
@@ -144,6 +149,15 @@ describe("extends chain lookup", () => {
     assert.equal(extendsOf(`${BASE}/0.1`, INDEX), null);
     assert.deepEqual(extendsChain(`${BASE}/0.3`, INDEX), ["0.2", "0.1"]);
     assert.deepEqual(extendsChain(`${BASE}/0.3`, (uri) => INDEX[uri as keyof typeof INDEX]), ["0.2", "0.1"]);
+  });
+
+  it("follows at most 64 links, as the other three libraries do", () => {
+    // 0.70 → 0.69 → … → 0.0: every link strictly earlier, 70 of them.
+    const index: Record<string, string> = {};
+    for (let m = 70; m > 0; m--) index[`${BASE}/0.${m}`] = `0.${m - 1}`;
+    const chain = extendsChain(`${BASE}/0.70`, index);
+    assert.equal(chain.length, 64);
+    assert.equal(chain[63], "0.6");
   });
 
   it("stops at a declaration that is not strictly earlier within the MAJOR, or a cycle", () => {
@@ -364,9 +378,22 @@ describe("consumeInbound on a re-read document", () => {
     assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "proofInvalid");
   });
 
-  it("without pruning, the 0.1 schema refuses the 0.3 payload", async () => {
+  it("a re-reading made for one spec is checked when consumed under another", async () => {
+    const read = readForSpec<V01.Payload>(sign(doc03()), V01.SPEC, { index: INDEX });
+    assert.equal(read.kind, "accepted");
+    if (read.kind !== "accepted") return;
+    const other: SpecPolicy = { ...V01.SPEC, typeUri: "https://trusttasks.org/spec/chat/message/1.0" };
+    const { outcome, seen } = await consume01(read.doc, new InMemoryReplayGuard(), other);
+    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "unsupportedType");
+    assert.equal(seen, undefined, "the other spec's handler must not run");
+  });
+
+  it("without readForSpec, a 0.3 document is not consumed as 0.1", async () => {
+    // This test's chain is declared only in INDEX, which consumeInbound does
+    // not see: handed the 0.3 document directly, item 3 refuses it before the
+    // 0.1 schema is consulted.
     const { outcome } = await consume01(sign(doc03()) as unknown as TrustTaskDocument<V01.Payload>);
-    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "malformedRequest");
+    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "unsupportedVersion");
   });
 
   it("records the received document for item 11, so an extension-only difference is an idConflict", async () => {
@@ -435,5 +462,95 @@ describe("prunePayload", () => {
       unevaluatedProperties: false,
     };
     assert.deepEqual(prunePayload({ a: 1, b: 2, c: 3 }, s), { a: 1, b: 2 });
+  });
+});
+
+describe("prunePayload work limit", () => {
+  // A three-branch recursive expression: each branch is closed and names its
+  // operator with a `const`.
+  const exprSchema = {
+    $ref: "#/$defs/Expr",
+    $defs: {
+      Expr: {
+        oneOf: [
+          {
+            type: "object",
+            additionalProperties: false,
+            required: ["op", "arg"],
+            properties: { arg: { $ref: "#/$defs/Expr" }, op: { const: "not" } },
+          },
+          {
+            type: "object",
+            additionalProperties: false,
+            required: ["op", "arg"],
+            properties: { arg: { $ref: "#/$defs/Expr" }, op: { const: "neg" } },
+          },
+          { type: "object", additionalProperties: false, required: ["leaf"], properties: { leaf: { type: "string" } } },
+        ],
+      },
+    },
+  };
+  const nested = (depth: number, extra: boolean): unknown => {
+    let v: Record<string, unknown> = { leaf: "x", ...(extra ? { added: 0 } : {}) };
+    for (let i = 0; i < depth; i++) v = { arg: v, op: i % 2 === 0 ? "not" : "neg", ...(extra ? { added: i } : {}) };
+    return v;
+  };
+
+  // 25 levels is inside the walk's 128-deep limit (each level is two steps
+  // deep), and 4^25 prunes without the memo.
+  it("decides each nested oneOf once, so a deep recursive payload prunes in linear-ish time", () => {
+    const started = Date.now();
+    const pruned = prunePayload(nested(25, true), exprSchema);
+    assert.deepEqual(pruned, nested(25, false));
+    assert.ok(Date.now() - started < 5_000, "pruning a 25-level expression should not take seconds");
+  });
+
+  // 50 levels is 100 steps deep: beyond the 64 this library once stopped at,
+  // within the 128 all four libraries share, so it is pruned to the bottom as
+  // Rust, Go and Dart prune it.
+  it("prunes as deep as the other three libraries do", () => {
+    assert.deepEqual(prunePayload(nested(50, true), exprSchema), nested(50, false));
+  });
+
+  // Two applicators naming the same recursive member make every level prune
+  // its subtree twice: 2^depth steps however the branches are chosen.
+  const fanOutSchema = {
+    $ref: "#/$defs/Node",
+    $defs: {
+      Node: {
+        type: "object",
+        additionalProperties: false,
+        properties: { next: { $ref: "#/$defs/Node" }, v: { type: "integer" } },
+        allOf: [{ properties: { next: { $ref: "#/$defs/Node" } } }],
+      },
+    },
+  };
+  const chain = (depth: number): unknown => {
+    let v: Record<string, unknown> = { v: 0, added: true };
+    for (let i = 1; i <= depth; i++) v = { next: v, v: i, added: true };
+    return v;
+  };
+
+  it("still prunes a shallow payload under a schema whose work doubles per level", () => {
+    assert.deepEqual(prunePayload(chain(3), fanOutSchema), {
+      next: { next: { next: { v: 0 }, v: 1 }, v: 2 },
+      v: 3,
+    });
+  });
+
+  it("returns the payload untouched once the step limit is reached", () => {
+    const payload = chain(40);
+    const started = Date.now();
+    assert.equal(prunePayload(payload, fanOutSchema), payload);
+    assert.ok(Date.now() - started < 5_000, "the limit should stop the walk quickly");
+  });
+
+  it("readForSpec refuses such a document as malformedRequest, saying why", () => {
+    const spec: SpecPolicy = { ...V01.SPEC, payloadSchema: fanOutSchema };
+    const read = readForSpec({ ...doc03(), payload: chain(40) }, spec, { index: INDEX });
+    assert.equal(read.kind, "refused");
+    if (read.kind !== "refused") return;
+    assert.equal(read.reason.code, "malformedRequest");
+    assert.match(read.reason.message, /too complex to re-read/);
   });
 });

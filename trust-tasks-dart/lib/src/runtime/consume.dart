@@ -22,10 +22,10 @@
 ///   doc: doc,
 ///   myVid: 'did:web:maintainer.example',
 ///   now: DateTime.now(),
-///   newErrorId: () => uuid.v4(),
 ///   payloadToJson: (p) => p.toJson(),
+///   responseToJson: (r) => r.toJson(),
 ///   handler: (accepted, parties) async =>
-///       respondWith(accepted, uuid.v4(), await applyGrant(accepted.payload)),
+///       respondWith(accepted, newUrnUuid(), await applyGrant(accepted.payload)),
 /// );
 ///
 /// switch (outcome) {
@@ -34,12 +34,16 @@
 ///   case Suppressed(:final reason):  log(reason);
 ///   case Accepted():                 break; // fire-and-forget
 ///   case DuplicateOutcome(:final priorResponse):
-///     if (priorResponse != null) emit(priorResponse);
+///     if (priorResponse != null) emitJson(priorResponse); // success or error
 /// }
 /// ```
 ///
-/// Items 1 (framework schema) and 3 (unknown `type`) are *not* attempted here —
-/// they belong to the caller's parse and dispatch.
+/// Item 1 (framework schema) is *not* attempted here — it belongs to the
+/// caller's parse. Item 3 is: a document whose `type` is neither `spec.typeUri`
+/// (`#request` and no fragment alike) nor a later version whose declared
+/// `extends` chain reaches it (SPEC §5.2) is refused `unsupportedVersion` for
+/// the same specification and `unsupportedType` for another, as
+/// `readForVersion` refuses it.
 ///
 /// Item 2 (payload schema) is. A Dart class enforces member *types* on decode
 /// but nothing else — not `minLength`, not `pattern`, not the `oneOf` mutual
@@ -51,7 +55,9 @@ library;
 import 'canonical.dart';
 import 'codes.dart';
 import 'document.dart';
+import 'extension.dart' show typeRefusalFor;
 import 'freshness.dart';
+import 'id.dart';
 import 'replay.dart';
 import 'transport.dart';
 
@@ -248,7 +254,9 @@ final class Accepted<R> extends ConsumeOutcome<R> {
 /// What to emit:
 ///
 /// * [priorResponse] non-null — emit it. It is the response document the first
-///   execution produced, which §7.2 says the consumer SHOULD return.
+///   execution produced, which §7.2 says the consumer SHOULD return, as the
+///   JSON map that was recorded: a success response or, for a non-retryable
+///   refusal, the error response ([isError] says which).
 /// * [priorResponse] null, [inFlight] false — the specification defines no
 ///   success response (§4.4.1), or the guard retains none. Emit nothing.
 /// * [inFlight] true — the first execution has not finished. §7.2: the consumer
@@ -256,8 +264,27 @@ final class Accepted<R> extends ConsumeOutcome<R> {
 ///   another".
 final class DuplicateOutcome<R> extends ConsumeOutcome<R> {
   const DuplicateOutcome({this.priorResponse, this.inFlight = false});
-  final Object? priorResponse;
+
+  /// The first execution's response document, as JSON, where one was retained.
+  ///
+  /// Always a JSON map, never a typed document: [consumeInbound] records every
+  /// response through `responseToJson`, so an in-memory guard and a persisting
+  /// one hand back the same thing.
+  final Map<String, dynamic>? priorResponse;
   final bool inFlight;
+
+  /// Whether [priorResponse] is an error response (a `trust-task-error`
+  /// document) rather than a success response. False when there is none.
+  bool get isError => priorResponse != null && isErrorDocument(priorResponse!);
+}
+
+/// Whether the JSON document [doc] is an error response — its `type` is a
+/// `trust-task-error` Type URI — rather than a success response.
+///
+/// Keys off the type, as [isErrorResponse] does, never the payload's shape.
+bool isErrorDocument(Map<String, dynamic> doc) {
+  final type = doc['type'];
+  return type is String && bareTypeUri(type).contains('/trust-task-error/');
 }
 
 /// Wire message for the [RejectProofIfPresent] path.
@@ -322,16 +349,20 @@ Refusal refuse<P>(
 /// Run SPEC §7.2 items 4–8 against [doc], then either call [handler] or build
 /// the routed error response per §8.1.
 ///
-/// Pass [responseToJson] whenever [checks] uses a [ReplayGuard] that persists
-/// what it records. With it, a success response reaches
-/// [ReplayGuard.recordResponse] as the same JSON map a refusal does, and a
-/// later [DuplicateOutcome.priorResponse] is that map. Without it, the guard
-/// receives the [TrustTaskDocument] object itself, which an in-memory guard can
-/// hold but a persistent one cannot serialise. Such a guard would then cache no
-/// success response, and a resend would be absorbed with nothing to return.
+/// [responseToJson] writes the handler's response payload as JSON. A success
+/// response reaches [ReplayGuard.recordResponse] through it as the same JSON
+/// map a refusal does, and a later [DuplicateOutcome.priorResponse] is that
+/// map — whatever the guard, in-memory or persisting. For a specification that
+/// defines no success response, pass `(r) => r`; it is never called.
+///
+/// [newErrorId] mints the `id` of an error response; it defaults to
+/// [newUrnUuid].
 ///
 /// Pass [received] — the decoded JSON map [doc] was read from, exactly as it
-/// arrived — and a proof is verified over it rather than over [doc]'s typed
+/// arrived — and the item-11 digest is taken over it, so a member [doc]'s type
+/// does not model still tells two documents under one `id` apart; without it
+/// the digest is of [doc]'s typed re-encoding. A proof is likewise verified
+/// over it rather than over [doc]'s typed
 /// re-encoding, which drops any member the payload type does not model and so
 /// breaks a genuine signature. [readForVersion] hands it back as
 /// [VersionAccepted.received]; for a document read forward along a declared
@@ -339,6 +370,13 @@ Refusal refuse<P>(
 /// payload has been pruned. A [received] whose `id` or `type` is not [doc]'s is
 /// refused `proofInvalid`: a proof over one document vouches for nothing about
 /// another.
+///
+/// [extendsIndex] is the `extends` index the §7.2 item 3 type check follows
+/// when [doc]'s `type` is a later version than [spec]'s; it defaults to the
+/// generated one. A caller that re-read [doc] with [readForVersion] and its own
+/// index MUST pass that index here too: the check does not know how [doc] was
+/// read, and under the generated index a chain only the caller's index declares
+/// is refused `unsupportedVersion`.
 Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TransportHandler transport,
   required SpecPolicy spec,
@@ -348,17 +386,44 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TrustTaskDocument<P> doc,
   required String myVid,
   required DateTime now,
-  required String Function() newErrorId,
+  String Function() newErrorId = newUrnUuid,
   required Object? Function(P payload) payloadToJson,
+  required Object? Function(R response) responseToJson,
   required Handler<P, R> handler,
   Clock? clock,
-  Object? Function(R response)? responseToJson,
   Map<String, dynamic>? received,
+  Map<String, String>? extendsIndex,
 }) async {
+  // §7.2 item 1, as far as every step below relies on it: the document is
+  // shallow enough for them to walk. The payload validator, the proof's
+  // canonical form and the item-11 digest recurse, and a body nested far deeper
+  // than any document needs would otherwise exhaust the stack — a
+  // StackOverflowError, which is an Error and escapes a caller catching
+  // Exceptions. First, so nothing has walked the document yet.
+  if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
+    const reason = RejectReason(
+      code: StandardCode.malformedRequest,
+      message: 'document is not a well-formed Trust Task document '
+          '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
+    );
+    final error = reject(transport, doc, newErrorId(), reason, clock: clock);
+    return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
+  }
+
   ConsumeOutcome<R> route(RejectReason reason) {
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
     return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
   }
+
+  // §7.2 item 3 — the document's `type` is the specification [spec] describes.
+  // Decoding into `TrustTaskDocument<P>` does not look at it, so a document of
+  // another specification whose payload happens to decode as `P` would
+  // otherwise run under [spec]'s policy and [handler]. Refused before the
+  // item-11 claim, so a refused document never burns its `id`.
+  final typeRefusal = extendsIndex == null
+      ? typeRefusalFor(doc.type, spec)
+      : typeRefusalFor(doc.type, spec, index: extendsIndex);
+  if (typeRefusal != null) return route(typeRefusal);
 
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
   // before anything that reasons about what the payload means: a payload that is
@@ -464,15 +529,15 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   final replay = checks.replay;
   if (replay is GuardedReplay) {
     final guard = replay.guard;
-    // A document read forward along an `extends` chain has had payload members
-    // pruned, so its typed re-encoding cannot tell two documents apart that
-    // differ only in those members — an `idConflict` would be absorbed as a
-    // duplicate. Key it on what arrived instead. Only in that case: a document
-    // of the implemented version keeps the digest it always had, so a guard's
-    // existing records still match.
-    final forward =
-        received != null && bareTypeUri(doc.type) != bareTypeUri(spec.typeUri);
-    final digest = forward
+    // Over the document as it arrived whenever the caller passed it. SPEC §7.2
+    // compares the whole received document, and [doc]'s typed re-encoding
+    // drops every member its type does not model — and, for a document read
+    // forward along an `extends` chain, the pruned payload members — so two
+    // documents differing only there would be absorbed as a duplicate instead
+    // of refused `idConflict`.
+    final digest = received != null &&
+            received['id'] == doc.id &&
+            received['type'] == doc.type
         ? sha256HexOfString(canonicalJson(received))
         : documentDigest(doc, payloadToJson);
 
@@ -492,7 +557,10 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
 
     ReplayVerdict verdict;
     try {
-      verdict = await guard.claim(doc.id, digest, retainUntil, now);
+      verdict = guard is IssuerScopedReplayGuard
+          ? await guard.claimFor(
+              parties.issuer, doc.id, digest, retainUntil, now)
+          : await guard.claim(doc.id, digest, retainUntil, now);
     } on Object {
       // Fail closed. A consumer that cannot consult its record has not satisfied
       // item 11, and executing anyway is exactly the double execution the rule
@@ -534,12 +602,28 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   /// cannot un-happen it. The record of the *claim* is what item 11 needs and it
   /// is already written; all that is lost is the ability to hand the same
   /// response back, and the duplicate is still absorbed.
-  Future<void> settle(Object? response) async {
+  Future<void> settle(Map<String, dynamic>? response) async {
     if (claimedGuard == null) return;
     try {
       await claimedGuard.recordResponse(doc.id, response);
     } on Object {
       /* see above */
+    }
+  }
+
+  /// Settle the claim with the encoded response, encoding it first.
+  ///
+  /// The handler has already returned, so the effect happened: the claim is
+  /// settled even when [encode] throws — with no response to hand back, so a
+  /// resend is absorbed rather than executed again — and the encoder's error
+  /// then reaches the caller. Without this the claim stayed in flight until
+  /// the record expired.
+  Future<void> settleEncoding(Map<String, dynamic> Function() encode) async {
+    Map<String, dynamic>? encoded;
+    try {
+      encoded = encode();
+    } finally {
+      await settle(encoded);
     }
   }
 
@@ -560,7 +644,24 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
         }
       }
     } else {
-      await settle(refusal.response.toJson((p) => p.toJson()));
+      Map<String, dynamic> encoded;
+      try {
+        encoded = refusal.response.toJson((p) => p.toJson());
+      } on Object {
+        // A refusal executed nothing. If it cannot be encoded for the record,
+        // release the claim rather than record a determination with no body,
+        // so a resend is evaluated again; the encoder's error then reaches the
+        // caller.
+        if (claimedGuard != null) {
+          try {
+            await claimedGuard.release(doc.id, claimedDigest!);
+          } on Object {
+            /* best-effort */
+          }
+        }
+        rethrow;
+      }
+      await settle(encoded);
     }
     return Rejected<R>(refusal.response);
   } on Object {
@@ -585,10 +686,9 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     return Accepted<R>();
   }
 
-  await settle(
-    responseToJson == null ? response : response.toJson(responseToJson),
-  );
-  return Handled<R>(response);
+  final handled = response;
+  await settleEncoding(() => handled.toJson(responseToJson));
+  return Handled<R>(handled);
 }
 
 /// Whether a document is an error response rather than a success response.

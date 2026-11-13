@@ -6,15 +6,12 @@ on:
   pull_request:
     branches:
       - main
-  # SPEC.md is generated from the canonical framework repository, which this
-  # repository does not see change. The schedule redeploys so trusttasks.org
-  # picks up canonical changes without waiting for a push here; dispatch lets
-  # the canonical repository (or a maintainer) trigger it at once.
-  schedule:
-    - cron: '17 3 * * *'
+  # SPEC.md is generated from the canonical framework repository at the commit
+  # scripts/framework-spec-source.json pins, and the site serves the committed
+  # copy. A canonical change reaches the site through a pull request that
+  # moves the pin (framework-spec-bump.yml opens it), and so through a push
+  # here, not through a scheduled rebuild.
   workflow_dispatch:
-  repository_dispatch:
-    types: [framework-spec-updated]
 
 # A newer push to the same PR supersedes the run in flight, so cancel it rather
 # than let it hold a runner. Keyed on the commit for every other event, so a run
@@ -23,17 +20,23 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0  # build script reads `git log` per spec folder for `updated` dates
+          persist-credentials: false
+          fetch-depth: 0  # build script reads one `git log` over specs/ for the created/updated dates
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -41,14 +44,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # From canonical main, before the build, so the build validates every
-      # `/SPEC.md#…` link against the text that will actually be served.
-      - name: Generate SPEC.md from the canonical framework specification
-        run: |
-          npm run generate-framework-spec
-          if ! git diff --quiet -- SPEC.md; then
-            echo "::warning file=SPEC.md::The committed SPEC.md is behind canonical main. The site serves the regenerated copy; run 'npm run generate-framework-spec' and commit it to refresh the repository copy."
-          fi
+      # Every run builds from the committed SPEC.md, so what deploys is what
+      # was reviewed, and a PR's result depends only on the PR (#1138). The
+      # check regenerates from the canonical commit
+      # scripts/framework-spec-source.json pins — fetched by full SHA, and
+      # confirmed to be that commit — and fails if the committed copy is not
+      # what that commit generates (a hand edit, a pin moved without
+      # regenerating, or a changed legacy-anchors file left unregenerated).
+      - name: Check the committed SPEC.md
+        run: npm run check-framework-spec
 
       - name: Build registry (validate + generate)
         # Strict Security & Privacy: fail on a spec that carries neither the
@@ -69,8 +73,8 @@ jobs:
       # change). Built by the Rust codegen, from the code paths that build
       # `trust-tasks-rs`, so a bundle is what that generator generates from.
       # After `npm run build`, which deletes and recopies `website/specs/`.
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/rust-toolchain
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only, as codegen.yml does: a PR restores main's
           # entry, and its own saves would only crowd the cache quota.
@@ -99,12 +103,29 @@ jobs:
       - name: Test the Type URI negotiation function
         run: npm run test:infra
 
+      # The markdown renderer's raw-HTML allow-list and link-scheme check
+      # (website/assets/markdown.js), end to end through the marked build the
+      # page loads — fetched from the URL pinned in index.template.html and
+      # checked against its integrity hash — and the built page bundle,
+      # server-rendered for a set of routes (website-jsx.test.mjs).
+      - name: Test the website
+        run: npm run test:website
+
       - name: Sync SPEC.md into website/
         run: cp SPEC.md website/SPEC.md
 
+      # The built site in a real browser (#1157): serves website/ through the
+      # production routing function (scripts/serve-website.mjs) and loads the
+      # home page, a spec, a binding, /schema and /implementations/rust in the
+      # runner's preinstalled Chrome over the DevTools protocol — no npm
+      # dependency. Fails on a console error, an uncaught exception, a failed
+      # or 4xx/5xx request, a page with no <h1>, or a wrong canonical link.
+      - name: Smoke-test the built site in headless Chrome
+        run: npm run smoke:website
+
       - name: Upload website artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: website
           path: website/
@@ -113,16 +134,65 @@ jobs:
   deploy:
     needs: build
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # The AWS role's trust policy names this environment (see below). GitHub
+    # creates it on first use; restrict its deployment branches to `main` in
+    # the repository settings.
+    environment: website
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC, exchanged for the deploy role's credentials
+    # The workflow-level group is per commit, so two merges a minute apart build
+    # in parallel — which is fine — but must not deploy in parallel: the older
+    # run's `sync --delete` finishing last would remove what the newer build
+    # added and serve the older tree until the next push. One production group,
+    # never cancelled, queues the deploys; the step below then skips a deploy
+    # that `main` has already moved past.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
+      # A queued deploy whose commit is no longer the head of `main` would roll
+      # the site back over a newer one; that newer commit's own run deploys it.
+      - name: Skip a deploy that main has moved past
+        id: fresh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is at $head, not $GITHUB_SHA; its own run deploys it. Skipping."
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download website artifact
-        uses: actions/download-artifact@v8
+        if: steps.fresh.outputs.current == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: website
           path: website/
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+      # Short-lived credentials from GitHub OIDC once the `AWS_DEPLOY_ROLE_ARN`
+      # repository variable names the deploy role; the role's trust policy
+      # accepts only this repository's `website` environment. Until the
+      # variable is set, the access-key secrets are used as before. Once the
+      # role works, delete AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY and the
+      # second step.
+      - name: Configure AWS credentials (OIDC role)
+        if: steps.fresh.outputs.current == 'true' && vars.AWS_DEPLOY_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: trust-tasks-deploy-${{ github.run_id }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure AWS credentials (access keys)
+        if: steps.fresh.outputs.current == 'true' && vars.AWS_DEPLOY_ROLE_ARN == ''
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -135,19 +205,144 @@ jobs:
       # size is the same bytes — without it every deploy would re-upload all of
       # them for their fresh mtimes. Immutable for the same reason.
       - name: Deploy the by-digest store to S3 (append-only)
+        if: steps.fresh.outputs.current == 'true'
         run: >-
           aws s3 sync website/specs/by-digest/
           s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/by-digest/
           --size-only
           --cache-control "public, max-age=31536000, immutable"
 
-      # `--exclude` keeps the by-digest prefix out of this sync entirely —
-      # neither uploaded (done above) nor deleted by `--delete`.
+      # The site in a series of syncs, each with its own object metadata
+      # (#1145, #1148, #1152, #1147). `aws s3 sync` applies
+      # `--exclude`/`--include` to `--delete` too, so each sync deletes only
+      # within its own slice, and the by-digest prefix (above) is in none of
+      # them.
+      #
+      # Cache-Control: every script the page loads — the page bundle, the
+      # hand-kept data files and tasks.generated.js — is served from
+      # assets/hashed/ under a name carrying its content hash
+      # (scripts/build-website.mjs), so it is `immutable`. Every other URL is
+      # not content-hashed: pages and the remaining assets are `no-cache`
+      # (always revalidated — a cheap 304 when unchanged), so a new index.html
+      # never runs against stale data. The specs tree and registry.json keep
+      # their fixed URLs, because tools fetch them by those; the specs tree
+      # tolerates a few minutes' staleness: a short max-age with
+      # stale-while-revalidate.
+      #
+      # 1. Payload and shared schemas, with the media type a Type URI is
+      #    negotiated for (SPEC §6.2) — S3 would otherwise guess
+      #    application/json.
+      - name: Deploy schemas to S3
+        if: steps.fresh.outputs.current == 'true'
+        run: >-
+          aws s3 sync website/specs/ s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/
+          --delete
+          --exclude "*" --include "*.schema.json"
+          --exclude "by-digest/*"
+          --content-type "application/schema+json"
+          --cache-control "public, max-age=300, stale-while-revalidate=86400"
+
+      # 2. The rest of the specs tree — including each version's detail.json
+      #    and each shared schema's <name>.detail.json, which the spec and
+      #    schema pages fetch on demand (#1145). Before index.html (step 5),
+      #    so a new index never names a version whose detail is not up yet.
+      - name: Deploy the specs tree to S3
+        if: steps.fresh.outputs.current == 'true'
+        run: >-
+          aws s3 sync website/specs/ s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/
+          --delete
+          --exclude "*.schema.json"
+          --exclude "by-digest/*"
+          --cache-control "public, max-age=300, stale-while-revalidate=86400"
+
+      # 3. tasks.generated.js's content-hashed copy, gzip-encoded at rest. It
+      #    is the registry index only (~0.9 MB minified, ~130 KB gzipped) since
+      #    #1145 moved each version's detail into /specs/; when it carried every
+      #    record it was ~10 MB, at CloudFront's 10,000,000-byte ceiling for
+      #    on-the-fly compression, and went out uncompressed (13 MB). Storing
+      #    it encoded keeps it compressed whatever it grows to. Only the page
+      #    loads it, from a <script> tag, and every browser accepts gzip, so
+      #    that is safe; CloudFront passes an encoded object through as-is.
+      #    registry.json is
+      #    deliberately NOT stored encoded: machine consumers fetch it, not all
+      #    of them decode an encoding they did not ask for, and minified it is
+      #    under the ceiling, so CloudFront compresses it per request
+      #    (build-registry.mjs warns as it nears it).
+      #
+      #    The encoded copy is written to its own directory under the same
+      #    name, so this sync and step 6's compare gzip with gzip: a sync from
+      #    website/assets/hashed/ would see a size mismatch and re-upload it
+      #    unencoded. `--size-only` throughout assets/hashed/, because a
+      #    content-hashed name with a matching size is the same bytes. No
+      #    `--delete` before the new index.html is live (step 5): a visitor
+      #    holding the previous one can still fetch what it names.
+      - name: Deploy the generated registry script to S3 (content-hashed, gzip-encoded)
+        if: steps.fresh.outputs.current == 'true'
+        run: |
+          set -euo pipefail
+          gz="$RUNNER_TEMP/hashed-gzip"
+          mkdir -p "$gz"
+          for f in website/assets/hashed/tasks.generated.*.js; do
+            gzip -9 -n -c "$f" > "$gz/$(basename "$f")"
+          done
+          aws s3 sync "$gz/" s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --size-only \
+            --exclude "*" --include "tasks.generated.*.js" \
+            --content-encoding gzip \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
+
+      # 4. The other content-hashed scripts — the page bundle, markdown.js,
+      #    routes.js and the hand-kept data files — likewise before the
+      #    index.html that names them, and likewise without `--delete`.
+      - name: Deploy the page scripts to S3 (content-hashed)
+        if: steps.fresh.outputs.current == 'true'
+        run: >-
+          aws s3 sync website/assets/hashed/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/
+          --size-only
+          --exclude "tasks.generated.*.js"
+          --content-type "text/javascript; charset=utf-8"
+          --cache-control "public, max-age=31536000, immutable"
+
+      # 5. Everything else — index.html, the JSX sources, the unhashed data
+      #    files, registry.json, robots.txt, sitemap.xml, bindings/,
+      #    ceremonies/. The unhashed tasks.generated.js is removed first rather
+      #    than excluded, so `--delete` takes down the fixed-name copy earlier
+      #    deploys uploaded (nothing names it now, and uploading it here would
+      #    store it unencoded); likewise the bundles #1257 kept at
+      #    assets/app.<hash>.js, which now live under assets/hashed/.
       - name: Deploy to S3
-        run: aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ --delete --exclude "specs/by-digest/*"
+        if: steps.fresh.outputs.current == 'true'
+        run: |
+          set -euo pipefail
+          rm -f website/assets/tasks.generated.js
+          aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ \
+            --delete \
+            --exclude "specs/*" \
+            --exclude "assets/hashed/*" \
+            --exclude "index.template.html" \
+            --cache-control "no-cache"
+
+      # 6. Remove the content-hashed files no index.html names any more, now
+      #    the new one is live: steps 3 and 4 again, with `--delete`.
+      - name: Remove superseded content-hashed scripts from S3
+        if: steps.fresh.outputs.current == 'true'
+        run: |
+          set -euo pipefail
+          aws s3 sync "$RUNNER_TEMP/hashed-gzip/" s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --delete --size-only \
+            --exclude "*" --include "tasks.generated.*.js" \
+            --content-encoding gzip \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
+          aws s3 sync website/assets/hashed/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/hashed/ \
+            --delete --size-only \
+            --exclude "tasks.generated.*.js" \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "public, max-age=31536000, immutable"
 
       - name: Invalidate CloudFront Cache
-        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        if: steps.fresh.outputs.current == 'true' && env.CLOUDFRONT_DISTRIBUTION_ID != ''
         env:
           CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*"

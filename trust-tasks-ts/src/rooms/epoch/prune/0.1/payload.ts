@@ -100,8 +100,13 @@ export type Response = RoomsEpochPruneResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/epoch/prune/0.1",
   "title": "Rooms Epoch Prune — payload",
@@ -138,36 +143,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "pruned",
-        "earliestRung"
-      ],
-      "description": "Success response to rooms/epoch/prune. Type https://trusttasks.org/spec/rooms/epoch/prune/0.1#response.",
-      "properties": {
-        "roomId": {
-          "type": "string"
-        },
-        "pruned": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many rungs were dropped. `0` is a success: the chain already went back no further, and a caller that read it as a failure would retry an operation that has nothing left to do."
-        },
-        "earliestRung": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The lowest epoch the chain still reaches, after pruning. **Not a restatement of `beforeEpoch`**: a chain with a gap in it already stopped somewhere, and a prune below that gap changes nothing about how far back a member can actually walk. Reporting the request back would tell an operator they had achieved something they had not."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "title": "Rooms Epoch Prune — response payload"
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -208,10 +183,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -254,38 +229,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "AuthorityPresentation": {
-      "title": "AuthorityPresentation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "membership",
-        "authority"
-      ],
-      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-      "properties": {
-        "membership": {
-          "type": "string",
-          "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile."
-        },
-        "authority": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 8,
-          "items": {
-            "type": "string"
-          },
-          "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent."
-        },
-        "subjectBinding": {
-          "type": "string",
-          "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

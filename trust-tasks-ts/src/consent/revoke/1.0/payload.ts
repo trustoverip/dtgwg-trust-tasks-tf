@@ -64,8 +64,13 @@ export type Response = ConsentRevokeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/consent/revoke/1.0",
   "title": "Consent Revoke — payload",
@@ -89,28 +94,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "revoked",
-            "notFound"
-          ],
-          "description": "`revoked` = the grant was deleted. `notFound` = no grant existed for the subject."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -162,10 +145,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -200,49 +183,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ConsentSubject": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "platform",
-        "conversationRef",
-        "kind",
-        "agent"
-      ],
-      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
-      "properties": {
-        "platform": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
-        },
-        "conversationRef": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
-        },
-        "kind": {
-          "$ref": "#/$defs/Kind"
-        },
-        "agent": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID (DID) of the AI agent the conversation would reach."
-        }
-      }
-    },
-    "Kind": {
-      "type": "string",
-      "enum": [
-        "dm",
-        "group",
-        "channel"
-      ],
-      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

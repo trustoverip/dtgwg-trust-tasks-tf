@@ -71,8 +71,13 @@ export type Response = VTCBadgesImagesGetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/badges/images/get/0.1",
   "title": "VTC Badges — Images — Get — payload",
@@ -96,33 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — Images — Get — response payload",
-      "description": "The success response to a vtc/badges/images/get/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/images/get/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "image",
-        "data"
-      ],
-      "properties": {
-        "image": {
-          "$ref": "#/$defs/CardBlobRef",
-          "description": "The picture as stored, without `url` or `urlExpiresAt`."
-        },
-        "data": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 349526,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "The stored bytes, base64url without padding. Their SHA-256 is `image.sha256`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -133,50 +111,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "CardBlobRef": {
-      "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sha256",
-        "mediaType"
-      ],
-      "properties": {
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
-        },
-        "mediaType": {
-          "type": "string",
-          "enum": [
-            "image/png",
-            "image/jpeg",
-            "image/webp",
-            "image/avif"
-          ],
-          "description": "Media type of the stored bytes."
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 262144,
-          "description": "Size in bytes of the stored bytes."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`."
-        },
-        "urlExpiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Projection only: when `url` stops working."
-        }
-      }
-    },
     "BadgeId": {
       "title": "BadgeId",
       "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
@@ -184,10 +118,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -271,15 +205,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Projection only: when `url` stops working."
         }
       }
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -308,4 +236,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: false,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 360448,
 } as const;

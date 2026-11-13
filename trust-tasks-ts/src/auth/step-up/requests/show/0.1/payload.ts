@@ -82,8 +82,13 @@ export type Response = AuthStepUpRequestShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/step-up/requests/show/0.1",
   "title": "Auth — Step-up Request Show — payload",
@@ -108,77 +113,6 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "pattern": "^[A-Za-z0-9_-]{22,86}$"
     },
-    "Handoff": {
-      "title": "Handoff",
-      "description": "What a relying party MAY carry as `details.stepUpHandoff` beside an inline `details.stepUpRequest` (auth/step-up/approve-request/0.5, Inline delivery), so that a producer which cannot obtain the evidence itself can hand the step-up to the subject's approver agent. Not a payload of this task: defined here so producers and consumers share one shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "handle",
-        "expiresAt",
-        "show"
-      ],
-      "properties": {
-        "handle": {
-          "$ref": "#/$defs/Handle"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant after which the relying party answers the handle with `notFound`: no later than the pending step-up's own expiry."
-        },
-        "show": {
-          "type": "string",
-          "const": "https://trusttasks.org/spec/auth/step-up/requests/show/0.1",
-          "description": "The Type URI the approver's agent sends with the handle."
-        }
-      }
-    },
-    "Operation": {
-      "title": "Operation",
-      "description": "The operation the step-up is bound to, exactly as the relying party received it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "payload"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The operation's Type URI, as the document the relying party refused named it."
-        },
-        "payload": {
-          "type": "object",
-          "description": "The operation's payload, member for member as received, so that the approver's agent can show it and — where it knows how the relying party derives `boundTo` — recompute the binding."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Step-up Request Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "request",
-        "operation"
-      ],
-      "description": "The pending step-up and the operation it is bound to. Failures use trust-task-error, not this shape.",
-      "properties": {
-        "request": {
-          "type": "object",
-          "description": "A complete auth/step-up/approve-request/0.5 Trust Task document, issued and signed by the relying party, whose recipient is the step-up's subject and whose payload is the request the operation's producer received inline — the same challenge, boundTo, accepts and approvers. The agent verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow."
-        },
-        "operation": {
-          "$ref": "#/$defs/Operation"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -190,45 +124,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Handle": {
-      "title": "Handle",
-      "description": "A single-use reference to one pending step-up, minted by the relying party with at least 128 bits of entropy and carried as base64url without padding. It names the request; it is not the request's challenge, and knowing it authorizes nothing but this one read.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9_-]{22,86}$"
-    },
-    "Handoff": {
-      "title": "Handoff",
-      "description": "What a relying party MAY carry as `details.stepUpHandoff` beside an inline `details.stepUpRequest` (auth/step-up/approve-request/0.5, Inline delivery), so that a producer which cannot obtain the evidence itself can hand the step-up to the subject's approver agent. Not a payload of this task: defined here so producers and consumers share one shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "handle",
-        "expiresAt",
-        "show"
-      ],
-      "properties": {
-        "handle": {
-          "$ref": "#/$defs/Handle"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant after which the relying party answers the handle with `notFound`: no later than the pending step-up's own expiry."
-        },
-        "show": {
-          "type": "string",
-          "const": "https://trusttasks.org/spec/auth/step-up/requests/show/0.1",
-          "description": "The Type URI the approver's agent sends with the handle."
-        }
-      }
-    },
     "Operation": {
       "title": "Operation",
       "description": "The operation the step-up is bound to, exactly as the relying party received it.",
@@ -285,7 +187,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

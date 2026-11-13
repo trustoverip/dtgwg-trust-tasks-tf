@@ -151,8 +151,13 @@ export type Response = PersonaProfileComposeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/profile/compose/1.1",
   "title": "Persona Profile Compose — payload",
@@ -278,103 +283,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Profile Compose — response payload",
-      "description": "Success response to persona/profile/compose. Type https://trusttasks.org/spec/persona/profile/compose/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "scope",
-        "version"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "scope": {
-          "type": "string",
-          "enum": [
-            "local",
-            "pool"
-          ],
-          "description": "Where the face lives. `local`: in `contextId` only, readable through persona/local/profile/get. `pool`: above contexts, readable through persona/profile/get, and able to be worn in other contexts later."
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "pooled": {
-          "type": "array",
-          "maxItems": 64,
-          "description": "For each `share: pool` claim, in request order, the pool attribute the face now references and whether this compose created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it. Absent when no claim was pooled.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "attributeId",
-              "wasCreated"
-            ],
-            "properties": {
-              "attributeId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "wasCreated": {
-                "type": "boolean"
-              }
-            }
-          }
-        },
-        "binding": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "personaDid",
-            "version"
-          ],
-          "description": "Present when `personaDid` was given: the face is now worn there.",
-          "properties": {
-            "personaDid": {
-              "type": "string",
-              "minLength": 1
-            },
-            "version": {
-              "$ref": "#/$defs/Version"
-            },
-            "alsoBoundPersonaCount": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "How many other personas in this context wear this face. Always zero for a face this task just created; present for parity with persona/binding/set."
-            }
-          }
-        },
-        "correlation": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "severity"
-          ],
-          "description": "Advisory, as on persona/profile/put: how many of the face's claims present a value another face also presents. A count; identifiers come from persona/correlation/analyze. The write has applied.",
-          "properties": {
-            "severity": {
-              "type": "string",
-              "enum": [
-                "none",
-                "low",
-                "high"
-              ]
-            },
-            "sharedAttributeCount": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -384,12 +292,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Ulid": {
       "title": "Ulid",
@@ -424,79 +326,13 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "ComposeClaim": {
-      "title": "ComposeClaim",
-      "description": "One claim of the face being composed: a value typed now, or an attribute the holder already keeps.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/NewClaim"
-        },
-        {
-          "$ref": "#/$defs/HeldClaim"
-        }
-      ]
-    },
-    "NewClaim": {
-      "title": "NewClaim",
-      "description": "A value the holder types now. Self-asserted: a value typed at this step has no issuer behind it, and a claim that could carry a provenance here would let a typed value present as attested.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "valueType",
-        "value"
-      ],
-      "properties": {
-        "type": {
-          "$ref": "#/$defs/ClaimType"
-        },
-        "valueType": {
-          "$ref": "#/$defs/ValueType"
-        },
-        "value": {},
-        "label": {
-          "type": "string",
-          "maxLength": 128,
-          "description": "The holder's note to self for this value. Never disclosed."
-        },
-        "slot": {
-          "$ref": "#/$defs/Slot"
-        },
-        "share": {
-          "type": "string",
-          "enum": [
-            "local",
-            "pool"
-          ],
-          "default": "local",
-          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists."
-        }
-      }
-    },
-    "HeldClaim": {
-      "title": "HeldClaim",
-      "description": "An attribute already in the holder's pool, presented live.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "attributeId"
-      ],
-      "properties": {
-        "attributeId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "slot": {
-          "$ref": "#/$defs/Slot"
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Persona Profile Compose — response payload",
@@ -615,35 +451,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "Slot": {
-      "title": "Slot",
-      "type": "string",
-      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
-      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
-    },
-    "ValueType": {
-      "title": "ValueType",
-      "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-      "type": "string",
-      "enum": [
-        "string",
-        "number",
-        "boolean",
-        "date",
-        "object"
-      ]
-    },
-    "ClaimType": {
-      "title": "ClaimType",
-      "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

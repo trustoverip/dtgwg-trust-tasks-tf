@@ -114,8 +114,13 @@ export type Response = RoomsKeysLabelResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/label/0.1",
   "title": "Rooms Keys Label — payload",
@@ -211,43 +216,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Label — response payload",
-      "description": "Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "member",
-        "changed"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Repeated from the request."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Repeated from the request."
-        },
-        "personal": {
-          "$ref": "#/$defs/PersonalLabel",
-          "description": "The label as it now stands. Absent when no detail remains: removing the last one removes the label."
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -256,35 +224,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "PersonalLabel": {
-      "title": "PersonalLabel",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "updatedAt"
-      ],
-      "minProperties": 2,
-      "description": "A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.",
-      "properties": {
-        "label": {
-          "$ref": "#/$defs/PersonalLabelName"
-        },
-        "description": {
-          "$ref": "#/$defs/PersonalLabelDescription"
-        },
-        "notes": {
-          "$ref": "#/$defs/PersonalLabelNotes"
-        },
-        "tags": {
-          "$ref": "#/$defs/PersonalLabelTags"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the label last changed, as the key holder recorded it. A request that changed nothing does not move it."
-        }
       }
     },
     "PersonalLabelTags": {
@@ -331,10 +270,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -458,7 +397,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

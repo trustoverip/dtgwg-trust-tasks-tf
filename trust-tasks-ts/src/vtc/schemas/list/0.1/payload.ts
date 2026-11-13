@@ -72,8 +72,13 @@ export type Response = VTCSchemasListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/schemas/list/0.1",
   "title": "VTC Schemas — List — payload",
@@ -101,33 +106,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/SchemaSummary"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Present when more entries remain; pass it as `cursor`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -138,54 +116,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "SchemaSummary": {
-      "title": "SchemaSummary",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "typeUri",
-        "kind",
-        "hasCredentialSchema",
-        "createdAt",
-        "createdByDid"
-      ],
-      "description": "One registered credential type as a listing reports it: every member of `SchemaEntry` except the `credentialSchema` body, which vtc/schemas/show returns.",
-      "properties": {
-        "typeUri": {
-          "$ref": "#/$defs/CredentialTypeUri"
-        },
-        "dtgType": {
-          "$ref": "#/$defs/DtgType"
-        },
-        "kind": {
-          "$ref": "#/$defs/SchemaKind"
-        },
-        "description": {
-          "$ref": "#/$defs/SchemaDescription"
-        },
-        "hasCredentialSchema": {
-          "type": "boolean",
-          "description": "Whether the entry carries a `credentialSchema`. True tells a caller that vtc/schemas/show has a body to return."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this entry was last registered."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the entry."
-        }
-      }
-    },
-    "SchemaDescription": {
-      "title": "SchemaDescription",
-      "type": "string",
-      "maxLength": 1024,
-      "description": "An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic."
-    },
     "SchemaKind": {
       "title": "SchemaKind",
       "type": "string",
@@ -194,27 +124,12 @@ export const PAYLOAD_SCHEMA = {
         "accepts"
       ],
       "description": "Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type."
-    },
-    "DtgType": {
-      "title": "DtgType",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z][A-Za-z0-9]*$",
-      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register."
-    },
-    "CredentialTypeUri": {
-      "title": "CredentialTypeUri",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 512,
-      "description": "A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -328,7 +243,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

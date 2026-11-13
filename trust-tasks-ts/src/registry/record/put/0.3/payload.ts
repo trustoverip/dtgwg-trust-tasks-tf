@@ -72,8 +72,13 @@ export type Response = RegistryRecordPutResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/registry/record/put/0.3",
   "title": "Registry Record Put — payload",
@@ -96,34 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Record Put — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ok",
-        "wasCreated"
-      ],
-      "properties": {
-        "ok": {
-          "type": "boolean",
-          "description": "Whether the record was stored."
-        },
-        "wasCreated": {
-          "type": "boolean",
-          "description": "True when the put created a new record, false when it replaced an existing one."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Optional human-readable detail."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -196,10 +173,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "Whether the record asserts an authorization or a recognition relationship."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -240,70 +217,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "TrustRecord": {
-      "title": "TrustRecord",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entityId",
-        "authorityId",
-        "action",
-        "resource",
-        "recordType"
-      ],
-      "properties": {
-        "entityId": {
-          "type": "string"
-        },
-        "authorityId": {
-          "type": "string"
-        },
-        "action": {
-          "type": "string"
-        },
-        "resource": {
-          "type": "string"
-        },
-        "recognized": {
-          "type": "boolean",
-          "description": "Present on recognition records: whether the action+resource is recognised."
-        },
-        "authorized": {
-          "type": "boolean",
-          "description": "Present on authorization records: whether the action+resource authorization is confirmed."
-        },
-        "context": {
-          "type": "object",
-          "description": "Opaque governance context attached to the record.",
-          "additionalProperties": true
-        },
-        "recordType": {
-          "$ref": "#/$defs/RecordType"
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The first instant at which the authority statement holds (inclusive). Absent: no lower bound."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`."
-        }
-      }
-    },
-    "RecordType": {
-      "title": "RecordType",
-      "type": "string",
-      "enum": [
-        "authorization",
-        "recognition"
-      ],
-      "description": "Whether the record asserts an authorization or a recognition relationship."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

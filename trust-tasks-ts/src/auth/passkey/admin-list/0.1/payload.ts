@@ -109,8 +109,13 @@ export type Response = AuthPasskeyAdminListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/passkey/admin-list/0.1",
   "title": "Auth — Passkey Admin List",
@@ -141,82 +146,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "ListedCredential": {
-      "$anchor": "listedCredential",
-      "title": "ListedCredential",
-      "description": "The administrator's view of one credential: an identifier, a label, two instants and the signature counter. Never key material, never the credential public key, never attestation.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "registeredAt"
-      ],
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Durable identifier of the credential, as auth/passkey/revoke/start takes it. Opaque to the producer: echoed verbatim, never parsed."
-        },
-        "deviceLabel": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Label captured at enrolment. Untrusted free text; absent when none was given. Consumers MUST NOT synthesize one."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential was bound to the subject."
-        },
-        "lastUsedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential last completed an assertion. Absent if it never has, or if the consumer does not track use."
-        },
-        "signCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The WebAuthn signature counter the consumer last recorded for the credential. Absent when the consumer does not track it. Zero is a real value: many platform authenticators never increment the counter."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Admin List — response payload",
-      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/admin-list/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "purpose",
-        "credentials"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echo of payload.subject."
-        },
-        "purpose": {
-          "type": "string",
-          "enum": [
-            "session",
-            "stepUp"
-          ],
-          "description": "Echo of payload.purpose."
-        },
-        "credentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ListedCredential"
-          },
-          "description": "Every credential of that purpose currently bound to the subject, newest registeredAt first. MAY be empty: a member holding none is not an error."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -228,10 +157,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -322,7 +251,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

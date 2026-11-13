@@ -20,7 +20,6 @@
 
 use std::io::Read as _;
 use std::path::Path;
-use std::time::Duration;
 
 use anyhow::{anyhow, Context, Result};
 use trust_tasks_build::publish::{build_third_party, write_registry, Resolver};
@@ -37,11 +36,8 @@ pub fn registry_build(
     if !specs.is_dir() {
         return Err(anyhow!("--specs {} is not a directory", specs.display()));
     }
-    let agent: ureq::Agent = ureq::Agent::config_builder()
-        .timeout_global(Some(Duration::from_secs(60)))
-        .user_agent(concat!("trust-tasks-cli/", env!("CARGO_PKG_VERSION")))
-        .build()
-        .into();
+    // The registry's agent: https only, and TRUST_TASKS_CA_FILE honoured.
+    let agent = crate::registry::http_agent(true)?;
     let fetch = |url: &str| -> Result<String> {
         let mut resp = agent
             .get(url)

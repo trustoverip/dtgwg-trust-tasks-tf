@@ -38,6 +38,13 @@ const officialPrefix = "https://trusttasks.org/"
 // specification.
 var frameworkSlug = regexp.MustCompile(`^trust-(task|ceremony)($|-|/)`)
 
+// lifecycleNote is every bundle `deprecation` the registry writes (SPEC
+// "Superseded and Withdrawn Versions"): `retired`, `retired; use <S>` or
+// `superseded by <S>`, where <S> is `<slug>/<M.N>`.
+var lifecycleNote = regexp.MustCompile(`^(retired|retired; use ` + noteTarget + `|superseded by ` + noteTarget + `)$`)
+
+const noteTarget = `[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)`
+
 // bundle is a registry bundle, `bundleVersion` 1
 // (docs/design/consumer-side-generation.md, "Milestone 1").
 type bundle struct {
@@ -53,6 +60,13 @@ type bundle struct {
 		ProofRequired     variantBool `json:"proofRequired"`
 		IssuedAtRequired  variantBool `json:"issuedAtRequired"`
 		RecipientRequired variantBool `json:"recipientRequired"`
+		// MaxDocumentBytes is absent from a bundle older than the member, which
+		// declares nothing; a variant that is null or absent declares no bound,
+		// and never inherits the other variant's.
+		MaxDocumentBytes struct {
+			Request  *int `json:"request"`
+			Response *int `json:"response"`
+		} `json:"maxDocumentBytes"`
 	} `json:"policy"`
 	PropertyOrder  map[string][]string `json:"propertyOrder"`
 	DefsOrder      map[string][]string `json:"defsOrder"` // absent before it was added: see applyDefsOrder
@@ -149,6 +163,12 @@ func loadAndGenerate(opts options) (*result, error) {
 		if b.BundleVersion != "1" {
 			return nil, fmt.Errorf("%s: bundleVersion %s; this trust-tasks-gen reads bundleVersion 1 — upgrade the trust-tasks-go module", label, b.BundleVersion)
 		}
+		// The note is written into a `// Deprecated:` comment line, so it is
+		// held to the notes the registry writes, none of which can start a
+		// new line of code.
+		if b.Deprecation != nil && !lifecycleNote.MatchString(*b.Deprecation) {
+			return nil, fmt.Errorf("%s: bundle member deprecation %q is not a lifecycle note (`retired`, `retired; use <slug>/<M.N>` or `superseded by <slug>/<M.N>`)", label, *b.Deprecation)
+		}
 		if b.Slug != entry.Slug || b.Version != entry.Version || b.TypeURI != entry.TypeURI {
 			return nil, fmt.Errorf("%s: the vendored bundle is %s %s (%s), not what trust-tasks.lock names", label, b.Slug, b.Version, b.TypeURI)
 		}
@@ -225,6 +245,11 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 	if !versionPattern.MatchString(b.Version) {
 		return generated{}, fmt.Errorf("`%s` is not a MAJOR.MINOR version", b.Version)
 	}
+	for variant, n := range map[string]*int{"request": b.Policy.MaxDocumentBytes.Request, "response": b.Policy.MaxDocumentBytes.Response} {
+		if n != nil && *n < 1 {
+			return generated{}, fmt.Errorf("`policy.maxDocumentBytes.%s` is not a positive integer", variant)
+		}
+	}
 
 	parsed, err := decodeOrdered(b.Schema)
 	if err != nil {
@@ -249,6 +274,7 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 	}
 
 	em := newEmitter()
+	em.reserveTailIdentifiers()
 	defNames, rootName := em.emitDeclarations(schema, "Payload")
 	deprecation := ""
 	if b.Deprecation != nil {
@@ -261,13 +287,13 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 		}
 	}
 
-	requestJSON, err := compact(b.Schema)
+	requestJSON, err := compactPruned(b.Schema)
 	if err != nil {
 		return generated{}, err
 	}
 	responseJSON := ""
 	if hasResponse {
-		if responseJSON, err = compact(b.ResponseSchema); err != nil {
+		if responseJSON, err = compactPruned(b.ResponseSchema); err != nil {
 			return generated{}, err
 		}
 	}
@@ -311,6 +337,121 @@ func sourceLabel(source string) string {
 		return ""
 	}
 	return source + ":"
+}
+
+// compactPruned is compact over pruneUnreachableDefs: the text of a schema
+// constant.
+func compactPruned(raw json.RawMessage) (string, error) {
+	pruned, err := pruneUnreachableDefs(raw)
+	if err != nil {
+		return "", err
+	}
+	return compact(pruned)
+}
+
+// pruneUnreachableDefs returns raw with every root `$defs` entry its root does
+// not reach removed (#1098), and `$defs` dropped when none survive.
+//
+// A bundle's request schema carries `$defs.Response` and what only the
+// response uses, and its response schema a copy of every request definition.
+// Only the emitted constants are pruned — never the schema the types come
+// from, and never the bundle. Reachability follows each `$ref` of the form
+// `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the root
+// object without its `$defs` (its own `$ref` included — all a response
+// document has), then each reached definition whole. Any other
+// local `$ref` (`#`, an anchor) keeps every definition. The other generators
+// each implement the same rule independently; check-bindings compares the
+// results.
+//
+// The bundle is canonical (key-sorted), so re-encoding the root and `$defs` as
+// maps keeps their order.
+func pruneUnreachableDefs(raw json.RawMessage) (json.RawMessage, error) {
+	var root map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &root); err != nil {
+		return nil, err
+	}
+	var defs map[string]json.RawMessage
+	if d, ok := root["$defs"]; !ok || json.Unmarshal(d, &defs) != nil || defs == nil {
+		return raw, nil
+	}
+	reached := map[string]bool{}
+	opaque := false
+	var frontier []any
+	push := func(r json.RawMessage) error {
+		var v any
+		if err := json.Unmarshal(r, &v); err != nil {
+			return err
+		}
+		frontier = append(frontier, v)
+		return nil
+	}
+	rootView := make(map[string]json.RawMessage, len(root))
+	for k, v := range root {
+		if k != "$defs" {
+			rootView[k] = v
+		}
+	}
+	if view, err := json.Marshal(rootView); err != nil {
+		return nil, err
+	} else if err := push(view); err != nil {
+		return nil, err
+	}
+	for len(frontier) > 0 {
+		node := frontier[len(frontier)-1]
+		frontier = frontier[:len(frontier)-1]
+		switch t := node.(type) {
+		case []any:
+			frontier = append(frontier, t...)
+		case map[string]any:
+			if ref, ok := t["$ref"].(string); ok {
+				if rest, ok := strings.CutPrefix(ref, "#/$defs/"); ok {
+					name, _, _ := strings.Cut(rest, "/")
+					name = strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")
+					if def, ok := defs[name]; ok && !reached[name] {
+						reached[name] = true
+						if err := push(def); err != nil {
+							return nil, err
+						}
+					}
+				} else if strings.HasPrefix(ref, "#") {
+					opaque = true
+				}
+			}
+			for _, v := range t {
+				frontier = append(frontier, v)
+			}
+		}
+	}
+	if opaque {
+		return raw, nil
+	}
+	for name := range defs {
+		if !reached[name] {
+			delete(defs, name)
+		}
+	}
+	if len(defs) == 0 {
+		delete(root, "$defs")
+	} else {
+		kept, err := marshalNoEscape(defs)
+		if err != nil {
+			return nil, err
+		}
+		root["$defs"] = kept
+	}
+	return marshalNoEscape(root)
+}
+
+// marshalNoEscape is json.Marshal without HTML escaping, so a `<` in a
+// description stays as written.
+func marshalNoEscape(v any) (json.RawMessage, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
 func compact(raw json.RawMessage) (string, error) {
@@ -459,15 +600,21 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 		}, "\n"))
 	}
 
-	block := func(uriConst string, proof, recipient, issuedAt bool, schemaConst string) string {
-		return strings.Join([]string{
+	// MaxDocumentBytes only where the variant declares one, as Rust emits
+	// MAX_DOCUMENT_BYTES only then: the zero value declares no bound.
+	block := func(uriConst string, proof, recipient, issuedAt bool, schemaConst string, maxBytes *int) string {
+		lines := []string{
 			fmt.Sprintf("\tTypeURI:             %s,", uriConst),
 			fmt.Sprintf("\tIsBearer:            %t,", b.Policy.Bearer),
 			fmt.Sprintf("\tIsProofRequired:     %t,", proof),
 			fmt.Sprintf("\tIsRecipientRequired: %t,", recipient),
 			fmt.Sprintf("\tIsIssuedAtRequired:  %t,", issuedAt),
 			fmt.Sprintf("\tPayloadSchema:       %s,", schemaConst),
-		}, "\n")
+		}
+		if maxBytes != nil {
+			lines = append(lines, fmt.Sprintf("\tMaxDocumentBytes:    %d,", *maxBytes))
+		}
+		return strings.Join(lines, "\n")
 	}
 	p := b.Policy
 	out = append(out, strings.Join([]string{
@@ -476,7 +623,7 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 		"// 7 and 8 are per-specification and cannot be derived from the document alone,",
 		"// and item 2 needs the schema it carries.",
 		"var Spec = trusttasks.SpecPolicy{",
-		block("TypeURI", p.ProofRequired.Request, p.RecipientRequired.Request, p.IssuedAtRequired.Request, "PayloadSchemaJSON"),
+		block("TypeURI", p.ProofRequired.Request, p.RecipientRequired.Request, p.IssuedAtRequired.Request, "PayloadSchemaJSON", p.MaxDocumentBytes.Request),
 		"}",
 	}, "\n"))
 	if hasResponse {
@@ -485,7 +632,7 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 			"// IsRecipientRequired tracks the *issuer* party's requirement, because a response",
 			"// swaps the parties (§7.3 item 5).",
 			"var ResponseSpec = trusttasks.SpecPolicy{",
-			block("ResponseTypeURI", p.ProofRequired.Response, p.RecipientRequired.Response, p.IssuedAtRequired.Response, "ResponsePayloadSchemaJSON"),
+			block("ResponseTypeURI", p.ProofRequired.Response, p.RecipientRequired.Response, p.IssuedAtRequired.Response, "ResponsePayloadSchemaJSON", p.MaxDocumentBytes.Response),
 			"}",
 		}, "\n"))
 	}

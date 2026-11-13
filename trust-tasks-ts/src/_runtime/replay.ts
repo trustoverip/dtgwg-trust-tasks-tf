@@ -112,6 +112,22 @@ export interface ReplayGuard {
   ): Promise<ReplayVerdict> | ReplayVerdict;
 
   /**
+   * {@link claim}, told which party the document is attributed to: the issuer
+   * SPEC §4.8.1 resolved for it, `undefined` when there is none.
+   *
+   * Optional. `consumeInbound` calls it in place of `claim` where present, so a
+   * guard can share its capacity out between parties —
+   * {@link InMemoryReplayGuard} does, so that one party cannot hold every slot.
+   */
+  claimFor?(
+    issuer: string | undefined,
+    id: string,
+    digest: string,
+    retainUntil: number | undefined,
+    now: number,
+  ): Promise<ReplayVerdict> | ReplayVerdict;
+
+  /**
    * Attach the response a completed execution produced, so a later duplicate
    * can be answered with it per §7.2 (*Disposition of a duplicate*) rather
    * than merely absorbed in silence.
@@ -144,6 +160,7 @@ export type ReplayPolicy =
   | { kind: "notConsequential" };
 
 interface Entry {
+  issuer: string | undefined;
   digest: string;
   retainUntil: number | undefined;
   response: unknown;
@@ -151,9 +168,36 @@ interface Entry {
 }
 
 /**
- * A bounded, in-process {@link ReplayGuard}: an LRU map from `id` to the
- * digest accepted under it, its retention deadline, and the response it
- * produced.
+ * The capacity of `new InMemoryReplayGuard()`: 100 000 live records.
+ *
+ * Enough for the consequential policy's five-minute acceptance window at ~330
+ * distinct documents per second. Documents carrying an `expiresAt` hold their
+ * record until then (up to the expiry horizon, 30 days by default), so a
+ * consumer accepting them should size for that window instead. Mirrors Rust's
+ * `DEFAULT_REPLAY_CAPACITY`.
+ */
+export const DEFAULT_REPLAY_CAPACITY = 100_000;
+
+/**
+ * Thrown by {@link InMemoryReplayGuard.claim} when every slot holds a live
+ * record, or (`issuerShare`) when the document's issuer holds its share.
+ */
+export class ReplayGuardFullError extends Error {
+  readonly issuerShare: boolean;
+  constructor(size: number, issuerShare = false) {
+    super(
+      issuerShare
+        ? `in-memory replay guard: this issuer holds its share of ${size} records`
+        : `in-memory replay guard is full: ${size} records are inside their retention window`,
+    );
+    this.name = "ReplayGuardFullError";
+    this.issuerShare = issuerShare;
+  }
+}
+
+/**
+ * A bounded, in-process {@link ReplayGuard}: a map from `id` to the digest
+ * accepted under it, its retention deadline, and the response it produced.
  *
  * **Suitable when** one process is the sole consumer for the `recipient` VID
  * it serves and losing the record on restart is acceptable.
@@ -163,28 +207,70 @@ interface Entry {
  * effect happens twice — the exact failure item 11 exists to prevent.
  * Replicated deployments MUST back the guard with a shared store.
  *
- * Eviction is by capacity as well as by `retainUntil`: a burst of distinct
- * documents can push an older record out before its deadline, and a replay
- * arriving after that would be accepted. Size the capacity above the number of
- * distinct documents the widest acceptance window can hold.
+ * **When it is full.** A record is dropped only once its `retainUntil` has
+ * passed — never to make room. When a new `id` arrives and every slot holds a
+ * record still inside its retention window, `claim` throws
+ * {@link ReplayGuardFullError}, which `consumeInbound` answers `unavailable`
+ * (retryable): the guard refuses to execute a document it could not then
+ * remember, rather than forgetting one it promised to. Records whose window
+ * has closed are reclaimed first. The capacity is therefore a ceiling on
+ * distinct documents *per retention window*; see
+ * {@link DEFAULT_REPLAY_CAPACITY} for sizing. A document carrying an
+ * `expiresAt` but no `issuedAt` is not bounded by the expiry horizon (it runs
+ * from `issuedAt`), so under a policy that does not require `issuedAt` its
+ * record lives until its `expiresAt`.
  *
- * `Map` preserves insertion order, which is what makes the LRU a delete-then-
- * reinsert rather than a second index.
+ * **One party's share.** So that one party cannot fill the guard and hold
+ * every slot for the length of the expiry horizon, no issuer may hold more than
+ * a share of the capacity — a tenth by default, rounded up (the second
+ * constructor argument changes it). A party at its share is refused
+ * `unavailable` for its *own* new documents; others are unaffected. The issuer
+ * is the one `consumeInbound` resolved (SPEC §4.8.1) and passes to
+ * {@link claimFor}; documents with no resolved issuer, and direct calls to
+ * {@link claim}, share one allowance. The share is per identifier: where anyone
+ * can mint identifiers, a party using many is limited only by the capacity.
+ *
+ * **Memory.** At most `capacity` records, each its `id`, a digest and the
+ * response cached for duplicates: roughly `capacity` × (largest `id` + largest
+ * response) at worst.
  */
 export class InMemoryReplayGuard implements ReplayGuard {
   readonly #entries = new Map<string, Entry>();
   readonly #capacity: number;
+  readonly #perIssuer: number;
+  /** Live records per issuer (`undefined`: no resolved issuer). */
+  readonly #held = new Map<string | undefined, number>();
+  /**
+   * No record's `retainUntil` is earlier than this (it may be earlier than every
+   * record's, after a removal). Lets a full guard skip the reclaiming scan when
+   * nothing can have expired yet.
+   */
+  #earliestExpiry = Number.POSITIVE_INFINITY;
 
   /**
-   * @param capacity Maximum records retained. Must be positive: a guard that
-   * retains nothing answers `fresh` to everything, which is a silent total
-   * defeat of item 11 rather than a visible misconfiguration.
+   * @param capacity Maximum live records retained. A capacity below 1 (or one
+   * that is not a finite number) takes {@link DEFAULT_REPLAY_CAPACITY}; a
+   * fractional one is rounded down. It is not treated as "retain nothing": a
+   * guard that retains nothing answers `fresh` to everything, which is a silent
+   * total defeat of item 11. All four libraries read a capacity below one this
+   * way (`docs/runtime-parity.md`).
+   * @param perIssuerLimit Most live records one issuer may hold; defaults to a
+   * tenth of `capacity`, rounded up, and is clamped to `1..capacity`.
    */
-  constructor(capacity = 10_000) {
-    if (!Number.isInteger(capacity) || capacity < 1) {
-      throw new RangeError("InMemoryReplayGuard capacity must be a positive integer");
-    }
+  constructor(capacity = DEFAULT_REPLAY_CAPACITY, perIssuerLimit?: number) {
+    capacity = Number.isFinite(capacity) && capacity >= 1 ? Math.floor(capacity) : DEFAULT_REPLAY_CAPACITY;
     this.#capacity = capacity;
+    const limit = perIssuerLimit ?? Math.ceil(capacity / 10);
+    this.#perIssuer = Math.min(capacity, Math.max(1, Math.floor(limit)));
+  }
+
+  #delete(id: string): void {
+    const entry = this.#entries.get(id);
+    if (entry === undefined) return;
+    this.#entries.delete(id);
+    const held = (this.#held.get(entry.issuer) ?? 1) - 1;
+    if (held <= 0) this.#held.delete(entry.issuer);
+    else this.#held.set(entry.issuer, held);
   }
 
   /** Number of records currently retained. For tests and metrics. */
@@ -194,12 +280,26 @@ export class InMemoryReplayGuard implements ReplayGuard {
 
   /** Drop every record whose `retainUntil` has passed. */
   purgeExpired(now: number): void {
+    let earliest = Number.POSITIVE_INFINITY;
     for (const [id, entry] of this.#entries) {
-      if (entry.retainUntil !== undefined && entry.retainUntil <= now) this.#entries.delete(id);
+      if (entry.retainUntil === undefined) continue;
+      if (entry.retainUntil <= now) this.#delete(id);
+      else if (entry.retainUntil < earliest) earliest = entry.retainUntil;
     }
+    this.#earliestExpiry = earliest;
   }
 
   claim(id: string, digest: string, retainUntil: number | undefined, now: number): ReplayVerdict {
+    return this.claimFor(undefined, id, digest, retainUntil, now);
+  }
+
+  claimFor(
+    issuer: string | undefined,
+    id: string,
+    digest: string,
+    retainUntil: number | undefined,
+    now: number,
+  ): ReplayVerdict {
     const existing = this.#entries.get(id);
 
     // An expired record is treated as absent: the consumer would refuse the
@@ -207,27 +307,29 @@ export class InMemoryReplayGuard implements ReplayGuard {
     // the key would only manufacture a permanent `idConflict` for an `id`
     // nobody can use.
     if (existing !== undefined && existing.retainUntil !== undefined && existing.retainUntil <= now) {
-      this.#entries.delete(id);
+      this.#delete(id);
     } else if (existing !== undefined) {
-      if (existing.digest !== digest) {
-        // A conflicting document is not a *use* of the record, so it does not
-        // refresh recency — otherwise a flood of conflicts could pin an entry
-        // and evict live ones.
-        return { kind: "conflict" };
-      }
-      this.#entries.delete(id);
-      this.#entries.set(id, existing);
+      if (existing.digest !== digest) return { kind: "conflict" };
       return existing.response === undefined
         ? { kind: "duplicate", inFlight: !existing.completed }
         : { kind: "duplicate", priorResponse: existing.response, inFlight: !existing.completed };
     }
 
-    this.#entries.set(id, { digest, retainUntil, response: undefined, completed: false });
-    while (this.#entries.size > this.#capacity) {
-      const oldest = this.#entries.keys().next();
-      if (oldest.done === true) break;
-      this.#entries.delete(oldest.value);
+    // Full: reclaim the records whose window has closed, and if every slot
+    // still holds a live record, refuse rather than drop one. A record dropped
+    // inside its window is a replay accepted later.
+    // Likewise for one issuer's share, so that one party cannot hold every slot
+    // and refuse everyone else.
+    const held = () => this.#held.get(issuer) ?? 0;
+    if (this.#entries.size >= this.#capacity || held() >= this.#perIssuer) {
+      if (this.#earliestExpiry <= now) this.purgeExpired(now);
+      if (this.#entries.size >= this.#capacity) throw new ReplayGuardFullError(this.#entries.size);
+      if (held() >= this.#perIssuer) throw new ReplayGuardFullError(held(), true);
     }
+
+    this.#entries.set(id, { issuer, digest, retainUntil, response: undefined, completed: false });
+    this.#held.set(issuer, held() + 1);
+    if (retainUntil !== undefined && retainUntil < this.#earliestExpiry) this.#earliestExpiry = retainUntil;
     return { kind: "fresh" };
   }
 
@@ -244,7 +346,7 @@ export class InMemoryReplayGuard implements ReplayGuard {
     // unfinished: a concurrent arrival that legitimately holds the key must
     // not have it taken away by another document's cleanup.
     if (entry !== undefined && entry.digest === digest && !entry.completed) {
-      this.#entries.delete(id);
+      this.#delete(id);
     }
   }
 }

@@ -6,7 +6,7 @@
 import type { AnchorCadence, Ext, RetentionPolicy, Visibility } from "../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/create/0.2 */
+/** @deprecated superseded by rooms/create/0.3 */
 export interface RoomsCreatePayload {
   /**
    * The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.
@@ -37,7 +37,7 @@ export interface RoomsCreatePayload {
 /**
  * Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.
  *
- * @deprecated superseded by rooms/create/0.2
+ * @deprecated superseded by rooms/create/0.3
  */
 export interface RoomsCreateResponsePayload {
   roomId: string;
@@ -72,12 +72,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/create/0.2";
+export const DEPRECATION: string | null = "superseded by rooms/create/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/create/0.2
+ * @deprecated superseded by rooms/create/0.3
  */
 export type Payload = RoomsCreatePayload;
 
@@ -87,7 +87,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/create/0.1#r
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/create/0.2
+ * @deprecated superseded by rooms/create/0.3
  */
 export type Response = RoomsCreateResponsePayload;
 
@@ -99,8 +99,13 @@ export type Response = RoomsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/create/0.1",
   "title": "Rooms Create — payload",
@@ -142,34 +147,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Create — response payload",
-      "description": "Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string"
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Always 1 for a new room."
-        },
-        "anchorCadence": {
-          "$ref": "#/$defs/AnchorCadence",
-          "description": "Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -211,10 +188,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -265,29 +242,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "manual"
       ],
       "description": "How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\n\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\n\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\n\nDeliberately not a duration. A room that promised \"daily\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour."
-    },
-    "RetentionPolicy": {
-      "title": "RetentionPolicy",
-      "type": "string",
-      "enum": [
-        "chained",
-        "fromJoin"
-      ],
-      "description": "Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.",
-      "$comment": "Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it."
-    },
-    "Visibility": {
-      "title": "Visibility",
-      "type": "string",
-      "enum": [
-        "open",
-        "attributed",
-        "private"
-      ],
-      "description": "How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

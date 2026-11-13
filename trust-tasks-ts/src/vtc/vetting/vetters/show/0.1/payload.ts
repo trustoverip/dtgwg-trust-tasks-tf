@@ -88,8 +88,13 @@ export type Response = VTCVettingShowVetterResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1",
   "title": "VTC Vetting — Show Vetter — payload",
@@ -112,61 +117,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "GrantStatus": {
-      "title": "GrantStatus",
-      "description": "The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.",
-      "type": "string",
-      "enum": [
-        "live",
-        "revoked",
-        "expired",
-        "none"
-      ]
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Show Vetter — response payload",
-      "description": "One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vetterDid",
-        "status"
-      ],
-      "properties": {
-        "vetterDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The DID asked about, echoed so a response is self-contained."
-        },
-        "status": {
-          "$ref": "#/$defs/GrantStatus"
-        },
-        "grantId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why."
-        },
-        "listed": {
-          "type": "boolean",
-          "description": "Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -178,10 +128,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -251,7 +201,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

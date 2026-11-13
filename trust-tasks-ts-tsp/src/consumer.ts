@@ -11,6 +11,8 @@ import {
   CONSEQUENTIAL_FRESHNESS,
   InMemoryReplayGuard,
   consumeInbound,
+  readForSpec,
+  reject,
 } from "@openvtc/trust-tasks/runtime";
 import {
   packTrustTask,
@@ -76,6 +78,35 @@ export interface Received<R> {
 }
 
 const encoder = new TextEncoder();
+
+/** The wire message for a document larger than its specification's declared
+ * `maxDocumentBytes` — the same text the Go and Dart runtimes send. */
+export const DOCUMENT_TOO_LARGE_WIRE_MESSAGE = "document exceeds the size bound for its type (SPEC §12.4)";
+
+/**
+ * The refusal for `document` when it is larger than `spec`'s declared
+ * `maxDocumentBytes`, else undefined. A specification that declares no bound
+ * leaves the document unbounded: this binding has no transport body limit of
+ * its own to fall back on.
+ *
+ * The size is that of the document's compact JSON re-encoding, in UTF-8: the
+ * sealed `{type, document}` envelope is parsed whole, so the document's own
+ * received text is not kept. It is what a conforming producer serialises, and
+ * whitespace and escapes on the wire only ever make the received text longer,
+ * so a document within its bound is never refused for it. Rust's message
+ * bindings measure the same way.
+ *
+ * `maxDocumentBytes` is read off `spec` defensively: `@openvtc/trust-tasks`
+ * 0.29.0 does not yet carry it on `SpecPolicy`, and a spec object from such a
+ * core has none, so nothing is refused until the consumer runs on a core
+ * release that emits it.
+ */
+function sizeRefusal(spec: SpecPolicy, document: unknown): { code: "malformedRequest"; message: string; retryable: false } | undefined {
+  const bound = (spec as SpecPolicy & { readonly maxDocumentBytes?: number }).maxDocumentBytes;
+  if (typeof bound !== "number" || !(bound > 0)) return undefined;
+  if (encoder.encode(JSON.stringify(document)).length <= bound) return undefined;
+  return { code: "malformedRequest", message: DOCUMENT_TOO_LARGE_WIRE_MESSAGE, retryable: false };
+}
 
 /**
  * The guarded inbound path for the TSP binding: resolve the sender, open the
@@ -143,7 +174,40 @@ export class TspConsumer {
     handler: (doc: TrustTaskDocument<P>, parties: ResolvedParties) => Promise<TrustTaskDocument<R> | ErrorResponse | void> | TrustTaskDocument<R> | ErrorResponse | void,
   ): Promise<Received<R>> {
     const transport = unpacked.transport;
-    const doc = unpacked.document as unknown as TrustTaskDocument<P>;
+
+    // SPEC §5.2 "Declared extension": a later version whose registry extends
+    // chain reaches spec's is read as spec's version, its payload pruned to the
+    // members spec's schema knows, as the Rust dispatcher and the Dart and Go
+    // bindings read it (#1117). Another specification is unsupportedType, an
+    // unreached version of this one unsupportedVersion, and a payload too complex
+    // to prune malformedRequest — each routed to the authenticated sender.
+    // consumeInbound verifies the proof and digests item 11 over the document as
+    // received, which readForSpec pairs with the pruned copy.
+    const read = readForSpec<P>(unpacked.document, spec);
+    if (read.kind === "refused") {
+      const error = reject(transport, unpacked.document as unknown as TrustTaskDocument<unknown>, this.newErrorId(), read.reason);
+      return error === undefined
+        ? { outcome: { kind: "suppressed", reason: read.reason }, transport, reply: undefined }
+        : { outcome: { kind: "rejected", error }, transport, reply: encoder.encode(JSON.stringify(error)) };
+    }
+    const doc = read.doc;
+
+    // SPEC §12.4, two-sided: a document within its specification's declared
+    // maxDocumentBytes MUST NOT be refused for its size, and a larger one SHOULD
+    // be refused malformedRequest — here, after TSP has authenticated the sender
+    // (the refusal goes to that sender), and before consumeInbound writes the
+    // item-11 record or the handler runs. A document read forward along
+    // `extends` is not held to spec's bound: its own (later) version may declare
+    // a larger one.
+    if (!read.extended) {
+      const tooLarge = sizeRefusal(spec, unpacked.document);
+      if (tooLarge !== undefined) {
+        const error = reject(transport, unpacked.document as unknown as TrustTaskDocument<unknown>, this.newErrorId(), tooLarge);
+        return error === undefined
+          ? { outcome: { kind: "suppressed", reason: tooLarge }, transport, reply: undefined }
+          : { outcome: { kind: "rejected", error }, transport, reply: encoder.encode(JSON.stringify(error)) };
+      }
+    }
 
     const outcome = await consumeInbound<P, R>({
       transport,

@@ -66,8 +66,13 @@ export type Response = VTNGroupsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/groups/list/0.1",
   "title": "VTN Groups — List — payload",
@@ -85,28 +90,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Groups — List — response payload",
-      "description": "The matching group registrations.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "groups"
-      ],
-      "properties": {
-        "groups": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RegisteredGroup"
-          },
-          "description": "The registrations, each with its signed request and response."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -117,77 +100,16 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "RegisteredGroup": {
-      "description": "A group serving a role: the member's signed registration and the network's groupRegistered credential accepting it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "role",
-        "group",
-        "endpoint",
-        "registration",
-        "acceptance",
-        "registeredAt"
-      ],
-      "properties": {
-        "member": {
-          "$ref": "#/$defs/Did",
-          "description": "The member that registered the group."
-        },
-        "role": {
-          "$ref": "#/$defs/RoleName"
-        },
-        "group": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The group: a DID, or for a network group a DID URL on the network's DID (`<did>#role-<name>`)."
-        },
-        "endpoint": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the network delivers broadcasts for the group."
-        },
-        "registration": {
-          "$ref": "#/$defs/SignedTask",
-          "description": "The member's signed vtn/groups/register request."
-        },
-        "acceptance": {
-          "$ref": "#/$defs/Credential",
-          "description": "The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the network accepted the registration."
-        }
-      }
-    },
-    "SignedTask": {
-      "type": "object",
-      "description": "A complete Trust Task document, with its proof, exactly as signed and received. Verified as a document in its own right; open so its proof still covers every member, and so its digest can be recomputed."
-    },
     "RoleName": {
       "type": "string",
       "pattern": "^[a-z0-9_-]{1,64}$",
       "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -290,7 +212,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

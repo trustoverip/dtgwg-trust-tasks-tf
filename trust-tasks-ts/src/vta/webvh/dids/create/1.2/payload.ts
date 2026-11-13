@@ -208,8 +208,13 @@ export type Response = VTAWebVHDIDsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/dids/create/1.2",
   "title": "VTA WebVH DIDs Create — payload",
@@ -377,97 +382,6 @@ export const PAYLOAD_SCHEMA = {
         "scid"
       ]
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs Create — response payload",
-      "description": "Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "contextId",
-        "serverless",
-        "scid",
-        "portable",
-        "signingKeyId",
-        "kaKeyId",
-        "preRotationKeyCount",
-        "createdAt",
-        "didMethod",
-        "scidAlsoKnownAs",
-        "webvhDid",
-        "scidDidUrl"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "description": "The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID."
-        },
-        "contextId": {
-          "type": "string"
-        },
-        "serverId": {
-          "type": "string",
-          "description": "The hosting server the DID was published through. Absent exactly when `serverless` is true."
-        },
-        "serverless": {
-          "type": "boolean",
-          "description": "True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves."
-        },
-        "mnemonic": {
-          "type": "string",
-          "description": "The hosting server's handle for the record. Absent for a serverless DID."
-        },
-        "scid": {
-          "type": "string",
-          "description": "Self-certifying identifier committing to the log's first entry."
-        },
-        "portable": {
-          "type": "boolean"
-        },
-        "signingKeyId": {
-          "type": "string"
-        },
-        "kaKeyId": {
-          "type": "string"
-        },
-        "preRotationKeyCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Successor keys committed. `0` means pre-rotation is off for this DID."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "didDocument": {
-          "type": "object",
-          "description": "The published document, when the VTA composed one."
-        },
-        "logEntry": {
-          "type": "string",
-          "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do."
-        },
-        "didMethod": {
-          "$ref": "#/$defs/DidMethod"
-        },
-        "scidAlsoKnownAs": {
-          "type": "boolean",
-          "description": "Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`."
-        },
-        "webvhDid": {
-          "type": "string",
-          "description": "The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`."
-        },
-        "scidDidUrl": {
-          "type": "string",
-          "description": "The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -479,60 +393,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "WebvhPathMode": {
-      "title": "WebvhPathMode",
-      "description": "Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.",
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode"
-          ],
-          "properties": {
-            "mode": {
-              "const": "wellKnown"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode",
-            "path"
-          ],
-          "properties": {
-            "mode": {
-              "const": "explicit"
-            },
-            "path": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode"
-          ],
-          "properties": {
-            "mode": {
-              "const": "autoAssign"
-            }
-          }
-        }
-      ]
-    },
     "DidMethod": {
       "title": "DidMethod",
       "description": "The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.",
@@ -644,7 +511,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

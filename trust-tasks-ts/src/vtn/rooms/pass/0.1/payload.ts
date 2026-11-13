@@ -82,8 +82,13 @@ export type Response = VTNRoomsPassResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/rooms/pass/0.1",
   "title": "VTN Rooms — Pass — payload",
@@ -118,24 +123,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Rooms — Pass — response payload",
-      "description": "The room pass.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "pass"
-      ],
-      "properties": {
-        "pass": {
-          "$ref": "#/$defs/RoomPass"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -145,87 +132,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoomPass": {
-      "description": "A room pass.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "room",
-        "pass",
-        "via"
-      ],
-      "properties": {
-        "room": {
-          "$ref": "#/$defs/RoomDef"
-        },
-        "pass": {
-          "$ref": "#/$defs/Credential",
-          "description": "The pass: a credential the network signs for the person, valid for `passMinutes`."
-        },
-        "via": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Did"
-          },
-          "description": "The networks the person's eligibility ran through, from the one nearest their community up to this network."
-        }
-      }
-    },
-    "RoomDef": {
-      "description": "A room.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "role",
-        "passMinutes"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
-          "description": "The room's id."
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "Its name."
-        },
-        "role": {
-          "$ref": "#/$defs/RoleName",
-          "description": "The role whose groups' members may enter."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "What it is for."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the room is."
-        },
-        "passMinutes": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1440,
-          "description": "How long a pass lasts, in minutes: at most 1440 (24 hours). A pass is short-lived because it is not revoked; eligibility is re-proved for the next one."
-        }
-      }
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     },
     "Credential": {
       "type": "object",
@@ -259,10 +165,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -378,36 +284,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "Credential": {
       "type": "object",
       "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "ChainLink": {
-      "description": "One registration on the path from a person's community up to the network a room belongs to: the member's signed request and the accepting network's groupRegistered credential.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registration",
-        "acceptance"
-      ],
-      "properties": {
-        "registration": {
-          "$ref": "#/$defs/SignedTask",
-          "description": "A member's signed vtn/groups/register request."
-        },
-        "acceptance": {
-          "$ref": "#/$defs/Credential",
-          "description": "The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list."
-        }
-      }
-    },
-    "SignedTask": {
-      "type": "object",
-      "description": "A complete Trust Task document, with its proof, exactly as signed and received. Verified as a document in its own right; open so its proof still covers every member, and so its digest can be recomputed."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

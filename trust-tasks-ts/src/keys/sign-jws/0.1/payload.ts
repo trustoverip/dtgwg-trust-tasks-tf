@@ -92,8 +92,13 @@ export type Response = KeysSignJWSResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/keys/sign-jws/0.1",
   "title": "Keys — Sign JWS — payload",
@@ -152,43 +157,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys — Sign JWS — response payload",
-      "description": "The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "alg",
-        "jws"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable."
-        },
-        "alg": {
-          "type": "string",
-          "enum": [
-            "EdDSA",
-            "ES256",
-            "ES256K",
-            "ML-DSA-44",
-            "ML-DSA-65"
-          ],
-          "description": "The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim."
-        },
-        "jws": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
-          "description": "The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -200,10 +168,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -255,7 +223,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -270,6 +238,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 65536,
 } as const;
 
 /**
@@ -284,4 +253,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 131072,
 } as const;

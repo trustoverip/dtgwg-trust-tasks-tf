@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.
+ *
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export interface RoomsKeysFileKeyPayload {
   /**
@@ -33,6 +35,8 @@ export interface RoomsKeysFileKeyPayload {
 }
 /**
  * Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.
+ *
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export interface RoomsKeysFileKeyResponsePayload {
   /**
@@ -66,15 +70,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/keys/file-key/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/file-key/0.3
+ */
 export type Payload = RoomsKeysFileKeyPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/file-key/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/file-key/0.3
+ */
 export type Response = RoomsKeysFileKeyResponsePayload;
 
 /**
@@ -85,8 +97,13 @@ export type Response = RoomsKeysFileKeyResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/file-key/0.2",
   "title": "Rooms Keys File Key — payload",
@@ -127,32 +144,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys File Key — response payload",
-      "description": "Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "epoch"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{43}$",
-          "description": "The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -164,10 +155,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -208,7 +199,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

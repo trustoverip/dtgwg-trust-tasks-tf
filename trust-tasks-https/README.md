@@ -1,6 +1,6 @@
 # trust-tasks-https
 
-HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication — enough for demos, mockups, and end-to-end testing without standing up mTLS or DIDComm.
+HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication. Both ends are secure by default (see [Security defaults](#security-defaults)); the one demo-grade part is the static `BearerAuth` token map, which a deployment replaces with its own `Auth`.
 
 ## Binding URI
 
@@ -16,7 +16,7 @@ Authorization: Bearer <token>
 
 {
   "id": "...",
-  "type": "https://trusttasks.org/spec/acl/grant/0.1",
+  "type": "https://trusttasks.org/spec/acl/grant/0.3",
   "issuer": "did:web:org.example",
   "recipient": "did:web:maintainer.example",
   "issuedAt": "2026-05-17T10:00:00Z",
@@ -36,14 +36,20 @@ The binding specification is explicit that [it "does not permit `proof` to be om
 | `replay_protection = true` | SPEC §7.2 item 11: the server keeps a duplicate-execution record keyed on the document `id`. A bit-for-bit resend is absorbed and answered with the first execution's result instead of executing again; a *different* document under a reused `id` is refused `idConflict`. The default record is an in-process `InMemoryReplayGuard` — **replicated deployments MUST supply a shared-store guard** via `.with_replay_guard(..)`, since two replicas each holding their own map would each accept the same document once. | `.replay_protection(false)` — dev and tests only |
 | Freshness bound (`FreshnessPolicy::consequential`) | `issuedAt` is REQUIRED and a document older than a five-minute acceptance window is refused `expired`. This is not a second feature but the other half of the record above: SPEC §7.2 makes the acceptance window and the record's retention *the same bound*. | `.freshness(..)` |
 | Discovery requires authentication | `enable_discovery()` answers an unauthenticated discoverer with `permissionDenied` rather than the full route table (SPEC §12). | `.public_discovery()` |
-| Route lookup precedes proof verification | An unknown `type` is rejected before DID resolution, so the endpoint cannot be aimed at an arbitrary host by a stranger. | — |
+| Route lookup precedes proof verification | An unknown slug is rejected `unsupportedType`, and a registered slug at a version that reaches no handler along its declared `extends` chain `unsupportedVersion`, before DID resolution, so the endpoint cannot be aimed at an arbitrary host by a stranger. A version that does reach one is served by it (SPEC §5.2). | — |
+| Body and document size bounds | The body is buffered under a limit of 256 KiB (`MAX_BODY_BYTES`), raised only as far as the largest `maxDocumentBytes` a registered task declares; once the type is known, a document over its own specification's bound (256 KiB for one that declares none) is refused `malformedRequest`. | `.max_body_bytes(..)` |
 | `Content-Type: application/json` required | A `text/plain` cross-origin simple POST is refused with 415 instead of reaching the pipeline. | — |
 | Request timeout + concurrency limit | Slowloris and flood controls on the router. | `.request_timeout(..)`, `.max_concurrent_requests(..)` |
 | Response binding on the client | `HttpsClient::send` checks the response's `threadId`, `type`, `issuer` and `recipient` against the request before returning it. | — |
+| Client transport limits | `server_url` must be `https` (plain `http` only to a loopback host, or with `.allow_insecure_http(true)` and no bearer token); redirects are not followed; a response body over 256 KiB is refused; error text never quotes the response body. | `.allow_insecure_http(..)`, `.follow_redirects(true)` (same origin only), `.max_response_bytes(..)` |
 
 A guard that cannot be consulted fails **closed**: the server answers `unavailable` (retryable) and does not execute, because a consumer that cannot establish whether a document is a duplicate has not satisfied item 11.
 
-Optionally, `.allowed_did_methods(["key"])` pre-screens `proof.verificationMethod` before the verifier resolves it, and `HttpsClient::builder().with_response_verifier(..)` requires signed responses.
+With a verifier configured, `proof.verificationMethod` is pre-screened before the verifier resolves it: by default only `did:key` passes (`DEFAULT_ALLOWED_DID_METHODS`), since resolving any other method can mean a fetch from a host the sender names. Widen it with `.allowed_did_methods(["key", "web"])`, or lift it with `.allow_any_did_method()` for a verifier whose resolver bounds its own egress.
+
+Every framework check runs in `trust_tasks_rs::consume_dispatched_answer` — the same §7.2 pipeline the other Rust bindings run — so the server and `consume_inbound` give one document one answer. Handlers registered with `.on_async(..)` / `.on_ack_async(..)` can `await`, and an authenticator that must `await` implements `AsyncAuth` (every `Auth` already is one). A synchronous `.on(..)` handler runs to completion inside its request (under `block_in_place` on a multi-threaded runtime), so the request timeout does not bound it; write a handler that does I/O as an async one. A request abandoned while an async handler runs (timeout, disconnect) leaves its duplicate-execution claim in flight, since the effect may have committed: a resend is answered `202` and never re-executed.
+
+`HttpsClient::builder().with_response_verifier(..)` requires signed responses. The proof is verified over the body as received, and error responses are held to it too: an error without a valid proof from the configured server comes back as `ClientError::UnverifiedErrorResponse`, not as the server's answer.
 
 ## Quickstart
 
@@ -58,7 +64,7 @@ let server = HttpsServer::builder()
     .with_auth(BearerAuth::from_pairs([
         ("alice", "did:web:alice.example"),
     ]))
-    .on::<grant::v0_1::Payload, grant::v0_1::Response, _>(|req, _ctx| {
+    .on::<grant::v0_1::Payload, _>(|req, _ctx| {
         Ok(grant::v0_1::Response::builder()
             .entry(req.payload.entry.clone())
             .try_into()?)
@@ -124,4 +130,4 @@ The crate's name says HTTPS but the server- and client-side examples use plain H
 
 ## Security notes
 
-The bearer-auth model in this crate is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).
+`BearerAuth`, the static token map, is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).

@@ -3,7 +3,7 @@
 //!
 //! ```rust,ignore
 //! let client = HttpsClient::builder()
-//!     .server_url("http://localhost:3000")
+//!     .server_url("https://server.example")
 //!     .server_vid("did:web:server.example")
 //!     .my_vid("did:web:client.example")
 //!     .my_token("alice-token")
@@ -40,6 +40,17 @@ pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 /// Default connection-establishment timeout.
 pub const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
+/// Default cap on a response body: 256 KiB, the request cap the bundled
+/// server applies. A trust-task response is one small JSON document.
+pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 256 * 1024;
+
+/// How much of a non-Trust-Task error body [`ClientError::HttpStatus`] keeps.
+const MAX_ERROR_BODY_BYTES: usize = 512;
+
+/// How many same-origin redirects [`HttpsClientBuilder::follow_redirects`]
+/// allows.
+const MAX_REDIRECTS: usize = 5;
+
 /// Builder for [`HttpsClient`].
 #[derive(Default)]
 pub struct HttpsClientBuilder {
@@ -51,11 +62,19 @@ pub struct HttpsClientBuilder {
     timeout: Option<Duration>,
     connect_timeout: Option<Duration>,
     response_verifier: Option<Arc<dyn DynProofVerifier>>,
+    max_response_bytes: Option<usize>,
+    allow_insecure_http: bool,
+    follow_redirects: bool,
 }
 
 impl HttpsClientBuilder {
-    /// Base URL of the server, e.g. `"http://localhost:3000"`. The client
+    /// Base URL of the server, e.g. `"https://server.example"`. The client
     /// will POST to `<server_url>/trust-tasks`.
+    ///
+    /// It must be `https`. A plain `http` URL is accepted when its host is
+    /// loopback (`localhost`, `127.0.0.0/8`, `[::1]` — local servers and
+    /// tests), or elsewhere with [`Self::allow_insecure_http`]; a bearer
+    /// token is never sent to a non-loopback `http` URL.
     pub fn server_url(mut self, url: impl Into<String>) -> Self {
         self.server_url = Some(url.into());
         self
@@ -105,6 +124,34 @@ impl HttpsClientBuilder {
         self
     }
 
+    /// The largest response body the client reads, in bytes. A larger one
+    /// fails with [`ClientError::ResponseTooLarge`] as soon as it is
+    /// detected, without buffering the rest. Defaults to
+    /// [`DEFAULT_MAX_RESPONSE_BYTES`].
+    pub fn max_response_bytes(mut self, limit: usize) -> Self {
+        self.max_response_bytes = Some(limit);
+        self
+    }
+
+    /// Accept a plain `http` [`Self::server_url`] whose host is not loopback.
+    /// The document then crosses the network unencrypted. Even so, a
+    /// configured [`Self::my_token`] is refused over it: [`Self::build`]
+    /// fails rather than send the token in the clear.
+    pub fn allow_insecure_http(mut self, allow: bool) -> Self {
+        self.allow_insecure_http = allow;
+        self
+    }
+
+    /// Follow redirects to the same origin (scheme, host and port), at most
+    /// five. Off by default: a `3xx` is returned as
+    /// [`ClientError::HttpStatus`], so a signed document is never re-posted
+    /// to a URL other than the one configured. A redirect to another origin
+    /// is never followed.
+    pub fn follow_redirects(mut self, follow: bool) -> Self {
+        self.follow_redirects = follow;
+        self
+    }
+
     /// Verify the `proof` on every response document.
     ///
     /// Off by default, and off is not the same as safe: with no verifier the
@@ -119,6 +166,19 @@ impl HttpsClientBuilder {
     /// because a downgrade that goes unnoticed is worth no more than no
     /// verification at all. Note the bundled [`HttpsServer`](crate::HttpsServer)
     /// does not sign its responses, so this is for peers that do.
+    ///
+    /// The proof is verified over the response body exactly as received,
+    /// never a re-serialisation of it, so a peer's own spelling of a
+    /// timestamp or member order does not break a valid signature.
+    ///
+    /// **Error responses are held to it too.** A `trust-task-error` is
+    /// returned as [`ClientError::TrustTaskError`] only when its proof
+    /// verifies and its `issuer` / `recipient` match the configured VIDs, as a
+    /// success response's must. Anything else — an unsigned error, a bad
+    /// proof, an error from another party — is returned as
+    /// [`ClientError::UnverifiedErrorResponse`]: the body is kept for logging,
+    /// but nothing about it is attested, and it must not be read as the
+    /// server's answer.
     pub fn with_response_verifier<V>(mut self, verifier: V) -> Self
     where
         V: ProofVerifier + Send + Sync + 'static,
@@ -135,6 +195,46 @@ impl HttpsClientBuilder {
         let base: Url = format!("{}/trust-tasks", server_url.trim_end_matches('/'))
             .parse()
             .map_err(|e| ClientError::Config(format!("server_url is not a valid URL: {e}")))?;
+        let https = match base.scheme() {
+            "https" => true,
+            "http" if is_loopback(&base) => false,
+            "http" if self.my_token.is_some() => {
+                return Err(ClientError::Config(
+                    "server_url is plain http: a bearer token is only sent over https \
+                     (or to a loopback host)"
+                        .into(),
+                ))
+            }
+            "http" if self.allow_insecure_http => false,
+            "http" => {
+                return Err(ClientError::Config(
+                    "server_url is plain http: use https, or allow_insecure_http(true)".into(),
+                ))
+            }
+            other => {
+                return Err(ClientError::Config(format!(
+                    "server_url scheme {other:?} is not https"
+                )))
+            }
+        };
+
+        let redirects = if self.follow_redirects {
+            reqwest::redirect::Policy::custom(|attempt| {
+                let same_origin = attempt
+                    .previous()
+                    .first()
+                    .is_some_and(|first| first.origin() == attempt.url().origin());
+                if attempt.previous().len() > MAX_REDIRECTS {
+                    attempt.error("too many redirects")
+                } else if same_origin {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
+            })
+        } else {
+            reqwest::redirect::Policy::none()
+        };
 
         // Finite timeouts always: an unresponsive peer must surface as an
         // error, never hang the caller. Callers with a genuinely long-running
@@ -142,6 +242,8 @@ impl HttpsClientBuilder {
         let http = ClientBuilder::new()
             .timeout(self.timeout.unwrap_or(DEFAULT_TIMEOUT))
             .connect_timeout(self.connect_timeout.unwrap_or(DEFAULT_CONNECT_TIMEOUT))
+            .redirect(redirects)
+            .https_only(https)
             .build()
             .map_err(|e| ClientError::Config(e.to_string()))?;
 
@@ -153,8 +255,70 @@ impl HttpsClientBuilder {
             my_token: self.my_token,
             strip_redundant_in_band: self.strip_redundant_in_band,
             response_verifier: self.response_verifier,
+            max_response_bytes: self
+                .max_response_bytes
+                .unwrap_or(DEFAULT_MAX_RESPONSE_BYTES),
         })
     }
+}
+
+/// Whether `url`'s host is this machine: `localhost` (or a name under it) or
+/// a loopback address.
+fn is_loopback(url: &Url) -> bool {
+    match url.host_str() {
+        None => false,
+        Some(host) => {
+            let host = host.trim_start_matches('[').trim_end_matches(']');
+            host.eq_ignore_ascii_case("localhost")
+                || host.to_ascii_lowercase().ends_with(".localhost")
+                || host
+                    .parse::<std::net::IpAddr>()
+                    .is_ok_and(|ip| ip.is_loopback())
+        }
+    }
+}
+
+/// Read `resp`'s body, refusing one over `limit` bytes as soon as its
+/// declared length or the bytes read so far exceed it.
+async fn read_capped(mut resp: reqwest::Response, limit: usize) -> Result<Vec<u8>, ClientError> {
+    if resp
+        .content_length()
+        .is_some_and(|declared| declared > limit as u64)
+    {
+        return Err(ClientError::ResponseTooLarge { limit });
+    }
+    let mut body = Vec::new();
+    while let Some(chunk) = resp.chunk().await? {
+        if body.len() + chunk.len() > limit {
+            return Err(ClientError::ResponseTooLarge { limit });
+        }
+        body.extend_from_slice(&chunk);
+    }
+    Ok(body)
+}
+
+/// At most [`MAX_ERROR_BODY_BYTES`] of `body`, cut at a character boundary.
+fn error_body_excerpt(body: &[u8]) -> String {
+    let text = String::from_utf8_lossy(body);
+    if text.len() <= MAX_ERROR_BODY_BYTES {
+        return text.into_owned();
+    }
+    let mut end = MAX_ERROR_BODY_BYTES;
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    text[..end].to_string()
+}
+
+/// A decode failure without the body's content: serde's message can quote a
+/// value from the document, so only its category and position are kept.
+fn decode_error(e: serde_json::Error) -> ClientError {
+    ClientError::ResponseDecode(format!(
+        "{:?} error at line {} column {}",
+        e.classify(),
+        e.line(),
+        e.column()
+    ))
 }
 
 /// HTTPS Trust Tasks client.
@@ -166,6 +330,7 @@ pub struct HttpsClient {
     my_token: Option<String>,
     strip_redundant_in_band: bool,
     response_verifier: Option<Arc<dyn DynProofVerifier>>,
+    max_response_bytes: usize,
 }
 
 impl HttpsClient {
@@ -189,7 +354,9 @@ impl HttpsClient {
     ///    binds it to the request** (see below).
     /// 5. On non-2xx, deserialises the body as an [`ErrorResponse`],
     ///    checks its `inResponseTo.id` where present, and returns it via
-    ///    [`ClientError::TrustTaskError`].
+    ///    [`ClientError::TrustTaskError`] — or, with a response verifier
+    ///    configured and the error not attested by it, via
+    ///    [`ClientError::UnverifiedErrorResponse`].
     ///
     /// # Response binding
     ///
@@ -270,7 +437,7 @@ impl HttpsClient {
 
         let resp = req.send().await?;
         let status = resp.status();
-        let body = resp.bytes().await?;
+        let body = read_capped(resp, self.max_response_bytes).await?;
 
         if status.is_success() {
             // A 2xx with no body is the server absorbing this document as a
@@ -286,22 +453,42 @@ impl HttpsClient {
             }
 
             // Parse untyped first: the proof (if any) is verified over the
-            // JSON form, and the correlation checks below need no payload
-            // types. Only then is the payload downcast to `Resp`.
-            let untyped: TrustTask<Value> = serde_json::from_slice(&body)
-                .map_err(|e| ClientError::ResponseDecode(e.to_string()))?;
+            // document as received, and the correlation checks below need
+            // no payload types. Only then is the payload downcast to `Resp`.
+            let received: Value = serde_json::from_slice(&body).map_err(decode_error)?;
+            let untyped: TrustTask<Value> =
+                serde_json::from_value(received.clone()).map_err(decode_error)?;
 
             self.check_response_binding(&request, &untyped)?;
-            self.verify_response_proof(&untyped).await?;
+            self.verify_response_proof(&untyped, &received).await?;
 
-            let typed: TrustTask<Req::Response> = serde_json::from_slice(&body)
-                .map_err(|e| ClientError::ResponseDecode(e.to_string()))?;
+            let typed: TrustTask<Req::Response> =
+                serde_json::from_value(received).map_err(decode_error)?;
             Ok(typed)
         } else {
             // Try to parse as a trust-task-error document; fall back to
             // a generic transport error if the body isn't one.
-            match serde_json::from_slice::<ErrorResponse>(&body) {
-                Ok(error_doc) => {
+            let parsed = serde_json::from_slice::<Value>(&body)
+                .ok()
+                .and_then(|received| {
+                    serde_json::from_value::<ErrorResponse>(received.clone())
+                        .ok()
+                        .map(|doc| (received, doc))
+                });
+            match parsed {
+                Some((received, error_doc)) => {
+                    // With a response verifier configured, an error is the
+                    // server's answer only once it is attested as one: a
+                    // valid proof, from the configured server, to this
+                    // client. Otherwise anything on the path could answer
+                    // every request with an unsigned refusal.
+                    if let Err(reason) = self.verify_error_response(&error_doc, &received).await {
+                        return Err(ClientError::UnverifiedErrorResponse {
+                            http_status: status.as_u16(),
+                            reason,
+                            error: Box::new(error_doc),
+                        });
+                    }
                     // §8.2 `inResponseTo.id` names the document being
                     // reported on. Where the responder populated it, it must
                     // be *our* document — otherwise an error about some
@@ -326,9 +513,9 @@ impl HttpsClient {
                         error: Box::new(error_doc),
                     })
                 }
-                Err(_) => Err(ClientError::HttpStatus {
+                None => Err(ClientError::HttpStatus {
                     http_status: status.as_u16(),
-                    body: String::from_utf8_lossy(&body).to_string(),
+                    body: error_body_excerpt(&body),
                 }),
             }
         }
@@ -396,10 +583,15 @@ impl HttpsClient {
         }
     }
 
-    /// Verify the response's `proof` when a response verifier is configured.
-    /// A configured verifier makes a signed response mandatory — see
+    /// Verify the response's `proof` when a response verifier is configured,
+    /// over `received` — the body exactly as it arrived. A configured verifier
+    /// makes a signed response mandatory — see
     /// [`HttpsClientBuilder::with_response_verifier`].
-    async fn verify_response_proof(&self, response: &TrustTask<Value>) -> Result<(), ClientError> {
+    async fn verify_response_proof(
+        &self,
+        response: &TrustTask<Value>,
+        received: &Value,
+    ) -> Result<(), ClientError> {
         let Some(verifier) = &self.response_verifier else {
             return Ok(());
         };
@@ -407,14 +599,51 @@ impl HttpsClient {
             return Err(ClientError::ResponseProofMissing);
         }
         verifier
-            .verify_json(response)
+            .verify_received(received)
             .await
             .map_err(|e| ClientError::ResponseProofInvalid(e.to_string()))
+    }
+
+    /// With a response verifier configured, an error response must carry a
+    /// proof that verifies over the body as received, and name the
+    /// configured server as `issuer` and this client as `recipient` (each
+    /// where configured). `Err` holds why it does not, for
+    /// [`ClientError::UnverifiedErrorResponse`]. Without a verifier there is
+    /// nothing to attest and every error passes.
+    async fn verify_error_response(
+        &self,
+        error: &ErrorResponse,
+        received: &Value,
+    ) -> Result<(), String> {
+        let Some(verifier) = &self.response_verifier else {
+            return Ok(());
+        };
+        if error.proof.is_none() {
+            return Err("the error response carried no proof".to_string());
+        }
+        if let Some(expected) = self.server_vid.as_deref() {
+            if !self.party_matches(error.issuer.as_deref(), expected) {
+                return Err("the error response's issuer is not the configured server".to_string());
+            }
+        }
+        if let Some(expected) = self.my_vid.as_deref() {
+            if !self.party_matches(error.recipient.as_deref(), expected) {
+                return Err("the error response is not addressed to this client".to_string());
+            }
+        }
+        verifier
+            .verify_received(received)
+            .await
+            .map_err(|e| format!("the error response's proof did not verify: {e}"))
     }
 }
 
 /// Errors raised by [`HttpsClient::send`].
+///
+/// `#[non_exhaustive]`: match with a wildcard arm, so a variant added later
+/// is not a breaking change.
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ClientError {
     /// The client was constructed with missing or invalid configuration.
     #[error("client configuration error: {0}")]
@@ -423,6 +652,15 @@ pub enum ClientError {
     /// The HTTP request itself failed (DNS, connect, TLS, etc.).
     #[error("HTTP request failed: {0}")]
     Http(#[from] reqwest::Error),
+
+    /// The response body was larger than
+    /// [`HttpsClientBuilder::max_response_bytes`]. Reading stopped there and
+    /// nothing was decoded.
+    #[error("response body exceeds {limit} bytes")]
+    ResponseTooLarge {
+        /// The cap that was exceeded, in bytes.
+        limit: usize,
+    },
 
     /// The server returned a `trust-task-error` response document.
     /// `http_status` is the response's HTTP status code.
@@ -435,12 +673,15 @@ pub enum ClientError {
     },
 
     /// Non-2xx HTTP response that did not parse as a `trust-task-error`
-    /// document (e.g. the server replied with plain text or an empty body).
-    #[error("non-2xx HTTP response ({http_status}) with non-Trust-Task body: {body}")]
+    /// document (e.g. the server replied with plain text or an empty body,
+    /// or a redirect the client did not follow).
+    #[error("non-2xx HTTP response ({http_status}) with non-Trust-Task body")]
     HttpStatus {
         /// The HTTP status code.
         http_status: u16,
-        /// The raw response body, lossy-decoded as UTF-8.
+        /// The start of the response body (at most 512 bytes), lossy-decoded
+        /// as UTF-8, for diagnostics. Not part of the `Display` text: it is
+        /// whatever the peer chose to send.
         body: String,
     },
 
@@ -527,4 +768,22 @@ pub enum ClientError {
     /// The response's `proof` failed verification.
     #[error("response proof verification failed: {0}")]
     ResponseProofInvalid(String),
+
+    /// A non-2xx response carried a `trust-task-error` document that this
+    /// client, configured with a response verifier, could not attest: it had
+    /// no proof, its proof did not verify, or its `issuer` / `recipient` did
+    /// not match. See [`HttpsClientBuilder::with_response_verifier`].
+    ///
+    /// **Untrusted.** `error` is what arrived, kept for diagnostics; anything
+    /// on the path could have written it. Do not act on its `code` as the
+    /// server's verdict — treat the request's outcome as unknown.
+    #[error("unverified error response (HTTP {http_status}): {reason}")]
+    UnverifiedErrorResponse {
+        /// The HTTP status code that accompanied it.
+        http_status: u16,
+        /// Why it could not be attested.
+        reason: String,
+        /// The document as received. Unverified.
+        error: Box<ErrorResponse>,
+    },
 }

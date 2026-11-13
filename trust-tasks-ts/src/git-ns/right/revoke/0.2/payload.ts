@@ -87,8 +87,13 @@ export type Response = GitNamespacesRevokeRightResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/right/revoke/0.2",
   "title": "Git Namespaces — Revoke Right — payload",
@@ -122,25 +127,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Revoke Right — response payload",
-      "description": "The revoked record.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revoked"
-      ],
-      "properties": {
-        "revoked": {
-          "$ref": "#/$defs/RightRecord",
-          "description": "The record as it stood when it was revoked."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -149,49 +135,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RightRecord": {
-      "title": "RightRecord",
-      "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "right",
-        "resource",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts."
-        },
-        "right": {
-          "$ref": "#/$defs/Right"
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "grantedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right lapses. Absent: no expiry."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it."
-        }
       }
     },
     "Did": {
@@ -221,10 +164,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -327,7 +270,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

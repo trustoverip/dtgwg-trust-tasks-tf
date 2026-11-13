@@ -74,8 +74,13 @@ export type Response = KeysExportSecretResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/keys/export-secret/0.1",
   "title": "Keys Export Secret — payload",
@@ -96,51 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys Export Secret — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "keyType",
-        "publicKeyMultibase",
-        "privateKeyMultibase"
-      ],
-      "description": "The key material. Failures use trust-task-error, not this shape. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/export-secret/0.1#response.",
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The key released, echoed so a consumer can confirm it received the one it named rather than matching on request order."
-        },
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The public half, multibase-encoded. Returned alongside the private half so a consumer can check the pair agrees before installing it, rather than deriving the public half and hoping."
-        },
-        "privateKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The private half, multibase-encoded (Base58BTC) over its multicodec-prefixed bytes. The prefix identifies the key material; a consumer decodes by prefix rather than trusting `keyType` alone."
-        }
-      }
-    },
-    "KeyType": {
-      "title": "KeyType",
-      "type": "string",
-      "enum": [
-        "ed25519",
-        "x25519",
-        "p256",
-        "mldsa44",
-        "mldsa65"
-      ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -152,10 +112,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -203,19 +163,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "mldsa65"
       ],
       "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

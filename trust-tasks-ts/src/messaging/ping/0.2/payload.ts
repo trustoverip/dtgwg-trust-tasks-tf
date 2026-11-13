@@ -81,8 +81,13 @@ export type Response = MessagingPingResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/ping/0.2",
   "title": "Messaging Ping — payload",
@@ -99,47 +104,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Ping — response payload",
-      "description": "The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "respondedAt",
-        "status"
-      ],
-      "properties": {
-        "respondedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The mediator's current time (RFC 3339). Advisory; not a trusted time source."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "ok",
-            "degraded"
-          ],
-          "description": "Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response."
-        },
-        "protocols": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester."
-        },
-        "nonce": {
-          "type": "string",
-          "description": "Echoed verbatim from the request when one was supplied."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -151,10 +115,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -210,7 +174,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

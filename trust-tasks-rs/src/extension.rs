@@ -49,14 +49,88 @@ use crate::error::RejectReason;
 use crate::payload::Payload;
 use crate::type_uri::TypeUri;
 
-/// The longest chain walked. The generator only emits links to a strictly
-/// earlier MINOR, so a real chain is far shorter; the bound is what stops a
-/// malformed table from looping.
-const MAX_CHAIN: usize = 256;
+/// The longest chain walked: 64 links, in all four libraries
+/// (`docs/runtime-parity.md`). The walk follows a link only to a strictly
+/// earlier MINOR, so it ends anyway and a real chain is far shorter; the bound
+/// is a backstop on the work one lookup may do.
+const MAX_CHAIN: usize = 64;
 
-/// How deep [`prune_payload`] follows a schema into a value before leaving the
-/// rest as it is.
+/// How deep [`prune_payload`] recurses — through the payload and the schema's
+/// `$ref`s and branches together — before leaving the rest of the value as it
+/// is: 128, in all four libraries (`docs/runtime-parity.md`).
 const MAX_DEPTH: usize = 128;
+
+/// The work one prune may do, in steps (a value visited against a subschema,
+/// or a branch test): this plus [`PRUNE_STEPS_PER_VALUE`] for every value in
+/// the payload. Ordinary payloads use a small fraction of it. A schema that
+/// names the same recursive member from more than one place (`properties` and
+/// an `allOf` branch, say) makes every level prune its subtree more than once,
+/// so the walk would otherwise grow exponentially with the payload's nesting
+/// depth — and a forward read runs before any proof is checked.
+const PRUNE_BASE_STEPS: usize = 100_000;
+/// See [`PRUNE_BASE_STEPS`].
+const PRUNE_STEPS_PER_VALUE: usize = 64;
+
+/// The step budget for pruning `value`.
+fn prune_step_limit(value: &Value) -> usize {
+    let mut n = 0usize;
+    let mut stack = vec![value];
+    while let Some(v) = stack.pop() {
+        n += 1;
+        match v {
+            Value::Object(members) => stack.extend(members.values()),
+            Value::Array(elements) => stack.extend(elements.iter()),
+            _ => {}
+        }
+    }
+    PRUNE_BASE_STEPS.saturating_add(PRUNE_STEPS_PER_VALUE.saturating_mul(n))
+}
+
+/// The remaining step budget of one prune.
+struct Budget {
+    left: usize,
+    spent: bool,
+}
+
+impl Budget {
+    /// Take one step; `false` once the budget is spent, after which every
+    /// walk returns at once and its result must be discarded.
+    fn spend(&mut self) -> bool {
+        match self.left.checked_sub(1) {
+            Some(left) => {
+                self.left = left;
+                true
+            }
+            None => {
+                self.spent = true;
+                false
+            }
+        }
+    }
+}
+
+/// [`prune_payload`] reached its step limit (the limit is carried).
+#[derive(Debug)]
+struct PruneLimitReached(usize);
+
+/// Prune `payload` in place; on `Err` it may be partly pruned and must be
+/// discarded.
+fn prune_within_limit(payload: &mut Value, schema_json: &str) -> Result<(), PruneLimitReached> {
+    let Some(root) = crate::schema_cache::parsed(schema_json) else {
+        return Ok(());
+    };
+    let limit = prune_step_limit(payload);
+    let mut budget = Budget {
+        left: limit,
+        spent: false,
+    };
+    prune(payload, &root, &root, 0, &mut budget);
+    if budget.spent {
+        Err(PruneLimitReached(limit))
+    } else {
+        Ok(())
+    }
+}
 
 /// The `MAJOR.MINOR` the specification behind `type_uri` declares it extends
 /// (front matter `extends`, SPEC §5.2 "Declared extension"), or `None`.
@@ -181,10 +255,11 @@ pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
 ///   ([`prune_payload`]) and then deserialized. The document keeps the `type`
 ///   it arrived with, so [`TrustTask::respond_with`] answers the received
 ///   version.
-/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug under
-///   the same authority, and [`RejectReason::UnsupportedType`] for another —
-///   including the same slug under another authority, which is another
-///   specification (SPEC §6.1).
+/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug and
+///   variant under the same authority, and [`RejectReason::UnsupportedType`]
+///   for another — including the same slug under another authority, which is
+///   another specification (SPEC §6.1), and the `#response` variant of a
+///   request type.
 ///
 /// A payload that does not deserialize into `P` — after pruning, in the
 /// forward case — is [`RejectReason::MalformedRequest`].
@@ -193,16 +268,42 @@ pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
 /// over the value you parsed it from, not over the result (see the module
 /// docs).
 pub fn read_as<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason> {
+    match reading_of::<P>(&doc.type_uri)? {
+        Reading::Same => downcast_payload::<P>(doc),
+        Reading::Forward => forward::<P>(doc, P::PAYLOAD_SCHEMA),
+    }
+}
+
+/// How a document of `received` type is read as `P`: as `P`'s own version,
+/// or along a declared extension chain.
+pub(crate) enum Reading {
+    /// `received` is `P`'s Type URI (bare or `#request`-fragmented alike).
+    Same,
+    /// `received` declares an extension chain reaching `P`'s version.
+    Forward,
+}
+
+/// Whether a document whose `type` is `received` may be consumed as `P` —
+/// [`read_as`]'s decision without the payload. `Err` is
+/// [`RejectReason::UnsupportedVersion`] for the same slug and variant under
+/// the same authority and [`RejectReason::UnsupportedType`] for anything
+/// else.
+pub(crate) fn reading_of<P: Payload>(received: &TypeUri) -> Result<Reading, RejectReason> {
     let implemented = P::type_uri();
-    let received = doc.type_uri.for_routing();
-    if received == implemented.for_routing() {
-        return downcast_payload::<P>(doc);
+    let routed = received.for_routing();
+    if routed == implemented.for_routing() {
+        return Ok(Reading::Same);
     }
-    if extension_reaches(&doc.type_uri, &implemented) {
-        return forward::<P>(doc, P::PAYLOAD_SCHEMA);
+    if extension_reaches(received, &implemented) {
+        return Ok(Reading::Forward);
     }
-    let type_uri = received.to_string();
-    if doc.type_uri.specification_key() == implemented.specification_key() {
+    let type_uri = routed.to_string();
+    // Another variant is another kind of document (SPEC §4.4.1) — a response
+    // is not a version of the request — so it is a type this consumer does
+    // not take here, as the TypeScript and Go readers answer it.
+    if received.specification_key() == implemented.specification_key()
+        && routed.variant() == implemented.for_routing().variant()
+    {
         Err(RejectReason::UnsupportedVersion { type_uri })
     } else {
         Err(RejectReason::UnsupportedType { type_uri })
@@ -216,9 +317,24 @@ pub(crate) fn forward<P: Payload>(
     schema: Option<&str>,
 ) -> Result<TrustTask<P>, RejectReason> {
     if let Some(schema) = schema {
-        prune_payload(&mut doc.payload, schema);
+        prune_forward(&mut doc.payload, schema)?;
     }
     downcast_payload::<P>(doc)
+}
+
+/// Prune a forward-routed payload in place — [`prune_payload`], refusing
+/// [`RejectReason::MalformedRequest`] when the walk reaches its step limit
+/// (on `Err` the payload may be partly pruned and must be discarded). Shared
+/// by [`read_as`], the dispatchers and `consume_dispatched`.
+pub(crate) fn prune_forward(payload: &mut Value, schema_json: &str) -> Result<(), RejectReason> {
+    prune_within_limit(payload, schema_json).map_err(|PruneLimitReached(limit)| {
+        RejectReason::MalformedRequest {
+            reason: format!(
+                "the payload is too complex to re-read as the implemented specification \
+                 version: pruning it against that version's schema takes more than {limit} steps"
+            ),
+        }
+    })
 }
 
 /// Remove from `payload` the object members `schema_json` does not know, so a
@@ -253,11 +369,21 @@ pub(crate) fn forward<P: Payload>(
 /// (under `unevaluatedProperties`). What is left in place is then the
 /// deserializer's to accept or refuse, as it would be with no pruning at all.
 /// An unparsable schema prunes nothing.
+///
+/// The walk takes at most 100,000 steps plus 64 per value in the payload (a
+/// step is a value visited against a subschema, or a branch test). A payload
+/// and schema that need more leave `payload` as it was; [`read_as`] and the
+/// dispatchers refuse such a document [`RejectReason::MalformedRequest`]
+/// instead.
+///
+/// The parsed schema is cached by the text's address (and confirmed against
+/// its content), so forwarding a stream of documents to one implemented
+/// version parses its `PAYLOAD_SCHEMA` once.
 pub fn prune_payload(payload: &mut Value, schema_json: &str) {
-    let Ok(root) = serde_json::from_str::<Value>(schema_json) else {
-        return;
-    };
-    prune(payload, &root, &root, 0);
+    let mut pruned = payload.clone();
+    if prune_within_limit(&mut pruned, schema_json).is_ok() {
+        *payload = pruned;
+    }
 }
 
 /// Resolve a local `$ref` against `root`.
@@ -285,8 +411,8 @@ fn deref<'a>(mut schema: &'a Value, root: &'a Value) -> &'a Value {
     schema
 }
 
-fn prune(value: &mut Value, schema: &Value, root: &Value, depth: usize) {
-    if depth > MAX_DEPTH {
+fn prune(value: &mut Value, schema: &Value, root: &Value, depth: usize, budget: &mut Budget) {
+    if depth > MAX_DEPTH || !budget.spend() {
         return;
     }
     let Some(s) = schema.as_object() else {
@@ -299,20 +425,20 @@ fn prune(value: &mut Value, schema: &Value, root: &Value, depth: usize) {
         .and_then(Value::as_str)
         .and_then(|r| resolve(r, root))
     {
-        prune(value, target, root, depth + 1);
+        prune(value, target, root, depth + 1, budget);
     }
     if let Some(branches) = s.get("allOf").and_then(Value::as_array) {
         for branch in branches {
-            prune(value, branch, root, depth + 1);
+            prune(value, branch, root, depth + 1, budget);
         }
     }
     let chosen = ["oneOf", "anyOf"]
         .iter()
         .filter_map(|k| s.get(*k).and_then(Value::as_array))
-        .map(|branches| sole_admitting_branch(value, branches, root))
+        .map(|branches| sole_admitting_branch(value, branches, root, budget))
         .collect::<Vec<_>>();
     for branch in chosen.iter().flatten() {
-        prune(value, branch, root, depth + 1);
+        prune(value, branch, root, depth + 1, budget);
     }
 
     match value {
@@ -341,10 +467,10 @@ fn prune(value: &mut Value, schema: &Value, root: &Value, depth: usize) {
             let additional = s.get("additionalProperties").filter(|a| a.is_object());
             for (name, member) in members.iter_mut() {
                 match properties.and_then(|p| p.get(name)) {
-                    Some(sub) => prune(member, sub, root, depth + 1),
+                    Some(sub) => prune(member, sub, root, depth + 1, budget),
                     None => {
                         if let Some(additional) = additional {
-                            prune(member, additional, root, depth + 1);
+                            prune(member, additional, root, depth + 1, budget);
                         }
                     }
                 }
@@ -359,7 +485,7 @@ fn prune(value: &mut Value, schema: &Value, root: &Value, depth: usize) {
             let items = s.get("items").filter(|i| i.is_object());
             for (i, element) in elements.iter_mut().enumerate() {
                 if let Some(sub) = prefix.get(i).or(items) {
-                    prune(element, sub, root, depth + 1);
+                    prune(element, sub, root, depth + 1, budget);
                 }
             }
         }
@@ -405,8 +531,11 @@ fn sole_admitting_branch<'a>(
     value: &Value,
     branches: &'a [Value],
     root: &'a Value,
+    budget: &mut Budget,
 ) -> Option<&'a Value> {
-    let mut admitting = branches.iter().filter(|b| admits(value, b, root, 0));
+    let mut admitting = branches
+        .iter()
+        .filter(|b| budget.spend() && admits(value, b, root, 0));
     let first = admitting.next()?;
     match admitting.next() {
         Some(_) => None,
@@ -590,6 +719,68 @@ mod tests {
         assert_eq!(payload, json!({ "base": 1, "own": 2 }));
     }
 
+    /// `next` is named from both `properties` and an `allOf` branch, so every
+    /// level prunes its subtree twice: 2^depth steps.
+    fn fan_out_schema() -> String {
+        json!({
+            "$ref": "#/$defs/Node",
+            "$defs": {
+                "Node": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": { "next": { "$ref": "#/$defs/Node" }, "v": { "type": "integer" } },
+                    "allOf": [{ "properties": { "next": { "$ref": "#/$defs/Node" } } }]
+                }
+            }
+        })
+        .to_string()
+    }
+
+    fn nested_chain(depth: u32, extra: bool) -> Value {
+        let mut v = json!({ "v": 0 });
+        if extra {
+            v["added"] = json!(true);
+        }
+        for i in 1..=depth {
+            v = json!({ "next": v, "v": i });
+            if extra {
+                v["added"] = json!(true);
+            }
+        }
+        v
+    }
+
+    #[test]
+    fn a_shallow_payload_is_pruned_within_the_work_limit() {
+        let mut payload = nested_chain(3, true);
+        prune_payload(&mut payload, &fan_out_schema());
+        assert_eq!(payload, nested_chain(3, false));
+    }
+
+    #[test]
+    fn a_payload_beyond_the_work_limit_is_left_as_it_was() {
+        let started = std::time::Instant::now();
+        let mut payload = nested_chain(40, true);
+        prune_payload(&mut payload, &fan_out_schema());
+        assert_eq!(payload, nested_chain(40, true));
+        assert!(started.elapsed() < std::time::Duration::from_secs(5));
+    }
+
+    #[test]
+    fn a_forward_read_beyond_the_work_limit_is_refused_as_malformed() {
+        let mut payload = nested_chain(40, true);
+        let err = prune_forward(&mut payload, &fan_out_schema()).expect_err("refused");
+        match err {
+            RejectReason::MalformedRequest { reason } => {
+                assert!(reason.contains("too complex to re-read"), "{reason}")
+            }
+            other => panic!("expected MalformedRequest, got {other:?}"),
+        }
+        let mut shallow = nested_chain(3, true);
+        prune_forward(&mut shallow, &fan_out_schema()).unwrap();
+        assert_eq!(shallow, nested_chain(3, false));
+    }
+
     #[test]
     fn pattern_properties_make_an_object_opaque() {
         let schema = json!({
@@ -632,6 +823,20 @@ mod tests {
             &v01.with_response()
         ));
         assert!(!extension_reaches(&received.with_response(), &v01));
+    }
+
+    /// At most 64 links are followed, as in the other three libraries.
+    #[test]
+    fn chain_follows_at_most_64_links() {
+        let base = "https://trusttasks.org/spec/test-ext/long";
+        for m in 1..=70u32 {
+            let target: &'static str = Box::leak(format!("0.{}", m - 1).into_boxed_str());
+            test_index::declare(&format!("{base}/0.{m}"), Some(target));
+        }
+        let received: TypeUri = format!("{base}/0.70").parse().unwrap();
+        let links = chain(&received);
+        assert_eq!(links.len(), 64);
+        assert_eq!(links.last().unwrap().to_string(), format!("{base}/0.6"));
     }
 
     /// An application's declarations (what `trust-tasks-build`'s

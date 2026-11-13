@@ -1,11 +1,12 @@
 [package]
 name = "trust-tasks-capability-client"
-version = "0.37.10"
+version = "0.39.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "Client-side wire helpers for the capability Trust Task families (governance/capability/*, git-trust/*): document builders, envelope parsing, reply classification. Shared by capability producers (community services) and management UIs so the two cannot drift."
+readme = "README.md"
 keywords = ["trust-tasks", "capability", "governance", "did", "client"]
 categories = ["encoding", "web-programming"]
 publish = true
@@ -14,7 +15,7 @@ publish = true
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.39", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

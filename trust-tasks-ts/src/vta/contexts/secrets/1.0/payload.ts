@@ -86,8 +86,13 @@ export type Response = VTAContextSecretsResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/contexts/secrets/1.0",
   "title": "VTA Context Secrets — payload",
@@ -108,63 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Context Secrets — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "secrets"
-      ],
-      "description": "The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.",
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything."
-        },
-        "secrets": {
-          "type": "array",
-          "description": "One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.",
-          "items": {
-            "$ref": "#/$defs/SecretEntry"
-          }
-        }
-      }
-    },
-    "SecretEntry": {
-      "title": "Secret entry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "keyType",
-        "privateKeyMultibase"
-      ],
-      "description": "One private key, named by the verification method it backs.",
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match."
-        },
-        "keyType": {
-          "type": "string",
-          "enum": [
-            "ed25519",
-            "x25519",
-            "p256"
-          ],
-          "description": "What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry."
-        },
-        "privateKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -176,10 +124,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -239,19 +187,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material."
         }
       }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

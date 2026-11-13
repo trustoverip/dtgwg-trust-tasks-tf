@@ -94,8 +94,13 @@ export type Response = VaultCredentialsPresentResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/credentials/present/0.1",
   "title": "Vault Credentials — Present",
@@ -152,49 +157,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Present — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "presentation",
-        "disclosed"
-      ],
-      "properties": {
-        "presentation": {
-          "anyOf": [
-            {
-              "type": "object",
-              "minProperties": 1,
-              "description": "A W3C Verifiable Presentation carrying `nonce` and `domain` as members its holder's Data Integrity proof signs."
-            },
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 65536,
-              "description": "A compact SD-JWT presentation with a key-binding JWT carrying `nonce` and `aud`."
-            }
-          ],
-          "description": "The presentation, to be carried to the verifier unchanged."
-        },
-        "disclosed": {
-          "type": "array",
-          "uniqueItems": true,
-          "maxItems": 256,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "description": "The names of the subject claims the presentation discloses."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -206,10 +168,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -267,7 +229,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

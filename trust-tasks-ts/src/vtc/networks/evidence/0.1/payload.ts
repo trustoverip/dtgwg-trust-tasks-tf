@@ -95,8 +95,13 @@ export type Response = VTCNetworksEvidenceResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/networks/evidence/0.1",
   "title": "VTC Networks — Evidence — payload",
@@ -121,66 +126,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Networks — Evidence — response payload",
-      "description": "The chain links the caller may present, one per group and network.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "links"
-      ],
-      "properties": {
-        "links": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "groupId",
-              "groupDid",
-              "network",
-              "role",
-              "registration",
-              "acceptance"
-            ],
-            "properties": {
-              "groupId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 128
-              },
-              "groupDid": {
-                "type": "string",
-                "pattern": "^did:[a-z0-9]+:.+$",
-                "maxLength": 2048
-              },
-              "network": {
-                "type": "string",
-                "pattern": "^did:[a-z0-9]+:.+$",
-                "maxLength": 2048
-              },
-              "role": {
-                "type": "string",
-                "pattern": "^[a-z0-9_-]{1,64}$"
-              },
-              "registration": {
-                "type": "object",
-                "description": "The community's `servesRole` statement for the group."
-              },
-              "acceptance": {
-                "type": "object",
-                "description": "The network's `groupRegistered` statement for it."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -192,10 +137,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -270,7 +215,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Amend the non-role attributes of an existing AclEntry 0.2: its act scope (widening only), approve scope, capability scope, approvable-capability scope, key scope, label, expiry or step-up requirement. Every member REPLACES the stored value; an omitted member leaves it unchanged. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap. `delegatedBy` and the provenance timestamps are maintainer-populated and not settable.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02Payload {
   /**
@@ -66,6 +68,8 @@ export interface ACLUpdate02Payload {
 }
 /**
  * The success response to an acl/update/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/update/0.2#response.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02ResponsePayload {
   /**
@@ -98,15 +102,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/update/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Payload = ACLUpdate02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/update/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Response = ACLUpdate02ResponsePayload;
 
 /**
@@ -117,8 +129,13 @@ export type Response = ACLUpdate02ResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/acl/update/0.2",
   "title": "ACL Update 0.2 — payload",
@@ -207,26 +224,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "ACL Update 0.2 — response payload",
-      "description": "The success response to an acl/update/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/update/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entry"
-      ],
-      "properties": {
-        "entry": {
-          "$ref": "#/$defs/AclEntry",
-          "description": "The realized entry the maintainer now holds, after the amendment."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -235,105 +232,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AclEntry": {
-      "title": "AclEntry",
-      "description": "One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "role",
-        "act",
-        "keys",
-        "capabilities"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form."
-        },
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque role identifier interpreted by the ACL maintainer. A role is a CEILING, never a grant: it bounds the capabilities the entry may hold and never adds to them. A consumer that does not recognise the role MUST treat the entry as conferring no authority and MUST NOT fall back to a default role. Act scope and role are independent members; a consumer MUST NOT compute either from the other."
-        },
-        "act": {
-          "$ref": "#/$defs/AuthorityScope",
-          "description": "REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{\"scope\": \"all\"}` (unrestricted — every context the maintainer has), `{\"scope\": \"none\"}` (may act nowhere), or `{\"scope\": \"contexts\", \"contexts\": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`."
-        },
-        "approve": {
-          "$ref": "#/$defs/AuthorityScope",
-          "description": "OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{\"scope\": \"none\"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`."
-        },
-        "capabilities": {
-          "$ref": "#/$defs/CapabilityScope",
-          "description": "REQUIRED explicit capability scope: which capabilities this entry holds. Exactly one of `{\"scope\": \"ceiling\"}` (the role's full ceiling, unnarrowed), `{\"scope\": \"none\"}` (no capabilities), or `{\"scope\": \"listed\", \"grants\": [...]}` with at least one CapabilityGrant. For `listed`, the EFFECTIVE set is (the role's ceiling ∩ the non-additive grants) ∪ the additive grants; it can only narrow the ceiling, except through an explicit additive grant, which only an unrestricted granter may make. There is no implicit form: an entry without `capabilities`, or with an empty `grants` list, is malformed and MUST be refused. A non-additive grant outside the role's ceiling is refused when written, never accepted with the capability silently dropped; a capability the consumer does not recognise is never treated as granted. Producers SHOULD NOT list the same (capability, resource) pair twice; a consumer MAY refuse a list that does."
-        },
-        "approveCapabilities": {
-          "$ref": "#/$defs/ApproveCapabilityScope",
-          "description": "OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{\"scope\": \"ceiling\"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{\"scope\": \"none\"}`, or `{\"scope\": \"listed\", \"grants\": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{\"scope\": \"none\"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve."
-        },
-        "delegatedBy": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID of the granter whose authority this entry was delegated from and is bounded by. The entry MUST NOT hold authority the granter did not hold when it was written, and MUST NOT retain authority the granter has since lost, so a maintainer re-evaluates it when the granter's own entry narrows or is removed. Distinct from `createdBy`, which records who wrote the entry: the two differ where an entry is written on a granter's behalf (for example after an N-of-M approval, or by an offline operator). Set by the maintainer from the granter it authorized; absent on an entry that derives from no granter's authority (the first administrator, an operator-written recovery entry)."
-        },
-        "keys": {
-          "$ref": "#/$defs/KeyScope",
-          "description": "REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{\"scope\": \"all\"}` (every key the entry's act scope reaches), `{\"scope\": \"none\"}` (no keys), or `{\"scope\": \"listed\", \"keys\": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{\"scope\": \"none\"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Optional human-readable label. Confers nothing."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "type": "string",
-          "description": "VID of the party that originally wrote this entry."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedBy": {
-          "type": "string",
-          "description": "VID of the party that last modified this entry."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Optional time after which the entry confers no authority. Evaluated at every authorization decision, not only when a session is established."
-        },
-        "stepUp": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry). Carried forward from 0.1 unchanged.",
-          "properties": {
-            "approver": {
-              "type": "string",
-              "description": "VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies."
-            },
-            "require": {
-              "type": "string",
-              "enum": [
-                "self",
-                "delegated"
-              ],
-              "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only)."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority."
-        }
       }
     },
     "KeyScope": {
@@ -639,10 +537,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1078,7 +976,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

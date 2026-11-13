@@ -57,8 +57,13 @@ export type Response = RegistryGetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/registry/get/0.2",
   "title": "Registry Get — payload",
@@ -79,23 +84,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Get — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "instance"
-      ],
-      "properties": {
-        "instance": {
-          "$ref": "#/$defs/ServiceInstance"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -105,138 +93,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ServiceInstance": {
-      "title": "ServiceInstance",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "instanceId",
-        "did",
-        "serviceType",
-        "status",
-        "registeredAt",
-        "servedDomains"
-      ],
-      "properties": {
-        "instanceId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts."
-        },
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses."
-        },
-        "serviceType": {
-          "type": "string",
-          "enum": [
-            "server",
-            "witness",
-            "watcher"
-          ],
-          "description": "`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-chosen display label. Untrusted free text."
-        },
-        "publicUrl": {
-          "type": "string",
-          "format": "uri",
-          "description": "The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "active",
-            "degraded",
-            "unreachable"
-          ],
-          "description": "The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window."
-        },
-        "servedDomains": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`."
-        },
-        "enabledMethods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration."
-        },
-        "advertisedServices": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved."
-        },
-        "servicesCheckedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When `advertisedServices` was last resolved. Absent with it."
-        },
-        "lastInbound": {
-          "$ref": "#/$defs/TransportObservation",
-          "description": "The last document the control plane received from this instance. Absent when it has received none."
-        },
-        "lastOutbound": {
-          "$ref": "#/$defs/TransportObservation",
-          "description": "The last document the control plane delivered to this instance. Absent when it has delivered none."
-        },
-        "lastHealthCheckAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the instance last answered a health probe. Absent when it never has."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "TransportObservation": {
-      "title": "TransportObservation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "transport",
-        "observedAt"
-      ],
-      "properties": {
-        "transport": {
-          "type": "string",
-          "enum": [
-            "tsp",
-            "didcomm",
-            "https"
-          ],
-          "description": "The binding the document actually travelled on."
-        },
-        "observedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -394,7 +256,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

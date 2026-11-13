@@ -94,7 +94,7 @@ related:
 
 ## Abstract
 
-The **VTC Roles — Define** Trust Task creates a custom administrative role at a Verifiable Trust Community (VTC), or replaces one. A role is a named **ceiling**: the capabilities an [AclEntry 0.2](../../../../acl/_shared/0.2/acl-entry.schema.json) holding it may hold (`ceiling`), and the capabilities it may approve (`approveScope`). It grants nothing on its own; [`acl/grant/0.2`](../../../../acl/grant/0.2/spec.md) grants, bounded by the role.
+The **VTC Roles — Define** Trust Task creates a custom administrative role at a Verifiable Trust Community (VTC), or replaces one. A role is a named **ceiling**: the capabilities an [AclEntry 0.2](../../../../acl/_shared/0.2/acl-entry.schema.json) holding it may hold (`ceiling`), and the capabilities it may approve (`approveScope`). It grants nothing on its own; [`acl/grant/0.3`](../../../../acl/grant/0.3/spec.md) grants, bounded by the role.
 
 A community defines a custom role when the built-in set ([`RoleDefinition`](../../_shared/0.1/role.schema.json)) does not fit — for example `events-team` = `vtc.surface.admin` + `vtc.invitations.manage`, or a combination of two built-in roles, since an entry holds one administrative role. Built-in roles cannot be defined, changed or replaced.
 
@@ -237,7 +237,7 @@ The security-relevant property is not confidentiality but amplification. A role 
 
 ### Correlation
 
-The VTC learns who defined which role, and approvers see the same. Role names and ceilings are community-wide vocabulary and are not, in themselves, about any person; they become correlating only through the entries that hold them, which `acl/list/0.3` (filtered by role) reveals to those permitted to see it. `threadId` joins request to response, which for an approval-gated definition may be separated by a long interval.
+The VTC learns who defined which role, and approvers see the same. Role names and ceilings are community-wide vocabulary and are not, in themselves, about any person; they become correlating only through the entries that hold them, which `acl/list/0.4` (filtered by role) reveals to those permitted to see it. `threadId` joins request to response, which for an approval-gated definition may be separated by a long interval.
 
 ### Retention
 

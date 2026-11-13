@@ -95,8 +95,13 @@ export type Response = VettingAttestationResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vetting/attestation/0.1",
   "title": "Vetting — Attestation — payload",
@@ -158,30 +163,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vetting Attestation — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accepted"
-      ],
-      "description": "The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.",
-      "properties": {
-        "accepted": {
-          "type": "boolean",
-          "description": "Whether the attestation verified against the community's published parameters and the card the applicant showed."
-        },
-        "heldCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -288,10 +269,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -328,104 +309,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "StatementMeta": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "community",
-        "requirementsDigest",
-        "method",
-        "claimsVerified",
-        "livenessConfirmed",
-        "declaredRelationship",
-        "identityCommitment",
-        "cardDigestMultibase",
-        "validFrom",
-        "validUntil",
-        "tokenLabel",
-        "tokenSerial"
-      ],
-      "description": "What a Vetting Statement would have said, minus its issuer.",
-      "properties": {
-        "community": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The community this attestation is for. An attestation is not portable between communities."
-        },
-        "requirementsDigest": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The digest of the criterion's requirements as the vetter read them."
-        },
-        "method": {
-          "type": "string",
-          "enum": [
-            "inPerson",
-            "video",
-            "priorAcquaintance"
-          ],
-          "description": "How the vetter met the applicant."
-        },
-        "claimsVerified": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "The claim types the vetter checked."
-        },
-        "livenessConfirmed": {
-          "type": "boolean",
-          "description": "Whether the vetter confirmed a live person."
-        },
-        "declaredRelationship": {
-          "type": "string",
-          "enum": [
-            "none",
-            "family",
-            "sameEmployer",
-            "closeFriend",
-            "other"
-          ],
-          "description": "The relationship the vetter declared, which the community's independence rules count."
-        },
-        "identityCommitment": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them."
-        },
-        "cardDigestMultibase": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "Digest of that card, as the vetter verified it."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date",
-          "description": "A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date",
-          "description": "A date, for the same reason."
-        },
-        "tokenLabel": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit."
-        },
-        "tokenSerial": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The token serial spent, likewise bound."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

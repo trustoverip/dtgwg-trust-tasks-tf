@@ -74,8 +74,13 @@ export type Response = GitNamespacesUnlinkForgeAccountResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/account/unlink/0.1",
   "title": "Git Namespaces — Unlink Forge Account — payload",
@@ -99,31 +104,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Unlink Forge Account — response payload",
-      "description": "The account that was unlinked, and when.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "unlinked",
-        "unlinkedAt"
-      ],
-      "properties": {
-        "unlinked": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "The account that is no longer linked to the member's DID."
-        },
-        "unlinkedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was deleted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -132,31 +112,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ForgeAccount": {
-      "title": "ForgeAccount",
-      "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "id",
-        "login"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "id": {
-          "$ref": "#/$defs/ForgeId"
-        },
-        "login": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "The account's current login, as the forge reported it when last seen. Display only."
-        }
       }
     },
     "ForgeId": {
@@ -175,10 +130,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -258,7 +213,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

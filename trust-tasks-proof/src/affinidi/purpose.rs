@@ -171,9 +171,15 @@ impl ProofPurposeResolver for DidKeyResolver {
 /// rather than through [`Verifier`](super::Verifier):
 ///
 /// ```rust,ignore
+/// check_proof_bounds(&proof)?;
 /// let purpose = ProofPurpose::parse(&proof.proof_purpose)?;
 /// proof.verify(&doc, &PurposeBound::new(&resolver, purpose), options).await?;
 /// ```
+///
+/// Call [`check_proof_bounds`](super::check_proof_bounds) first, as
+/// [`Verifier`](super::Verifier) does: `verify` decodes `proofValue` and a
+/// `did:key` id at a cost that grows with the square of their length, before
+/// it checks any signature.
 pub struct PurposeBound<R> {
     resolver: R,
     purpose: ProofPurpose,

@@ -92,8 +92,13 @@ export type Response = AuditListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/audit/list/0.2",
   "title": "Audit List — payload",
@@ -145,31 +150,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Audit List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entries"
-      ],
-      "properties": {
-        "entries": {
-          "type": "array",
-          "description": "The matching audit entries, newest first.",
-          "items": {
-            "$ref": "#/$defs/AuditEnvelope"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Opaque continuation token for the next page, sent back as the request's `cursor`. Present iff more entries match beyond this page; absent on the last page."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -179,95 +159,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "AuditEnvelope": {
-      "$anchor": "auditEnvelope",
-      "title": "AuditEnvelope",
-      "description": "One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "recordedAt",
-        "action"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Stable identifier for this event. Also the tie-breaker component of a cursor's position key."
-        },
-        "recordedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Wall-clock time the entry was written. The primary ordering key."
-        },
-        "action": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`."
-        },
-        "outcome": {
-          "type": "string",
-          "description": "How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense."
-        },
-        "actor": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here."
-        },
-        "target": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`."
-        },
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Trust context the event occurred in, for a maintainer that partitions its log per context."
-        },
-        "schemaVersion": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution."
-        },
-        "prevHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way."
-        },
-        "entryHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry."
-        },
-        "detail": {
-          "type": "object",
-          "description": "Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.",
-          "additionalProperties": true
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -390,7 +287,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

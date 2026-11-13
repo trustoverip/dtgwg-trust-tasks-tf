@@ -38,7 +38,9 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
+	"sync"
 
 	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs"
 )
@@ -58,8 +60,10 @@ type ExtendsLookup func(typeURI string) string
 // whose packages the application never imports.
 func RegistryExtends(typeURI string) string { return specs.ExtendsOf(typeURI) }
 
-// maxExtendsChain bounds a chain walk, so a lookup that loops cannot hang the
-// consumer. Real chains are a handful of MINORs long.
+// maxExtendsChain bounds a chain walk: 64 links, in all four libraries
+// (docs/runtime-parity.md). Each link must name a strictly earlier MINOR, so
+// the walk ends anyway and real chains are a handful of MINORs long; the bound
+// is a backstop on the work one lookup may do.
 const maxExtendsChain = 64
 
 // UnsupportedVersionWireMessage is the message [ReadForSpec] refuses a document
@@ -111,6 +115,17 @@ func ExtendsChainReaches(receivedTypeURI, implementedTypeURI string, lookup Exte
 	return chainReaches(received, implemented, lookup)
 }
 
+// sameVersion reports whether two Type URIs name the same MAJOR.MINOR — false
+// when either is not a Type URI.
+func sameVersion(a, b string) bool {
+	x, err := routingKey(a)
+	if err != nil {
+		return false
+	}
+	y, err := routingKey(b)
+	return err == nil && x.Major() == y.Major() && x.Minor() == y.Minor()
+}
+
 // chainReaches walks from's declared-extension chain, looking each link up as a
 // bare sibling of from (only the version changed), until it reaches to's version.
 func chainReaches(from, to TypeURI, lookup ExtendsLookup) bool {
@@ -126,9 +141,37 @@ func chainReaches(from, to TypeURI, lookup ExtendsLookup) bool {
 		if !ok {
 			return false // no declaration, or not a MAJOR.MINOR
 		}
+		// Only a strictly earlier MINOR of the same MAJOR is a link SPEC §5.2
+		// permits; anything else ends the walk, as in Rust and TypeScript.
+		if major != at.Major() || minor >= at.Minor() {
+			return false
+		}
 		at = at.WithVersion(major, minor)
 	}
 	return false
+}
+
+// typeRefusalFor is the §7.2 item 3 check [ConsumeInbound] runs: nil when a
+// document typed typeURI may be consumed under spec — spec's own Type URI, or a
+// later version of the same specification and variant whose extension chain
+// (per lookup; nil means [RegistryExtends]) reaches it — and otherwise the
+// refusal [ReadForSpecWith] would give it.
+func typeRefusalFor(typeURI string, spec SpecPolicy, lookup ExtendsLookup) *RejectReason {
+	if typeURI != "" && typeURI == spec.TypeURI {
+		return nil
+	}
+	implemented, err := routingKey(spec.TypeURI)
+	if err != nil {
+		return &RejectReason{Code: CodeUnsupportedType, Message: UnsupportedTypeWireMessage}
+	}
+	received, err := routingKey(typeURI)
+	if err != nil || !sameRoute(received, implemented) {
+		return &RejectReason{Code: CodeUnsupportedType, Message: UnsupportedTypeWireMessage}
+	}
+	if !chainReaches(received, implemented, lookup) {
+		return &RejectReason{Code: CodeUnsupportedVersion, Message: UnsupportedVersionWireMessage}
+	}
+	return nil
 }
 
 // ReadForSpec re-reads a received document for the specification version the
@@ -177,6 +220,11 @@ func ReadForSpec(received json.RawMessage, spec SpecPolicy) (json.RawMessage, *R
 // that is not exactly one branch: an unsure prune could delete what the right
 // branch needs, whereas an unpruned value is refused by item 2, which is the
 // conservative failure. Number literals are carried through verbatim.
+//
+// Pruning runs before any proof is checked, so its work is bounded: at most
+// 100,000 steps plus 64 per value in the payload (a step is a value visited
+// against a subschema, or a branch test). A payload that needs more is refused
+// malformedRequest with [PruneLimitWireMessage].
 func ReadForSpecWith(
 	received json.RawMessage,
 	spec SpecPolicy,
@@ -212,16 +260,20 @@ func ReadForSpecWith(
 		// own terms.
 		return received, nil, nil
 	}
-	var schema any
-	if err := json.Unmarshal([]byte(spec.PayloadSchema), &schema); err != nil {
-		return nil, nil, fmt.Errorf("trusttasks: spec.PayloadSchema is not JSON: %w", err)
+	schema, err := parsedSchema(spec.PayloadSchema)
+	if err != nil {
+		return nil, nil, err
 	}
 	value, err := decodeNumbers(payload)
 	if err != nil {
 		return nil, nil, fmt.Errorf("trusttasks: received payload is not JSON: %w", err)
 	}
-	p := pruner{root: schema}
-	pruned, err := json.Marshal(p.prune(value, schema, 0))
+	p := pruner{root: schema, steps: pruneStepLimit(value)}
+	prunedValue := p.prune(value, schema, 0)
+	if p.steps < 0 {
+		return nil, &RejectReason{Code: CodeMalformedRequest, Message: PruneLimitWireMessage}, nil
+	}
+	pruned, err := json.Marshal(prunedValue)
 	if err != nil {
 		return nil, nil, fmt.Errorf("trusttasks: re-encode pruned payload: %w", err)
 	}
@@ -245,11 +297,95 @@ func decodeNumbers(data []byte) (any, error) {
 	return value, nil
 }
 
-// maxPruneDepth bounds schema recursion that consumes no value — a `$ref` cycle.
-const maxPruneDepth = 256
+// parsedSchemas caches each payload schema's parse, keyed by the schema text
+// itself rather than the Type URI, so two policies naming one Type URI with
+// different schemas cannot read each other's. The pruner only reads a schema,
+// so a cached value is shared safely across goroutines.
+var parsedSchemas sync.Map // string -> any
+
+func parsedSchema(text string) (any, error) {
+	if cached, ok := parsedSchemas.Load(text); ok {
+		return cached, nil
+	}
+	var schema any
+	if err := json.Unmarshal([]byte(text), &schema); err != nil {
+		return nil, fmt.Errorf("trusttasks: spec.PayloadSchema is not JSON: %w", err)
+	}
+	cached, _ := parsedSchemas.LoadOrStore(text, schema)
+	return cached, nil
+}
+
+// compiledPatterns caches each patternProperties pattern's compilation; a
+// pattern RE2 cannot compile is cached as a nil *regexp.Regexp.
+var compiledPatterns sync.Map // string -> *regexp.Regexp
+
+func compiledPattern(pattern string) *regexp.Regexp {
+	if cached, ok := compiledPatterns.Load(pattern); ok {
+		return cached.(*regexp.Regexp)
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		re = nil
+	}
+	compiledPatterns.Store(pattern, re)
+	return re
+}
+
+// maxPruneDepth bounds how deep a prune recurses — through the payload and the
+// schema's `$ref`s and branches together, so it also stops a `$ref` cycle that
+// consumes no value — before leaving the rest of the value as it is: 128, in
+// all four libraries (docs/runtime-parity.md).
+const maxPruneDepth = 128
+
+// The work one prune may do, in steps (a value visited against a subschema, or
+// a branch test): pruneBaseSteps plus pruneStepsPerValue for every value in the
+// payload. Ordinary payloads use a small fraction of it. A schema whose `$ref`,
+// `allOf` and `properties` name the same recursive member more than once makes
+// every level prune its subtree more than once, so the walk would otherwise
+// grow exponentially with the payload's nesting depth — and ReadForSpec runs
+// before any proof is checked.
+const (
+	pruneBaseSteps     = 100_000
+	pruneStepsPerValue = 64
+)
+
+// PruneLimitWireMessage is the message [ReadForSpec] refuses a document with
+// (malformedRequest) when its payload cannot be pruned to the implemented
+// version within the step limit.
+const PruneLimitWireMessage = "the payload is too complex to re-read as the implemented " +
+	"specification version: pruning it against that version's schema exceeds the work limit"
+
+// pruneStepLimit is the step budget for pruning value.
+func pruneStepLimit(value any) int {
+	n := 0
+	stack := []any{value}
+	for len(stack) > 0 {
+		v := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		n++
+		switch t := v.(type) {
+		case map[string]any:
+			for _, member := range t {
+				stack = append(stack, member)
+			}
+		case []any:
+			stack = append(stack, t...)
+		}
+	}
+	return pruneBaseSteps + pruneStepsPerValue*n
+}
 
 type pruner struct {
 	root any
+	// steps is the remaining budget. Once it is negative every call returns
+	// at once, and the caller discards the result.
+	steps int
+}
+
+// spend takes one step from the budget and reports whether any was left.
+func (p *pruner) spend() bool {
+	p.steps--
+	return p.steps >= 0
 }
 
 // resolve follows a local JSON Pointer `$ref` ("#/$defs/X") within the root
@@ -285,6 +421,9 @@ func (p *pruner) prune(value, schema any, depth int) any {
 	node, ok := schema.(map[string]any)
 	if !ok || depth > maxPruneDepth {
 		return value // `true`, `false`, or unbounded: nothing to learn
+	}
+	if !p.spend() {
+		return value
 	}
 
 	// Each applicator applies independently, as validation does, so applying
@@ -397,16 +536,27 @@ func (p *pruner) evaluates(schema any, name string, depth int) bool {
 }
 
 // matchPattern returns the subschema of the first patternProperties entry
-// matching name. A pattern Go's regexp cannot compile (ECMA-262 has constructs
-// RE2 lacks) is treated as matching, so its member is kept rather than dropped.
+// matching name, the patterns taken in sorted order so the choice between two
+// matching patterns with different subschemas is deterministic (a Go map's
+// iteration order is not). A pattern Go's regexp cannot compile (ECMA-262 has
+// constructs RE2 lacks) is treated as matching, so its member is kept rather
+// than dropped.
 func matchPattern(patterns map[string]any, name string) (any, bool) {
-	for pattern, sub := range patterns {
-		re, err := regexp.Compile(pattern)
-		if err != nil {
+	if len(patterns) == 0 {
+		return nil, false
+	}
+	keys := make([]string, 0, len(patterns))
+	for pattern := range patterns {
+		keys = append(keys, pattern)
+	}
+	sort.Strings(keys)
+	for _, pattern := range keys {
+		re := compiledPattern(pattern)
+		if re == nil {
 			return true, true
 		}
 		if re.MatchString(name) {
-			return sub, true
+			return patterns[pattern], true
 		}
 	}
 	return nil, false
@@ -438,6 +588,9 @@ func (p *pruner) plausible(value, schema any, depth int) bool {
 	node, ok := schema.(map[string]any)
 	if !ok || depth > maxPruneDepth {
 		return schema != false
+	}
+	if !p.spend() {
+		return false
 	}
 	if ref, ok := node["$ref"].(string); ok {
 		if target, found := p.resolve(ref); found && !p.plausible(value, target, depth+1) {

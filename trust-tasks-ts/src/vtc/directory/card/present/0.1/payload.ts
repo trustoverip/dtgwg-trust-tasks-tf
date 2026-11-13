@@ -168,8 +168,13 @@ export type Response = VTCDirectoryCardPresentResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/directory/card/present/0.1",
   "title": "VTC Directory — Card — Present — payload",
@@ -214,37 +219,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Card — Present — response payload",
-      "description": "The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verified",
-        "revision"
-      ],
-      "properties": {
-        "verified": {
-          "type": "object",
-          "maxProperties": 16,
-          "propertyNames": {
-            "$ref": "#/$defs/FieldKey"
-          },
-          "additionalProperties": {
-            "$ref": "#/$defs/VerifiedValue"
-          },
-          "description": "The values now on the card, keyed by field."
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -253,56 +227,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "VerifiedValue": {
-      "title": "VerifiedValue",
-      "description": "The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "value",
-        "issuer",
-        "verifiedAt"
-      ],
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "string",
-              "maxLength": 2000
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "number"
-            }
-          ],
-          "description": "The disclosed claim value."
-        },
-        "issuer": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "DID of the credential's issuer, shown as the field's verification badge."
-        },
-        "credentialType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The most specific `type` of the credential the claim came from."
-        },
-        "verifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community verified the presentation."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential expires, where it does. The community withdraws the value once it passes."
-        }
       }
     },
     "FieldKey": {
@@ -314,10 +238,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -421,7 +345,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -436,6 +360,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 98304,
 } as const;
 
 /**

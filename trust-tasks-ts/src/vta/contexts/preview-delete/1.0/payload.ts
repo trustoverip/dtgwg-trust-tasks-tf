@@ -90,8 +90,13 @@ export type Response = VTAContextsPreviewDeleteResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0",
   "title": "VTA Contexts Preview-Delete — payload",
@@ -112,71 +117,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Contexts Preview-Delete — response payload",
-      "description": "Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "keys",
-        "webvhDids",
-        "aclEntriesRemoved",
-        "aclEntriesUpdated"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The context previewed."
-        },
-        "subContexts": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf."
-        },
-        "keys": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice."
-        },
-        "webvhDids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing."
-        },
-        "aclEntriesRemoved": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Subjects whose ACL entry would be removed outright, because this context was its only scope."
-        },
-        "aclEntriesUpdated": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Subjects whose ACL entry would be narrowed — they hold other scopes and keep them."
-        },
-        "didTemplates": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "DID templates scoped to this context that would be removed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -188,10 +128,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -271,7 +211,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

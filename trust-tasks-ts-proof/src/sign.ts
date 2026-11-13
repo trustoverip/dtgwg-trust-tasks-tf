@@ -4,6 +4,7 @@ import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";
 import { canonicalBytes } from "./jcs.js";
 import { didKeyFromPublicKey, toMultibase, type Cryptosuite, type Curve, type PublicKey } from "./keys.js";
+import { proofPurposeError } from "./verifier.js";
 
 /** A signer: a private key of a known curve, with the `did:key` it publishes. */
 export interface Signer {
@@ -38,6 +39,9 @@ export function signerFromPrivateKey(curve: Curve, privateKey: Uint8Array): Sign
 }
 
 export interface SignOptions {
+  /** Defaults to `authentication`: a Trust Task proof shows the issuer controls
+   * its identifier (SPEC §4.7.3). `assertionMethod` is for a proof a
+   * specification defines as an attestation. One of `SIGNING_PURPOSES`. */
   proofPurpose?: string;
   /** ISO-8601; defaults to now. Written in UTC without a zero fraction (as the
    * Rust crate writes it), so the same key over the same document and `created`
@@ -55,7 +59,9 @@ const CURVE_SUITE: Record<Curve, Cryptosuite> = {
  * Return a copy of `doc` with a `proof` over everything else in it, from
  * `signer`. Refuses — throwing — to sign a document whose `issuer` is absent or
  * is not the signer's `did:key`: such a document could never verify (SPEC
- * §4.7). An existing `proof` is replaced.
+ * §4.7). An existing `proof` is replaced. A document carrying `@context` gets
+ * a proof carrying the same `@context`, as the cryptosuites' Create Proof
+ * algorithm requires.
  */
 export function signTrustTask<P>(
   doc: TrustTaskDocument<P>,
@@ -70,13 +76,27 @@ export function signTrustTask<P>(
     throw new Error(`document issuer ${body.issuer} is not the signer ${signer.did}`);
   }
 
+  const proofPurpose = options.proofPurpose ?? "authentication";
+  const purposeError = proofPurposeError(proofPurpose);
+  if (purposeError !== undefined) {
+    throw new Error(purposeError);
+  }
+
   const config: Record<string, unknown> = {
     type: "DataIntegrityProof",
     cryptosuite: CURVE_SUITE[signer.curve],
     created: timestamp(options.created ?? new Date()),
     verificationMethod: signer.verificationMethod,
-    proofPurpose: options.proofPurpose ?? "assertionMethod",
+    proofPurpose,
   };
+  // eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+  // unsecuredDocument.@context is present, set proof.@context to
+  // unsecuredDocument.@context." The proof configuration is hashed with it, and
+  // the emitted proof carries it. A document without `@context` (the usual
+  // Trust Task) gets exactly the proof it got before.
+  if (Object.prototype.hasOwnProperty.call(body, "@context")) {
+    config["@context"] = structuredClone(body["@context"]);
+  }
 
   const digest = signer.curve === "p384" ? sha384 : sha256;
   const hashData = new Uint8Array([...digest(canonicalBytes(config)), ...digest(canonicalBytes(body))]);

@@ -6,7 +6,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { generate, generateFiles, MARKER_FILE, parseLock, taskLabel } from "../src/index.js";
+import { generate, generateFiles, generateModule, MARKER_FILE, parseBundle, parseLock, taskLabel } from "../src/index.js";
 
 // .test-build/test/generate.test.js → the package root.
 const PKG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -71,7 +71,7 @@ describe("parseLock", () => {
     const lock = parseLock(fs.readFileSync(path.join(EXAMPLE, "trust-tasks.lock"), "utf8"));
     assert.equal(lock.version, 1);
     // One slug, two authorities: a slug is unique only within its source (SPEC §6.5).
-    assert.deepEqual(lock.tasks.map(taskLabel), ["acl/grant/0.2", "keys/list/0.2", "vault/get/0.3", "@acme/vault/get/0.3"]);
+    assert.deepEqual(lock.tasks.map(taskLabel), ["acl/grant/0.3", "keys/list/0.2", "vault/get/0.3", "@acme/vault/get/0.3"]);
     assert.deepEqual(lock.sources.get("acme"), { path: "fixture-registry/site" });
 
     const sourced = parseLock(
@@ -118,7 +118,8 @@ describe("generate", () => {
     assert.deepEqual(result.files, [
       ".trust-tasks-generated",
       "_extends.ts",
-      "acl/grant/0.2/payload.ts",
+      "_shared/components.ts",
+      "acl/grant/0.3/payload.ts",
       "acme/index.ts",
       "acme/payments/settle/1.0/payload.ts",
       "index.ts",
@@ -126,7 +127,7 @@ describe("generate", () => {
       "vault/get/0.3/payload.ts",
     ]);
     const index = fs.readFileSync(path.join(out, "index.ts"), "utf8");
-    assert.match(index, /^export \* as AclGrant_v0_2 from "\.\/acl\/grant\/0\.2\/payload\.js";$/m);
+    assert.match(index, /^export \* as AclGrant_v0_3 from "\.\/acl\/grant\/0\.3\/payload\.js";$/m);
     assert.match(index, /^export \* as Acme from "\.\/acme\/index\.js";$/m);
     assert.match(index, /from "@openvtc\/trust-tasks\/runtime";/);
     assert.doesNotMatch(index, /\.\.\/|_runtime/, "the runtime is imported by package, never by a relative path");
@@ -187,7 +188,7 @@ describe("generate", () => {
     const { lock } = app([edited(first!, (b) => (b.status = "withdrawn")), framework]);
     const { modules, skipped } = await generateFiles({ lock, log: (l) => notes.push(l) });
     assert.equal(modules.length, 0);
-    assert.match(skipped.get("acl/grant/0.2")!, /withdrawn/);
+    assert.match(skipped.get("acl/grant/0.3")!, /withdrawn/);
     assert.match(skipped.get("trust-task-ok/0.1")!, /framework specification/);
     assert.equal(notes.length, 2);
   });
@@ -196,17 +197,14 @@ describe("generate", () => {
     const FRAMEWORK_EXT = "https://trusttasks.org/spec/trust-task/0.4/framework#/$defs/Ext";
     const money = (version: string) => `https://tasks.example.com/spec/payments/_shared/${version}/money#/$defs/Amount`;
 
-    /** acl/grant 0.2 as a current bundle carries it: every definition but Response is shared. */
+    /** The example's acl/grant 0.3, as vendored: every definition but Response is shared. */
     function aclWithOrigins(): Task {
       const acl = exampleTasks().find((t) => t.slug === "acl/grant")!;
-      return edited(acl, (b) => {
-        const defs = (b.schema as { $defs: Record<string, unknown> }).$defs;
-        b.defOrigins = Object.fromEntries(
-          Object.keys(defs)
-            .filter((k) => k !== "Response")
-            .map((k) => [k, k === "Ext" ? FRAMEWORK_EXT : `https://trusttasks.org/spec/acl/_shared/0.2/acl-entry#/$defs/${k}`]),
-        );
-      });
+      const bundle = JSON.parse(acl.bytes.toString());
+      const defs = Object.keys(bundle.schema.$defs).filter((k) => k !== "Response");
+      assert.deepEqual(Object.keys(bundle.defOrigins ?? {}).sort(), defs.sort(), "the vendored bundle carries defOrigins");
+      assert.equal(bundle.defOrigins.Ext, FRAMEWORK_EXT);
+      return acl;
     }
 
     /** The sourced fixture with the framework's Ext (as acl/grant carries it) and a shared Amount. */
@@ -234,8 +232,11 @@ describe("generate", () => {
       assert.equal(components.match(/^export interface Ext \{$/gm)?.length, 1, "Ext, reached by both tasks, is declared once");
       assert.match(components, /^export interface AclEntry \{$/m);
       assert.match(components, /^export interface Amount \{$/m);
+      // `Purpose` is a `type` beside an `anyOf`: its numbered parts are its own,
+      // not counter-suffixed duplicates, and a bare name must not be refused for them.
+      assert.match(components, /^export type Purpose = Purpose1 & Purpose2;$/m);
 
-      const acl = files.get("acl/grant/0.2/payload.ts")!;
+      const acl = files.get("acl/grant/0.3/payload.ts")!;
       assert.match(acl, /^import type \{ [^}]*\bAclEntry\b[^}]* \} from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
       assert.match(acl, /^export type \{ [^}]*\bAclEntry\b[^}]* \};$/m, "re-exported under its own name");
       assert.doesNotMatch(acl, /^export (interface|type) (AclEntry|Ext)\b/m);
@@ -264,15 +265,15 @@ describe("generate", () => {
 
     it("falls back to declaring definitions in the module for a bundle without defOrigins", async () => {
       const keys = exampleTasks().find((t) => t.slug === "keys/list")!;
-      assert.equal("defOrigins" in JSON.parse(keys.bytes.toString()), false, "the example's vendored bundles predate defOrigins");
+      assert.equal("defOrigins" in JSON.parse(keys.bytes.toString()), false, "the example's keys/list bundle predates defOrigins");
       const { lock } = app([aclWithOrigins(), keys]);
       const { files } = await generateFiles({ lock, ...quiet });
-      assert.match(files.get("acl/grant/0.2/payload.ts")!, /from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
+      assert.match(files.get("acl/grant/0.3/payload.ts")!, /from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
       const list = files.get("keys/list/0.2/payload.ts")!;
       assert.doesNotMatch(list, /_shared\/components/);
       assert.match(list, /^export interface Ext \{$/m, "an older bundle's module declares its definitions itself");
 
-      const { files: old } = await generateFiles({ lock: app(exampleTasks()).lock, ...quiet });
+      const { files: old } = await generateFiles({ lock: app(exampleTasks().filter((t) => t.slug !== "acl/grant")).lock, ...quiet });
       assert.equal(old.has("_shared/components.ts"), false, "only older bundles: no components module");
     });
 
@@ -290,7 +291,7 @@ describe("generate", () => {
   describe("third-party sources", () => {
     it("refuses a source named like an official task's first segment", async () => {
       const { lock } = app([...exampleTasks(), fixtureTask({ source: "acl" })], { acl: "https://tasks.example.com" });
-      await assert.rejects(generateFiles({ lock, ...quiet }), /source "acl" .* official task acl\/grant\/0\.2/);
+      await assert.rejects(generateFiles({ lock, ...quiet }), /source "acl" .* official task acl\/grant\/0\.3/);
     });
 
     it("refuses a sourced bundle under the official authority", async () => {
@@ -364,5 +365,95 @@ describe("a bare component's nested branch types", () => {
     const { files } = await generateFiles({ lock, ...quiet });
     const components = files.get("_shared/components.ts")!;
     assert.match(components, /^export type ConsumerKind = Companion \| Service;$/m);
+  });
+});
+
+describe("bundle text reaches a module only as data", () => {
+  const fixture = (): Record<string, any> => JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+
+  it("refuses json-schema-to-typescript keywords in a schema, wherever a subschema sits", () => {
+    const tsType = "string;\n};\nexport const generatedExtra = 1;\nexport interface Z {\n  z: string";
+    const cases: [string, (b: Record<string, any>) => void][] = [
+      ["a property", (b) => (b.schema.properties.amount.tsType = tsType)],
+      ["a definition", (b) => (b.schema.$defs.Amount.tsEnumNames = ["A"])],
+      ["the response schema", (b) => (b.responseSchema = { ...b.schema.$defs.Response, tsType })],
+      ["a oneOf branch", (b) => (b.schema.properties.amount = { oneOf: [{ type: "string", tsType }] })],
+    ];
+    for (const [where, change] of cases) {
+      const b = fixture();
+      change(b);
+      assert.throws(() => parseBundle(b), /is a json-schema-to-typescript keyword, not JSON Schema/, where);
+    }
+  });
+
+  it("still accepts a payload member named tsType, and a tsType string in an enum", () => {
+    const b = fixture();
+    b.schema.properties.tsType = { type: "string", enum: ["tsType"] };
+    b.propertyOrder["/schema"] = [...b.propertyOrder["/schema"], "tsType"];
+    assert.doesNotThrow(() => parseBundle(b));
+  });
+
+  it("refuses a member named __proto__ anywhere in a schema", () => {
+    const inProperties = JSON.parse(fs.readFileSync(FIXTURE, "utf8").replace('"properties":{', '"properties":{"__proto__":{"type":"string"},'));
+    assert.throws(() => parseBundle(inProperties), /has a member named __proto__/);
+    const inConst = fixture();
+    inConst.schema.properties.amount = JSON.parse('{"const":{"__proto__":{"x":1}}}');
+    assert.throws(() => parseBundle(inConst), /has a member named __proto__/);
+  });
+
+  it("refuses a Type URI that is not one, including one that would end the banner comment", () => {
+    for (const typeUri of [
+      "https://tasks.example.com/spec/payments/settle/1.0 */ export const generatedExtra = 1; /*",
+      "https://tasks.example.com*/x/spec/payments/settle/1.0",
+      "https://tasks.example.com/spec/payments/settle/1.0\nexport const generatedExtra = 1;",
+      "https://tasks.example.com/spec/payments/settle/1.0#request",
+      "http://tasks.example.com/spec/payments/settle/1.0",
+      "https://tasks.example.com/spec/Payments/1.0",
+      "urn:example:acme:spec:payments:settle",
+    ]) {
+      const b = fixture();
+      b.typeUri = typeUri;
+      assert.throws(() => parseBundle(b), /is not a Type URI/, typeUri);
+    }
+    for (const typeUri of [
+      "https://tasks.example.com/spec/payments/settle/1.0",
+      "did:web:acme.example/spec/payments/settle/1.0",
+      "urn:example:acme:spec:payments:settle:1.0",
+    ]) {
+      const b = fixture();
+      b.typeUri = typeUri;
+      assert.doesNotThrow(() => parseBundle(b), typeUri);
+    }
+  });
+
+  it("holds deprecation to the lifecycle notes", () => {
+    for (const note of ["retired", "retired; use payments/settle/1.1", "superseded by payments/settle/1.1"]) {
+      const b = fixture();
+      b.deprecation = note;
+      assert.doesNotThrow(() => parseBundle(b), note);
+    }
+    for (const note of ["retired */ export const generatedExtra = 1; /*", "superseded by payments/settle/1.1\nexport const generatedExtra = 1;", "use something else"]) {
+      const b = fixture();
+      b.deprecation = note;
+      assert.throws(() => parseBundle(b), /is not a lifecycle note/, note);
+    }
+  });
+
+  it("checks a bundle handed to generateModule without parseBundle", async () => {
+    const bundle = { ...parseBundle(fixture()), deprecation: "retired */ export const generatedExtra = 1; /*" };
+    await assert.rejects(generateModule(bundle, "acme"), /is not a lifecycle note/);
+  });
+
+  it("refuses a shared definition whose name would not be an identifier", async () => {
+    const [first] = exampleTasks();
+    const task = edited(first!, (b) => {
+      const origins = b.defOrigins as Record<string, string>;
+      const name = Object.keys(origins)[0]!;
+      origins[name] = origins[name]!.replace(/#\/\$defs\/.*$/, "#/$defs/A};export const generatedExtra = 1;");
+      delete ((b.schema as any).$defs[name] as Record<string, unknown>).title;
+      if (b.responseSchema && (b.responseSchema as any).$defs?.[name]) delete (b.responseSchema as any).$defs[name].title;
+    });
+    const { lock } = app([task]);
+    await assert.rejects(generateFiles({ lock, ...quiet }), /which is not a TypeScript identifier/);
   });
 });

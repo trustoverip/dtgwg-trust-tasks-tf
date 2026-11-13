@@ -76,8 +76,13 @@ export type Response = VTCBadgesClaimsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/badges/claims/create/0.1",
   "title": "VTC Badges — Claims — Create — payload",
@@ -116,29 +121,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — Claims — Create — response payload",
-      "description": "The success response to a vtc/badges/claims/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/claims/create/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "claim",
-        "code"
-      ],
-      "properties": {
-        "claim": {
-          "$ref": "#/$defs/ClaimCode"
-        },
-        "code": {
-          "$ref": "#/$defs/ClaimSecret",
-          "description": "The code, answered this once. The community keeps only its digest."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -149,97 +131,17 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "ClaimSecret": {
-      "title": "ClaimSecret",
-      "description": "A claim code itself: at least 128 random bits the community generated, base64url (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by a member, never stored or answered again (VTI-BDG-025).",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9_-]{22,64}$"
-    },
-    "ClaimCode": {
-      "title": "ClaimCode",
-      "description": "A claim code's record, as the badge's owners and administrators see it: never the code (VTI-BDG-027).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "claimId",
-        "badgeId",
-        "label",
-        "validUntil",
-        "limit",
-        "claims",
-        "state",
-        "createdAt"
-      ],
-      "properties": {
-        "claimId": {
-          "$ref": "#/$defs/ClaimId"
-        },
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId"
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 120,
-          "description": "What the code is for — the event, say — shown to the badge's owners. Never shown to whoever redeems it."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "After this the code admits no one."
-        },
-        "limit": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10000,
-          "description": "How many claims the code admits."
-        },
-        "claims": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many members have redeemed it."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "active",
-            "withdrawn"
-          ],
-          "description": "`withdrawn` once its issuer withdrew it or the badge was retired. A code past `validUntil` or out of claims stays `active` and admits no one."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "$ref": "#/$defs/EntryId",
-          "description": "The issuer's entry, where they have one; the giver of every award the code admits."
-        }
-      }
-    },
     "BadgeId": {
       "title": "BadgeId",
       "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
       "type": "string",
       "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
-    },
-    "ClaimId": {
-      "title": "ClaimId",
-      "description": "Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64 base64url characters. Random; never the code itself, which the community keeps only as a digest (VTI-BDG-025).",
-      "type": "string",
-      "pattern": "^bcl_[A-Za-z0-9_-]{16,64}$"
-    },
-    "EntryId": {
-      "title": "EntryId",
-      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-      "type": "string",
-      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -363,7 +265,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

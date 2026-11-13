@@ -595,7 +595,9 @@ fn test_pki() -> (String, Vec<u8>, Vec<u8>) {
 }
 
 /// Serves the files under `root` over TLS on 127.0.0.1, one request per
-/// connection, until the test process exits. Returns the port.
+/// connection, until the test process exits. Returns the port. A file
+/// `<path>.status` holding a status line (`403 Forbidden`) answers `<path>`
+/// with that status and no body.
 fn serve_https(root: PathBuf, cert: Vec<u8>, key: Vec<u8>) -> u16 {
     use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
     let config = Arc::new(
@@ -635,8 +637,22 @@ fn serve_https(root: PathBuf, cert: Vec<u8>, key: Vec<u8>) -> u16 {
                     }
                 }
                 let path = request_line.split_whitespace().nth(1).unwrap_or("/");
+                let file = root.join(path.trim_start_matches('/'));
+                let status = (!path.contains(".."))
+                    .then(|| std::fs::read_to_string(format!("{}.status", file.display())).ok())
+                    .flatten();
+                if let Some(status) = status {
+                    let head = format!(
+                        "HTTP/1.1 {}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                        status.trim()
+                    );
+                    let _ = tls.write_all(head.as_bytes());
+                    tls.conn.send_close_notify();
+                    let _ = tls.flush();
+                    return;
+                }
                 let body = (!path.contains(".."))
-                    .then(|| std::fs::read(root.join(path.trim_start_matches('/'))).ok())
+                    .then(|| std::fs::read(&file).ok())
                     .flatten();
                 let head = match &body {
                     Some(b) => format!(
@@ -716,5 +732,72 @@ fn an_https_source_is_fetched_and_verified() {
     assert_eq!(
         std::fs::read(w.path("app/trust-tasks/@acme/payments/settle/1.0.bundle.json")).unwrap(),
         by_path["p"]
+    );
+}
+
+/// A 401 and a 403 from a registry are not "no index here": the first is an
+/// authentication demand, the second a refusal (or S3's answer for a missing
+/// key), and each says so.
+#[test]
+fn an_https_source_that_refuses_says_how() {
+    let w = World::new();
+    let (ca_pem, cert, key) = test_pki();
+    let port = serve_https(w.path("acme-site"), cert, key);
+    let ca = w.path("ca.pem");
+    std::fs::write(&ca, ca_pem).unwrap();
+    let ca = ca.to_str().unwrap().to_string();
+    let env = [("TRUST_TASKS_CA_FILE", ca.as_str())];
+    w.manifest(&format!(
+        "[sources.acme]\nurl = \"https://127.0.0.1:{port}\"\n\n[tasks]\n"
+    ));
+    let status = w.path("acme-site/specs/index.json.status");
+
+    std::fs::write(&status, "401 Unauthorized").unwrap();
+    let r = w
+        .run_env(&["add", "acme:payments/settle/1.0"], &env)
+        .fails();
+    assert!(r.stderr.contains("HTTP 401"), "{}", r.stderr);
+    assert!(!r.stderr.contains("no index for"), "{}", r.stderr);
+
+    std::fs::write(&status, "403 Forbidden").unwrap();
+    let r = w
+        .run_env(&["add", "acme:payments/settle/1.0"], &env)
+        .fails();
+    assert!(r.stderr.contains("HTTP 403"), "{}", r.stderr);
+    assert!(!r.stderr.contains("no index for"), "{}", r.stderr);
+
+    std::fs::write(&status, "404 Not Found").unwrap();
+    let r = w
+        .run_env(&["add", "acme:payments/settle/1.0"], &env)
+        .fails();
+    assert!(
+        r.stderr.contains("no index for source `acme`"),
+        "{}",
+        r.stderr
+    );
+
+    // A 403 from the by-digest store is still read as "not there": the
+    // version's path is the fallback.
+    std::fs::remove_file(&status).unwrap();
+    let hex = {
+        let bytes = w.acme_bundle("payments/settle/1.0");
+        let d: String = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        d
+    };
+    std::fs::write(
+        w.path(&format!(
+            "acme-site/specs/by-digest/sha256-{hex}.json.status"
+        )),
+        "403 Forbidden",
+    )
+    .unwrap();
+    let r = w.run_env(&["add", "acme:payments/settle/1.0"], &env).ok();
+    assert!(
+        r.stdout.contains("Added acme:payments/settle 1.0"),
+        "{}",
+        r.stdout
     );
 }

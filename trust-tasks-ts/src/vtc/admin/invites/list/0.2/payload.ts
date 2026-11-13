@@ -56,8 +56,13 @@ export type Response = VTCAdminInvitesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/admin/invites/list/0.2",
   "title": "VTC Admin Invites List — payload",
@@ -69,27 +74,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Invites List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "invites"
-      ],
-      "properties": {
-        "invites": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/InviteSummary"
-          },
-          "description": "Every invite the community holds, outstanding and terminal."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -99,73 +83,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "InviteSummary": {
-      "$anchor": "inviteSummary",
-      "title": "InviteSummary",
-      "description": "One outstanding or historical admin invite. Consumed rows are retained as audit history.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jti",
-        "kind",
-        "status"
-      ],
-      "properties": {
-        "jti": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Unique invite identifier; the revoke target."
-        },
-        "kind": {
-          "$ref": "#/$defs/InviteKind"
-        },
-        "status": {
-          "$ref": "#/$defs/InviteStatus"
-        },
-        "targetDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The administrator's DID: for a wallet invitation the DID it names; for a passkey invitation the DID derived from the passkey that claimed it, so absent until it is consumed."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When an `issued` invite lapses."
-        },
-        "consumedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the invite was redeemed, if it was."
-        }
-      }
-    },
-    "InviteStatus": {
-      "$anchor": "inviteStatus",
-      "title": "InviteStatus",
-      "type": "string",
-      "enum": [
-        "issued",
-        "consumed",
-        "expired"
-      ],
-      "description": "`issued` is outstanding and revocable; `consumed` and `expired` are terminal."
-    },
-    "InviteKind": {
-      "$anchor": "inviteKind",
-      "title": "InviteKind",
-      "type": "string",
-      "enum": [
-        "wallet",
-        "passkey"
-      ],
-      "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -262,7 +185,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

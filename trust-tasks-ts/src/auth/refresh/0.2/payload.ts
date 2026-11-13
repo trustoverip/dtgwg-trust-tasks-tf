@@ -80,8 +80,13 @@ export type Response = AuthRefreshResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/refresh/0.2",
   "title": "Auth — Refresh",
@@ -111,30 +116,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Refresh — response payload",
-      "description": "Issued by the auth service when the presented refresh token is valid. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/refresh/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "tokens"
-      ],
-      "properties": {
-        "session": {
-          "$ref": "#/$defs/Session",
-          "description": "Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits, and the session's `absoluteExpiresAt`) without a separate whoami call."
-        },
-        "tokens": {
-          "$ref": "#/$defs/TokenBundle",
-          "description": "New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -144,132 +125,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "TokenBundle": {
-      "$anchor": "tokenBundle",
-      "title": "TokenBundle",
-      "description": "An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accessToken",
-        "tokenType",
-        "expiresIn"
-      ],
-      "properties": {
-        "accessToken": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid."
-        },
-        "refreshToken": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh."
-        },
-        "tokenType": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Token presentation scheme. Almost always \"Bearer\"; reserved for future schemes."
-        },
-        "expiresIn": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Seconds from issuance until the access token expires."
-        },
-        "refreshExpiresIn": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Seconds from issuance until the refresh token expires, when one was issued."
-        },
-        "scope": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
-    "Session": {
-      "$anchor": "session",
-      "title": "Session",
-      "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "subject",
-        "issuedAt",
-        "expiresAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The authenticated party's VID (typically a DID URL). For a session established by a proxied login (auth/authenticate/0.3), this is the *principal* being authenticated as — never the delegate that signed the authenticate document; see `actor`."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session was created."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after. A consumer honouring `absoluteExpiresAt` MUST NOT advance this value past it, by refresh or any other means."
-        },
-        "amr": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used."
-        },
-        "acr": {
-          "type": "string",
-          "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor)."
-        },
-        "sessionKey": {
-          "type": "string",
-          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
-          "maxLength": 512,
-          "description": "The did:key VID bound to this session by auth/authenticate/0.2 or 0.3, when the producer registered one. Present here so introspection (auth/whoami, auth/sessions/list) can show the binding a client already holds; it is descriptive, not an additional grant — the binding, its scope and its lifetime are governed entirely by the auth/authenticate specification version that established it. Absent when the session was established without a session key, or by a specification version that does not carry one."
-        },
-        "actor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The delegate's VID — the party whose `proof` actually authenticated this session — when this session was established by a *proxied* login (auth/authenticate/0.3, `payload.principal` present and distinct from `issuer`). Absent whenever `subject` authenticated with its own key, including every auth/authenticate/0.1 and /0.2 session and an auth/authenticate/0.3 request where `principal` is absent or equals `issuer`. Carrying `actor` separately from `subject` is what lets an audit trail, a revocation, or a response to a compromised delegate name the true acting party without conflating it with the principal it acted for — see auth/authenticate/0.3 Security & Privacy (Correlation)."
-        },
-        "absoluteExpiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant beyond which this session's `expiresAt` MUST NOT be advanced, by auth/refresh/0.2 or by any other means — an absolute session lifetime set once at authentication and never moved forward. Consumers that impose no such ceiling beyond the session's own rolling `expiresAt` omit this member; its absence is not itself a claim that the session is unbounded, only that this response does not state a bound. See auth/refresh/0.2 Conformance and Security & Privacy for the enforcement rule."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -428,7 +289,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

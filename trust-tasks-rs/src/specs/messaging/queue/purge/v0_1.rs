@@ -146,6 +146,13 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub peer: ::std::option::Option<Vid>,
     pub queue: Queue,
+    ///Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview.
+    #[serde(
+        rename = "storedBefore",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub stored_before: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -234,6 +241,13 @@ pub struct Response {
     pub matched_bytes: ::std::option::Option<u64>,
     ///Messages actually removed. 0 on a dry run.
     pub purged: u64,
+    ///The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore.
+    #[serde(
+        rename = "selectedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub selected_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -310,6 +324,10 @@ pub mod builder {
             ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         peer: ::std::result::Result<::std::option::Option<super::Vid>, ::std::string::String>,
         queue: ::std::result::Result<super::Queue, ::std::string::String>,
+        stored_before: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -320,6 +338,7 @@ pub mod builder {
                 older_than_seconds: Ok(Default::default()),
                 peer: Ok(Default::default()),
                 queue: Err("no value supplied for queue".to_string()),
+                stored_before: Ok(Default::default()),
             }
         }
     }
@@ -384,6 +403,18 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for queue: {e}"));
             self
         }
+        pub fn stored_before<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.stored_before = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for stored_before: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -395,6 +426,7 @@ pub mod builder {
                 older_than_seconds: value.older_than_seconds?,
                 peer: value.peer?,
                 queue: value.queue?,
+                stored_before: value.stored_before?,
             })
         }
     }
@@ -407,6 +439,7 @@ pub mod builder {
                 older_than_seconds: Ok(value.older_than_seconds),
                 peer: Ok(value.peer),
                 queue: Ok(value.queue),
+                stored_before: Ok(value.stored_before),
             }
         }
     }
@@ -417,6 +450,10 @@ pub mod builder {
         matched: ::std::result::Result<u64, ::std::string::String>,
         matched_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         purged: ::std::result::Result<u64, ::std::string::String>,
+        selected_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -426,6 +463,7 @@ pub mod builder {
                 matched: Err("no value supplied for matched".to_string()),
                 matched_bytes: Ok(Default::default()),
                 purged: Err("no value supplied for purged".to_string()),
+                selected_at: Ok(Default::default()),
             }
         }
     }
@@ -480,6 +518,18 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for purged: {e}"));
             self
         }
+        pub fn selected_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.selected_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for selected_at: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Response> for super::Response {
         type Error = super::error::ConversionError;
@@ -490,6 +540,7 @@ pub mod builder {
                 matched: value.matched?,
                 matched_bytes: value.matched_bytes?,
                 purged: value.purged?,
+                selected_at: value.selected_at?,
             })
         }
     }
@@ -501,6 +552,7 @@ pub mod builder {
                 matched: Ok(value.matched),
                 matched_bytes: Ok(value.matched_bytes),
                 purged: Ok(value.purged),
+                selected_at: Ok(value.selected_at),
             }
         }
     }
@@ -511,7 +563,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.\",\"properties\":{\"dryRun\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"matched\":{\"description\":\"Messages that matched the selection.\",\"minimum\":0,\"type\":\"integer\"},\"matchedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"purged\":{\"description\":\"Messages actually removed. 0 on a dry run.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"matched\",\"purged\",\"dryRun\"],\"title\":\"Messaging — Purge Queue — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/queue/purge/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose queue to purge. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"},\"dryRun\":{\"description\":\"Report what would be purged and purge nothing. Default false.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"olderThanSeconds\":{\"description\":\"Only messages queued at least this long.\",\"minimum\":0,\"type\":\"integer\"},\"peer\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"Only messages exchanged with this counterparty: in a send queue, the recipient; in a receive queue, the sender.\"},\"queue\":{\"$ref\":\"#/$defs/Queue\"}},\"required\":[\"queue\"],\"title\":\"Messaging — Purge Queue — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/queue/purge/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose queue to purge. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"},\"dryRun\":{\"description\":\"Report what would be purged and purge nothing. Default false.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"olderThanSeconds\":{\"description\":\"Only messages queued at least this long.\",\"minimum\":0,\"type\":\"integer\"},\"peer\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"Only messages exchanged with this counterparty: in a send queue, the recipient; in a receive queue, the sender.\"},\"queue\":{\"$ref\":\"#/$defs/Queue\"},\"storedBefore\":{\"description\":\"Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"queue\"],\"title\":\"Messaging — Purge Queue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -519,7 +571,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.\",\"properties\":{\"dryRun\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"matched\":{\"description\":\"Messages that matched the selection.\",\"minimum\":0,\"type\":\"integer\"},\"matchedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"purged\":{\"description\":\"Messages actually removed. 0 on a dry run.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"matched\",\"purged\",\"dryRun\"],\"title\":\"Messaging — Purge Queue — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.\",\"properties\":{\"dryRun\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"matched\":{\"description\":\"Messages that matched the selection.\",\"minimum\":0,\"type\":\"integer\"},\"matchedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"purged\":{\"description\":\"Messages actually removed. 0 on a dry run.\",\"minimum\":0,\"type\":\"integer\"},\"selectedAt\":{\"description\":\"The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"matched\",\"purged\",\"dryRun\"],\"title\":\"Messaging — Purge Queue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

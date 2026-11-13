@@ -133,8 +133,13 @@ export type Response = GitNamespacesListActivityResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/activity/list/0.2",
   "title": "Git Namespaces — List Activity — payload",
@@ -161,95 +166,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Source": {
-      "title": "Source",
-      "type": "string",
-      "enum": [
-        "audit",
-        "job"
-      ],
-      "description": "`audit` — a git-ns audit row: a rights change or a drift report. `job` — a bridge job's queue state, as git-ns/bridge/job/list also reports it."
-    },
-    "ActivityItem": {
-      "title": "ActivityItem",
-      "description": "One thing that happened in a namespace.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "at",
-        "action",
-        "source"
-      ],
-      "properties": {
-        "at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it happened: the audit row's timestamp, or the job's acceptance time (its creation time if never accepted)."
-        },
-        "action": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)*$",
-          "description": "What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it."
-        },
-        "source": {
-          "$ref": "#/$defs/Source",
-          "description": "Where the item came from: an audit row or a bridge job."
-        },
-        "namespace": {
-          "$ref": "#/$defs/NamespaceId",
-          "description": "The namespace the item belongs to. Absent only for a community-wide audit row from before any namespace was unbound (visible to a community administrator with no `namespace` filter only)."
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource",
-          "description": "The resource the item concerns, where it names one."
-        },
-        "right": {
-          "$ref": "#/$defs/Right",
-          "description": "The right a rights-change item concerns. Absent for a drift report or a job item."
-        },
-        "actor": {
-          "$ref": "#/$defs/Did",
-          "description": "Who acted, for an audit item. Absent when a right-to-be-forgotten erasure has removed it from the audit row, and always absent for a job item, which has no actor of its own."
-        },
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Whose right it was, for a rights-change audit item. Absent likewise on erasure, and always absent for a job item."
-        },
-        "detail": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "A machine-readable qualifier: `departed` on a departure-triggered change, the old name on a rename, a job's queue state, a drift count. A producer MUST NOT put free-form or personal prose here beyond what the qualifier itself names."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — List Activity — response payload",
-      "description": "The matching items, newest first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ActivityItem"
-          },
-          "description": "Items in administered namespaces, newest (`at`) first."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -260,32 +176,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Did": {
-      "title": "Did",
-      "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-      "type": "string",
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
-    },
-    "Resource": {
-      "title": "Resource",
-      "description": "A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-      "type": "string",
-      "maxLength": 455,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-    },
     "NamespaceId": {
       "title": "NamespaceId",
       "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
@@ -294,10 +184,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -434,7 +324,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

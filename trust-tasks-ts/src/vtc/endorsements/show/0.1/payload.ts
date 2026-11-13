@@ -54,8 +54,13 @@ export type Response = VTCEndorsementsShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/endorsements/show/0.1",
   "title": "VTC Endorsements Show — payload",
@@ -74,23 +79,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Endorsements Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "endorsement"
-      ],
-      "properties": {
-        "endorsement": {
-          "$ref": "#/$defs/Endorsement"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -100,99 +88,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Endorsement": {
-      "$anchor": "endorsement",
-      "title": "Endorsement",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "endorsementId",
-        "typeUri",
-        "subjectDid",
-        "issued",
-        "statusListIndex"
-      ],
-      "properties": {
-        "endorsementId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
-        },
-        "typeUri": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. The reserved value is not an IRI, so it never collides with a registered predicate. A community's own identity check is a statement like any other, under `https://registry.trustoverip.org/dtg/vsc/vetted/1`."
-        },
-        "subjectDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "DID of the statement's subject (becomes credentialSubject.id)."
-        },
-        "claim": {
-          "type": "object",
-          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
-        },
-        "issued": {
-          "$ref": "#/$defs/CredentialReference",
-          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
-        },
-        "statusListIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
-        },
-        "revokedAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When the statement was revoked, or null while live."
-        }
-      }
-    },
-    "CredentialReference": {
-      "$anchor": "credentialReference",
-      "title": "CredentialReference",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "A pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
-      "required": [
-        "credentialId"
-      ],
-      "properties": {
-        "credentialId": {
-          "$ref": "#/$defs/CredentialId"
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential was minted."
-        },
-        "expiresAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When it lapses, or null when it does not."
-        }
-      }
-    },
-    "CredentialId": {
-      "$anchor": "credentialId",
-      "title": "CredentialId",
-      "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
-      "type": "string",
-      "minLength": 1
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -311,7 +212,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -86,8 +86,13 @@ export type Response = BackupGetChunkResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/backup/get-chunk/0.1",
   "title": "Backup — Get Chunk — payload",
@@ -113,44 +118,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Backup — Get Chunk — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundleId",
-        "index",
-        "digestMultibase",
-        "data",
-        "expiresAt"
-      ],
-      "properties": {
-        "bundleId": {
-          "$ref": "#/$defs/BundleId",
-          "description": "Echoed, so a chunk that arrives out of order or late is attributable to its bundle without consulting the request."
-        },
-        "index": {
-          "$ref": "#/$defs/ChunkIndex",
-          "description": "Echoed, for the same reason."
-        },
-        "digestMultibase": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Digest of this chunk's raw bytes, restated from the manifest. A producer checks `data` against the manifest's digest for this index, not against this member — this one is a convenience for a producer that has not kept the manifest to hand, and is never sufficient on its own, because it travels with the bytes it describes, and whoever could alter one could alter the other."
-        },
-        "data": {
-          "$ref": "#/$defs/ChunkData"
-        },
-        "expiresAt": {
-          "$ref": "#/$defs/ExpiresAt",
-          "description": "The bundle's current expiry, after any extension this request earned. The producer plans the rest of its retrieval against this, not against the descriptor's original value."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -160,30 +127,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ExpiresAt": {
-      "title": "ExpiresAt",
-      "description": "After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.",
-      "type": "string",
-      "format": "date-time"
-    },
-    "ChunkData": {
-      "title": "ChunkData",
-      "description": "The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.",
-      "type": "string",
-      "minLength": 2,
-      "maxLength": 349526,
-      "pattern": "^[A-Za-z0-9_-]+$"
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "ChunkIndex": {
       "title": "ChunkIndex",
@@ -199,10 +142,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -292,7 +235,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

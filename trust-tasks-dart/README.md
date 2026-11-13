@@ -28,17 +28,46 @@ and implements neither.
 > [Generating only the tasks you use](#generating-only-the-tasks-you-use). The
 > analyzer reports an import of a deprecated library (`deprecated_member_use`).
 
+## Installing the `trust-tasks` command
+
+Pinning tasks and generating their types uses the `trust-tasks` CLI, one
+binary for every language. **No Rust toolchain is needed** — any one of:
+
+- download the archive for your platform (Linux x86_64/aarch64, macOS
+  x86_64/aarch64, Windows x86_64) from a
+  [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true), check it against its `.sha256`, and
+  put `trust-tasks` on your `PATH`;
+- `cargo binstall trust-tasks-cli` (the same prebuilt archive);
+- `cargo install trust-tasks-cli` (builds from source, Rust 1.95+).
+
+See [GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command) for the
+commands.
+
+## What you bring yourself
+
+| | |
+|---|---|
+| Payload validator (SPEC §7.2 item 2) | yours — e.g. [`json_schema`](https://pub.dev/packages/json_schema) behind `PayloadValidator`, fed `payloadSchemaJson` |
+| Proof verifier / signer (item 6) | [`trust_tasks_proof`](https://pub.dev/packages/trust_tasks_proof) — `eddsa-jcs-2022`, `ecdsa-jcs-2019`, `did:key` |
+| Transport | HTTPS: [`trust_tasks_https`](https://pub.dev/packages/trust_tasks_https). DIDComm v2.1: [`trust_tasks_didcomm`](https://pub.dev/packages/trust_tasks_didcomm). TSP: `trust_tasks_tsp` (in this repository, not yet on pub.dev) |
+
 ## Importing
 
 The package's own library exports the **runtime only**. Dart's `export` is flat
 — there is no namespaced re-export — so exporting 500 generated libraries from
 one barrel would collide on the first shared definition anyone calls `Ext`.
-Import the specification you need directly, with a prefix:
+Import the specification you need directly, with a prefix — from the library
+`dart run trust_tasks:generate` wrote into your own package:
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+import 'package:my_app/trust_tasks/acl/grant/v0_3/payload.dart' as acl_grant; // generated
 ```
+
+The prebuilt library of the same version
+(`package:trust_tasks/specs/acl/grant/v0_3/payload.dart`) has the same surface,
+so moving off it is a change to the import line; it is deprecated with the rest
+of the prebuilt tree.
 
 Each generated library exports a uniform surface:
 
@@ -50,18 +79,36 @@ Each generated library exports a uniform surface:
 | `spec`, `responseSpec` | `SpecPolicy` values carrying the §7.2 policy flags and the schema above |
 
 Paths are snake_cased for Dart's `file_names` lint, so the slug `acl/change-role`
-becomes `specs/acl/change_role/v0_2/payload.dart`.
+becomes `specs/acl/change_role/v0_3/payload.dart`.
 
 ## Consuming a document
 
-`consumeInbound` runs SPEC §7.2 items 2 and 4–8, plus the two stateful checks —
-the freshness bound of item 4 and the duplicate-execution record of item 11 —
-and then either calls your handler or builds the correctly-routed error response
+`consumeInbound` runs SPEC §7.2 items 2–8, plus the two stateful checks — the
+duplicate-execution record of item 11 and the freshness bound of item 13 — and
+then either calls your handler or builds the correctly-routed error response
 per §8.1.
+
+Read the body with `parseTrustTaskDocument`, which never throws.
+`TrustTaskDocument.fromJson` casts each member, so a received document with a
+number where `id` belongs throws a `TypeError` — an `Error`, not an
+`Exception` — and `parseTrustTaskDocument` turns that, and a body nested more
+than `maxNestingDepth` (128) levels deep, into a `malformedRequest` reason.
+Pass the decoded map to `consumeInbound` as `received` too: the item-11 digest
+is then over the document as it arrived, members the payload type does not
+model included.
 
 ```dart
 // One guard per consumer, not one per document: it IS the record.
 final guard = InMemoryReplayGuard();
+
+final json = jsonDecode(body); // a FormatException for text that is not JSON
+final doc = switch (parseTrustTaskDocument(
+  json,
+  (p) => acl_grant.Payload.fromJson(p! as Map<String, dynamic>),
+)) {
+  ParsedDocument(:final document) => document,
+  UnparsableDocument(:final reason) => throw MalformedBody(reason), // yours
+};
 
 final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   transport: transport,
@@ -73,11 +120,12 @@ final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   doc: doc,
   myVid: 'did:web:maintainer.example',
   now: DateTime.now(),
-  newErrorId: () => uuid.v4(),
   payloadToJson: (p) => p.toJson(),
+  responseToJson: (r) => r.toJson(),
+  received: json as Map<String, dynamic>,
   handler: (accepted, parties) async => respondWith(
     accepted,
-    uuid.v4(),
+    newUrnUuid(),
     acl_grant.Response(entry: await applyGrant(accepted.payload.entry, parties)),
   ),
 );
@@ -92,8 +140,10 @@ switch (outcome) {
   case Accepted():
     break; // fire-and-forget (§4.4.1): nothing to emit
   case DuplicateOutcome(:final priorResponse):
-    // §7.2 item 11 — already executed. NOT an error.
-    if (priorResponse != null) emit(priorResponse);
+    // §7.2 item 11 — already executed. NOT an error. The first execution's
+    // response document, as the JSON map that was recorded (`isError` says
+    // whether it was a refusal).
+    if (priorResponse != null) emitJson(priorResponse);
 }
 ```
 

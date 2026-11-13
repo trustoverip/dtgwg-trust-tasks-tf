@@ -56,8 +56,13 @@ export type Response = VTCCommunityJoinDiscoveryShowResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/community/join-discovery/show/0.1",
   "title": "VTC Community — Join Discovery — Show — payload",
@@ -70,23 +75,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community — Join Discovery — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "joinDiscovery"
-      ],
-      "properties": {
-        "joinDiscovery": {
-          "$ref": "#/$defs/JoinDiscovery"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -96,30 +84,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "JoinDiscovery": {
-      "title": "JoinDiscovery",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "public"
-      ],
-      "description": "Whether this community answers vtc/join-requests/manifest to a caller it cannot identify.",
-      "properties": {
-        "public": {
-          "type": "boolean",
-          "description": "True: the manifest is answered to any caller, identified or not — the setting of every community that never chose, because the manifest is a public read by design (an applicant has to know what is asked of them before they disclose anything). False: the manifest is answered only to a caller the community can identify — one with a verified proof or a transport-authenticated sender. Not secrecy: an identified caller is answered either way. False makes the answer attributable, which is what a closed or invite-only community wants rather than a crawler enumerating its criteria."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -169,7 +139,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

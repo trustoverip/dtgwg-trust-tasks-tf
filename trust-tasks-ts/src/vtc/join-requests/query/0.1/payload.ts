@@ -85,8 +85,13 @@ export type Response = VTCJoinRequestsQueryResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/query/0.1",
   "title": "VTC Join Requests — Query — payload",
@@ -116,68 +121,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "CredentialQuery": {
-      "title": "CredentialQuery",
-      "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "dcql_query",
-        "nonce",
-        "purpose"
-      ],
-      "description": "The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.",
-      "properties": {
-        "dcql_query": {
-          "type": "object"
-        },
-        "nonce": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512
-        },
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join Requests — Query — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "threadId",
-        "holderDid",
-        "query",
-        "delivered"
-      ],
-      "properties": {
-        "threadId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it."
-        },
-        "holderDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Echoed."
-        },
-        "query": {
-          "$ref": "#/$defs/CredentialQuery"
-        },
-        "delivered": {
-          "type": "boolean",
-          "description": "Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -189,10 +132,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -269,7 +212,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

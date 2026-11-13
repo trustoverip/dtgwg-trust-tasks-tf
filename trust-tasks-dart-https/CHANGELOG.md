@@ -10,6 +10,186 @@ Publishing is triggered by the `trust-tasks-dart-https-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.0 — 2026-11-13
+
+
+### Added
+
+- **dart,dart-https,dart-didcomm**: JSON priorResponse, observability hook, forward routing and per-type size bounds (#1242)
+
+* feat(dart,dart-https,dart-didcomm)!: JSON priorResponse, observability hook, forward routing and per-type size bounds
+
+
+
+### Fixed
+
+- **rs,https,dart-https**: Run the attribution gate before the route lookup (#1246)
+
+Both HTTPS servers looked the route up before the attribution gate, so a sender with neither a bearer token nor a proof could tell a registered type (proofRequired) from an unregistered one (unsupportedType).
+
+  The Rust server now runs on consume_dispatched_answer, so the reorder is made there: the checks that read only the envelope (expiry, recipient, freshness, identity) and the attribution gate move out of consume_core into envelope_checks, which consume_inbound and consume_dispatched_answer both run ahead of their item-3 type check. The route lookup still precedes the DID-method screen and proof verification, so an unregistered type never reaches a resolver.
+
+  The Dart server runs the same checks before the route lookup and before decoding the payload.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.11.0 (was ^0.10.0), the core released beside it.
+
+## 0.2.0 — 2026-11-12
+
+
+### Fixed
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **dart-https**: Advertise the expiry horizon, and pin all four runtimes' freshness to shared vectors (#1212)
+
+* test(runtime): shared freshness vectors run by all four runtimes
+
+  fixtures/consume/freshness.json pins SPEC §7.2's acceptance window (items 4
+  and 13, *Bounding the record*): now / policy / issuedAt / expiresAt to a
+  verdict and, for an accepted document, the replay record's expiry. It covers
+  a stated expiresAt replacing the maximum age, the 30-day expiry horizon and
+  its clamp on the record, a zero horizon, the half-open edges to the
+  millisecond, skew on both sides, a missing issuedAt with and without
+  requireIssuedAt, offsets, fractions and calendar-invalid timestamps, and
+  holds each runtime's default and consequential policies to the same values.
+
+  Run by trust-tasks-rs (tests/freshness_vectors.rs), @openvtc/trust-tasks
+  (test/freshness-vectors.test.ts), trust-tasks-go
+  (trusttasks/freshness_vectors_test.go) and trust_tasks
+  (test/freshness_vectors_test.dart). The Rust workflow now runs on a change
+  under fixtures/, which its integration tests read.
+
+- **dart-https**: Screen proof DID methods to did:key by default and hold error responses to the response verifier (#1207)
+
+HttpsServer with a proofVerifier now accepts only did:key in
+  proof.verificationMethod unless allowedDidMethods widens the set or
+  allowAnyDidMethod: true lifts the screen (defaultAllowedDidMethods).
+  A server with no verifier is unchanged.
+
+  HttpsClient with a responseVerifier now requires a trust-task-error to carry
+  a proof that verifies over the body as received, issued by serverVid to myVid.
+  Otherwise it throws the new UnverifiedErrorResponseException, which keeps the
+  status, the reason and the unverified document for diagnostics.
+
+- **https,dart-https**: Cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors (#1205)
+
+* fix(https,dart-https)!: cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors
+
+  Rust HttpsClient and Dart HttpsClient:
+
+  - The response body is read up to a cap (256 KiB by default,
+    max_response_bytes / maxResponseBytes) and refused beyond it, with a new
+    ResponseTooLarge error. A declared Content-Length over the cap is refused
+    before reading.
+  - server_url / base must be https. Plain http is accepted for a loopback
+    host, or elsewhere with allow_insecure_http / allowInsecureHttp, but a
+    bearer token is never sent over non-loopback http.
+  - Redirects are not followed by default; a 3xx is returned as an HTTP status
+    error so the signed document is never re-posted elsewhere. Rust can opt
+    into same-origin redirects with follow_redirects(true); an https client
+    never downgrades to http.
+  - Error text no longer quotes the response body: HttpStatus keeps at most
+    512 bytes in its field and leaves it out of Display; decode errors keep
+    only the category and position.
+
+  Dart only: every error the HTTP client raises (TLS included) is wrapped as
+  TransportException; the timeout now covers reading the body and cancels the
+  read when it fires; a responseVerifier requires a serverVid; a platform
+  client that followed a redirect anyway is detected by its final URL.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth (#1171)
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.10.0 (was ^0.9.23), the core released beside it.
+
+## 0.1.9 — 2026-11-10
+
+
+### Added
+
+- **acl**: Purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2) (#1074)
+
+* feat(acl): purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2)
+
+  An access-control entry says who may do what, where and until when, but not
+  what for. An agent granted a read of its principal's memory can use the content
+  for anything, and nothing records the use it intended. The VTI specification
+  now requires the purpose (VTI-ACL-100 – 110, trustoverip/dtgwg-vti-spec#115);
+  these are the wire shapes.
+
+  acl/_shared/0.3 — AclEntry 0.3 adds one REQUIRED axis, `purposes`:
+  `{"scope": "any"}` or `{"scope": "listed", "purposes": [...]}` with at least
+  one `Purpose` — a lowerCamelCase name registered in the VTI purpose registry
+  (personalisation, taskExecution, analytics, modelTraining) or an absolute IRI
+  such as a DPV purpose. `any` never grants `modelTraining`. Delegated purposes
+  are a subset of the granter's. CONVENTIONS.md §8a maps a 0.2 entry onto 0.3
+  (`any`, the authority it already held, now stated) and §12 states the rules.
+
+  acl tasks on AclEntry 0.3: grant/0.3, update/0.3, show/0.3, revoke/0.3,
+  change-role/0.3, list/0.4. New errors on grant and update: `purposeOutsideDelegator`
+  (purposes wider than the granter's) and `purposeRefused` (policy will not grant
+  a purpose, refused by name, never dropped). update/0.3 replaces `purposes`
+  wholesale; narrowing it is an audited privilege reduction. `purposes` is never
+  redacted by show or list. No `extends`: a REQUIRED member on the entry cannot
+  be added to a version a 0.2 consumer still reads.
+
+  vta/memory put/0.3, delete/0.3, list/0.3, get/0.2 (each `extends` its
+  predecessor) add an optional `purpose` (`MemoryPurpose`, new in
+  vta/_shared/0.1/memory-record, a reference to acl's `Purpose`) and a
+  `purposeNotGranted` error that discloses nothing and is distinct from
+  `contextForbidden`. A recall, and a listing with values, is purpose-bound:
+  refused for a purpose the entry does not grant, or for none under an entry
+  listing several, and audited with its purpose either way. A write is not
+  purpose-bound, but a conflict that returns `currentValue` is: the value is
+  withheld unless the request's purpose is granted.
+
+  Data rooms (a room authority credential's `purposes`, VTI-ACL-110) are a
+  follow-up.
+
+  Samples in other specs that named the superseded acl versions now name the new
+  ones, with `purposes` on every embedded entry; prose links were moved by
+  `npm run fix-stale-references`.
+
 ## 0.1.8 — 2026-11-04
 
 

@@ -115,7 +115,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/theme/update/0.1","title":"VTC Community — Theme — Update — payload","description":"The whole new stylesheet, which replaces the stored one. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["stylesheet"],"properties":{"stylesheet":{"type":"string","maxLength":32768,"description":"The new theme stylesheet, in the theme profile. The empty string removes the theme."},"dryRun":{"type":"boolean","description":"Absent means false. When true the community checks the stylesheet and answers with what it would store, and stores nothing."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Community — Theme — Update — response payload","type":"object","additionalProperties":false,"required":["stylesheet","stored"],"properties":{"stylesheet":{"type":"string","maxLength":32768,"description":"The stylesheet as stored — or, on a dry run, as it would be stored."},"stored":{"type":"boolean","description":"False on a dry run and when the stylesheet equals the one already stored; true when the stored theme changed."},"updatedAt":{"type":"string","format":"date-time","description":"When the stored theme was last replaced. Absent on a dry run, and when the community has never set one."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/theme/update/0.1","title":"VTC Community — Theme — Update — payload","description":"The whole new stylesheet, which replaces the stored one. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["stylesheet"],"properties":{"stylesheet":{"type":"string","maxLength":32768,"description":"The new theme stylesheet, in the theme profile. The empty string removes the theme."},"dryRun":{"type":"boolean","description":"Absent means false. When true the community checks the stylesheet and answers with what it would store, and stores nothing."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
@@ -134,6 +134,7 @@ const SpecPolicy spec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: payloadSchemaJson,
+  maxDocumentBytes: 49152,
 );
 
 /// The SPEC §7.2 policy for the success-response variant.
@@ -147,4 +148,5 @@ const SpecPolicy responseSpec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: responsePayloadSchemaJson,
+  maxDocumentBytes: 49152,
 );

@@ -1,6 +1,6 @@
 // An application that speaks three Trust Tasks and generates only those.
 //
-// `trust-tasks.lock` pins acl/grant/0.2, keys/list/0.2 and vault/get/0.3 from
+// `trust-tasks.lock` pins acl/grant/0.3, keys/list/0.2 and vault/get/0.3 from
 // the registry, and payments/settle/1.0 from a third-party source named
 // `example` (a fixture under https://tasks.example.com). The bundles are
 // vendored under `trust-tasks/` (the sourced one under `trust-tasks/@example/`).
@@ -22,7 +22,7 @@
 import 'dart:convert';
 
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks_example_consumer_app/trust_tasks/acl/grant/v0_2/payload.dart'
+import 'package:trust_tasks_example_consumer_app/trust_tasks/acl/grant/v0_3/payload.dart'
     as grant;
 import 'package:trust_tasks_example_consumer_app/trust_tasks/example/payments/settle/v1_0/payload.dart'
     as settle;
@@ -80,6 +80,7 @@ Future<void> main() async {
     now: now,
     newErrorId: () => 'urn:uuid:reply-error',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     clock: clock,
     handler: (accepted, parties) async {
       check(accepted.payload.status == keys_list.KeyStatus.active,
@@ -122,6 +123,7 @@ Future<void> main() async {
         act: {'scope': 'all'},
         capabilities: {'scope': 'ceiling'},
         keys: {'scope': 'all'},
+        purposes: {'scope': 'any'},
       ),
     ),
   );
@@ -136,6 +138,7 @@ Future<void> main() async {
     now: now,
     newErrorId: () => 'urn:uuid:reply-grant',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     clock: clock,
     handler: (accepted, parties) async =>
         throw StateError('a proofless acl/grant reached the handler'),

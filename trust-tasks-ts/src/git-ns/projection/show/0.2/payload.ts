@@ -142,8 +142,13 @@ export type Response = GitNamespacesShowTrustRegistryProjectionResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/projection/show/0.2",
   "title": "Git Namespaces — Show Trust Registry Projection — payload",
@@ -170,115 +175,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Context": {
-      "title": "Context",
-      "description": "The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "framework"
-      ],
-      "properties": {
-        "framework": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one."
-        },
-        "origin": {
-          "type": "string",
-          "enum": [
-            "roleDerived"
-          ],
-          "description": "Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right."
-        },
-        "activeFrom": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own."
-        },
-        "activeTo": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent."
-        },
-        "impliedBy": {
-          "$ref": "#/$defs/Right",
-          "description": "Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it."
-        }
-      }
-    },
-    "PublishedRow": {
-      "title": "PublishedRow",
-      "description": "One record the VTC has published to the Trust Registry.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entity",
-        "action",
-        "resource",
-        "context",
-        "publishedAt"
-      ],
-      "properties": {
-        "entity": {
-          "$ref": "#/$defs/Did",
-          "description": "The DID the record is about — the right's subject."
-        },
-        "action": {
-          "$ref": "#/$defs/Right",
-          "description": "The TRQP action the record is published under."
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "context": {
-          "$ref": "#/$defs/Context"
-        },
-        "publishedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC last wrote this record to the registry."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Show Trust Registry Projection — response payload",
-      "description": "What is published, and how far it is from what the VTC's records currently call for.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registryConfigured",
-        "published",
-        "pendingChanges"
-      ],
-      "properties": {
-        "registryConfigured": {
-          "type": "boolean",
-          "description": "Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records."
-        },
-        "published": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PublishedRow"
-          },
-          "description": "Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`."
-        },
-        "pendingChanges": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -295,31 +191,12 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "maxLength": 455,
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
-    },
-    "Did": {
-      "title": "Did",
-      "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-      "type": "string",
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -469,7 +346,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

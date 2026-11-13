@@ -24,8 +24,10 @@ license = "Apache-2.0"
 repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
 
 # trust-tasks-didcomm's mediator integration test dev-depends on the affinidi
-# messaging stack (test-mediator 0.16, messaging-sdk 0.32), which itself depends
-# on trust-tasks-rs / trust-tasks-proof 0.26 from crates.io. Without this patch
+# messaging stack (test-mediator, messaging-sdk), which itself depends on
+# trust-tasks-rs / trust-tasks-proof from crates.io. (That test is out of the
+# tree while the stack moves to affinidi-crypto 0.3; the patch stays for its
+# return.) Without this patch
 # the dev graph builds a second copy of each beside the workspace's own — and
 # trust-tasks-rs is the generated, all-specs crate, so two concurrent builds of it
 # exhausted the CI runner (clippy and test killed with exit 143, #708). Patching
@@ -35,8 +37,8 @@ repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
 trust-tasks-rs = { path = "trust-tasks-rs" }
 trust-tasks-proof = { path = "trust-tasks-proof" }
 
-# `trust-tasks-rs` generates one module per specification (~700), and its test
-# build carries a test per module. With full debug info that build, compiled
+# `trust-tasks-rs` generates one module per specification version (well over a
+# thousand), and its test build carries a test per module. With full debug info that build, compiled
 # beside the TDK crates, exceeds the memory of a GitHub-hosted runner: the job is
 # killed (SIGTERM, exit 143) mid-compile, not failed. Line tables keep file:line
 # in backtraces, which is all a test failure needs, at a fraction of the memory.

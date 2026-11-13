@@ -86,8 +86,13 @@ export type Response = AuthWhoamiResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/whoami/0.1",
   "title": "Auth — Whoami",
@@ -101,50 +106,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Whoami — response payload",
-      "description": "The auth service's view of the producer. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/whoami/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "session"
-      ],
-      "properties": {
-        "session": {
-          "$ref": "#/$defs/Session",
-          "description": "Current session state for the producer."
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Role assignments the auth service holds for the producer. Ecosystem-defined vocabulary."
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens."
-        },
-        "capabilities": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "The capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.\n\nEffective rather than stored, because the question a consumer is asking is \"what may I do\", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.\n\nWhy it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.\n\nThis member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -154,64 +115,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Session": {
-      "$anchor": "session",
-      "title": "Session",
-      "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "subject",
-        "issuedAt",
-        "expiresAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The authenticated party's VID (typically a DID URL)."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session was created."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after."
-        },
-        "amr": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used."
-        },
-        "acr": {
-          "type": "string",
-          "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -322,7 +231,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

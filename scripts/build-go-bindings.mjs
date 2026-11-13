@@ -209,6 +209,62 @@ function inlineCrossFileRefs(schema, baseDir) {
 }
 
 /**
+ * `doc` with every root `$defs` entry its root does not reach removed (#1098),
+ * the survivors in their order, and `$defs` dropped when none survive.
+ *
+ * The request schema carries `$defs.Response` and what only the response uses,
+ * and the response document a copy of every request definition; pruning each
+ * keeps the other side's definitions out of the emitted constant. Only the
+ * constant is pruned, never the schema the types are compiled from.
+ * Reachability follows each `$ref` of the form `#/$defs/<name>[/…]` (its first
+ * segment, pointer-unescaped) from the root object without its `$defs` (its
+ * own `$ref` included — all a response document has), then each reached
+ * definition whole. Any other local `$ref` (`#`, an anchor) keeps
+ * every definition. Written independently of the other generators' copies
+ * (see the file header); `check-bindings` compares the results.
+ */
+function pruneUnreachableDefs(doc) {
+  if (doc === null) return null;
+  const defs = doc.$defs;
+  if (!defs || typeof defs !== "object" || Array.isArray(defs)) return doc;
+  const reached = new Set();
+  let opaque = false;
+  const rootView = { ...doc };
+  delete rootView.$defs;
+  const frontier = [rootView];
+  while (frontier.length > 0) {
+    const node = frontier.pop();
+    if (Array.isArray(node)) {
+      frontier.push(...node);
+    } else if (node && typeof node === "object") {
+      if (typeof node.$ref === "string") {
+        if (node.$ref.startsWith("#/$defs/")) {
+          const name = node.$ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~");
+          if (Object.hasOwn(defs, name) && !reached.has(name)) {
+            reached.add(name);
+            frontier.push(defs[name]);
+          }
+        } else if (node.$ref.startsWith("#")) {
+          opaque = true;
+        }
+      }
+      frontier.push(...Object.values(node));
+    }
+  }
+  if (opaque) return doc;
+  const out = {};
+  for (const [k, v] of Object.entries(doc)) {
+    if (k !== "$defs") {
+      out[k] = v;
+      continue;
+    }
+    const kept = Object.entries(defs).filter(([name]) => reached.has(name));
+    if (kept.length > 0) out[k] = Object.fromEntries(kept);
+  }
+  return out;
+}
+
+/**
  * The response variant needs a schema of its own: the root describes the
  * *request* payload and `$defs.Response` describes the response. Wrap the
  * latter so `$defs` stays reachable and its internal `$ref`s still resolve.
@@ -284,11 +340,28 @@ function readSpecPolicy(schemaPath) {
           response: (ir.response ?? ir.request) === "REQUIRED",
         };
 
+  // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit appropriate
+  // to the Trust Task specification's payload"), per variant. An absent
+  // variant declares no bound — it does NOT inherit the other's, unlike the
+  // proof and issuedAt requirements above. Re-derived here rather than shared
+  // with the other generators, for the reason the rest of this function is.
+  const size = meta.maxDocumentBytes || {};
+  const bound = (variant) => {
+    const n = size[variant];
+    if (n === undefined || n === null) return null;
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new Error(`front matter maxDocumentBytes.${variant} must be a positive integer, got ${JSON.stringify(n)}`);
+    }
+    return n;
+  };
+
   return {
     // SPEC §5.2 "Declared extension" — the direct declaration only. Read here,
     // independently of build-registry.mjs, for the same reason as the rest.
     extends: meta.extends === undefined || meta.extends === null ? "" : String(meta.extends),
     isBearer: meta.bearer === true,
+    maxDocumentBytes: bound("request"),
+    responseMaxDocumentBytes: bound("response"),
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
     isIssuedAtRequired: issuedAtRequired.request,
@@ -564,6 +637,31 @@ function newEmitter(sourceRel) {
 }
 
 /**
+ * The identifiers `emitTail` declares in a request package. They are taken
+ * before any schema-derived name, so a `$defs.Spec`, an inline object at
+ * `Response.spec` or an enum constant `TypeURI` (`$defs.Type` with the value
+ * `URI`) is suffixed like any other collision instead of redeclaring the
+ * tail's own. All eight are reserved whether or not this package emits them,
+ * so a type's name does not depend on whether the spec declares a response.
+ * The TypeScript generator refuses this case; this one, like the Dart
+ * generators, renames.
+ */
+const TAIL_IDENTIFIERS = [
+  "TypeURI",
+  "Extends",
+  "Deprecation",
+  "ResponseTypeURI",
+  "PayloadSchemaJSON",
+  "ResponsePayloadSchemaJSON",
+  "Spec",
+  "ResponseSpec",
+];
+
+function reserveTailIdentifiers(em) {
+  for (const name of TAIL_IDENTIFIERS) em.names.set(name, true);
+}
+
+/**
  * Reserve `preferred` as a type name, returning the name actually taken.
  *
  * Names are derived from the JSON pointer path, so they are unique by
@@ -680,8 +778,12 @@ function declareEnum(em, node, hint) {
   const seen = new Set();
   for (const value of node.enum) {
     let constName = `${name}${goIdent(value)}`;
-    while (seen.has(constName)) constName += "_";
+    // A constant shares the package scope with every type and with the tail,
+    // so it is checked against all of them (`em.names`), and taken there so a
+    // type declared later steers round it.
+    while (seen.has(constName) || em.names.has(constName)) constName += "_";
     seen.add(constName);
+    em.names.set(constName, true);
     lines.push(`\t${constName} ${name} = ${goString(value)}`);
   }
   lines.push(")");
@@ -911,21 +1013,23 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
         "// schema's constraints — not minLength, not pattern, not the oneOf mutual",
         "// exclusion — so without it every such rule is unenforced. Cross-file $refs are",
         "// already inlined, so it needs no resolver.",
-        `const PayloadSchemaJSON = ${goString(JSON.stringify(schemas.request))}`,
+        `const PayloadSchemaJSON = ${goString(JSON.stringify(pruneUnreachableDefs(schemas.request)))}`,
       ].join("\n"),
     );
     if (schemas.response) {
       out.push(
         [
           "// ResponsePayloadSchemaJSON is PayloadSchemaJSON for the success-response variant.",
-          `const ResponsePayloadSchemaJSON = ${goString(JSON.stringify(schemas.response))}`,
+          `const ResponsePayloadSchemaJSON = ${goString(JSON.stringify(pruneUnreachableDefs(schemas.response)))}`,
         ].join("\n"),
       );
     }
   }
 
   if (policy) {
-    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst) =>
+    // `MaxDocumentBytes` only where the variant declares one, as Rust emits
+    // MAX_DOCUMENT_BYTES only then: the zero value declares no bound.
+    const block = (uriConst, proofRequired, recipientRequired, issuedAtRequired, schemaConst, maxBytes) =>
       [
         "\tTypeURI:             " + uriConst + ",",
         "\tIsBearer:            " + policy.isBearer + ",",
@@ -933,6 +1037,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
         "\tIsRecipientRequired: " + recipientRequired + ",",
         "\tIsIssuedAtRequired:  " + issuedAtRequired + ",",
         "\tPayloadSchema:       " + schemaConst + ",",
+        ...(maxBytes === null ? [] : ["\tMaxDocumentBytes:    " + maxBytes + ","]),
       ].join("\n");
 
     out.push(
@@ -948,6 +1053,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
           policy.isRecipientRequired,
           policy.isIssuedAtRequired,
           schemas.request ? "PayloadSchemaJSON" : '""',
+          policy.maxDocumentBytes,
         ),
         "}",
       ].join("\n"),
@@ -966,6 +1072,7 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
             policy.responseIsRecipientRequired,
             policy.responseIsIssuedAtRequired,
             schemas.response ? "ResponsePayloadSchemaJSON" : '""',
+            policy.responseMaxDocumentBytes,
           ),
           "}",
         ].join("\n"),
@@ -1057,6 +1164,7 @@ function generateOne(schemaPath, lifecycle) {
   // else. Declaring a `Payload` for it would invent a type the spec does not
   // define.
   const rootHint = out.slugInfo ? "Payload" : null;
+  if (out.slugInfo) reserveTailIdentifiers(em);
   const { defNames, rootName } = emitDeclarations(em, requestSchema, rootHint);
 
   const deprecation = out.slugInfo
@@ -1229,7 +1337,13 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run only as a script: scripts/test-checks/go-bindings-names.test.mjs imports
+// the emitter below without generating the tree.
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+export { newEmitter, reserveTailIdentifiers, emitDeclarations, TAIL_IDENTIFIERS };

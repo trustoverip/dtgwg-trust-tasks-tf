@@ -29,7 +29,7 @@ specs/<slug>/<version>/
 3. Fill in the prose: Abstract, Definitions, Request/Response, and the Security & Privacy sub-headings. Every `TODO` in the scaffold marks something only you can write.
 4. Check `payload.schema.json` describes your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
-6. Open a PR. CODEOWNERS will route review to the right people.
+6. Open a PR. `.github/CODEOWNERS` requests review from the maintainers; today that is one person for nearly every path.
 
 You don't touch `website/` — the build copies your folder into the website tree automatically.
 
@@ -90,7 +90,19 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
   - a **wire pin** (a schema `const`/`enum`/`pattern`/`$ref`) or a **normative value** (a full Type URI in prose, or a version in a MUST/SHOULD sentence — the `expects` entry a deferred operation sends, say): moving it changes what conforms, so the referencing spec takes a new version too, with a `## Changes from` section saying so;
   - an **example** carrying a Type URI: its payload was written for the old version, so check it against the new one before moving it.
   An old version named on purpose — in a `## Changes from` or `### What 0.4 changed` section, in a version run ending at the latest, after `since`/`added in`, before `or later` — is left alone. Anything else deliberate goes in `scripts/lib/stale-references-allowlist.json` with the reason.
+- **A new version targets the current framework version** — see [below](#the-current-framework-version).
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump. (That is the *spec's* version, which you do own — unlike the library versions, which the Release PR assigns; see [RELEASING.md](RELEASING.md).)
+
+## The current framework version
+
+The **current framework version is `0.6.0`**. It is the framework release a specification is written against today, the one `trust-tasks-rs` reports by default, and the one `npm run new-spec` fills in. (The canonical framework text may already be drafting a later release; "current" names the latest one published under `specs/_framework/`.)
+
+The lag rule:
+
+- **A new version targets the current framework or later.** That includes a new version made by copying the previous one: update its `targetFrameworkVersion`. CI checks every version a pull request adds (`npm run check-spec-lifecycle`).
+- **An existing version keeps the target it was published with**, and moves with its next revision — the next version folder of its slug. Nothing is re-targeted in place.
+
+The build reports how many latest versions and bindings still target an earlier release. When a later framework release is brought into the registry and adopted, `CURRENT_FRAMEWORK_VERSION` in `scripts/lib/spec-lifecycle.mjs` and `DEFAULT_FRAMEWORK_VERSION` in `trust-tasks-rs/src/discovery.rs` move together, and the build fails if they disagree.
 
 ## `spec.md` front matter
 
@@ -103,7 +115,8 @@ version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
-targetFrameworkVersion: "0.4.0"    # framework version this spec targets. MAJOR.MINOR.PATCH
+targetFrameworkVersion: "0.6.0"    # framework version this spec targets — the current one;
+                                   # `npm run new-spec` fills it in. MAJOR.MINOR.PATCH
                                    # (preferred, matches the canonical spec repo) or MAJOR.MINOR
 category: access-control           # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]   # optional — see below
@@ -143,7 +156,7 @@ related: []                        # slugs of related Trust Tasks (full slugs in
 
 Notes:
 
-- **`authors` and `keywords` are optional, and usually better omitted.** `authors` was identical in 345 of 349 specs and 46% of declared keywords were literally a slug segment or the category name — a required field that says the same thing everywhere carries no information, and asking an author to fill it in is friction that buys nothing. When you omit them the build derives them: `authors` from `CODEOWNERS` (falling back to the spec folder's git history), `keywords` from the slug segments plus the category. **Declare them when the derivation would be wrong** — a spec written by someone other than its CODEOWNER, or a task a searcher would look for under a word that appears nowhere in its slug (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`).
+- **`authors` and `keywords` are optional, and usually better omitted.** `authors` was identical in 345 of 349 specs and 46% of declared keywords were literally a slug segment or the category name — a required field that says the same thing everywhere carries no information, and asking an author to fill it in is friction that buys nothing. When you omit them the build derives them: `authors` from the spec folder's git history, `keywords` from the slug segments plus the category. **Declare them when the derivation would be wrong** — a spec written by someone other than the person who committed it, or a task a searcher would look for under a word that appears nowhere in its slug (`revocation` for `acl/revoke`, `passkey` for `auth/webauthn/*`).
 
 - **The three `rationale` fields are the most-read prose you will write.** `proofRequirement.rationale`, `sideEffects.rationale` and `exposure.rationale` are rendered on the spec detail page under **Why this task is classified as it is**. They are the registry's best security writing; write them as sentences aimed at an implementer deciding whether to accept the task, not as a box to tick.
 
@@ -174,7 +187,7 @@ Notes:
     rationale: A 256 KiB chunk, base64url-encoded (~342 KiB), plus envelope and proof headroom.
   ```
 
-  The bound is **two-sided**: a consumer serving the task **MUST NOT** refuse a document within it on grounds of size alone, and **SHOULD** refuse a larger one with `malformedRequest`, before parsing where the transport tells it the `type` first. It is measured over the serialized Trust Task document as received (the JSON text, `proof` included, no transport envelope), because that is what a consumer can count before it parses. Either variant may be declared alone; an absent one does **not** inherit the other's bound. Declare it when your payload can carry bulk content; a small fixed-shape payload need not. The meta-schema caps it at 16 MiB — content larger than that belongs in a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares its own bound. The Rust codegen emits it as `Payload::MAX_DOCUMENT_BYTES` and `schema_index::max_document_bytes_for(type_uri)`, and `check-bindings` holds the two to the front matter; the TypeScript, Go and Dart generators do not emit it yet.
+  The bound is **two-sided**: a consumer serving the task **MUST NOT** refuse a document within it on grounds of size alone, and **SHOULD** refuse a larger one with `malformedRequest`, before parsing where the transport tells it the `type` first. It is measured over the serialized Trust Task document as received (the JSON text, `proof` included, no transport envelope), because that is what a consumer can count before it parses. Either variant may be declared alone; an absent one does **not** inherit the other's bound. Declare it when your payload can carry bulk content; a small fixed-shape payload need not. The meta-schema caps it at 16 MiB — content larger than that belongs in a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares its own bound. The Rust codegen emits it as `Payload::MAX_DOCUMENT_BYTES` and `schema_index::max_document_bytes_for(type_uri)`, the Dart generators as `SpecPolicy.maxDocumentBytes` on `spec` / `responseSpec`, and `check-bindings` holds both to the front matter; the Dart HTTPS server (`trust_tasks_https`) enforces it per type. The TypeScript and Go generators do not emit it yet.
 
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, and [Security & Privacy](#the--security--privacy-section) (**required**, and linted — see below), plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
@@ -182,7 +195,7 @@ After the closing `---`, write the human-readable specification: Abstract, Statu
 
 ## Request and Response sections
 
-A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/0.1#response` lands the reader on the rendered spec page at the **Response** section.
+A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/0.3#response` lands the reader on the rendered spec page at the **Response** section.
 
 The shape:
 
@@ -193,7 +206,8 @@ A specification that defines a fire-and-forget task (no success response documen
 
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
-See `specs/acl/grant/0.1/spec.md` for a worked example.
+See the latest version under `specs/acl/grant/` for a worked example — not an
+earlier one, which predates requirements a new specification must meet.
 
 ## Decisions, holds and repeated requests
 
@@ -211,7 +225,7 @@ Three framework rules decide which reply form a task uses. Settle them when you 
 | Creating something | register, grant, create, issue | Refused with a task-specific code (`alreadyRegistered`, `alreadyGranted`). |
 | Missing target | any | Refused with a task-specific code, which **MAY** be the same as "exists but you may not see it". |
 
-`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.1` show each kind.
+`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.2` show each kind.
 
 ## The `## Authorization` section
 
@@ -239,7 +253,7 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 
 | Spec | Why it is worth reading |
 |---|---|
-| [`witness/session/submit/0.1`](specs/witness/session/submit/0.1/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
+| [`witness/session/submit/0.2`](specs/witness/session/submit/0.2/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
 | [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
 | [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
 | [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
@@ -303,7 +317,7 @@ Write framework cross-references **root-relative**:
 [SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)
 ```
 
-Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.1`, three from `acl/grant/0.1` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
+Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.2`, three from `acl/grant/0.3` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
 
 `/SPEC.md#anchor` is the same string from every depth. The website's renderer resolves it onto the rendered `/specification` page at the right heading — a better destination than the relative form ever reached, which was a raw markdown download — and `npm run build` validates it from the repository root, so a wrong anchor path still fails the build.
 
@@ -368,6 +382,45 @@ follow it; a new spec or a new version follows it from the start.
   this registry does not reuse the name for anything else. The response flag
   "this write created the record rather than replacing one" is `wasCreated`.
 
+## Bounds and URL members
+
+A consumer sizes its work from the schema, and an implementer reads which URLs
+a member admits from it. So the latest version of every live spec declares:
+
+- **An upper bound on every request-side collection.** Every array in the
+  request payload (anything outside `$defs.Response`) declares `maxItems`,
+  sized to what the task needs, not to what a transport can carry. An array
+  whose length is fixed by `prefixItems` with `"items": false` is already
+  bounded.
+- **A bounded page.** `limit` and `cursor` are written this way:
+
+  ```json
+  "cursor": { "type": "string", "minLength": 1, "maxLength": 512 },
+  "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+  ```
+
+  Choose the `maximum` for the collection, and say in prose what the
+  responder does when `limit` is absent.
+- **The schemes a URL member admits.** A string member named as a URL — its
+  name ends in `url`, `uri`, `endpoint`, `href`, `link`, `callback` or
+  `webhook`, singular or plural — states its schemes:
+
+  ```json
+  "publicUrl": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 }
+  ```
+
+  A `pattern` anchored on the scheme (`^https://`, `^(https|wss)://`,
+  `^did:`) or an `enum`/`const` satisfies the lint; so does `"format": "uri"`
+  with a description naming the allowed schemes, where a pattern cannot say
+  it. A `typeUri` is a Type URI, an identifier rather than something fetched,
+  and is exempt.
+
+`scripts/lib/schema-bounds.mjs` checks all three, following `$ref`s into
+shared schemas. The versions that did not declare them when the lint landed are
+listed in `scripts/lib/schema-bounds-allowlist.json`, which only shrinks:
+adding a bound to a published version narrows it, so the fix is the next
+version, and a new spec or a new version declares the bounds from the start.
+
 ## Read-one and read-many tasks
 
 The registry's default for a family that enumerates a collection is the **split pair**: a `list` task (paged, filtered enumeration) *and* a sibling `show`/`get` task (single-record fetch by identifier). The rationale is the one [`policy/get/0.1`](specs/policy/get/0.1/spec.md) spells out — the two reads have different failure semantics. A `get` for an unknown id returns `notFound`, a definite determination the caller can act on; a `list` filtered down to one id returns an **empty page**, which is a *successful* response and indistinguishable from "exists but filtered out". Collapsing the pair into list-with-an-id-filter loses that distinction (and, with it, per-record error codes and per-record authorization decisions).
@@ -381,6 +434,7 @@ Must be a JSON Schema 2020-12 document. The build script enforces:
 - `$schema` = `https://json-schema.org/draft/2020-12/schema`
 - `$id` = `https://trusttasks.org/spec/<slug>/<version>` (the Type URI of your spec, with the slug's `/` separators preserved in the URL, and **without** a fragment)
 - `additionalProperties` declared explicitly (recommended: `false`).
+- **Every member has a `description`** (or a `$ref` to a definition that has one): what it means, its unit or format, and what its absence means. The spec page and the doc comment on every generated type come from it. This is a ratchet (`scripts/lib/member-descriptions.mjs`): a new slug may leave no member undescribed, and an existing slug's latest version may not leave more than `scripts/lib/member-descriptions-baseline.json` allows it. When you describe members an older slug lacked, run `node scripts/lib/member-descriptions.mjs --lower` and commit the lowered baseline.
 
 The schema describes **only the `payload` member**, not the outer document. The outer structure (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `proof`) is owned by the framework — see [SPEC.md §6.3](SPEC.md#63-schema-scope).
 
@@ -391,7 +445,7 @@ Where the specification defines a success-response document, both shapes live in
 ```jsonc
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/grant/0.1",
+  "$id": "https://trusttasks.org/spec/acl/grant/0.3",
   "type": "object",
   "additionalProperties": false,
   "required": ["subject", "role", "after"],
@@ -560,7 +614,7 @@ CI guards all four — `codegen.yml`'s `codegen-drift` job and the `bindings-dri
 
 ## Submitting a PR
 
-- Touch only your own spec folder (or namespace). CODEOWNERS routes review to that slug's editors; touching multiple folders requires multiple approvals and slows everyone down.
+- Touch only your own spec folder (or namespace) where possible. A change confined to one namespace is easier to review, and if per-namespace owners are added to `.github/CODEOWNERS` later, a change spanning several will need each of their approvals.
 - Sign-off your commits (`git commit -s`) — this repository requires the DCO trailer.
 - Run `npm run build` once before submitting. CI runs it on every PR; failing the build blocks the merge.
 - If the spec is consequential, check the [`## Authorization`](#the--authorization-section) section is present and names an authority rather than a validation step. No build check covers this one, so it is a review obligation on both the author and the reviewer.
@@ -594,6 +648,8 @@ Status transitions follow [SPEC.md §5.3](SPEC.md#53-maturity-levels):
 
 - `draft` → `candidate`: change `status: candidate` in front matter once two independent, interoperable implementations exist.
 - `candidate` → `standard`: change `status: standard` once your candidate has gone 90 days without a breaking change.
+
+**Only the latest live version of a slug is promoted.** A version is superseded by a later live version at an equal or higher maturity, so promoting an older version above a newer `draft` would make it current again: all four libraries would drop its deprecation, and its withdrawal date would move. CI refuses such a promotion (`npm run check-spec-lifecycle`). A newer `draft` published *after* a promotion is fine — it never supersedes the promoted version, so nothing deprecated becomes current.
 
 Maturity bumps are PRs like any other. The build script enforces the values; the editors' team verifies the transition criteria.
 

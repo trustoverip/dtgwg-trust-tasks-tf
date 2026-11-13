@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/_shared/0.3/mediator-ops",
   "title": "Messaging operations — shared definitions for mediator queue, message, statistics, and traffic-monitor tasks",
-  "description": "Shared $def objects referenced by the messaging/queue/*, messaging/message/*, messaging/stats/*, and messaging/monitor/* specifications: queue depth views, stored-message metadata, the wire-protocol vocabulary, and the traffic-monitor event and filter shapes. 0.3 renames `MonitorEvent.at` to `occurredAt`, the registry's `<event>At` convention, and changes nothing else. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build). Account identifiers reuse `Vid` from the messaging.schema.json component (`_shared/0.1`), so an identifier returned by one family is accepted verbatim by the other.",
+  "description": "Shared $def objects referenced by the messaging/queue/*, messaging/message/*, messaging/stats/*, and messaging/monitor/* specifications: queue depth views, stored-message metadata, the wire-protocol vocabulary, and the traffic-monitor event and filter shapes. 0.3 renames `MonitorEvent.at` to `occurredAt`, the registry's `<event>At` convention, and changes nothing else in the shapes 0.1 defines; it adds the mux membership event and its opt-in filter (MembershipChange, MonitorMembershipEvent, MembershipFilter), which messaging/monitor/event 0.3 and messaging/monitor/subscribe 0.2 reference. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build). Account identifiers reuse `Vid` from the messaging.schema.json component (`_shared/0.1`), so an identifier returned by one family is accepted verbatim by the other.",
   "$defs": {
     "Queue": {
       "title": "Queue",
@@ -373,6 +373,105 @@
         "failuresOnly": {
           "type": "boolean",
           "description": "Only events that carry an `outcome`."
+        }
+      }
+    },
+    "MembershipChange": {
+      "title": "MembershipChange",
+      "type": "string",
+      "enum": [
+        "attached",
+        "detached"
+      ],
+      "description": "What happened to a member DID's place on a mux connection, as messaging/mux/event reports it to the connection's principal. `attached`: the member joined the connection, or its scope or expiry there changed. `detached`: the member left the connection, or a stored grant of it was not attached on connect."
+    },
+    "MonitorMembershipEvent": {
+      "title": "MonitorMembershipEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurredAt",
+        "change",
+        "principal",
+        "member",
+        "wire",
+        "source",
+        "reason"
+      ],
+      "description": "One change to the membership of one mux connection at the mediator: a member DID attached to or detached from a principal's connection. Not a step in the life of a message, so it is not a MonitorEvent and carries none of its members. Carries metadata only — never a message, a signed statement, a nonce or key material.",
+      "properties": {
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the change took effect, with sub-second precision where the mediator has it."
+        },
+        "change": {
+          "$ref": "#/$defs/MembershipChange"
+        },
+        "principal": {
+          "$ref": "../0.1/messaging.schema.json#/$defs/Vid",
+          "description": "The DID the connection is authenticated as, in the same form the mediator uses for accounts."
+        },
+        "member": {
+          "$ref": "../0.1/messaging.schema.json#/$defs/Vid",
+          "description": "The member DID that attached or detached, in the same form the mediator uses for accounts."
+        },
+        "wire": {
+          "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/MuxWire"
+        },
+        "source": {
+          "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/MuxSource",
+          "description": "Whether the member rides, or rode, the connection through a stored grant or a session attach."
+        },
+        "reason": {
+          "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/MemberChangeReason",
+          "description": "Why, exactly as the messaging/mux/event entry for the change reports it: an AttachReason value when `change` is `attached`, a DetachReason value when it is `detached`."
+        },
+        "sessionId": {
+          "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/SessionId",
+          "description": "The connection's identifier, as its `ready` event announced it and messaging/mux/connections lists it. Absent when the mediator does not report it."
+        }
+      }
+    },
+    "MembershipFilter": {
+      "title": "MembershipFilter",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opts a monitor subscription in to mux membership events and selects which. Its presence is the opt-in: a subscription without one receives no membership events. Every member present narrows the selection (members are ANDed; values within one member are ORed); an empty object selects every membership event the requester is entitled to see.",
+      "properties": {
+        "dids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../0.1/messaging.schema.json#/$defs/Vid"
+          },
+          "description": "Only events whose `principal` or `member` is one of these accounts."
+        },
+        "changes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/MembershipChange"
+          }
+        },
+        "wires": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/MuxWire"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../mux/_shared/0.1/mux.schema.json#/$defs/MuxSource"
+          }
         }
       }
     }

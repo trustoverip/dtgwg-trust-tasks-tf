@@ -9,5 +9,6 @@ pub mod keys;
 pub mod owner;
 pub mod records;
 pub mod revocations;
+pub mod signal_delay;
 pub mod usage;
 pub mod watch;

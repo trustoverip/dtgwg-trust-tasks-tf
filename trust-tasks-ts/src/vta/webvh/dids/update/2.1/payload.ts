@@ -137,8 +137,13 @@ export type Response = WebVHDIDUpdateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/dids/update/2.1",
   "title": "WebVH DID Update — payload",
@@ -202,59 +207,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH DID Update — response payload",
-      "description": "The outcome. `preview` and `pendingApproval` carry the plan; `applied` carries the published entry.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "outcome"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "outcome": {
-          "$ref": "#/$defs/KeyRoleChangeOutcome"
-        },
-        "preview": {
-          "$ref": "#/$defs/DidDocumentPreview"
-        },
-        "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState"
-        },
-        "newVersionId": {
-          "type": "string",
-          "description": "versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`."
-        },
-        "newScid": {
-          "type": "string"
-        },
-        "newLogEntry": {
-          "type": "string",
-          "description": "The appended log entry, as JSON text."
-        },
-        "updateKeysCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything."
-        },
-        "preRotationKeyCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Pre-rotation commitments published by this entry."
-        },
-        "serverless": {
-          "type": "boolean",
-          "description": "True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -264,198 +216,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "required",
-        "received",
-        "expiresAt"
-      ],
-      "description": "Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).",
-      "properties": {
-        "required": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Distinct approvals the VTA's policy requires."
-        },
-        "received": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct approvals recorded so far, including the initiator's own."
-        },
-        "approvers": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the preview, and every approval bound to it, stops being usable."
-        }
-      }
-    },
-    "DidDocumentPreview": {
-      "title": "DidDocumentPreview",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "previewId",
-        "baseVersionId",
-        "expiresAt",
-        "changes",
-        "document",
-        "updateKeyRotates"
-      ],
-      "description": "What a change would publish, computed by the VTA by running the handler it would run to apply it, and nothing else (CONVENTIONS.md §3.1). This is what a consent surface renders and what an approval is bound to.",
-      "properties": {
-        "previewId": {
-          "type": "string",
-          "minLength": 16,
-          "description": "Opaque, unguessable identifier for this exact plan. Carried back by the apply request, and the thing every approval is bound to."
-        },
-        "baseVersionId": {
-          "type": "string",
-          "description": "versionId of the log entry the plan was computed against. The plan is void once the log moves past it."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "changes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DidDocumentChange"
-          },
-          "description": "Every change the entry would make, including the ones the caller did not ask for — in particular `rotateUpdateKey`, which accompanies every entry appended under pre-rotation."
-        },
-        "document": {
-          "type": "object",
-          "description": "The complete DID document the entry would publish. Public data by construction; no key material beyond public halves."
-        },
-        "warnings": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "preRotationDisabled",
-              "singleKeyRole",
-              "algorithmNotInAcceptedSet",
-              "roleWillHaveNoClassicalKey",
-              "attestationReissuanceRequired",
-              "serverless"
-            ]
-          },
-          "uniqueItems": true,
-          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
-        },
-        "updateKeyRotates": {
-          "type": "boolean",
-          "description": "True when appending this entry also moves the DID's update key to a committed successor. Stated as its own member, not left to be found in `changes`, because it is the consequence a reviewer most often misses."
-        }
-      }
-    },
-    "DidDocumentChange": {
-      "title": "DidDocumentChange",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "op",
-        "role"
-      ],
-      "properties": {
-        "op": {
-          "type": "string",
-          "enum": [
-            "addKey",
-            "retireKey",
-            "revokeKey",
-            "rotateUpdateKey",
-            "setPreRotation"
-          ],
-          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes."
-        },
-        "role": {
-          "$ref": "#/$defs/KeyRole"
-        },
-        "verificationMethod": {
-          "type": "string"
-        },
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string"
-        },
-        "relationships": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DidVerificationRelationship"
-          },
-          "uniqueItems": true
-        },
-        "preRotationCount": {
-          "type": "integer",
-          "minimum": 0
-        }
-      }
-    },
-    "DidVerificationRelationship": {
-      "title": "DidVerificationRelationship",
-      "type": "string",
-      "enum": [
-        "authentication",
-        "assertionMethod",
-        "keyAgreement",
-        "capabilityInvocation",
-        "capabilityDelegation"
-      ],
-      "description": "A DID Core verification relationship."
-    },
-    "KeyRole": {
-      "title": "KeyRole",
-      "type": "string",
-      "enum": [
-        "attestation",
-        "operational",
-        "messaging",
-        "update"
-      ],
-      "description": "The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know."
-    },
-    "KeyType": {
-      "title": "KeyType",
-      "type": "string",
-      "enum": [
-        "ed25519",
-        "x25519",
-        "p256",
-        "mldsa44",
-        "mldsa65"
-      ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
-    },
-    "KeyRoleChangeOutcome": {
-      "title": "KeyRoleChangeOutcome",
-      "type": "string",
-      "enum": [
-        "preview",
-        "applied",
-        "pendingApproval"
-      ],
-      "description": "`preview` — nothing was written; the response carries the plan. `applied` — the entry was appended (and published, unless `serverless`). `pendingApproval` — the plan is recorded and awaits further approvals; nothing is published until they arrive (CONVENTIONS.md §3.3)."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -709,7 +475,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the entry was appended (and published, unless `serverless`). `pendingApproval` — the plan is recorded and awaits further approvals; nothing is published until they arrive (CONVENTIONS.md §3.3)."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

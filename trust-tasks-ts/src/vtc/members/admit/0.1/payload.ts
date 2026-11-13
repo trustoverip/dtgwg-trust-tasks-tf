@@ -73,8 +73,13 @@ export type Response = VTCMembersAdmitResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/members/admit/0.1",
   "title": "VTC Members Admit — payload",
@@ -115,89 +120,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Admit — response payload",
-      "description": "Success response to vtc/members/admit/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/admit/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.",
-      "$ref": "#/$defs/AdmittedMembership",
-      "unevaluatedProperties": false
-    },
-    "AdmittedMembership": {
-      "title": "AdmittedMembership",
-      "description": "A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "role",
-        "status",
-        "returning",
-        "approval",
-        "statusListIndex",
-        "vmc",
-        "roleVac"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The DID admitted."
-        },
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held."
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "admitted"
-          ],
-          "description": "Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes."
-        },
-        "returning": {
-          "type": "boolean",
-          "description": "True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record."
-        },
-        "approval": {
-          "$ref": "#/$defs/Approval"
-        },
-        "statusListIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The membership's slot on the community's revocation status list, which the VMC's credentialStatus names."
-        },
-        "vmc": {
-          "type": "object",
-          "description": "The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }`, the shape vtc/join-requests/decide returns."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Approval": {
-      "title": "Approval",
-      "type": "string",
-      "enum": [
-        "policyAllowed",
-        "approved",
-        "waived"
-      ],
-      "description": "How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -209,10 +131,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -310,7 +232,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

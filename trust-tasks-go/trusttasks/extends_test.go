@@ -15,8 +15,10 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
@@ -193,6 +195,21 @@ func TestExtendsChainReaches(t *testing.T) {
 	if tt.ExtendsChainReaches(widgetBase+"0.1", widgetBase+"0.3", widgetChain) {
 		t.Fatal("chain walked backwards")
 	}
+	// 0.70 -> 0.69 -> ... -> 0.0: every link strictly earlier. At most 64 are
+	// followed, as in the other three libraries.
+	long := func(typeURI string) string {
+		m, err := strconv.Atoi(strings.TrimPrefix(typeURI, widgetBase+"0."))
+		if err != nil || m == 0 {
+			return ""
+		}
+		return "0." + strconv.Itoa(m-1)
+	}
+	if !tt.ExtendsChainReaches(widgetBase+"0.70", widgetBase+"0.6", long) {
+		t.Fatal("a 64-link chain was not followed")
+	}
+	if tt.ExtendsChainReaches(widgetBase+"0.70", widgetBase+"0.5", long) {
+		t.Fatal("a 65-link chain was followed")
+	}
 	loop := func(string) string { return "0.9" } // 0.9 -> 0.9 -> ... must terminate
 	if tt.ExtendsChainReaches(widgetBase+"0.9", widgetBase+"0.1", loop) {
 		t.Fatal("looping lookup reached")
@@ -252,14 +269,20 @@ func (v digestVerifier) Verify(_ context.Context, doc json.RawMessage) error {
 
 func consumeWidget(t *testing.T, doc *tt.Document[widgetPayload], received json.RawMessage) tt.ConsumeOutcome[widgetResponse] {
 	t.Helper()
+	return consumeWidgetUnder(t, widgetSpec, doc, received)
+}
+
+func consumeWidgetUnder(t *testing.T, spec tt.SpecPolicy, doc *tt.Document[widgetPayload], received json.RawMessage) tt.ConsumeOutcome[widgetResponse] {
+	t.Helper()
 	outcome, err := tt.ConsumeInbound(context.Background(), tt.ConsumeOptions[widgetPayload, widgetResponse]{
 		Transport:     tt.StaticTransport{Context: tt.TransportContext{Issuer: ptr(peer), Recipient: ptr(me)}},
-		Spec:          widgetSpec,
+		Spec:          spec,
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofVerify, Verifier: digestVerifier{t}},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        tt.NotConsequentialChecks(),
 		Doc:           doc,
 		Received:      received,
+		Extends:       widgetChain,
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -305,6 +328,43 @@ func TestSignedExtendedDocumentIsConsumedAndAnsweredAsReceived(t *testing.T) {
 	}
 }
 
+// SPEC §12.4: a document of the implemented version larger than its declared
+// maxDocumentBytes is malformedRequest; one within it, one read forward from a
+// later version (which may declare a larger bound of its own), and one consumed
+// without its bytes are not refused for size.
+func TestMaxDocumentBytesIsHeldToTheBytesAsReceived(t *testing.T) {
+	decode := func(received json.RawMessage) *tt.Document[widgetPayload] {
+		var doc tt.Document[widgetPayload]
+		if err := json.Unmarshal(received, &doc); err != nil {
+			t.Fatal(err)
+		}
+		return &doc
+	}
+	exact := signedWidget(t, "0.1")
+	bounded := widgetSpec
+	bounded.MaxDocumentBytes = len(exact) - 1
+	outcome := consumeWidgetUnder(t, bounded, decode(exact), exact)
+	if outcome.Kind != tt.OutcomeRejected || outcome.Error.Payload.Code != string(tt.CodeMalformedRequest) ||
+		outcome.Error.Payload.Message == nil || *outcome.Error.Payload.Message != tt.DocumentTooLargeWireMessage {
+		t.Fatalf("a document over its bound was not refused malformedRequest: %s %+v", outcome.Kind, outcome.Error)
+	}
+
+	bounded.MaxDocumentBytes = len(exact)
+	if outcome := consumeWidgetUnder(t, bounded, decode(exact), exact); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("a document within its bound was refused: %s %+v", outcome.Kind, outcome.Error)
+	}
+
+	later := signedWidget(t, "0.3")
+	bounded.MaxDocumentBytes = len(later) - 1
+	reading, refusal, err := tt.ReadForSpecWith(later, bounded, widgetChain)
+	if err != nil || refusal != nil {
+		t.Fatalf("refused: %v %+v", err, refusal)
+	}
+	if outcome := consumeWidgetUnder(t, bounded, decode(reading), later); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("a forward-read document was held to the implemented version's bound: %s %+v", outcome.Kind, outcome.Error)
+	}
+}
+
 // Received vouches only for a Doc that is a reading of it.
 func TestReceivedMustBeTheDocumentBeingConsumed(t *testing.T) {
 	received := signedWidget(t, "0.3")
@@ -342,5 +402,97 @@ func TestReceivedMustBeTheDocumentBeingConsumed(t *testing.T) {
 	if outcome := consumeWidget(t, &direct, exact); outcome.Kind != tt.OutcomeHandled ||
 		outcome.Response.Type != widgetBase+"0.1#response" {
 		t.Fatalf("exact version: %s %+v", outcome.Kind, outcome.Error)
+	}
+}
+
+// Only a strictly earlier MINOR of the same MAJOR is an extension link (SPEC
+// §5.2), as Rust and TypeScript read it: a caller-supplied lookup declaring an
+// upward or cross-MAJOR link does not route.
+func TestExtendsChainIgnoresLinksThatAreNotStrictlyEarlierMinors(t *testing.T) {
+	for name, c := range map[string]struct {
+		received, implemented, declared string
+	}{
+		"upward":      {"0.2", "0.3", "0.3"},
+		"cross-MAJOR": {"2.1", "1.0", "1.0"},
+		"self":        {"0.2", "0.1", "0.2"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			lookup := func(typeURI string) string {
+				if typeURI == widgetBase+c.received {
+					return c.declared
+				}
+				return ""
+			}
+			if tt.ExtendsChainReaches(widgetBase+c.received, widgetBase+c.implemented, lookup) {
+				t.Fatalf("%s -> %s routed along a link declaring %s", c.received, c.implemented, c.declared)
+			}
+			_, refusal, err := tt.ReadForSpecWith(json.RawMessage(widget03(c.received)),
+				tt.SpecPolicy{TypeURI: widgetBase + c.implemented}, lookup)
+			if err != nil || refusal == nil || refusal.Code != tt.CodeUnsupportedVersion {
+				t.Fatalf("expected unsupportedVersion, got %+v %v", refusal, err)
+			}
+		})
+	}
+}
+
+// fanOutSchema names the recursive member `next` from both `properties` and an
+// `allOf` branch, so each level prunes its subtree twice: 2^depth steps.
+const fanOutSchema = `{
+  "$ref": "#/$defs/Node",
+  "$defs": {
+    "Node": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"next": {"$ref": "#/$defs/Node"}, "v": {"type": "integer"}},
+      "allOf": [{"properties": {"next": {"$ref": "#/$defs/Node"}}}]
+    }
+  }
+}`
+
+// chainDocument is a widget/0.3 document whose payload nests depth levels of
+// `next`, each with a member 0.1 does not know.
+func chainDocument(depth int) json.RawMessage {
+	payload := `{"v":0,"added":true}`
+	for i := 1; i <= depth; i++ {
+		payload = `{"next":` + payload + `,"v":` + strconv.Itoa(i) + `,"added":true}`
+	}
+	return json.RawMessage(`{"id":"req-1","type":"` + widgetBase + `0.3","issuer":"` + peer +
+		`","recipient":"` + me + `","payload":` + payload + `}`)
+}
+
+func TestReadForSpecPrunesWithinTheWorkLimit(t *testing.T) {
+	spec := tt.SpecPolicy{TypeURI: widgetBase + "0.1", PayloadSchema: fanOutSchema}
+	reading, refusal, err := tt.ReadForSpecWith(chainDocument(3), spec, widgetChain)
+	if err != nil || refusal != nil {
+		t.Fatalf("refused: %v %+v", err, refusal)
+	}
+	var got struct {
+		Payload any `json:"payload"`
+	}
+	if err := json.Unmarshal(reading, &got); err != nil {
+		t.Fatal(err)
+	}
+	var want any
+	_ = json.Unmarshal([]byte(`{"next":{"next":{"next":{"v":0},"v":1},"v":2},"v":3}`), &want)
+	if !reflect.DeepEqual(got.Payload, want) {
+		t.Fatalf("payload pruned to %v", got.Payload)
+	}
+}
+
+func TestReadForSpecRefusesAPayloadBeyondTheWorkLimit(t *testing.T) {
+	spec := tt.SpecPolicy{TypeURI: widgetBase + "0.1", PayloadSchema: fanOutSchema}
+	started := time.Now()
+	reading, refusal, err := tt.ReadForSpecWith(chainDocument(40), spec, widgetChain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refusal == nil {
+		t.Fatalf("accepted: %s", reading)
+	}
+	if refusal.Code != tt.CodeMalformedRequest || refusal.Message != tt.PruneLimitWireMessage {
+		t.Fatalf("refusal = %+v", refusal)
+	}
+	if elapsed := time.Since(started); elapsed > 5*time.Second {
+		t.Fatalf("the limit took %v to stop the walk", elapsed)
 	}
 }

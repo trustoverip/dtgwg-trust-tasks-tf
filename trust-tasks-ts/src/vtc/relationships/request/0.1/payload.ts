@@ -82,8 +82,13 @@ export type Response = VTCRelationshipsRequestResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/relationships/request/0.1",
   "title": "VTC Relationships Request — payload",
@@ -102,30 +107,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Relationships Request — response payload",
-      "description": "The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vrc"
-      ],
-      "properties": {
-        "vrc": {
-          "type": "object",
-          "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged."
-        },
-        "vrcSha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -137,10 +118,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -179,7 +160,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

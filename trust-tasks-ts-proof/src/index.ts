@@ -8,6 +8,7 @@ export {
   DataIntegrityProofVerifier,
   SUPPORTED_CRYPTOSUITES,
   DEFAULT_CLOCK_SKEW_MS,
+  SIGNING_PURPOSES,
   type ProofFailureKind,
   type ProofVerification,
   type VerifierOptions,

@@ -6,7 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/keys/list/0.2 */
+/** @deprecated superseded by rooms/keys/list/0.3 */
 export interface RoomsKeysListPayload {
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
@@ -16,7 +16,7 @@ export interface RoomsKeysListPayload {
 /**
  * Success response to rooms/keys/list. Type https://trusttasks.org/spec/rooms/keys/list/0.1#response. The rooms this key holder can open, which is a different set from the rooms its principal is a member of: membership is a credential the room issued, and this is key custody. A room whose group state was never delivered is absent here and the principal may still hold a perfectly good VMC for it.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export interface RoomsKeysListResponsePayload {
   /**
@@ -59,12 +59,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/list/0.2";
+export const DEPRECATION: string | null = "superseded by rooms/keys/list/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export type Payload = RoomsKeysListPayload;
 
@@ -74,7 +74,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/list/0.
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export type Response = RoomsKeysListResponsePayload;
 
@@ -86,8 +86,13 @@ export type Response = RoomsKeysListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/list/0.1",
   "title": "Rooms Keys List — payload",
@@ -100,50 +105,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys List — response payload",
-      "description": "Success response to rooms/keys/list. Type https://trusttasks.org/spec/rooms/keys/list/0.1#response. The rooms this key holder can open, which is a different set from the rooms its principal is a member of: membership is a credential the room issued, and this is key custody. A room whose group state was never delivered is absent here and the principal may still hold a perfectly good VMC for it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "rooms"
-      ],
-      "properties": {
-        "rooms": {
-          "type": "array",
-          "description": "One entry per room, in no guaranteed order.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "roomId",
-              "epoch",
-              "earliestReadableEpoch"
-            ],
-            "properties": {
-              "roomId": {
-                "type": "string",
-                "description": "The room's identifier."
-              },
-              "epoch": {
-                "type": "integer",
-                "minimum": 1,
-                "description": "The epoch this key holder is at. Behind the room's own epoch means a commit has not been delivered, and records sealed since will not open."
-              },
-              "earliestReadableEpoch": {
-                "type": "integer",
-                "minimum": 1,
-                "description": "The earliest epoch this key holder can derive a key for, walking the epoch key chain it holds. Equal to `epoch` means it reads only from where it joined; `1` means the room's whole retained history. Anything between is a chain that has been delivered in part, or one deliberately severed below that point."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -155,10 +116,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -217,7 +178,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

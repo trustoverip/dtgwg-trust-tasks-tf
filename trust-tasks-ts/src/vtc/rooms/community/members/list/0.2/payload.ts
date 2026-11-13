@@ -79,8 +79,13 @@ export type Response = VTCRoomsCommunityMembersListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/list/0.2",
   "title": "VTC Rooms Community Members List — payload",
@@ -117,34 +122,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Community Members List — response payload",
-      "description": "Success response to vtc/rooms/community/members/list. Type https://trusttasks.org/spec/vtc/rooms/community/members/list/0.2#response. One page of the room's members and offers, in every state including `suspended`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/RoomMemberV2"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Present when more remain; pass it as `cursor`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -153,54 +130,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RoomMemberV2": {
-      "title": "RoomMemberV2",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "actions",
-        "validUntil",
-        "state",
-        "offeredAt"
-      ],
-      "description": "`RoomMember` with `MemberStateV2`, and `suspendedAt`.",
-      "properties": {
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "actions": {
-          "$ref": "#/$defs/MemberActions"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the member's authority credential expires."
-        },
-        "state": {
-          "$ref": "#/$defs/MemberStateV2"
-        },
-        "offeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "admittedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "removedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "suspendedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present exactly when `state` is `suspended`."
-        }
       }
     },
     "MemberStateV2": {
@@ -213,33 +142,12 @@ export const PAYLOAD_SCHEMA = {
         "removed"
       ],
       "description": "`MemberState` plus `suspended`. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `suspended`: admitted, but the room was archived with `noAccess` (or scheduled for removal), so the room's host refuses the member's credentials; on a sealed tier they are still in the room's group. Restored to `admitted` with freshly issued credentials when the room leaves that state, and never restored if it is removed. `removed`: an administrator removed them, or withdrew their offer — archiving withdraws every open offer; on a sealed tier the room has advanced past an admitted member."
-    },
-    "MemberActions": {
-      "title": "MemberActions",
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 3,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/$defs/MemberAction"
-      },
-      "description": "The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer."
-    },
-    "MemberAction": {
-      "title": "MemberAction",
-      "type": "string",
-      "enum": [
-        "read",
-        "write",
-        "curate"
-      ],
-      "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -362,7 +270,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-proof"
-version = "0.37.10"
+version = "0.39.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -21,31 +21,43 @@ affinidi = [
     "dep:affinidi-encoding",
     "dep:affinidi-did-resolver-cache-sdk",
     "dep:affinidi-did-common",
+    "dep:tokio",
 ]
+# `ml-dsa` — switches on `affinidi-data-integrity`'s ML-DSA cryptosuites
+# (`mldsa44-jcs-2024`, `mldsa44-rdfc-2024`). An application that enables that
+# upstream feature itself gets them without this one; this feature exists so
+# the crate's own tests cover the post-quantum size bounds.
+ml-dsa = ["affinidi", "affinidi-data-integrity/ml-dsa"]
 
 [dependencies]
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.39", default-features = false }
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+# `proof.expires` is read here: the upstream proof type has no member for it.
+# Already in every graph through trust-tasks-rs.
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 # `affinidi` backend deps — gated by the `affinidi` feature.
-affinidi-data-integrity = { version = "0.8", optional = true }
-affinidi-crypto = { version = "0.2", optional = true }
+affinidi-data-integrity = { version = "0.8.7", optional = true }
+affinidi-crypto = { version = "0.3", optional = true }
 affinidi-encoding = { version = "0.1", optional = true }
-affinidi-did-resolver-cache-sdk = { version = "0.8.42", optional = true }
+affinidi-did-resolver-cache-sdk = { version = "0.8.53", optional = true }
 # 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
-affinidi-did-common = { version = "0.4.4", optional = true }
+affinidi-did-common = { version = "0.4.7", optional = true }
+# `CachedDidResolver`'s per-resolution deadline. Already in every graph that
+# enables `affinidi`, through the resolver cache SDK.
+tokio = { version = "1", default-features = false, features = ["time"], optional = true }
 
 [dev-dependencies]
 # The tests, examples and doc examples build real tasks.
 trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
-affinidi-secrets-resolver = "0.5"
-affinidi-did-common = "0.4.4"
-base64 = "0.22"
+affinidi-secrets-resolver = "0.5.18"
+affinidi-did-common = "0.4.7"
+base64 = "0.23"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }

@@ -117,8 +117,13 @@ export type Response = VTAWitnessOpenResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/witness/open/0.1",
   "title": "VTA Witness — Open — payload",
@@ -197,35 +202,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Witness — Open — response payload",
-      "description": "The session id and the witness/session document to send.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "document",
-        "expiresAt"
-      ],
-      "properties": {
-        "sessionId": {
-          "$ref": "#/$defs/SessionId"
-        },
-        "document": {
-          "$ref": "#/$defs/CarriedDocument",
-          "description": "The witness/session/0.1 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTA's record of the session expires. The client must hand back the witness's answers before then."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -235,50 +211,15 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "CarriedDocument": {
-      "title": "CarriedDocument",
-      "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.",
-      "type": "object",
-      "minProperties": 1
-    },
-    "SessionId": {
-      "title": "SessionId",
-      "description": "The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Membership": {
-      "title": "Membership",
-      "description": "A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId"
-      ],
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The credential-vault handle of the membership credential."
-        },
-        "memberDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA Witness — Open — response payload",
@@ -332,7 +273,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 256
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

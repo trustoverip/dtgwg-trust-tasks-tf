@@ -188,8 +188,13 @@ export type Response = VTAWebVHDIDsCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/dids/create/1.0",
   "title": "VTA WebVH DIDs Create — payload",
@@ -341,71 +346,6 @@ export const PAYLOAD_SCHEMA = {
         }
       ]
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs Create — response payload",
-      "description": "Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "contextId",
-        "scid",
-        "portable",
-        "signingKeyId",
-        "kaKeyId",
-        "preRotationKeyCount",
-        "createdAt"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "contextId": {
-          "type": "string"
-        },
-        "serverId": {
-          "type": "string"
-        },
-        "mnemonic": {
-          "type": "string",
-          "description": "The hosting server's handle for the record. Absent for a serverless DID."
-        },
-        "scid": {
-          "type": "string",
-          "description": "Self-certifying identifier committing to the log's first entry."
-        },
-        "portable": {
-          "type": "boolean"
-        },
-        "signingKeyId": {
-          "type": "string"
-        },
-        "kaKeyId": {
-          "type": "string"
-        },
-        "preRotationKeyCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Successor keys committed. `0` means pre-rotation is off for this DID."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "didDocument": {
-          "type": "object",
-          "description": "The published document, when the VTA composed one."
-        },
-        "logEntry": {
-          "type": "string",
-          "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -417,60 +357,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "WebvhPathMode": {
-      "title": "WebvhPathMode",
-      "description": "Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.",
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode"
-          ],
-          "properties": {
-            "mode": {
-              "const": "wellKnown"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode",
-            "path"
-          ],
-          "properties": {
-            "mode": {
-              "const": "explicit"
-            },
-            "path": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "mode"
-          ],
-          "properties": {
-            "mode": {
-              "const": "autoAssign"
-            }
-          }
-        }
-      ]
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA WebVH DIDs Create — response payload",
@@ -547,7 +440,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

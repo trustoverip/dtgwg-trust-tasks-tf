@@ -133,7 +133,7 @@ A conforming **producer** (the member's own client) **MUST**:
 1. Use this task only when it acts **as** the member, as for [`rooms/keys/act`](../../act/0.12/spec.md)
    Producer item 1. A party acting under a chain the member attenuated to it is an agent, and
    watches for itself.
-2. Name the member in `member` — one of the members [`rooms/keys/list`](../../list/0.2/spec.md)
+2. Name the member in `member` — one of the members [`rooms/keys/list`](../../list/0.3/spec.md)
    says it reads the rooms as — and name each room at most once.
 3. Set each room's `sinceVersion` to the highest version it has read the room to, when it has one.
 4. Re-arm a room's watch only after it has read the room since the signal it last received — or
@@ -173,7 +173,7 @@ A conforming **recipient** (the key holder) **MUST**:
 5. Arm with an **address it controls**, at which it receives Trust Task documents over a transport
    its DID document advertises, and which it uses for that one watch and nothing else. The address
    **MUST NOT** be the recipient's own DID — that would tell the host which agent serves the
-   member, which its identifier reaching the host is forbidden to ([`rooms/keys/browse`](../../browse/0.4/spec.md)) —
+   member, which its identifier reaching the host is forbidden to ([`rooms/keys/browse`](../../browse/0.5/spec.md)) —
    nor the member's, nor the caller's, nor the address of any other watch, past or present, nor
    one it gives anyone else. A request that re-arms a watch that has not fired keeps its address,
    so that it replaces the host's watch rather than adding one; any other arming takes a new
@@ -244,7 +244,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they
 were entitled to the outcome.
 
-Naming a host transfers no standing, as on [`rooms/keys/browse`](../../browse/0.4/spec.md): what
+Naming a host transfers no standing, as on [`rooms/keys/browse`](../../browse/0.5/spec.md): what
 it transfers is **sight** of the member's presentation. A recipient **SHOULD** bound the outbound
 request to transports the host's DID document advertises.
 
@@ -389,7 +389,7 @@ service see that something arrived, and when.
 **A phone on a `private` room is expected to poll, unless its agent watches for it.** A phone that
 arms with an address of its own ([`rooms/keys/act/0.12`](../../act/0.12/spec.md) Producer item 6)
 would need a new DID registered with its mediator for each arming to keep the property above;
-polling with [`rooms/keys/browse`](../../browse/0.4/spec.md) is the expected choice for it on a
+polling with [`rooms/keys/browse`](../../browse/0.5/spec.md) is the expected choice for it on a
 `private` room. Through this task the key holder bears that cost instead.
 
 ### Retention

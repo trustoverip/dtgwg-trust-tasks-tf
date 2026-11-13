@@ -86,8 +86,13 @@ export type Response = DIDManagementListAgentNamesResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/agent-name/list/0.1",
   "title": "DID Management List Agent Names — payload",
@@ -111,61 +116,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "AgentNameEntry": {
-      "title": "AgentNameEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "enabled",
-        "createdAt"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name's local part, without the `@` — `alice` for `/@alice`. Bare rather than a full URL because a name is only meaningful within its domain, which is carried once on the response."
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the name currently resolves. `false` means parked, not gone: the name still belongs to this DID and nobody else can claim it."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC3339 timestamp of when the name was first bound to this DID."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "DID Management List Agent Names — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "agentNames"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "description": "The slot the listing is for, echoed."
-        },
-        "domain": {
-          "type": "string",
-          "description": "The slot's hosting domain. Omitted (rather than empty) for an un-domained legacy slot."
-        },
-        "agentNames": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AgentNameEntry"
-          },
-          "description": "Every name bound to the slot, including parked entries. Always present — a slot with no names answers with an empty array, so a caller never has to distinguish 'no names' from 'field missing'."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -177,10 +127,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -250,7 +200,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -99,8 +99,13 @@ export type Response = TaskConsentDecisionResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/task-consent/decision/0.1",
   "title": "Task Consent Decision — payload",
@@ -135,45 +140,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Task Consent Decision — response payload",
-      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status",
-        "payloadDigest"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "granted",
-            "pending",
-            "denied"
-          ],
-          "description": "`granted` = the threshold is met and the requester's re-submit will now execute. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
-        },
-        "payloadDigest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The digest this decision concerned, in the encoding `task-consent/request` carried it."
-        },
-        "approvals": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct approvals recorded so far."
-        },
-        "needed": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Distinct approvals required. Present when status is `pending`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -204,10 +170,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -269,18 +235,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "Decision": {
-      "title": "Decision",
-      "type": "string",
-      "enum": [
-        "approve",
-        "deny"
-      ],
-      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

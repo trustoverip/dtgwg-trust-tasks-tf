@@ -98,8 +98,13 @@ export type Response = PersonaWorldListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/world/list/1.0",
   "title": "Persona — World List — payload",
@@ -125,122 +130,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona World List — response payload",
-      "description": "Success response to persona/world/list. Type https://trusttasks.org/spec/persona/world/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "worlds"
-      ],
-      "properties": {
-        "worlds": {
-          "type": "array",
-          "maxItems": 250,
-          "items": {
-            "$ref": "#/$defs/World"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096,
-          "description": "Present when more worlds remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "World": {
-      "title": "World",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "worldId",
-        "name",
-        "colour",
-        "faceIds",
-        "attributeIds",
-        "version",
-        "updatedAt"
-      ],
-      "description": "One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a world names records that sit above every trust context, so it cannot itself live inside one.",
-      "properties": {
-        "worldId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64
-        },
-        "colour": {
-          "$ref": "#/$defs/WorldColour"
-        },
-        "icon": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 8
-        },
-        "faceIds": {
-          "type": "array",
-          "maxItems": 256,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Ulid"
-          },
-          "description": "Profiles belonging to this world. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see."
-        },
-        "attributeIds": {
-          "type": "array",
-          "maxItems": 1024,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Ulid"
-          },
-          "description": "Attributes belonging to this world, with the same rule about dangling ids as `faceIds`."
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "WorldColour": {
-      "title": "WorldColour",
-      "description": "A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.",
-      "type": "string",
-      "enum": [
-        "slate",
-        "indigo",
-        "teal",
-        "moss",
-        "sand",
-        "clay",
-        "rose",
-        "plum"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -252,10 +141,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -386,7 +275,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

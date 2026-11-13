@@ -106,8 +106,13 @@ export type Response = VTAPCSTrusteeJustifyResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.1",
   "title": "VTA PCS — Trustee Justify — payload",
@@ -151,71 +156,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Trustee Justify — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "document"
-      ],
-      "properties": {
-        "document": {
-          "title": "JustifyDocument",
-          "description": "The voting/trustees/justify request, signed as the trustee.",
-          "type": "object",
-          "required": [
-            "id",
-            "type",
-            "issuer",
-            "recipient",
-            "issuedAt",
-            "payload",
-            "proof"
-          ],
-          "properties": {
-            "id": {
-              "type": "string",
-              "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-            },
-            "type": {
-              "const": "https://trusttasks.org/spec/voting/trustees/justify/0.1"
-            },
-            "issuer": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048,
-              "description": "The signer."
-            },
-            "recipient": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048,
-              "description": "The ballot box."
-            },
-            "issuedAt": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "expiresAt": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "payload": {
-              "type": "object",
-              "description": "That task's request payload."
-            },
-            "proof": {
-              "type": "object",
-              "description": "A Data Integrity proof by an `authentication` key of `issuer`."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -240,10 +180,10 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -321,22 +261,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "TrusteeIndex": {
-      "title": "TrusteeIndex",
-      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 64
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

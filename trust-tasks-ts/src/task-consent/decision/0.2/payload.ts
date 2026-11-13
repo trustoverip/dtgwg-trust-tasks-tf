@@ -115,8 +115,13 @@ export type Response = TaskConsentDecisionResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/task-consent/decision/0.2",
   "title": "Task Consent Decision — payload",
@@ -203,51 +208,6 @@ export const PAYLOAD_SCHEMA = {
         }
       ]
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Task Consent Decision — response payload",
-      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status",
-        "payloadDigest"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "granted",
-            "pending",
-            "denied"
-          ],
-          "description": "`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
-        },
-        "payloadDigest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The digest this decision concerned, in the encoding the pending request carried it."
-        },
-        "actionId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Echoed when the decision carried one."
-        },
-        "approvals": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct approvals recorded so far."
-        },
-        "needed": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Distinct approvals required. Present when status is `pending`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -337,56 +297,13 @@ export const PAYLOAD_SCHEMA = {
       "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Evidence": {
-      "$anchor": "evidence",
-      "title": "Decision Evidence",
-      "description": "An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.",
-      "oneOf": [
-        {
-          "title": "WebAuthn",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "assertion"
-          ],
-          "properties": {
-            "kind": {
-              "const": "webauthn"
-            },
-            "assertion": {
-              "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.7 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
-            }
-          }
-        },
-        {
-          "title": "ApproverSigned",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kind",
-            "statement"
-          ],
-          "properties": {
-            "kind": {
-              "const": "approverSigned"
-            },
-            "statement": {
-              "type": "object",
-              "description": "A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow."
-            }
-          }
-        }
-      ]
-    },
     "Response": {
       "$anchor": "response",
       "title": "Task Consent Decision — response payload",
@@ -451,77 +368,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "AssertionResponse": {
-      "$anchor": "assertionResponse",
-      "title": "AuthenticatorAssertionResponse (login)",
-      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "rawId",
-        "type",
-        "response"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "rawId": {
-          "type": "string"
-        },
-        "type": {
-          "const": "public-key"
-        },
-        "response": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "clientDataJSON",
-            "authenticatorData",
-            "signature"
-          ],
-          "properties": {
-            "clientDataJSON": {
-              "type": "string"
-            },
-            "authenticatorData": {
-              "type": "string"
-            },
-            "signature": {
-              "type": "string"
-            },
-            "userHandle": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        },
-        "authenticatorAttachment": {
-          "enum": [
-            "platform",
-            "cross-platform"
-          ]
-        },
-        "clientExtensionResults": {
-          "type": "object"
-        }
-      }
-    },
-    "Decision": {
-      "title": "Decision",
-      "type": "string",
-      "enum": [
-        "approve",
-        "deny"
-      ],
-      "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

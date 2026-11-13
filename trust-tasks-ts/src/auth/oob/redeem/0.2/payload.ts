@@ -77,8 +77,13 @@ export type Response = AuthOOBRedeemResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/oob/redeem/0.2",
   "title": "Auth — OOB Redeem — payload",
@@ -97,51 +102,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — OOB Redeem — response payload",
-      "description": "For `login`: who is now signed in, for the starter's \"Continue as …?\" confirmation. Never tokens: over HTTPS the session itself is delivered as HttpOnly cookies.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "displayName",
-        "sessionEndsAt",
-        "amr"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The approving DID — the grant's issuer — now the session's subject."
-        },
-        "displayName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "A name for the signed-in identity, for the confirmation step. Untrusted wherever rendered."
-        },
-        "sessionEndsAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the session ends, as an RFC 3339 date-time: the earlier of the grant's `sessionEndsAt` and the service's session limit."
-        },
-        "amr": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Authentication Methods References (RFC 8176) for the session. For this family: `[\"did\", \"oob\", \"uv\"]`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -161,10 +121,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -222,17 +182,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RequestId": {
-      "title": "RequestId",
-      "type": "string",
-      "minLength": 22,
-      "maxLength": 43,
-      "pattern": "^[A-Za-z0-9_-]{22,43}$",
-      "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

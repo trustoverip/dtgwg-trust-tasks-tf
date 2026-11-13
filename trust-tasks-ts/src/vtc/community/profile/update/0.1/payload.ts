@@ -78,8 +78,13 @@ export type Response = VTCCommunityProfileUpdateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/community/profile/update/0.1",
   "title": "VTC Community Profile Update — payload",
@@ -138,31 +143,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community Profile Update — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profile"
-      ],
-      "properties": {
-        "profile": {
-          "$ref": "#/$defs/CommunityProfileView",
-          "description": "The community's profile as read, including the immutable `communityDid` an update cannot set."
-        },
-        "fieldsChanged": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -171,85 +151,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "CommunityProfileView": {
-      "$anchor": "communityProfileView",
-      "title": "CommunityProfileView",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\n\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\n\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.",
-      "required": [
-        "communityDid",
-        "name",
-        "language"
-      ],
-      "properties": {
-        "communityDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The community's own DID — the identifier every credential it issues names as `issuer`, and the one a member's credential binds them to. Immutable: set when the community is created and not settable through an update."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community was created. Immutable, like `communityDid`."
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "logoUrl": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "publicUrl": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "contactEmail": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "language": {
-          "type": "string",
-          "minLength": 1
-        },
-        "relationshipIdentifierDefault": {
-          "type": "string",
-          "enum": [
-            "attributed",
-            "pairwise"
-          ],
-          "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
-        },
-        "extensions": {
-          "type": "object",
-          "description": "Opaque community-defined extension bag."
-        },
-        "registryStatus": {
-          "type": "string",
-          "enum": [
-            "active",
-            "degraded"
-          ],
-          "description": "Trust-registry reachability. Populated on reads; not settable."
-        },
-        "personhood": {
-          "$ref": "#/$defs/PersonhoodGovernance",
-          "description": "What this community's governance asserts about the personhood of its members."
-        }
       }
     },
     "PersonhoodGovernance": {
@@ -285,10 +186,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -439,7 +340,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

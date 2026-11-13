@@ -83,8 +83,13 @@ export type Response = VTAContextsDeleteResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/contexts/delete/1.0",
   "title": "VTA Contexts Delete — payload",
@@ -109,36 +114,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Contexts Delete — response payload",
-      "description": "Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "deleted"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."
-        },
-        "daemonCleanupErrors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -150,10 +125,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -198,7 +173,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

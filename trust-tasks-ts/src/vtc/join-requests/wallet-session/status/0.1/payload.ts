@@ -122,8 +122,13 @@ export type Response = VTCJoinRequestsWalletSessionStatusResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/wallet-session/status/0.1",
   "title": "VTC Join-Requests Wallet Session Status — payload",
@@ -145,138 +150,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "PresentedCredential": {
-      "title": "PresentedCredential",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialQueryId",
-        "format",
-        "issuer"
-      ],
-      "description": "One credential the wallet presented, described without any of its claim values.",
-      "properties": {
-        "credentialQueryId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The `id` of the DCQL credential query this credential was presented for — the key it arrived under in the OpenID4VP `vp_token`."
-        },
-        "format": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The credential format identifier, as OpenID4VP names it (`dc+sd-jwt`, `mso_mdoc`). Carried verbatim."
-        },
-        "issuer": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The identifier of the credential's issuer as the community verified it — a DID, or for an issuer identified by an X.509 certificate, the certificate subject or hash the community's policy names it by."
-        },
-        "vct": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The SD-JWT VC credential type (`vct`). Present for SD-JWT VC credentials."
-        }
-      }
-    },
-    "Evidence": {
-      "title": "Evidence",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "satisfied",
-        "holder",
-        "credentials"
-      ],
-      "description": "What a verified wallet presentation established. Never claim values.",
-      "properties": {
-        "satisfied": {
-          "type": "boolean",
-          "description": "Whether the presentation satisfies the criterion's DCQL query. Satisfying the query is not admission: the community still decides the join under the criterion's `admission`."
-        },
-        "holder": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The identifier of the key that held the presented credentials — for an SD-JWT VC, the `did:key` of its `cnf` key. Recorded beside the applicant DID, never as it."
-        },
-        "credentials": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/PresentedCredential"
-          },
-          "description": "The credentials presented, one entry each."
-        },
-        "heldUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When evidence not yet recorded on a join request is discarded if the applicant has not submitted under the session's criterion. Absent when the evidence is recorded on a request."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Wallet Session Status — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "state",
-        "expiresAt"
-      ],
-      "properties": {
-        "sessionId": {
-          "type": "string",
-          "minLength": 16,
-          "maxLength": 128
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "awaitingWallet",
-            "requestRetrieved",
-            "presented",
-            "refused",
-            "expired"
-          ],
-          "description": "`awaitingWallet`: no wallet has fetched the request object. `requestRetrieved`: a wallet has fetched it and not yet answered. `presented`: a wallet answered and the presentation verified; see `evidence`. `refused`: a wallet answered and the community did not accept the answer, or the wallet declined; see `reason`. `expired`: the session closed unanswered."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the session closes, or closed, if unanswered."
-        },
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The join request the session's evidence is recorded on. Present when the session was bound to one, or its evidence has since been attached to one by a submission."
-        },
-        "evidence": {
-          "$ref": "#/$defs/Evidence",
-          "description": "Present only when `state` is `presented`."
-        },
-        "reason": {
-          "type": "string",
-          "enum": [
-            "presentationInvalid",
-            "queryNotSatisfied",
-            "issuerNotTrusted",
-            "statusNotValid",
-            "walletDeclined"
-          ],
-          "description": "Why the session ended `refused`. `presentationInvalid`: the response or a presentation failed verification — decryption, `state`, signature, key binding, nonce or audience. `queryNotSatisfied`: the presentations verified but do not satisfy the query. `issuerNotTrusted`: a credential's issuer is not one the criterion accepts. `statusNotValid`: a credential's status is revoked or suspended, or could not be read. `walletDeclined`: the wallet answered with an OpenID4VP error, such as `access_denied`. Present only when `state` is `refused`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -288,10 +161,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -438,7 +311,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

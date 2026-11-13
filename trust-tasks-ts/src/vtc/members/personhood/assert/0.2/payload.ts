@@ -221,8 +221,13 @@ export type Response = VTCMembersPersonhoodAssertResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2",
   "title": "VTC Members Personhood-Assert — payload",
@@ -256,40 +261,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Personhood-Assert — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "personhood",
-        "vmc",
-        "roleVac"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1
-        },
-        "personhood": {
-          "type": "boolean",
-          "const": true,
-          "description": "Always true on success — the flag flipped or stayed asserted."
-        },
-        "vmc": {
-          "type": "object",
-          "description": "Re-issued membership credential carrying the asserted personhood (opaque here)."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -327,10 +298,10 @@ export const PAYLOAD_SCHEMA = {
       "minProperties": 1
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -377,35 +348,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "OutcomeEvidence": {
-      "title": "OutcomeEvidence",
-      "description": "One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "session",
-        "outcome"
-      ],
-      "properties": {
-        "session": {
-          "$ref": "#/$defs/EvidenceDocument",
-          "description": "The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3)."
-        },
-        "outcome": {
-          "$ref": "#/$defs/EvidenceDocument",
-          "description": "The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase."
-        }
-      }
-    },
-    "EvidenceDocument": {
-      "title": "EvidenceDocument",
-      "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.",
-      "type": "object",
-      "minProperties": 1
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

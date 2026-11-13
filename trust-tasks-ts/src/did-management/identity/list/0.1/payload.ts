@@ -89,8 +89,13 @@ export type Response = IdentityListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/did-management/identity/list/0.1",
   "title": "Identity List — payload",
@@ -102,100 +107,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Identity List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "generations",
-        "rotationGraceSeconds"
-      ],
-      "properties": {
-        "generations": {
-          "type": "array",
-          "description": "Every generation the service still honours, newest first. Exactly one is current. Empty when the service holds no rotating identity.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "generationId",
-              "did",
-              "current",
-              "signingKeyId",
-              "keyAgreementKeyId",
-              "transports",
-              "createdAt"
-            ],
-            "properties": {
-              "generationId": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "did": {
-                "type": "string",
-                "minLength": 1
-              },
-              "current": {
-                "type": "boolean",
-                "description": "True for the generation the DID document currently advertises."
-              },
-              "signingKeyId": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Verification-method id of the generation's signing key, as the DID document names it. Public; never key material."
-              },
-              "keyAgreementKeyId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "mediatorDid": {
-                "type": "string",
-                "description": "The mediator the generation was reached through. Absent for one reached without a mediator."
-              },
-              "transports": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "tsp",
-                  "didcomm"
-                ],
-                "properties": {
-                  "tsp": {
-                    "type": "boolean"
-                  },
-                  "didcomm": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "createdAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "retiredAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When the generation stopped being current. Absent on the current one."
-              },
-              "expiresAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When the service stops honouring it and drops its key material. Absent on the current one."
-              }
-            }
-          }
-        },
-        "rotationGraceSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How long a generation superseded now would keep being honoured."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -207,10 +118,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -319,7 +230,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

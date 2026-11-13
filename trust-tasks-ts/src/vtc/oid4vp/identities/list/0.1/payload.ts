@@ -175,8 +175,13 @@ export type Response = VTCOpenID4VPVerifierIdentitiesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1",
   "title": "VTC OpenID4VP Verifier Identities List — payload",
@@ -189,242 +194,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Problem": {
-      "title": "Problem",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.",
-      "required": [
-        "code",
-        "severity"
-      ],
-      "properties": {
-        "code": {
-          "type": "string",
-          "enum": [
-            "keyCustodyInvalid",
-            "signerNotLoaded",
-            "agentLinkMissing",
-            "certificateMissing",
-            "certificateNotYetValid",
-            "certificateExpired",
-            "certificateExpiresSoon",
-            "identityStatementMissing",
-            "statementExpired",
-            "statementExpiresSoon",
-            "defaultIdentityNotInstalled",
-            "noPublicUrl"
-          ],
-          "description": "What is wrong, as tabled in the specification."
-        },
-        "severity": {
-          "type": "string",
-          "enum": [
-            "error",
-            "warning"
-          ],
-          "description": "`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long."
-        },
-        "detail": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Maintainer-authored prose for the administrator — what to run to fix it. Never parsed."
-        }
-      }
-    },
-    "Certificate": {
-      "title": "Certificate",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.",
-      "required": [
-        "notBefore",
-        "notAfter",
-        "chainLength"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The leaf's subject distinguished name, as RFC 4514 renders it."
-        },
-        "issuer": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The leaf's issuer distinguished name, as RFC 4514 renders it."
-        },
-        "notBefore": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "notAfter": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "chainLength": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Certificates in the chain, leaf included."
-        }
-      }
-    },
-    "Attestation": {
-      "title": "Attestation",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One attestation about the verifier that every request object carries in `verifier_info`.",
-      "required": [
-        "kind"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "identityTrustStatement",
-            "protectedVerificationAuthorization",
-            "registrationCertificate",
-            "other"
-          ],
-          "description": "Which attestation it is, as tabled in the specification."
-        },
-        "expiresAt": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When it expires, if it says; null when it carries no expiry the maintainer reads."
-        }
-      }
-    },
-    "Identity": {
-      "title": "Identity",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.",
-      "required": [
-        "id",
-        "kind",
-        "custody",
-        "usable",
-        "isDefault",
-        "attestations",
-        "problems",
-        "installedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The administrator's name for the identity."
-        },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "swiyu",
-            "eudi"
-          ],
-          "description": "The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate)."
-        },
-        "clientId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate."
-        },
-        "did": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The identity's DID, for a `swiyu` identity."
-        },
-        "keyId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The verification method that signs request objects, for an identity known by a DID."
-        },
-        "custody": {
-          "type": "string",
-          "enum": [
-            "cached",
-            "agent",
-            "invalid"
-          ],
-          "description": "Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both."
-        },
-        "usable": {
-          "type": "boolean",
-          "description": "Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole."
-        },
-        "isDefault": {
-          "type": "boolean",
-          "description": "Whether a session that names no client identifier prefix uses this identity."
-        },
-        "certificate": {
-          "$ref": "#/$defs/Certificate",
-          "description": "The access certificate, for an `eudi` identity that has one."
-        },
-        "attestations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Attestation"
-          },
-          "description": "What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none."
-        },
-        "problems": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Problem"
-          },
-          "description": "What is wrong with this identity. Empty when nothing is."
-        },
-        "installedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC OpenID4VP Verifier Identities List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "identities",
-        "problems"
-      ],
-      "properties": {
-        "identities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Identity"
-          },
-          "description": "Every verifier identity the community holds, by `id`. Empty when it holds none."
-        },
-        "defaultIdentity": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used."
-        },
-        "problems": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Problem"
-          },
-          "description": "What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -436,10 +205,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -690,7 +459,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

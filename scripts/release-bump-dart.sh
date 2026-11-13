@@ -112,8 +112,23 @@ if [ "$current" != "$last" ]; then
   exit 0
 fi
 
+# ── Does the sibling admit the core this release carries? ───────────────────
+# release-pr.sh bumps `trust_tasks` first and passes its new version as
+# TRUST_TASKS_CORE. When that crosses a 0.x minor, a sibling's `^0.9.3` no
+# longer admits it, so the floor is raised here and the sibling is released
+# for it even when nothing else in it changed — a floor that is never
+# published leaves consumers unable to use the sibling with the new core.
+# check-sibling-core-ranges fails the Release PR without this (#1085).
+floor_was=""
+if [ "$PKG" != "trust_tasks" ] && [ -n "${TRUST_TASKS_CORE:-}" ]; then
+  floor_was=$(node "$(dirname "$0")/raise-dart-core-floor.mjs" "$PUBSPEC" "$TRUST_TASKS_CORE")
+  if [ -n "$floor_was" ]; then
+    echo "::notice::$PKG: trust_tasks $floor_was -> ^$TRUST_TASKS_CORE"
+  fi
+fi
+
 # ── Is there anything to release? ────────────────────────────────────────────
-if git diff --quiet "$tag" HEAD -- "${WATCH[@]}"; then
+if [ -z "$floor_was" ] && git diff --quiet "$tag" HEAD -- "${WATCH[@]}"; then
   echo "::notice::No changes to $PKG since $tag — nothing to release."
   exit 0
 fi
@@ -221,12 +236,22 @@ if [ ! -f "$CHANGELOG" ]; then
   printf '# Changelog — `%s`\n' "$PKG" >"$CHANGELOG"
   echo "::warning::$CHANGELOG did not exist, so it was started; give it the package's versioning preamble in the Release PR."
 fi
-if section=$(git-cliff --config cliff.toml \
+section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \
   --unreleased \
   "${cliff_paths[@]}" \
-  "$range" 2>/dev/null) && [ -n "$section" ]; then
+  "$range" 2>/dev/null) || section=""
+# A raised core floor is a change no commit describes, so the release says it.
+if [ -n "$floor_was" ]; then
+  [ -n "$section" ] || section="## $next — $(date -u +%Y-%m-%d)"
+  section="$section
+
+### Dependencies
+
+- Requires \`trust_tasks\` ^$TRUST_TASKS_CORE (was $floor_was), the core released beside it."
+fi
+if [ -n "$section" ]; then
   SECTION="$section" node -e '
     const fs = require("fs");
     const p = process.argv[1];

@@ -115,8 +115,13 @@ export type Response = RoomsKeysActResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/keys/act/0.2",
   "title": "Rooms Keys Act — payload",
@@ -202,46 +207,6 @@ export const PAYLOAD_SCHEMA = {
         ]
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Act — response payload",
-      "description": "Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.2#response. The request, completed as the member, for the caller to send to its recipient unaltered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "principal",
-        "document"
-      ],
-      "properties": {
-        "principal": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The member the recipient signed as: the completed document's `issuer`."
-        },
-        "document": {
-          "type": "object",
-          "required": [
-            "id",
-            "type",
-            "issuer",
-            "recipient",
-            "issuedAt",
-            "payload",
-            "proof"
-          ],
-          "description": "The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the inserted presentation's leaf lapses. Absent when the type takes no presentation."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -253,78 +218,13 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "UnsignedRoomRequest": {
-      "$anchor": "unsigned-room-request",
-      "title": "Unsigned room request",
-      "description": "A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "type",
-        "recipient",
-        "issuedAt",
-        "payload"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The request's identifier, set by the client. The host keys duplicate-execution protection on it."
-        },
-        "type": {
-          "type": "string",
-          "pattern": "^https://trusttasks\\.org/spec/rooms/",
-          "maxLength": 2048,
-          "description": "The room request's Type URI. Only the types in this task's table are completed; any other is `typeNotActable`."
-        },
-        "issuer": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier."
-        },
-        "recipient": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The room's host, which the completed document is for. Covered by the member's proof."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "threadId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512
-        },
-        "payload": {
-          "type": "object",
-          "description": "The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, and refuses a payload that already carries one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "not": {
-        "required": [
-          "proof"
-        ]
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Rooms Keys Act — response payload",
@@ -376,7 +276,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -391,6 +291,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 327680,
 } as const;
 
 /**
@@ -405,4 +306,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 393216,
 } as const;

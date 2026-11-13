@@ -5,7 +5,7 @@ name: trust_tasks
 description: >-
   Trust Tasks for Dart: a typed payload for every specification in the registry,
   plus the SPEC section 7.2 consumer pipeline that acts on them safely.
-version: 0.9.31
+version: 0.11.0
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org
@@ -26,5 +26,5 @@ dev_dependencies:
   # (the release that introduced extension types, which the generated
   # closed-value types use). A dev dependency must not narrow what consumers
   # can build against — 3.3 is Flutter 3.19, 3.5 is Flutter 3.24.
-  lints: ^4.0.0
+  lints: ">=4.0.0 <7.0.0"
   test: ^1.25.0

@@ -79,8 +79,13 @@ export type Response = PersonaRenderersListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/renderers/list/1.0",
   "title": "Persona Renderers List — payload",
@@ -93,61 +98,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Renderers List — response payload",
-      "description": "Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "renderers"
-      ],
-      "properties": {
-        "renderers": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "id",
-              "drops",
-              "canCarryPredicates"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "maxLength": 64
-              },
-              "description": {
-                "type": "string",
-                "maxLength": 512
-              },
-              "canonical": {
-                "type": "boolean",
-                "description": "True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical."
-              },
-              "drops": {
-                "type": "array",
-                "maxItems": 32,
-                "items": {
-                  "type": "string",
-                  "maxLength": 64
-                },
-                "description": "What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards."
-              },
-              "canCarryPredicates": {
-                "type": "boolean",
-                "description": "Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -159,10 +109,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -232,7 +182,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

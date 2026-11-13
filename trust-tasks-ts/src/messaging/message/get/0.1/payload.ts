@@ -71,8 +71,13 @@ export type Response = MessagingGetMessageResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/message/get/0.1",
   "title": "Messaging — Get Message — payload",
@@ -96,31 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Get Message — response payload",
-      "description": "The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "meta": {
-          "$ref": "#/$defs/MessageMeta"
-        },
-        "message": {
-          "type": "string",
-          "description": "The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.",
-          "maxLength": 10485760
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "meta",
-        "message"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -131,92 +111,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "MessageMeta": {
-      "title": "MessageMeta",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "msgId",
-        "queue",
-        "size",
-        "receivedAt"
-      ],
-      "description": "Metadata of one stored message. Never carries the message body.",
-      "properties": {
-        "msgId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.",
-          "maxLength": 256
-        },
-        "queue": {
-          "$ref": "#/$defs/Queue"
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Stored size in bytes."
-        },
-        "receivedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the mediator stored the message."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the mediator will expire the message if it is not deleted first."
-        },
-        "from": {
-          "$ref": "#/$defs/Vid",
-          "description": "The sender, where the mediator knows it. Absent for anonymous messages."
-        },
-        "to": {
-          "$ref": "#/$defs/Vid",
-          "description": "The recipient account."
-        },
-        "protocol": {
-          "$ref": "#/$defs/WireProtocol"
-        },
-        "deliveryState": {
-          "$ref": "#/$defs/DeliveryState"
-        },
-        "deliveredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the message was first handed to the recipient. Present only when deliveryState is `delivered`."
-        }
-      }
-    },
-    "DeliveryState": {
-      "title": "DeliveryState",
-      "type": "string",
-      "enum": [
-        "queued",
-        "delivered"
-      ],
-      "description": "`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it."
-    },
-    "WireProtocol": {
-      "title": "WireProtocol",
-      "type": "string",
-      "enum": [
-        "didcomm",
-        "didcommV1",
-        "tsp",
-        "other"
-      ],
-      "description": "The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify."
-    },
-    "Queue": {
-      "title": "Queue",
-      "type": "string",
-      "enum": [
-        "receive",
-        "send"
-      ],
-      "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
-    },
     "Vid": {
       "title": "Vid",
       "type": "string",
@@ -224,10 +118,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -359,7 +253,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

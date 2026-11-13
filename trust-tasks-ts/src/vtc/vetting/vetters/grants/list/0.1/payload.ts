@@ -267,8 +267,13 @@ export type Response = VTCVettingVetterGrantsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/grants/list/0.1",
   "title": "VTC Vetting — Vetter Grants — List — payload",
@@ -293,156 +298,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "GrantOrigin": {
-      "title": "GrantOrigin",
-      "type": "string",
-      "enum": [
-        "auto",
-        "manual"
-      ],
-      "description": "Who issued the grant. `auto`: the automatic-grant sweep (vtc/vetting/auto-grant), on the vetter-eligibility policy's allow — and the only grants that sweep ever revokes. `manual`: an administrator, through vtc/vetting/vetters/grant."
-    },
-    "VetterProfileSummary": {
-      "title": "VetterProfileSummary",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "listed",
-        "languages",
-        "methods",
-        "eventCount",
-        "updatedAt"
-      ],
-      "description": "What an administrator sees of a vetter's self-published profile (vtc/vetting/vetters/profile). Self-asserted by the vetter; a surface rendering it attributes it to them.",
-      "properties": {
-        "listed": {
-          "type": "boolean",
-          "description": "Whether the profile appears in vtc/vetting/vetters/list."
-        },
-        "displayName": {
-          "$ref": "#/$defs/VetterDisplayName"
-        },
-        "country": {
-          "$ref": "#/$defs/CountryCode"
-        },
-        "languages": {
-          "type": "array",
-          "maxItems": 16,
-          "items": {
-            "$ref": "#/$defs/LanguageTag"
-          }
-        },
-        "methods": {
-          "type": "array",
-          "maxItems": 3,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/VettingMethod"
-          }
-        },
-        "eventCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many events the profile lists, ended or not."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the profile was last published."
-        }
-      }
-    },
-    "VetterGrant": {
-      "title": "VetterGrant",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "endorsementId",
-        "memberDid",
-        "credentialId",
-        "validFrom",
-        "revoked",
-        "live",
-        "origin"
-      ],
-      "description": "One vetter grant.",
-      "properties": {
-        "endorsementId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The grant's record — what vtc/endorsements/revoke withdraws."
-        },
-        "memberDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The member named a vetter."
-        },
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The vetter role credential's `id`."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The credential's `validFrom`."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The credential's `validUntil`. Absent on a grant recorded before the community kept it."
-        },
-        "revoked": {
-          "type": "boolean",
-          "description": "Whether the grant has been revoked."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was revoked. Present only when `revoked`."
-        },
-        "live": {
-          "type": "boolean",
-          "description": "Unrevoked, unexpired, and held by a current member — the predicate vtc/vetting/vetters/show reports as `live`."
-        },
-        "origin": {
-          "$ref": "#/$defs/GrantOrigin"
-        },
-        "profile": {
-          "$ref": "#/$defs/VetterProfileSummary"
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Vetter Grants — List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/VetterGrant"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Present when more remain; pass it as `cursor`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -452,43 +307,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "VettingMethod": {
-      "title": "VettingMethod",
-      "type": "string",
-      "enum": [
-        "inPerson",
-        "video",
-        "priorAcquaintance"
-      ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
-    },
-    "LanguageTag": {
-      "title": "LanguageTag",
-      "type": "string",
-      "minLength": 2,
-      "maxLength": 35,
-      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
-      "description": "A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively."
-    },
-    "CountryCode": {
-      "title": "CountryCode",
-      "type": "string",
-      "pattern": "^[A-Z]{2}$",
-      "description": "An ISO 3166-1 alpha-2 country code, upper case, e.g. `DE`."
-    },
-    "VetterDisplayName": {
-      "title": "VetterDisplayName",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "description": "The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -684,7 +508,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

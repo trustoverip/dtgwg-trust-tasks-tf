@@ -85,8 +85,13 @@ export type Response = VTAAttestationMnemonicExportResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.1",
   "title": "VTA Attestation — Mnemonic Export — payload",
@@ -121,39 +126,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Mnemonic Export — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundle",
-        "digest",
-        "windowRemainingSeconds"
-      ],
-      "properties": {
-        "bundle": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 65536,
-          "description": "The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key."
-        },
-        "digest": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it."
-        },
-        "windowRemainingSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -165,10 +137,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -216,7 +188,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

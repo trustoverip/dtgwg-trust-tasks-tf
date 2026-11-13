@@ -21,6 +21,10 @@ export interface MessagingPurgeQueuePayload {
    */
   olderThanSeconds?: number;
   /**
+   * Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview.
+   */
+  storedBefore?: string;
+  /**
    * Report what would be purged and purge nothing. Default false.
    */
   dryRun?: boolean;
@@ -43,6 +47,10 @@ export interface MessagingPurgeQueueResponsePayload {
    */
   purged: number;
   dryRun: boolean;
+  /**
+   * The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore.
+   */
+  selectedAt?: string;
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
@@ -88,8 +96,13 @@ export type Response = MessagingPurgeQueueResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/queue/purge/0.1",
   "title": "Messaging — Purge Queue — payload",
@@ -115,6 +128,11 @@ export const PAYLOAD_SCHEMA = {
       "minimum": 0,
       "description": "Only messages queued at least this long."
     },
+    "storedBefore": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview."
+    },
     "dryRun": {
       "type": "boolean",
       "description": "Report what would be purged and purge nothing. Default false."
@@ -125,41 +143,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Purge Queue — response payload",
-      "description": "The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "matched": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Messages that matched the selection."
-        },
-        "matchedBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "purged": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Messages actually removed. 0 on a dry run."
-        },
-        "dryRun": {
-          "type": "boolean"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "matched",
-        "purged",
-        "dryRun"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -186,10 +169,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -217,6 +200,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "dryRun": {
           "type": "boolean"
         },
+        "selectedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore."
+        },
         "ext": {
           "$ref": "#/$defs/Ext",
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
@@ -237,24 +225,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Vid": {
-      "title": "Vid",
-      "type": "string",
-      "minLength": 1,
-      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
-    },
-    "Queue": {
-      "title": "Queue",
-      "type": "string",
-      "enum": [
-        "receive",
-        "send"
-      ],
-      "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

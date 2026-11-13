@@ -66,8 +66,13 @@ export type Response = VTNRolesListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/roles/list/0.1",
   "title": "VTN Roles — List — payload",
@@ -84,28 +89,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Roles — List — response payload",
-      "description": "Every role the network defines.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roles"
-      ],
-      "properties": {
-        "roles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RoleDef"
-          },
-          "description": "The roles, each with whether a party must register a group for it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -116,43 +99,15 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "RoleDef": {
-      "description": "A role the network defines.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "required"
-      ],
-      "properties": {
-        "name": {
-          "$ref": "#/$defs/RoleName"
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "What the role is for."
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether a party must register a group for it before its acknowledgement is accepted."
-        }
-      }
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
     "Membership": {
       "type": "object",
       "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -215,13 +170,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "pattern": "^[a-z0-9_-]{1,64}$",
       "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

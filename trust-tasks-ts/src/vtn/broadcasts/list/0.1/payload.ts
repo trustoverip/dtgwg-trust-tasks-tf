@@ -66,8 +66,13 @@ export type Response = VTNBroadcastsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/broadcasts/list/0.1",
   "title": "VTN Broadcasts — List — payload",
@@ -86,28 +91,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Broadcasts — List — response payload",
-      "description": "The broadcast records, newest first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "broadcasts"
-      ],
-      "properties": {
-        "broadcasts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/BroadcastRecord"
-          },
-          "description": "Sent and received broadcasts, newest first."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -117,140 +100,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "BroadcastRecord": {
-      "description": "A broadcast as this network sent or relayed it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "direction",
-        "role",
-        "message",
-        "recordedAt",
-        "receipts",
-        "reached"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The message id."
-        },
-        "direction": {
-          "type": "string",
-          "enum": [
-            "sent",
-            "received"
-          ],
-          "description": "Whether this network sent it or received it to relay."
-        },
-        "role": {
-          "$ref": "#/$defs/RoleName",
-          "description": "The role it was addressed to."
-        },
-        "message": {
-          "$ref": "#/$defs/Credential",
-          "description": "The signed message."
-        },
-        "from": {
-          "$ref": "#/$defs/Did",
-          "description": "For a received message, the network that delivered it."
-        },
-        "actor": {
-          "$ref": "#/$defs/Did",
-          "description": "For a sent message, the administrator that sent it."
-        },
-        "recordedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When."
-        },
-        "receipts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Receipt"
-          },
-          "description": "Per group."
-        },
-        "reached": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Groups delivered to, counting relays."
-        }
-      }
-    },
-    "Receipt": {
-      "description": "The outcome of one delivery.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "group",
-        "member",
-        "status"
-      ],
-      "properties": {
-        "group": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The group delivered to."
-        },
-        "member": {
-          "$ref": "#/$defs/Did",
-          "description": "The member that owns it."
-        },
-        "status": {
-          "$ref": "#/$defs/DeliveryStatus"
-        },
-        "detail": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "Why, for anything but `delivered`."
-        },
-        "network": {
-          "type": "boolean",
-          "description": "Whether the group is a network group, which relays further."
-        },
-        "relayed": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Receipt"
-          },
-          "description": "The receipts the network group's own relay returned."
-        }
-      }
-    },
-    "DeliveryStatus": {
-      "type": "string",
-      "enum": [
-        "delivered",
-        "duplicate",
-        "refused",
-        "queued",
-        "failed"
-      ],
-      "description": "What happened to one delivery. `queued` will be retried."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -415,7 +270,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

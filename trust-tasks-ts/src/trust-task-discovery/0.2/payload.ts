@@ -140,8 +140,13 @@ export type Response = TrustTaskDiscoveryResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/trust-task-discovery/0.2",
   "title": "Trust Task Discovery — payload",
@@ -159,69 +164,11 @@ export const PAYLOAD_SCHEMA = {
       },
       "description": "Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally."
     }
-  },
-  "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Trust Task Discovery — response payload",
-      "description": "List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "supportedTypes"
-      ],
-      "properties": {
-        "supportedTypes": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "uri",
-                "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set."
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "type"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists."
-                  },
-                  "requiredExt": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies."
-                  }
-                },
-                "description": "Object form: lists a Type URI together with optional capability annotations."
-              }
-            ],
-            "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`)."
-          },
-          "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form."
-        },
-        "frameworkVersion": {
-          "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-          "description": "MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH."
-        }
-      }
-    }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -282,7 +229,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -82,8 +82,13 @@ export type Response = VTCJoinRequestsDecideResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/decide/0.1",
   "title": "VTC Join-Requests Decide — payload",
@@ -117,48 +122,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Decide — response payload",
-      "description": "The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "status"
-      ],
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "approved",
-            "rejected"
-          ],
-          "description": "The request's post-decision state; echoes the decision."
-        },
-        "vmc": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."
-        },
-        "roleVac": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "description": "The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -170,10 +133,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -230,7 +193,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

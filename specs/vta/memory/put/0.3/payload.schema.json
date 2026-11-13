@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/memory/put/0.3",
+  "title": "VTA Memory Put — payload",
+  "description": "Store one memory item at its `(contextId, key)` address. `expectedVersion` makes the write conditional: a positive value requires the item to be at exactly that version, and zero requires that no live item exists.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "key",
+    "value"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the item is scoped to; the isolation boundary."
+    },
+    "key": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryKey"
+    },
+    "value": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryValue"
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryExpectedVersion",
+      "description": "Optional precondition. Omit for a last-writer-wins upsert, as in 0.1. Supply the version a prior read returned to make the write conditional; supply 0 to create only."
+    },
+    "purpose": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryPurpose",
+      "description": "OPTIONAL. The one purpose the caller will use the content this request discloses for (VTI-ACL-103). Granted only as the caller's ACL entry grants it; a purpose the entry does not grant is refused with `purposeNotGranted`. May be omitted where the entry lists exactly one purpose, or states `any`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Memory Put — response payload",
+      "description": "Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.3#response. A failed precondition is not a success: it is a trust-task-error carrying vta/memory/put:versionConflict, whose details carry the maintainer's current version and value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "key",
+        "version",
+        "wasCreated",
+        "updatedAt"
+      ],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request."
+        },
+        "key": {
+          "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryKey"
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryVersion",
+          "description": "The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read."
+        },
+        "wasCreated": {
+          "type": "boolean",
+          "description": "True when no live item existed at the key beforehand — including when the key held a tombstone, since a tombstone is not a live item."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the write was applied."
+        },
+        "valueBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the stored value in bytes as the maintainer measured it against its per-item cap."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

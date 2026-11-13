@@ -113,8 +113,13 @@ export type Response = WebVHServersReconcileResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1",
   "title": "WebVH Servers — Reconcile — payload",
@@ -136,104 +141,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "HostOnlyDid": {
-      "title": "A DID the hosting server serves and the agent has no record of",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "slotId"
-      ],
-      "properties": {
-        "slotId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The hosting server's identifier for the slot — what the server's own management API addresses it by. This is the comparison key, not `did`: a slot that was reserved but never published to has no DID at all, and is as unreconciled as one that was."
-        },
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot."
-        },
-        "domain": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Hosting domain the slot belongs to, as the server reported it. Absent where the server reports none."
-        },
-        "disabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether the hosting server currently has the slot disabled. A disabled slot is still unreconciled — the agent holds no key for it either way."
-        }
-      }
-    },
-    "AgentOnlyDid": {
-      "title": "A DID the agent records as hosted on this server, which the server does not have",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "slotId"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DID the agent holds a record for."
-        },
-        "slotId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The slot the agent believes the DID occupies on that server."
-        },
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Agent-local grouping the DID belongs to, where the agent has one. Reported so an operator can tell which part of their deployment the divergence is in."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Servers — Reconcile — response payload",
-      "description": "The comparison. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "serverId",
-        "hostOnly",
-        "agentOnly",
-        "inBoth"
-      ],
-      "properties": {
-        "serverId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The server compared against, echoed so a stored report is self-describing."
-        },
-        "hostOnly": {
-          "type": "array",
-          "description": "Slots the hosting server serves that the agent has no record of. The agent holds no update key for these, so no further version of them can be signed by it.",
-          "items": {
-            "$ref": "#/$defs/HostOnlyDid"
-          }
-        },
-        "agentOnly": {
-          "type": "array",
-          "description": "DIDs the agent records as hosted on this server, which the server does not have.",
-          "items": {
-            "$ref": "#/$defs/AgentOnlyDid"
-          }
-        },
-        "inBoth": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many the two agree on. Required, and required even when both arrays are empty: it is what distinguishes 'compared them, all matched' from 'compared nothing'. A consumer that rendered only the divergences would show an identical screen for a clean estate and for a listing that silently returned no rows."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -245,10 +152,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -361,7 +268,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -103,8 +103,13 @@ export type Response = VTCCredentialsReissueResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/credentials/reissue/0.1",
   "title": "VTC Credentials Reissue — payload",
@@ -152,86 +157,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Credentials Reissue — response payload",
-      "description": "Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jobId",
-        "state",
-        "dryRun",
-        "statusLists",
-        "artefacts"
-      ],
-      "properties": {
-        "jobId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The job this cause started. The same cause always names the same job."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "planned",
-            "running",
-            "statusListsDone",
-            "completed",
-            "failed"
-          ],
-          "description": "`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where."
-        },
-        "dryRun": {
-          "type": "boolean"
-        },
-        "statusLists": {
-          "$ref": "#/$defs/Progress"
-        },
-        "artefacts": {
-          "$ref": "#/$defs/Progress"
-        },
-        "signedWith": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The attestation keys (verification methods) the new signatures are made with."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Progress": {
-      "title": "ReissueProgress",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "total",
-        "done",
-        "failed"
-      ],
-      "properties": {
-        "total": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "done": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "failed": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "undeliverable": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -243,10 +168,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -341,7 +266,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

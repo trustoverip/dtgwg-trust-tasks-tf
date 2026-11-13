@@ -70,8 +70,13 @@ export type Response = VTACollectionSettingsSetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/collection/settings/set/0.1",
   "title": "VTA Collection — Settings — Set — payload",
@@ -96,80 +101,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Collection — Settings — Set — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "setting",
-        "changed"
-      ],
-      "description": "The context's setting once the change has taken effect.",
-      "properties": {
-        "setting": {
-          "$ref": "#/$defs/CollectionSetting"
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "Whether this request changed the setting. False when the context already held the value asked for, in which case nothing changed but the record of the request (VTI-NTF-095)."
-        }
-      }
-    },
-    "CollectionSetting": {
-      "title": "CollectionSetting",
-      "description": "Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "collectByDefault",
-        "suspendedByOperator"
-      ],
-      "properties": {
-        "contextId": {
-          "$ref": "#/$defs/ContextId",
-          "description": "The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094)."
-        },
-        "collectByDefault": {
-          "type": "boolean",
-          "description": "The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts."
-        },
-        "suspendedByOperator": {
-          "type": "boolean",
-          "description": "Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension."
-        },
-        "changedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096)."
-        },
-        "changedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When `collectByDefault` was last changed."
-        }
-      },
-      "dependentSchemas": {
-        "changedBy": {
-          "required": [
-            "changedAt"
-          ]
-        },
-        "changedAt": {
-          "required": [
-            "changedBy"
-          ]
-        }
-      }
-    },
-    "Did": {
-      "title": "Did",
-      "description": "A DID.",
-      "type": "string",
-      "minLength": 8,
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:\\S+$"
-    },
     "ContextId": {
       "title": "ContextId",
       "description": "The trust context the identifier belongs to.",
@@ -188,10 +119,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -275,19 +206,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 256
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

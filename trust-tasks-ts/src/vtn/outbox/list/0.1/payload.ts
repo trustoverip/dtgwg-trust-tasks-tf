@@ -62,8 +62,13 @@ export type Response = VTNOutboxListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/outbox/list/0.1",
   "title": "VTN Outbox — List — payload",
@@ -76,28 +81,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Outbox — List — response payload",
-      "description": "Every queued delivery.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/OutboxItem"
-          },
-          "description": "Queued deliveries, in no particular order."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -107,106 +90,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "OutboxItem": {
-      "description": "A delivery waiting to be retried.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "messageId",
-        "group",
-        "member",
-        "endpoint",
-        "envelope",
-        "attempts",
-        "nextAttemptAt",
-        "expiresAt",
-        "lastError"
-      ],
-      "properties": {
-        "messageId": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The message id."
-        },
-        "group": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The group."
-        },
-        "member": {
-          "$ref": "#/$defs/Did",
-          "description": "Its member."
-        },
-        "endpoint": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where it is being delivered."
-        },
-        "envelope": {
-          "$ref": "#/$defs/Envelope"
-        },
-        "attempts": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Attempts so far."
-        },
-        "nextAttemptAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it is next tried."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it is given up."
-        },
-        "lastError": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "The last failure."
-        }
-      }
-    },
-    "Envelope": {
-      "description": "A broadcast in transit.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "message",
-        "hops"
-      ],
-      "properties": {
-        "message": {
-          "$ref": "#/$defs/Credential",
-          "description": "The message, signed by the origin network."
-        },
-        "hops": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Credential"
-          },
-          "description": "One signed hop per relay step, each by the network that owns the previous hop's group.",
-          "maxItems": 16
-        }
-      }
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -337,7 +226,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

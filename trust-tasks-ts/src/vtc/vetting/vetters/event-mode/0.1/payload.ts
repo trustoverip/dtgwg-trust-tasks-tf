@@ -113,8 +113,13 @@ export type Response = VTCVettingEventModeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1",
   "title": "VTC — Vetting Event Mode — payload",
@@ -170,75 +175,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting Event Mode — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "state",
-        "tier",
-        "window",
-        "groupSize",
-        "groupFloor"
-      ],
-      "description": "Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.",
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The event the request names."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "approved"
-          ],
-          "description": "`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it."
-        },
-        "tier": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The tier recorded for this vetter at this event."
-        },
-        "window": {
-          "$ref": "#/$defs/Window"
-        },
-        "groupSize": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide."
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name."
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`."
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request."
-        },
-        "closesAfter": {
-          "type": "string",
-          "format": "date",
-          "description": "Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -250,10 +186,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -359,7 +295,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

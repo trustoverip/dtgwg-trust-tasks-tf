@@ -9,7 +9,9 @@ name: Commit lint
 #      and `!`/`BREAKING CHANGE` are what release-plz reads to size the bump.
 #
 # An unparseable title used to be untidy. Now it silently under-reports a
-# release. This check is small on purpose: it lints the title, not the body.
+# release. The title job lints the title. The `breaking-trailer` job reads the
+# bodies, for one thing only: a `BREAKING CHANGE` line, which every bump script
+# and release-plz read as an UNSCOPED break of every package.
 #
 # `spec` is in the allowed list although it is not a standard conventional
 # type — it is this repo's most common one, for a change to a specification
@@ -35,7 +37,8 @@ concurrency:
 jobs:
   title:
     name: PR title is a conventional commit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Check the title
         # The title is passed through the environment, never interpolated into
@@ -61,7 +64,13 @@ jobs:
             # spec changes (#858 among them, whose crate API did not change at
             # all) each cost every library a MINOR before this was enforced.
             if printf '%s' "$TITLE" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then
-              pkg='rs|ts|go|dart|codegen|runtime|bindings|https|didcomm|didcomm-v1|tsp|proof|ceremony|capability-client|cli|build|(rs|ts|go|dart)-[a-z0-9-]+'
+              # Exactly the scopes some release consumer reads — the bump
+              # scripts' SCOPES, check-rs-api-compat.sh and the published crates.
+              # A pattern here (it used to accept any `ts-…`) let a typo or a
+              # scope nothing reads through, to be scored as a patch.
+              # `npm run check-release-lists` fails when this list and those
+              # disagree, so add a new package's scope in both places.
+              pkg='rs|codegen|https|proof|didcomm|didcomm-v1|tsp|capability-client|ceremony|build|cli|ts|ts-bindings|ts-proof|ts-tsp|ts-capability-client|ts-gen|go|go-bindings|go-proof|go-didcomm|go-capabilityclient|go-capability-client|dart|dart-bindings|dart-proof|dart-https|dart-didcomm|dart-capability-client'
               scopes=$(printf '%s' "$TITLE" | sed -nE 's/^[a-z]+\(([^)]*)\)!:.*/\1/p' | tr ',' '\n' | sed 's/^ *//; s/ *$//')
               bad=$(printf '%s\n' "$scopes" | grep -vxE "$pkg" || true)
               if [ -z "$scopes" ] || [ -n "$bad" ]; then
@@ -106,5 +115,50 @@ jobs:
             feat(rs)!: generated types are #[non_exhaustive]
 
           See RELEASING.md.
+          EOF
+          exit 1
+
+  # PRs squash-merge with the commits' messages as the body (the repository's
+  # squash setting is COMMIT_MESSAGES), and release-plz and every bump script
+  # (release-bump-{ts,go,dart}.sh, check-{rs,go}-api-compat.sh) read a line
+  # starting `BREAKING CHANGE` / `BREAKING-CHANGE` in that body as a breaking
+  # release of EVERY package they watch — unscoped, so it costs every library a
+  # MINOR, the exact cost the scoped-`!` rule above exists to prevent. Such a
+  # line is usually inherited from a commit message by accident. The PR
+  # description is read too, so a change to the squash setting cannot reopen it.
+  breaking-trailer:
+    name: no unscoped BREAKING CHANGE in the commits
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check the commit messages and the description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # Through the environment, never interpolated: attacker-controlled.
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          messages=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" --jq '.[].commit.message')
+          # The same pattern the bump scripts match (`grep -qE '^BREAKING[ -]CHANGE'`).
+          found=$(printf '%s\n%s\n' "$messages" "${BODY:-}" | tr -d '\r' | grep -E '^BREAKING[ -]CHANGE' || true)
+          if [ -z "$found" ]; then
+            echo "ok: no BREAKING CHANGE line"
+            exit 0
+          fi
+          # shellcheck disable=SC2016 # the backticks are literal Markdown, not substitution
+          printf '::error::A commit message or the PR description has a `BREAKING CHANGE` line: %s\n' "$(head -1 <<<"$found")"
+          cat <<'EOF'
+          release-plz and every npm/Go/Dart bump script read a line starting
+          `BREAKING CHANGE` (or `BREAKING-CHANGE`) in the squashed body as a breaking
+          release of EVERY package, whatever the title's scope says.
+
+          Declare a package API break with a `!` in the PR title, scoped to the
+          package: feat(rs)!:  fix(ts-proof)!:  feat(go-didcomm)!:
+          Then remove the line: reword the commit (git commit --amend, or a rebase;
+          keep the Signed-off-by) and edit the PR description. See RELEASING.md.
           EOF
           exit 1

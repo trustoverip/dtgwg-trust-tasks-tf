@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:trust_tasks/trust_tasks.dart';
 
 import 'constants.dart';
@@ -7,24 +5,15 @@ import 'constants.dart';
 /// A capability document: a Trust Task whose payload is an open JSON object.
 typedef CapabilityDocument = TrustTaskDocument<Map<String, dynamic>>;
 
-final _rand = Random.secure();
-
 /// A fresh document `id` (a UUID v4 URN). One per *attempt* — never reused
-/// across attempts; see [newAttempt].
-String _freshId() {
-  final b = List<int>.generate(16, (_) => _rand.nextInt(256));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int i) => b[i].toRadixString(16).padLeft(2, '0');
-  final s = StringBuffer('urn:uuid:');
-  for (var i = 0; i < 16; i++) {
-    if (i == 4 || i == 6 || i == 8 || i == 10) s.write('-');
-    s.write(hex(i));
-  }
-  return s.toString();
-}
+/// across attempts; see [newAttempt]. The core's generator: the Dart family
+/// keeps one (#1118).
+String _freshId() => newUrnUuid();
 
-String _now() => DateTime.now().toUtc().toIso8601String();
+/// `issuedAt` for a built document: UTC in whole seconds, through the core's
+/// [systemClock]. A full-precision timestamp is the SPEC §13.1 item 3
+/// fingerprint, and readers with a narrower RFC 3339 profile refuse it (#970).
+String _now() => systemClock();
 
 /// Build a capability Trust Task addressed [issuerDid] → [recipientDid].
 ///
@@ -152,6 +141,53 @@ String correlationThread(CapabilityDocument doc) => doc.threadId ?? doc.id;
 /// matches nothing.
 bool repliesTo(CapabilityDocument reply, String expectedThreadId) =>
     reply.threadId != null && reply.threadId == expectedThreadId;
+
+/// The registry's authority: where the framework's own specifications, and the
+/// capability families this package builds, are published.
+const _registrySpecPrefix = 'https://trusttasks.org/spec/';
+
+/// Whether [typeUri] is under the registry's authority.
+bool isRegistryType(String typeUri) => typeUri.startsWith(_registrySpecPrefix);
+
+/// Whether [doc] is a framework error document: `trust-task-error` under the
+/// registry's authority. The same slug under another authority is some other
+/// publisher's specification, not a refusal.
+bool isFrameworkError(CapabilityDocument doc) =>
+    slugOf(doc.type) == 'trust-task-error' &&
+    !isResponseVariant(doc.type) &&
+    isRegistryType(doc.type);
+
+String _bareType(String typeUri) {
+  final hash = typeUri.indexOf('#');
+  return hash >= 0 ? typeUri.substring(0, hash) : typeUri;
+}
+
+/// Whether [reply] answers [request] — the four equalities the HTTPS clients
+/// apply to a response (SPEC §4.9, §8.1), for a client that holds the request
+/// it sent:
+///
+/// - `threadId` is [correlationThread] of [request];
+/// - `issuer` is the request's `recipient`, where the request named one;
+/// - `recipient` is the request's `issuer`, where the request named one;
+/// - `type` is the request's `type` with `#response`, or the framework's
+///   `trust-task-error` under the registry's authority — and then a payload
+///   `inResponseTo.id`, where present, is the request's `id`.
+bool answersRequest(CapabilityDocument reply, CapabilityDocument request) {
+  if (!repliesTo(reply, correlationThread(request))) return false;
+  if (request.recipient != null && reply.issuer != request.recipient) {
+    return false;
+  }
+  if (request.issuer != null && reply.recipient != request.issuer) {
+    return false;
+  }
+  if (isFrameworkError(reply)) {
+    final inResponseTo = reply.payload['inResponseTo'];
+    if (inResponseTo is! Map) return true;
+    final id = inResponseTo['id'];
+    return id == null || id == request.id;
+  }
+  return reply.type == '${_bareType(request.type)}#response';
+}
 
 /// Coerce a JSON body into a [CapabilityDocument], or `null` when it is not one.
 CapabilityDocument? _asDocument(Object? body) {

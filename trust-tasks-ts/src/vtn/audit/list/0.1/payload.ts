@@ -70,8 +70,13 @@ export type Response = VTNAuditListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtn/audit/list/0.1",
   "title": "VTN Audit — List — payload",
@@ -95,28 +100,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Audit — List — response payload",
-      "description": "The matching audit events, oldest first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "events"
-      ],
-      "properties": {
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AuditEvent"
-          },
-          "description": "The events, oldest first."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -127,79 +110,17 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "AuditEvent": {
-      "description": "One change to the published set, as the audit trail records it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "occurredAt",
-        "did",
-        "event",
-        "to",
-        "actor"
-      ],
-      "properties": {
-        "occurredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it happened."
-        },
-        "did": {
-          "$ref": "#/$defs/Did",
-          "description": "The entry it happened to."
-        },
-        "event": {
-          "type": "string",
-          "enum": [
-            "list",
-            "acknowledge",
-            "repudiate",
-            "suspend",
-            "reinstate",
-            "remove",
-            "depart",
-            "update"
-          ],
-          "description": "What happened."
-        },
-        "to": {
-          "$ref": "#/$defs/EntryState",
-          "description": "The entry's state afterwards."
-        },
-        "actor": {
-          "$ref": "#/$defs/Did",
-          "description": "Who did it: an administrator, or the listed party."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "The reason given, if any."
-        }
-      }
-    },
     "Did": {
       "type": "string",
       "pattern": "^did:[a-z0-9]+:.+$",
       "maxLength": 2048,
       "description": "A DID."
-    },
-    "EntryState": {
-      "type": "string",
-      "enum": [
-        "listed",
-        "acknowledged",
-        "repudiated",
-        "suspended",
-        "removed",
-        "departed"
-      ],
-      "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -304,7 +225,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -77,8 +77,13 @@ export type Response = VTCDirectoryCardAssertResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/directory/card/assert/0.1",
   "title": "VTC Directory — Card — Assert — payload",
@@ -124,38 +129,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Card — Assert — response payload",
-      "description": "The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entryId",
-        "written",
-        "revision"
-      ],
-      "properties": {
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "written": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/FieldKey"
-          },
-          "description": "The fields written or cleared."
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -302,10 +275,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -364,130 +337,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "FieldValue": {
-      "title": "FieldValue",
-      "description": "The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.",
-      "anyOf": [
-        {
-          "type": "string",
-          "maxLength": 2000
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "string",
-            "maxLength": 500
-          }
-        },
-        {
-          "$ref": "#/$defs/CardBlobRef"
-        },
-        {
-          "$ref": "#/$defs/VerifiedValue"
-        }
-      ]
-    },
-    "VerifiedValue": {
-      "title": "VerifiedValue",
-      "description": "The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "value",
-        "issuer",
-        "verifiedAt"
-      ],
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "string",
-              "maxLength": 2000
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "number"
-            }
-          ],
-          "description": "The disclosed claim value."
-        },
-        "issuer": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "DID of the credential's issuer, shown as the field's verification badge."
-        },
-        "credentialType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The most specific `type` of the credential the claim came from."
-        },
-        "verifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community verified the presentation."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential expires, where it does. The community withdraws the value once it passes."
-        }
-      }
-    },
-    "CardBlobRef": {
-      "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sha256",
-        "mediaType"
-      ],
-      "properties": {
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
-        },
-        "mediaType": {
-          "type": "string",
-          "enum": [
-            "image/png",
-            "image/jpeg",
-            "image/webp",
-            "image/avif"
-          ],
-          "description": "Media type of the stored bytes."
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 262144,
-          "description": "Size in bytes of the stored bytes."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`."
-        },
-        "urlExpiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Projection only: when `url` stops working."
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

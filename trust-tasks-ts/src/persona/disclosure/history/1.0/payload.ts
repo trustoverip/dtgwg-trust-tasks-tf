@@ -110,8 +110,13 @@ export type Response = PersonaDisclosureHistoryResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/disclosure/history/1.0",
   "title": "Persona Disclosure History — payload",
@@ -152,107 +157,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Disclosure History — response payload",
-      "description": "Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "disclosures"
-      ],
-      "properties": {
-        "disclosures": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "disclosureId",
-              "contextId",
-              "verifierDid",
-              "personaDid",
-              "claimTypes",
-              "disclosedAt"
-            ],
-            "properties": {
-              "disclosureId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "contextId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "verifierDid": {
-                "type": "string",
-                "minLength": 1
-              },
-              "personaDid": {
-                "type": "string",
-                "minLength": 1
-              },
-              "subject": {
-                "type": "string",
-                "description": "The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart."
-              },
-              "claimTypes": {
-                "type": "array",
-                "maxItems": 128,
-                "items": {
-                  "$ref": "#/$defs/ClaimType"
-                }
-              },
-              "rungs": {
-                "type": "array",
-                "maxItems": 128,
-                "items": {
-                  "$ref": "#/$defs/ProofRung"
-                },
-                "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures."
-              },
-              "claimCurrency": {
-                "type": "array",
-                "maxItems": 128,
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "current",
-                    "changed",
-                    "removed",
-                    "unknown"
-                  ]
-                },
-                "description": "Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read."
-              },
-              "purpose": {
-                "type": "string",
-                "maxLength": 512
-              },
-              "renderer": {
-                "type": "string",
-                "maxLength": 64
-              },
-              "durableCredentialId": {
-                "type": "string",
-                "description": "Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it."
-              },
-              "disclosedAt": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -263,17 +167,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "ProofRung": {
-      "title": "ProofRung",
-      "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
-      "type": "string",
-      "enum": [
-        "predicate",
-        "derived",
-        "selectiveDisclosure",
-        "whole"
-      ]
-    },
     "ClaimType": {
       "title": "ClaimType",
       "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
@@ -281,18 +174,12 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -433,7 +320,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

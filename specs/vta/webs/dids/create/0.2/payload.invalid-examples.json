@@ -1,0 +1,69 @@
+[
+  {
+    "note": "No DID class. The VTA never infers one — from a template, a context or a path — because a DID belongs to one class for its life (VTI-KEY-193), and a guessed `service` would make a person's identifier a node's. Absent is refused, not defaulted.",
+    "payload": { "contextId": "alice", "serverId": "prod", "path": "people/alice" }
+  },
+  {
+    "note": "An integration class. 0.1 spoke of integration DIDs; an integration's identity is a service DID (VTI-KEY-192), so the class is `service` and there is no fourth value.",
+    "payload": { "contextId": "bridge", "serverId": "prod", "didClass": "integration" }
+  },
+  {
+    "note": "No hosting server. A did:webs DID is hosted only — the VTA has no inbound surface to serve one from — so there is no serverless form, and a request without `serverId` must fail validation rather than fall back to one.",
+    "payload": { "contextId": "alice", "didClass": "persona", "path": "people/alice" }
+  },
+  {
+    "note": "The path carries the AID. The caller cannot know the AID — it is the digest of an inception event the VTA has not yet written — and the slot grammar is lowercase, so a case-sensitive AID segment is refused rather than taken as a path the VTA then appends a second AID to.",
+    "payload": { "contextId": "alice", "serverId": "prod", "didClass": "persona", "path": "people/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe" }
+  },
+  {
+    "note": "Caller-supplied key material. The VTA derives every key, with or without a template; a request naming a signing key is a request to custody a key the caller chose, and the closed schema refuses it.",
+    "payload": { "contextId": "alice", "serverId": "prod", "didClass": "persona", "signingKeyId": "my-key" }
+  },
+  {
+    "note": "A template and explicit services together. Two sources for one document would leave the operator unable to tell which shaped it, so they are exclusive rather than merged (CONVENTIONS.md §9.3).",
+    "payload": { "contextId": "witness-1", "serverId": "prod", "didClass": "service", "template": "dtg-witness", "templateVars": { "MEDIATOR_DID": "did:webvh:QmMediatorScid:mediator.example" }, "addTspService": true }
+  },
+  {
+    "note": "A template and explicit aliases together. The template's `alsoKnownAs` is the alias list; an explicit one beside it is a second source.",
+    "payload": { "contextId": "witness-1", "serverId": "prod", "didClass": "service", "template": "dtg-witness", "alsoKnownAs": ["did:webvh:QmWitnessScid:example.com:w1"] }
+  },
+  {
+    "note": "Template variables without a template. Nothing would render them, so a request carrying them has asked for something the VTA cannot do.",
+    "payload": { "contextId": "witness-1", "serverId": "prod", "didClass": "service", "templateVars": { "MEDIATOR_DID": "did:webvh:QmMediatorScid:mediator.example" } }
+  },
+  {
+    "note": "A template scope without a template.",
+    "payload": { "contextId": "witness-1", "serverId": "prod", "didClass": "service", "templateContext": "witness-1" }
+  },
+  {
+    "note": "A template name outside the template grammar. Names are lowercase letters, digits and hyphens; anything else names no template in any scope.",
+    "payload": { "contextId": "witness-1", "serverId": "prod", "didClass": "service", "template": "DTG Witness" }
+  },
+  {
+    "note": "A service id that is not a fragment. Ids are relative to the DID; an absolute id could name another DID's service.",
+    "payload": { "contextId": "alice", "serverId": "prod", "didClass": "persona", "additionalServices": [ { "id": "did:webs:other.example:EAbc#files", "type": "FileStore", "serviceEndpoint": "https://files.example.com" } ] }
+  },
+  {
+    "variant": "response",
+    "note": "A response without the DID's class. The class is fixed at creation and decides what the DID may later be adopted as; a response that omits it leaves the caller to guess.",
+    "payload": {
+      "did": "did:webs:example.com:people:alice:ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "aid": "ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "contextId": "alice",
+      "serverId": "prod",
+      "domain": "example.com",
+      "slot": "people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "keriCesrUrl": "https://example.com/people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe/keri.cesr",
+      "didJsonUrl": "https://example.com/people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe/did.json",
+      "signingKeyId": "webs-alice-sign-0",
+      "signingKey": "DKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx",
+      "nextKeyId": "webs-alice-sign-1",
+      "keyAgreementKeyId": "webs-alice-ka-0",
+      "keyAgreementKey": "CBwO9bU8Qk3n2YQm0xTNu0R1tq2Hk7f1pWx0aJc3Kd5e",
+      "sequenceNumber": 1,
+      "versionId": "1:EHmLpA0OPWQbm6Ua2A8m2c4XUbJkfR7zTG4MBxwdXNbk",
+      "alsoKnownAs": ["did:webs:example.com:people:alice:ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe"],
+      "createdAt": "2026-11-11T10:00:02Z"
+    }
+  }
+]

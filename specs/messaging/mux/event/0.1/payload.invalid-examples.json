@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Unknown event kind.",
+    "payload": {
+      "event": "hello"
+    }
+  },
+  {
+    "note": "muxNonce not 32 bytes of base64url.",
+    "payload": {
+      "event": "ready",
+      "sessionId": "s",
+      "muxNonce": "short",
+      "maxDidsPerConnection": 1,
+      "maxGrantLifetimeSeconds": 1,
+      "pendingNotices": 0
+    }
+  },
+  {
+    "note": "frameId not a lowercase hex SHA-256.",
+    "payload": {
+      "event": "refused",
+      "frameId": "ABC",
+      "code": "x"
+    }
+  }
+]

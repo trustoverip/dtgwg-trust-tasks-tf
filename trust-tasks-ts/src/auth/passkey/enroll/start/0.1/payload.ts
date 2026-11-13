@@ -88,8 +88,13 @@ export type Response = AuthPasskeyEnrollStartResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1",
   "title": "Auth — Passkey Enroll (start)",
@@ -108,32 +113,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Enroll Start — response payload",
-      "description": "Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "enrollmentId",
-        "options"
-      ],
-      "properties": {
-        "enrollmentId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim."
-        },
-        "options": {
-          "$ref": "#/$defs/CredentialCreationOptions",
-          "description": "PublicKeyCredentialCreationOptions for navigator.credentials.create."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -143,177 +122,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "CredentialCreationOptions": {
-      "$anchor": "credentialCreationOptions",
-      "title": "PublicKeyCredentialCreationOptions",
-      "description": "Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "rp",
-        "user",
-        "pubKeyCredParams"
-      ],
-      "properties": {
-        "extensions": {
-          "type": "object",
-          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
-        },
-        "challenge": {
-          "type": "string",
-          "description": "base64url-encoded one-time nonce."
-        },
-        "rp": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "name"
-          ],
-          "properties": {
-            "id": {
-              "type": "string",
-              "minLength": 1
-            },
-            "name": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            }
-          }
-        },
-        "user": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "name",
-            "displayName"
-          ],
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here."
-            },
-            "name": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "displayName": {
-              "type": "string",
-              "maxLength": 64
-            }
-          }
-        },
-        "pubKeyCredParams": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "type",
-              "alg"
-            ],
-            "properties": {
-              "type": {
-                "const": "public-key"
-              },
-              "alg": {
-                "type": "integer",
-                "description": "COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256)."
-              }
-            }
-          }
-        },
-        "timeout": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "excludeCredentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CredentialDescriptor"
-          }
-        },
-        "authenticatorSelection": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "authenticatorAttachment": {
-              "enum": [
-                "platform",
-                "cross-platform"
-              ]
-            },
-            "requireResidentKey": {
-              "type": "boolean"
-            },
-            "residentKey": {
-              "enum": [
-                "discouraged",
-                "preferred",
-                "required"
-              ]
-            },
-            "userVerification": {
-              "enum": [
-                "discouraged",
-                "preferred",
-                "required"
-              ]
-            }
-          }
-        },
-        "attestation": {
-          "enum": [
-            "none",
-            "indirect",
-            "direct",
-            "enterprise"
-          ]
-        }
-      }
-    },
-    "CredentialDescriptor": {
-      "$anchor": "credentialDescriptor",
-      "title": "PublicKeyCredentialDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "id"
-      ],
-      "properties": {
-        "type": {
-          "const": "public-key"
-        },
-        "id": {
-          "type": "string",
-          "description": "base64url-encoded credential id."
-        },
-        "transports": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "usb",
-              "nfc",
-              "ble",
-              "internal",
-              "hybrid"
-            ]
-          }
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -519,7 +333,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

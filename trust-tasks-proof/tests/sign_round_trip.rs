@@ -106,10 +106,18 @@ async fn explicit_cryptosuite_option_is_honored() {
     let (secret, did) = fresh_did_key(13);
     let mut doc = unsigned_doc(&did);
     // RDFC canonicalisation processes the document as JSON-LD and
-    // requires an @context (the JCS default needs none).
+    // requires an @context (the JCS default needs none). It expands in
+    // safe mode (affinidi-data-integrity 0.8.2+), so every member must be
+    // defined by the context: the credentials examples context's `@vocab`
+    // defines the Trust Task members the credentials context does not. (An
+    // inline context object is not an option: the verifier supports only a
+    // proof `@context` of strings.)
     doc.as_object_mut().unwrap().insert(
         "@context".into(),
-        json!(["https://www.w3.org/ns/credentials/v2"]),
+        json!([
+            "https://www.w3.org/ns/credentials/v2",
+            "https://www.w3.org/ns/credentials/examples/v2"
+        ]),
     );
 
     let signed = sign_trust_task(
@@ -236,4 +244,111 @@ async fn non_object_document_is_rejected() {
         matches!(err, SignError::NotAnObject),
         "expected NotAnObject, got {err:?}"
     );
+}
+
+/// Re-sign a shared vector (`fixtures/proof`) with the seed-7 key and its own
+/// `created` / `proofPurpose`, and return the vector and the result.
+async fn resign_shared_vector(file: &str) -> (Value, Value) {
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../fixtures/proof")
+        .join(file);
+    let vector: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+    let (secret, did) = fresh_did_key(7);
+    assert_eq!(vector["issuer"], did.as_str());
+    let created = vector["proof"]["created"]
+        .as_str()
+        .unwrap()
+        .parse::<chrono::DateTime<chrono::Utc>>()
+        .unwrap();
+    let options = SignOptions::new()
+        .with_created(created)
+        .with_proof_purpose(vector["proof"]["proofPurpose"].as_str().unwrap());
+    let signed = sign_trust_task(&vector, &secret, options)
+        .await
+        .expect("sign");
+    (vector, signed)
+}
+
+#[tokio::test]
+async fn reproduces_the_shared_baseline_vector_byte_for_byte() {
+    let (vector, signed) = resign_shared_vector("eddsa-jcs-2022-baseline.json").await;
+    assert_eq!(signed, vector);
+    assert!(signed["proof"].get("@context").is_none());
+}
+
+/// eddsa-jcs-2022 §3.3.1 step 2 copies the document's `@context` into the
+/// proof; every signer reproduces the shared `@context` vector byte for byte.
+#[tokio::test]
+async fn reproduces_the_shared_context_vector_byte_for_byte() {
+    let (vector, signed) = resign_shared_vector("eddsa-jcs-2022-context.json").await;
+    assert_eq!(signed, vector);
+    assert_eq!(signed["proof"]["@context"], vector["@context"]);
+}
+
+/// A caller-supplied context is replaced by the document's: any other value
+/// would make the stock verifier refuse the proof.
+#[tokio::test]
+async fn proof_context_follows_the_document() {
+    let (secret, did) = fresh_did_key(21);
+    let mut doc = unsigned_doc(&did);
+    let stray = || SignOptions::new().with_context(vec!["https://example.org/stray".to_string()]);
+    let verifier = Verifier::for_did_key();
+
+    let signed = sign_trust_task(&doc, &secret, stray()).await.expect("sign");
+    assert!(signed["proof"].get("@context").is_none());
+    verifier.verify_raw(&signed).await.expect("verifies");
+
+    doc["@context"] = json!(["https://www.w3.org/ns/credentials/v2"]);
+    let signed = sign_trust_task(&doc, &secret, stray()).await.expect("sign");
+    assert_eq!(signed["proof"]["@context"], doc["@context"]);
+    verifier.verify_raw(&signed).await.expect("verifies");
+
+    // A form the upstream proof type cannot hold gets no proof `@context`,
+    // and verifies: the proof configuration is hashed as received.
+    doc["@context"] = json!("https://www.w3.org/ns/credentials/v2");
+    let signed = sign_trust_task(&doc, &secret, stray()).await.expect("sign");
+    assert!(signed["proof"].get("@context").is_none());
+    verifier.verify_raw(&signed).await.expect("verifies");
+}
+
+#[tokio::test]
+async fn proof_context_must_equal_the_document_context() {
+    let (secret, did) = fresh_did_key(22);
+    let mut doc = unsigned_doc(&did);
+    doc["@context"] = json!([
+        "https://www.w3.org/ns/credentials/v2",
+        "https://example.org/v1"
+    ]);
+    let signed = sign_trust_task(&doc, &secret, SignOptions::new())
+        .await
+        .expect("sign");
+    Verifier::for_did_key()
+        .verify_raw(&signed)
+        .await
+        .expect("verifies");
+
+    type Mutation = (&'static str, fn(&mut Value));
+    let mutations: [Mutation; 3] = [
+        ("removed from the document", |d| {
+            d.as_object_mut().unwrap().remove("@context");
+        }),
+        ("reordered in the document", |d| {
+            d["@context"].as_array_mut().unwrap().reverse();
+        }),
+        ("changed in the proof", |d| {
+            d["proof"]["@context"] = json!(["https://example.org/other"]);
+        }),
+    ];
+    for (name, mutate) in mutations {
+        let mut tampered = signed.clone();
+        mutate(&mut tampered);
+        let err = Verifier::for_did_key()
+            .verify_raw(&tampered)
+            .await
+            .expect_err(name);
+        assert!(
+            matches!(err, trust_tasks_rs::VerificationError::MalformedProof(_)),
+            "{name}: {err:?}"
+        );
+    }
 }

@@ -84,8 +84,13 @@ export type Response = AuthChallengeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/challenge/0.1",
   "title": "Auth — Challenge",
@@ -110,39 +115,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Challenge — response payload",
-      "description": "Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "sessionId",
-        "expiresAt"
-      ],
-      "properties": {
-        "challenge": {
-          "type": "string",
-          "minLength": 16,
-          "description": "base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign."
-        },
-        "sessionId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -154,10 +126,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -205,7 +177,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

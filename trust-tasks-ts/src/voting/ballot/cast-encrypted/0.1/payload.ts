@@ -73,8 +73,13 @@ export type Response = VotingBallotCastEncryptedResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1",
   "title": "Voting — Ballot — Cast Encrypted — payload",
@@ -104,51 +109,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Voting — Ballot — Cast Encrypted — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "outcome",
-        "leafIndex",
-        "entryHash",
-        "head",
-        "receiptToken"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "outcome": {
-          "type": "string",
-          "enum": [
-            "counted",
-            "replaced",
-            "alreadyCounted"
-          ],
-          "description": "As voting/ballot/cast."
-        },
-        "leafIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The board index of this cast's `encryptedCast` entry."
-        },
-        "entryHash": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead"
-        },
-        "receiptToken": {
-          "$ref": "#/$defs/Multibase"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -165,35 +125,6 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "maxLength": 16384,
       "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
-    "BoardHead": {
-      "title": "BoardHead",
-      "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "treeSize",
-        "rootHash",
-        "issuedAt"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "treeSize": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "rootHash": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
     },
     "ElectionId": {
       "title": "ElectionId",
@@ -408,10 +339,10 @@ export const PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -521,205 +452,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "EncryptedCast": {
-      "title": "EncryptedCast",
-      "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "tag",
-        "attestation"
-      ],
-      "properties": {
-        "sealed": {
-          "$ref": "#/$defs/SealedPayload"
-        },
-        "encrypted": {
-          "$ref": "#/$defs/EncryptedBallot"
-        },
-        "tag": {
-          "$ref": "#/$defs/Multibase"
-        },
-        "attestation": {
-          "$ref": "#/$defs/Multibase"
-        }
-      },
-      "oneOf": [
-        {
-          "required": [
-            "sealed"
-          ]
-        },
-        {
-          "required": [
-            "encrypted"
-          ]
-        }
-      ]
-    },
-    "EncryptedBallot": {
-      "title": "EncryptedBallot",
-      "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "manifestDigest",
-        "questions"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "questions": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/EncryptedQuestion"
-          }
-        }
-      }
-    },
-    "EncryptedQuestion": {
-      "title": "EncryptedQuestion",
-      "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "question",
-        "options",
-        "sumProof"
-      ],
-      "properties": {
-        "question": {
-          "$ref": "#/$defs/Key"
-        },
-        "options": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/EncryptedOption"
-          }
-        },
-        "sumProof": {
-          "$ref": "#/$defs/DisjunctiveProof"
-        }
-      }
-    },
-    "DisjunctiveProof": {
-      "title": "DisjunctiveProof",
-      "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 65,
-      "items": {
-        "$ref": "#/$defs/SigmaProof"
-      }
-    },
-    "SigmaProof": {
-      "title": "SigmaProof",
-      "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "c",
-        "z"
-      ],
-      "properties": {
-        "c": {
-          "$ref": "#/$defs/GroupScalar"
-        },
-        "z": {
-          "$ref": "#/$defs/GroupScalar"
-        }
-      }
-    },
-    "GroupScalar": {
-      "title": "GroupScalar",
-      "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
-      "type": "string",
-      "minLength": 2,
-      "maxLength": 64,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
-    "EncryptedOption": {
-      "title": "EncryptedOption",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ciphertext",
-        "proof"
-      ],
-      "properties": {
-        "ciphertext": {
-          "$ref": "#/$defs/ElGamalCiphertext"
-        },
-        "proof": {
-          "$ref": "#/$defs/DisjunctiveProof"
-        }
-      }
-    },
-    "ElGamalCiphertext": {
-      "title": "ElGamalCiphertext",
-      "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "a",
-        "b"
-      ],
-      "properties": {
-        "a": {
-          "$ref": "#/$defs/GroupElement"
-        },
-        "b": {
-          "$ref": "#/$defs/GroupElement"
-        }
-      }
-    },
-    "GroupElement": {
-      "title": "GroupElement",
-      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
-      "type": "string",
-      "minLength": 2,
-      "maxLength": 64,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
-    "Key": {
-      "title": "Key",
-      "description": "A question or option key, unique within its manifest or question.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,64}$"
-    },
-    "SealedPayload": {
-      "title": "SealedPayload",
-      "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kem",
-        "body"
-      ],
-      "properties": {
-        "kem": {
-          "$ref": "#/$defs/ElGamalCiphertext"
-        },
-        "body": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 131072,
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-        }
-      }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

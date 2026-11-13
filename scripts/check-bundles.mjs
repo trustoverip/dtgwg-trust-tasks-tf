@@ -16,14 +16,19 @@
 //      byte for byte, so a consumer re-canonicalizing gets the same digest;
 //   3. the index lists exactly the bundles on disk, and each entry's slug,
 //      version, status, deprecation and extends match the bundle;
-//   4. every non-withdrawn bundle's `schema` / `responseSchema` equal, as
-//      parsed JSON, the TypeScript generated module's `PAYLOAD_SCHEMA` /
-//      `RESPONSE_PAYLOAD_SCHEMA` — an independent generator's inlining of the
-//      same `$ref`s (scripts/build-ts-bindings.mjs). A withdrawn version has no
-//      TypeScript module, so only 1–3 and 6 apply to it;
-//   5. every non-withdrawn bundle's `defsOrder` is the order of the `$defs` in
-//      that TypeScript module's schemas, which its inliner leaves in the order
-//      the Go and Dart generators declare them;
+//   4. every non-withdrawn bundle's `schema` / `responseSchema`, pruned to the
+//      `$defs` its root reaches, equal, as parsed JSON, the TypeScript
+//      generated module's `PAYLOAD_SCHEMA` / `RESPONSE_PAYLOAD_SCHEMA` — an
+//      independent generator's inlining of the same `$ref`s
+//      (scripts/build-ts-bindings.mjs). The bundle carries each side's full
+//      `$defs` and the generators prune what they emit (#1098); the pruning is
+//      re-derived here, not imported. A withdrawn version has no TypeScript
+//      module, so only 1–3 and 6 apply to it;
+//   5. every bundle's `defsOrder` names exactly the `$defs` of the schema it
+//      points at, and for a non-withdrawn bundle, restricted to the pruned
+//      `$defs`, is the order of the `$defs` in that TypeScript module's
+//      schemas, which its inliner leaves in the order the Go and Dart
+//      generators declare them;
 //   6. `defOrigins` names an origin for exactly the `$defs` the specification's
 //      own `payload.schema.json` does not declare, and each origin is
 //      `<$id>#/$defs/<name>` of a shared schema in `specs/` that defines that
@@ -79,14 +84,16 @@ function canonical(value) {
 }
 
 /**
- * Parse `export const <name> = { … } as const;` out of a generated TS module.
+ * Parse `export const <name>: <type> = { … };` (or the older
+ * `export const <name> = { … } as const;`) out of a generated TS module.
  * Brace-counting with string literals skipped, so a brace inside a `pattern`
  * or a description does not throw the count off.
  */
 function tsConst(src, name) {
-  const start = src.indexOf(`export const ${name} = {`);
+  const m = new RegExp(`^export const ${name}(?::[^=\\n]+)? = \\{`, "m").exec(src);
+  const start = m ? m.index : -1;
   if (start < 0) return undefined;
-  const open = src.indexOf("{", start);
+  const open = start + m[0].length - 1;
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -103,6 +110,47 @@ function tsConst(src, name) {
     else if (ch === "}" && --depth === 0) return JSON.parse(src.slice(open, i + 1));
   }
   throw new Error(`unterminated ${name}`);
+}
+
+/**
+ * The root `$defs` names `doc` reaches from its root through `#/$defs/<name>`
+ * references, or null when it holds a local `$ref` of another form (`#`, an
+ * anchor), which the generators answer by keeping every definition.
+ */
+function reachedDefs(doc) {
+  const defs = doc.$defs ?? {};
+  const seen = new Set();
+  let other = false;
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== "object") return;
+    const ref = node.$ref;
+    if (typeof ref === "string" && ref.startsWith("#")) {
+      const m = /^#\/\$defs\/([^/]*)/.exec(ref);
+      if (!m) other = true;
+      else {
+        const name = m[1].split("~1").join("/").split("~0").join("~");
+        if (Object.hasOwn(defs, name) && !seen.has(name)) {
+          seen.add(name);
+          visit(defs[name]);
+        }
+      }
+    }
+    Object.values(node).forEach(visit);
+  };
+  const { $defs: _ignored, ...root } = doc;
+  visit(root);
+  return other ? null : seen;
+}
+
+/** `doc` as a generator emits it: only the `$defs` its root reaches (#1098). */
+function pruned(doc) {
+  if (!doc || !doc.$defs || typeof doc.$defs !== "object") return doc;
+  const keep = reachedDefs(doc);
+  if (keep === null) return doc;
+  const { $defs, ...rest } = doc;
+  const kept = Object.fromEntries(Object.entries($defs).filter(([name]) => keep.has(name)));
+  return Object.keys(kept).length > 0 ? { ...rest, $defs: kept } : rest;
 }
 
 function walkBundles(dir, out = []) {
@@ -175,6 +223,14 @@ for (const [rel, entry] of listed) {
     if (!(name in (bundle.schema.$defs ?? {}))) fail(`${rel}: defOrigins names ${name}, which is not in $defs`);
   }
 
+  for (const [pointer, doc] of [["/schema", bundle.schema], ["/responseSchema", bundle.responseSchema]]) {
+    const names = doc?.$defs ? Object.keys(doc.$defs).sort() : undefined;
+    const recorded = bundle.defsOrder?.[pointer];
+    if (JSON.stringify(recorded ? [...recorded].sort() : undefined) !== JSON.stringify(names)) {
+      fail(`${rel}: defsOrder${pointer} is ${JSON.stringify(recorded)}, but its $defs are ${JSON.stringify(names)}`);
+    }
+  }
+
   if (bundle.status === "withdrawn") continue;
   const tsPath = path.join(TS_SRC, bundle.slug, bundle.version, "payload.ts");
   if (!fs.existsSync(tsPath)) {
@@ -184,15 +240,19 @@ for (const [rel, entry] of listed) {
   const src = fs.readFileSync(tsPath, "utf8");
   const tsRequest = tsConst(src, "PAYLOAD_SCHEMA");
   const tsResponse = tsConst(src, "RESPONSE_PAYLOAD_SCHEMA") ?? null;
-  if (canonical(tsRequest) !== canonical(bundle.schema)) {
-    fail(`${rel}: schema differs from the TypeScript PAYLOAD_SCHEMA`);
+  const request = pruned(bundle.schema);
+  const response = pruned(bundle.responseSchema);
+  if (canonical(tsRequest) !== canonical(request)) {
+    fail(`${rel}: schema, pruned to the $defs it reaches, differs from the TypeScript PAYLOAD_SCHEMA`);
   }
-  if (canonical(tsResponse) !== canonical(bundle.responseSchema)) {
-    fail(`${rel}: responseSchema differs from the TypeScript RESPONSE_PAYLOAD_SCHEMA`);
+  if (canonical(tsResponse) !== canonical(response)) {
+    fail(`${rel}: responseSchema, pruned to the $defs it reaches, differs from the TypeScript RESPONSE_PAYLOAD_SCHEMA`);
   }
-  for (const [pointer, ts] of [["/schema", tsRequest], ["/responseSchema", tsResponse]]) {
+  for (const [pointer, ts, doc] of [["/schema", tsRequest, request], ["/responseSchema", tsResponse, response]]) {
     const expected = ts?.$defs ? Object.keys(ts.$defs) : undefined;
-    const recorded = bundle.defsOrder?.[pointer];
+    const kept = doc?.$defs ?? {};
+    const filtered = bundle.defsOrder?.[pointer]?.filter((name) => Object.hasOwn(kept, name));
+    const recorded = filtered?.length ? filtered : undefined;
     if (JSON.stringify(recorded) !== JSON.stringify(expected)) {
       fail(`${rel}: defsOrder${pointer} is ${JSON.stringify(recorded)}, the TypeScript module's $defs are ${JSON.stringify(expected)}`);
     }

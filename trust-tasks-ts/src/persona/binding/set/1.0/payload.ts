@@ -108,8 +108,13 @@ export type Response = PersonaBindingSetResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/binding/set/1.0",
   "title": "Persona Binding Set — payload",
@@ -169,82 +174,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Binding Set — response payload",
-      "description": "Success response to persona/binding/set. Type https://trusttasks.org/spec/persona/binding/set/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "personaDid",
-        "version",
-        "boundAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "personaDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "profileId": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/Ulid"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "materialisedClaimCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many claims were materialised into the context by this binding. A count, so the holder can see that a push happened and how large it was without the response restating the values."
-        },
-        "correlation": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "severity"
-          ],
-          "description": "Advisory. Correlation is scored HERE as well as at composition, because composing is hypothetical and binding is when a value actually crosses into a context. Binding one profile to a second persona is reported at `high` unconditionally: that act makes the two personas the same person by construction.",
-          "properties": {
-            "severity": {
-              "type": "string",
-              "enum": [
-                "none",
-                "low",
-                "high"
-              ]
-            },
-            "alsoBoundPersonaCount": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "How many other personas are bound to this same profile. A count, not identifiers."
-            }
-          }
-        },
-        "boundAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "until": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this binding ends on its own, as set."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -254,12 +183,6 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Ulid": {
       "title": "Ulid",
@@ -274,10 +197,10 @@ export const PAYLOAD_SCHEMA = {
       "minimum": 0
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -378,15 +301,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

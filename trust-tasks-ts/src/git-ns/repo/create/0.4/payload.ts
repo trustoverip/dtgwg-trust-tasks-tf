@@ -88,8 +88,13 @@ export type Response = GitNamespacesCreateRepositoryResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/repo/create/0.4",
   "title": "Git Namespaces — Create Repository — payload",
@@ -133,35 +138,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Create Repository — response payload",
-      "description": "The reserved repository, and the manual steps when a person must create it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "repo"
-      ],
-      "properties": {
-        "repo": {
-          "$ref": "#/$defs/RepoSummary",
-          "description": "The repository as recorded — normally `pendingCreate` at this point."
-        },
-        "manualSteps": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 2048
-          },
-          "description": "Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -170,210 +146,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RepoSummary": {
-      "title": "RepoSummary",
-      "description": "One repository as the VTC records it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "resource",
-        "visibility",
-        "state",
-        "owners",
-        "bootstrap",
-        "sync"
-      ],
-      "properties": {
-        "resource": {
-          "$ref": "#/$defs/RepoResource"
-        },
-        "forgeId": {
-          "$ref": "#/$defs/ForgeId",
-          "description": "The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection)."
-        },
-        "visibility": {
-          "$ref": "#/$defs/RepoVisibility"
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "pendingCreate",
-            "active",
-            "archived",
-            "detached",
-            "orphaned",
-            "unmanaged"
-          ],
-          "description": "`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC."
-        },
-        "owners": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Did"
-          },
-          "description": "The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication."
-        },
-        "bootstrap": {
-          "$ref": "#/$defs/Bootstrap"
-        },
-        "sync": {
-          "$ref": "#/$defs/Sync"
-        }
-      }
-    },
-    "Sync": {
-      "title": "Sync",
-      "description": "How the forge compares with the VTC's projection for one repository.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state",
-        "drift"
-      ],
-      "properties": {
-        "state": {
-          "type": "string",
-          "enum": [
-            "inSync",
-            "drift",
-            "pending",
-            "unchecked"
-          ],
-          "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace)."
-        },
-        "checkedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the forge was last compared. Absent if never."
-        },
-        "drift": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DriftItem"
-          },
-          "description": "Outstanding drift. Empty unless `state` is `drift`."
-        }
-      }
-    },
-    "DriftItem": {
-      "title": "DriftItem",
-      "description": "One difference between the forge's observed state and the VTC's projection of a repository.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "resource"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "roleAdded",
-            "roleRemoved",
-            "roleChanged",
-            "requiredCheckMissing",
-            "protectionWeakened",
-            "bootstrapMissing"
-          ],
-          "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone."
-        },
-        "resource": {
-          "$ref": "#/$defs/RepoResource"
-        },
-        "account": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "Whose role differs, for the three role types."
-        },
-        "observed": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there."
-        },
-        "expected": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing."
-        }
-      }
-    },
-    "ForgeAccount": {
-      "title": "ForgeAccount",
-      "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "id",
-        "login"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "id": {
-          "$ref": "#/$defs/ForgeId"
-        },
-        "login": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "The account's current login, as the forge reported it when last seen. Display only."
-        }
-      }
-    },
-    "ForgeId": {
-      "title": "ForgeId",
-      "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
-    },
-    "ForgeHost": {
-      "title": "ForgeHost",
-      "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 253,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-    },
-    "RepoResource": {
-      "title": "RepoResource",
-      "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).",
-      "type": "string",
-      "maxLength": 5885,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$"
-    },
-    "Bootstrap": {
-      "title": "Bootstrap",
-      "description": "Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "workflow",
-        "keyring",
-        "variables",
-        "requiredCheck"
-      ],
-      "properties": {
-        "workflow": {
-          "type": "boolean",
-          "description": "The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit."
-        },
-        "keyring": {
-          "type": "boolean",
-          "description": "The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one."
-        },
-        "variables": {
-          "type": "boolean",
-          "description": "The repository names the Trust Registry and this VTC as its trust anchors."
-        },
-        "requiredCheck": {
-          "type": "boolean",
-          "description": "The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows."
-        }
       }
     },
     "Did": {
@@ -408,10 +180,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -673,24 +445,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "private"
       ],
       "description": "Repository visibility on the forge."
-    },
-    "Segment": {
-      "title": "Segment",
-      "description": "One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 255,
-      "pattern": "^[a-z0-9_-][a-z0-9._-]*$"
-    },
-    "NamespaceId": {
-      "title": "NamespaceId",
-      "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

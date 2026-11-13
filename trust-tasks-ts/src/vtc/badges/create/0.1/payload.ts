@@ -112,8 +112,13 @@ export type Response = VTCBadgesCreateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/badges/create/0.1",
   "title": "VTC Badges — Create — payload",
@@ -208,28 +213,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — Create — response payload",
-      "description": "The success response to a vtc/badges/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/create/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "badge"
-      ],
-      "properties": {
-        "badge": {
-          "$ref": "#/$defs/Badge"
-        },
-        "group": {
-          "$ref": "#/$defs/Group",
-          "description": "The badge group, as vtc/groups/create answers it. Present exactly for a community badge."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -240,106 +223,6 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Group": {
-      "title": "Group",
-      "description": "A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "groupId",
-        "groupDid",
-        "name",
-        "kind",
-        "visibility",
-        "showMembers",
-        "issuesCredentials",
-        "carriesAuthority",
-        "createdAt"
-      ],
-      "properties": {
-        "groupId": {
-          "$ref": "#/$defs/GroupId"
-        },
-        "groupDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description."
-        },
-        "name": {
-          "$ref": "#/$defs/GroupName"
-        },
-        "description": {
-          "$ref": "#/$defs/GroupDescription"
-        },
-        "kind": {
-          "$ref": "#/$defs/GroupKind"
-        },
-        "rule": {
-          "$ref": "#/$defs/DynamicRule",
-          "description": "Present exactly when `kind` is `dynamic`."
-        },
-        "joinPolicy": {
-          "$ref": "#/$defs/JoinPolicy",
-          "description": "Present exactly when `kind` is `static`."
-        },
-        "visibility": {
-          "$ref": "#/$defs/GroupAudience",
-          "description": "Who may see that the group exists, and its name and description."
-        },
-        "showMembers": {
-          "$ref": "#/$defs/GroupAudience",
-          "description": "Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`."
-        },
-        "issuesCredentials": {
-          "type": "boolean",
-          "description": "Whether the group's DID issues its members a membership credential. Default true."
-        },
-        "carriesAuthority": {
-          "type": "boolean",
-          "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
-        },
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId",
-          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
-        },
-        "memberCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Active members. Only to callers who may see the member list."
-        },
-        "managers": {
-          "type": "array",
-          "maxItems": 256,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/EntryId"
-          },
-          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record."
-        },
-        "credentialAuthorityValidUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community's authorization credential to the group expires. The community renews it well before."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "$ref": "#/$defs/EntryId",
-          "description": "The creating administrator's directory entry, where they have one."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
-        }
-      }
-    },
     "GroupAudience": {
       "title": "GroupAudience",
       "description": "Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.",
@@ -348,16 +231,6 @@ export const PAYLOAD_SCHEMA = {
         "admins",
         "groupMembers",
         "members"
-      ]
-    },
-    "JoinPolicy": {
-      "title": "JoinPolicy",
-      "description": "How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.",
-      "type": "string",
-      "enum": [
-        "closed",
-        "request",
-        "open"
       ]
     },
     "DynamicRule": {
@@ -453,140 +326,11 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128,
       "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
     },
-    "GroupKind": {
-      "title": "GroupKind",
-      "description": "`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.",
-      "type": "string",
-      "enum": [
-        "static",
-        "dynamic"
-      ]
-    },
-    "GroupDescription": {
-      "title": "GroupDescription",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "description": "What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`."
-    },
-    "GroupName": {
-      "title": "GroupName",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "description": "The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text."
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-    },
     "EntryId": {
       "title": "EntryId",
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
-    },
-    "Badge": {
-      "title": "Badge",
-      "description": "A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "badgeId",
-        "kind",
-        "name",
-        "description",
-        "image",
-        "repeatable",
-        "listed",
-        "state",
-        "createdAt"
-      ],
-      "properties": {
-        "badgeId": {
-          "$ref": "#/$defs/BadgeId"
-        },
-        "kind": {
-          "$ref": "#/$defs/BadgeKind"
-        },
-        "name": {
-          "$ref": "#/$defs/BadgeName"
-        },
-        "description": {
-          "$ref": "#/$defs/BadgeDescription"
-        },
-        "criteria": {
-          "$ref": "#/$defs/BadgeCriteria"
-        },
-        "image": {
-          "$ref": "#/$defs/CardBlobRef",
-          "description": "The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location."
-        },
-        "repeatable": {
-          "type": "boolean",
-          "description": "Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge."
-        },
-        "requestable": {
-          "type": "boolean",
-          "description": "Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false."
-        },
-        "listed": {
-          "type": "boolean",
-          "description": "Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators."
-        },
-        "shareableOutside": {
-          "type": "boolean",
-          "description": "Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false."
-        },
-        "groupId": {
-          "$ref": "#/$defs/GroupId",
-          "description": "The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer."
-        },
-        "state": {
-          "$ref": "#/$defs/BadgeState"
-        },
-        "holderCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Holders who show the badge. Only to callers who may see the holders."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "retiredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
-        }
-      }
-    },
-    "BadgeState": {
-      "title": "BadgeState",
-      "description": "`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).",
-      "type": "string",
-      "enum": [
-        "active",
-        "retired"
-      ]
     },
     "BadgeCriteria": {
       "title": "BadgeCriteria",
@@ -617,56 +361,12 @@ export const PAYLOAD_SCHEMA = {
         "community",
         "kudos"
       ]
-    },
-    "CardBlobRef": {
-      "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sha256",
-        "mediaType"
-      ],
-      "properties": {
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
-        },
-        "mediaType": {
-          "type": "string",
-          "enum": [
-            "image/png",
-            "image/jpeg",
-            "image/webp",
-            "image/avif"
-          ],
-          "description": "Media type of the stored bytes."
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 262144,
-          "description": "Size in bytes of the stored bytes."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`."
-        },
-        "urlExpiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Projection only: when `url` stops working."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1125,7 +825,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

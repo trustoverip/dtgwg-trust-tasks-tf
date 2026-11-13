@@ -80,11 +80,21 @@ pub struct TrustTask<P> {
     pub recipient: Option<String>,
 
     /// Timestamp recording when the document was produced (SPEC.md §4.2).
-    #[serde(rename = "issuedAt", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "issuedAt",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "rfc3339::deserialize_opt"
+    )]
     pub issued_at: Option<DateTime<Utc>>,
 
     /// Timestamp after which the document is no longer valid (SPEC.md §4.2).
-    #[serde(rename = "expiresAt", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "rfc3339::deserialize_opt"
+    )]
     pub expires_at: Option<DateTime<Utc>>,
 
     /// The task-specific body, whose internal structure is defined by the
@@ -144,7 +154,7 @@ impl<P> TrustTask<P> {
 
     /// Apply the SPEC.md §7.2 item 8 / §4.8.2 audience-binding rule: when
     /// `proof` is present and `recipient` is absent in-band, reject the
-    /// document with `malformed_request` unless the originating
+    /// document with `malformedRequest` unless the originating
     /// specification is a *bearer specification* (§4.8.3).
     ///
     /// This check requires the payload type implement [`Payload`] so the
@@ -227,8 +237,8 @@ impl<P> TrustTask<P> {
     ///
     /// # ⚠ This is *not* the full §7.2 check
     ///
-    /// A conforming consumer pipeline runs all six (now eight) items of
-    /// §7.2. This method covers items 4 and 5 only:
+    /// A conforming consumer pipeline runs every item of §7.2. This method
+    /// covers items 4 and 5 only:
     ///
     /// | §7.2 item | What it checks                                              | Where it lives                                      |
     /// |-----------|-------------------------------------------------------------|-----------------------------------------------------|
@@ -240,10 +250,13 @@ impl<P> TrustTask<P> {
     /// | 6         | In-band vs transport identity                               | [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties) |
     /// | 7         | Proof handling (`IS_PROOF_REQUIRED` + verification policy)  | [`consume_inbound`](crate::consume_inbound) + [`ProofVerifier`](crate::ProofVerifier) (cryptosuite in a companion crate) |
     /// | 8         | Audience binding (proof+no-recipient on non-bearer specs)   | [`enforce_audience_binding`](Self::enforce_audience_binding) |
+    /// | 9, 10, 12 | No authority from `ceremony`; validation is not authorization; re-evaluate before effects | the caller's handler |
+    /// | 11        | Duplicate-execution record                                  | [`consume_inbound`](crate::consume_inbound), per its [`ConsumeChecks`](crate::ConsumeChecks) |
+    /// | 13        | Acceptance window over `issuedAt`                           | [`validate_freshness`](Self::validate_freshness), run by `consume_inbound` |
     ///
-    /// The full §7.2 pipeline is bundled in
-    /// [`consume_inbound`](crate::consume_inbound) — items 4–8 in one
-    /// call. Direct use of `validate_basic` is for callers that have
+    /// The framework's share of the §7.2 pipeline is bundled in
+    /// [`consume_inbound`](crate::consume_inbound) — items 2–8, 11 and 13
+    /// in one call. Direct use of `validate_basic` is for callers that have
     /// their own composition.
     ///
     /// Treat `validate_basic(now, my_vid)?` as **stage 2** of a multi-stage
@@ -273,7 +286,8 @@ impl<P> TrustTask<P> {
     ///
     /// Wires:
     ///
-    /// * `type` → `https://trusttasks.org/spec/trust-task-error/0.1`
+    /// * `type` → [`TRUST_TASK_ERROR_TYPE_URI`], the one `trust-task-error`
+    ///   version this library emits.
     /// * `threadId` → this request's `threadId`, falling back to its `id`
     ///   per SPEC.md §4.9.
     /// * `issuer` → this request's `recipient` (the rejecting consumer).
@@ -318,7 +332,7 @@ impl<P> TrustTask<P> {
     /// the in-band (contested) issuer.
     ///
     /// `recipient = None` is conformant: SPEC.md §8.1 permits a consumer
-    /// faced with an `identity_mismatch` rejection and no transport-
+    /// faced with an `identityMismatch` rejection and no transport-
     /// authenticated sender to suppress the response entirely; the caller
     /// can choose to drop the returned `ErrorResponse` in that case.
     pub fn reject_with_recipient(
@@ -435,6 +449,82 @@ pub fn issued_at_now() -> DateTime<Utc> {
     Utc::now().trunc_subsecs(0)
 }
 
+/// Reading `issuedAt` and `expiresAt` (SPEC §4.2, RFC 3339 `date-time`).
+pub(crate) mod rfc3339 {
+    use chrono::{DateTime, Utc};
+    use serde::{de::Error as _, Deserialize, Deserializer};
+
+    /// `YYYY-MM-DD(T|t)hh:mm:ss[.f+](Z|z|±hh:mm)` with every field in range:
+    /// month 1-12, a day the month has (leap years included), hour 0-23,
+    /// minute and second 0-59 (no leap second), and an offset of at most
+    /// 23:59. chrono's parser alone would also take a space for the `T` and a
+    /// leap second. The TypeScript, Go and Dart runtimes apply the same rule,
+    /// and `fixtures/consume/timestamps.json` holds the shared cases.
+    pub(crate) fn parse(s: &str) -> Option<DateTime<Utc>> {
+        let b = s.as_bytes();
+        let num = |r: std::ops::Range<usize>| -> Option<u32> {
+            let d = b.get(r)?;
+            d.iter()
+                .all(u8::is_ascii_digit)
+                .then(|| d.iter().fold(0u32, |n, c| n * 10 + u32::from(c - b'0')))
+        };
+        if b.len() < 20
+            || b[4] != b'-'
+            || b[7] != b'-'
+            || !matches!(b[10], b'T' | b't')
+            || b[13] != b':'
+            || b[16] != b':'
+        {
+            return None;
+        }
+        let (year, month, day) = (num(0..4)?, num(5..7)?, num(8..10)?);
+        let (hour, minute, second) = (num(11..13)?, num(14..16)?, num(17..19)?);
+        if hour > 23 || minute > 59 || second > 59 {
+            return None;
+        }
+        chrono::NaiveDate::from_ymd_opt(i32::try_from(year).ok()?, month, day)?;
+        let mut rest = &b[19..];
+        if let Some(fraction) = rest.strip_prefix(b".") {
+            let n = fraction.iter().take_while(|c| c.is_ascii_digit()).count();
+            if n == 0 {
+                return None;
+            }
+            rest = &fraction[n..];
+        }
+        match rest {
+            [b'Z' | b'z'] => {}
+            [b'+' | b'-', ..] if rest.len() == 6 && rest[3] == b':' => {
+                let oh = num(b.len() - 5..b.len() - 3)?;
+                let om = num(b.len() - 2..b.len())?;
+                if oh > 23 || om > 59 {
+                    return None;
+                }
+            }
+            _ => return None,
+        }
+        // Every field is now known to be in range, so chrono reads the same
+        // instant the other runtimes do.
+        DateTime::parse_from_rfc3339(&s.to_ascii_uppercase())
+            .ok()
+            .map(|t| t.with_timezone(&Utc))
+    }
+
+    /// `deserialize_with` for an optional RFC 3339 member.
+    pub(crate) fn deserialize_opt<'de, D>(d: D) -> Result<Option<DateTime<Utc>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        match Option::<String>::deserialize(d)? {
+            None => Ok(None),
+            Some(s) => parse(&s).map(Some).ok_or_else(|| {
+                D::Error::custom(format!(
+                    "{s:?} is not an RFC 3339 date-time with every field in range"
+                ))
+            }),
+        }
+    }
+}
+
 /// The `type` URI every error response this library emits carries.
 ///
 /// **The single source of truth for the emitted `trust-task-error` version.**
@@ -449,10 +539,11 @@ pub fn issued_at_now() -> DateTime<Utc> {
 /// The TypeScript counterpart is `TRUST_TASK_ERROR_TYPE_URI` in
 /// `trust-tasks-ts/src/_runtime/document.ts`, kept equal to this value.
 ///
-/// `0.6` because this library populates the `inResponseTo` member of §8.2 and
-/// can emit every standard code `0.6` lists. Per §5.2 forward-minor
-/// compatibility a consumer of an earlier `0.x` SHOULD accept it, and `0.6`
-/// declares `extends: "0.5"`.
+/// The version is the one whose schema covers what this library writes: the
+/// `inResponseTo` member of §8.2 and every standard code it can emit. Per §5.2
+/// forward-minor compatibility a consumer of an earlier `0.x` SHOULD accept it.
+/// Moving it is a change to [`TRUST_TASK_ERROR_TYPE_URI`] alone; do not restate
+/// the number in prose, here or elsewhere.
 ///
 /// The value is [`TRUST_TASK_ERROR_TYPE_URI`], which is also
 /// [`ErrorPayload`]'s [`Payload::TYPE_URI`], so the URI an error response is

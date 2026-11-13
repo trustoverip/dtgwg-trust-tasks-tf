@@ -112,6 +112,9 @@ func publicKeyFromRaw(curve Curve, raw []byte) (*publicKey, error) {
 		if len(raw) != 32 {
 			return nil, errors.New("ed25519 public key must be 32 bytes")
 		}
+		if err := checkEd25519PublicKey(raw); err != nil {
+			return nil, err
+		}
 		return &publicKey{curve: curve, ed25519: raw}, nil
 	}
 	params := curveParams(curve)

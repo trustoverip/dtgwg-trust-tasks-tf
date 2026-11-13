@@ -5,6 +5,7 @@
 /// in @openvtc/trust-tasks and `trusttasks/document.go` in trust-tasks-go.
 library;
 
+import 'canonical.dart';
 import 'codes.dart';
 import 'rfc3339.dart';
 
@@ -169,6 +170,73 @@ class Ceremony {
         if (terminal != null) 'terminal': terminal,
         if (prev != null) 'prev': prev!.map((e) => e.toJson()).toList(),
       };
+}
+
+/// What [parseTrustTaskDocument] made of a decoded JSON value.
+sealed class DocumentParse<P> {
+  const DocumentParse();
+}
+
+/// The value was a Trust Task document; here it is.
+final class ParsedDocument<P> extends DocumentParse<P> {
+  const ParsedDocument(this.document);
+  final TrustTaskDocument<P> document;
+}
+
+/// The value was not a Trust Task document this consumer can read. Refuse it
+/// with [reason], which is `malformedRequest`; nothing in the value is
+/// trustworthy enough to address the refusal to, so answer it the way your
+/// transport answers a body that does not parse.
+final class UnparsableDocument<P> extends DocumentParse<P> {
+  const UnparsableDocument(this.reason);
+  final RejectReason reason;
+}
+
+/// Decode [json] — the result of `jsonDecode` on a received body — into a
+/// document, or say why it is not one, without throwing.
+///
+/// [TrustTaskDocument.fromJson] casts each member to the type the framework
+/// gives it, so a received document with a number where `id` belongs throws a
+/// [TypeError] — an [Error], which a handler written for [Exception]s lets
+/// through. This catches that, refuses a value nested more than
+/// [maxNestingDepth] levels deep before anything walks it, and refuses a
+/// non-object `payload` or a `@context` that is not a string, a list or an
+/// object, which the framework schema also excludes. [payloadFromJson]'s own
+/// failures are caught the same way.
+///
+/// The reason never repeats the decoder's own words: they name members and
+/// types, which describe this consumer's internal layout (SPEC §12.4).
+DocumentParse<P> parseTrustTaskDocument<P>(
+  Object? json,
+  P Function(Object? payload) payloadFromJson,
+) {
+  UnparsableDocument<P> malformed(String detail) => UnparsableDocument<P>(
+        RejectReason(
+          code: StandardCode.malformedRequest,
+          message: 'document is not a well-formed Trust Task document '
+              '(SPEC §7.2 item 1): $detail',
+        ),
+      );
+
+  if (json is! Map<String, dynamic>) return malformed('not a JSON object');
+  if (exceedsNestingDepth(json)) {
+    return malformed('nested more than $maxNestingDepth levels deep');
+  }
+  if (json['payload'] is! Map) return malformed('`payload` is not an object');
+  final context = json['@context'];
+  if (context != null &&
+      context is! String &&
+      context is! List &&
+      context is! Map) {
+    return malformed('`@context` is not a string, a list or an object');
+  }
+  try {
+    return ParsedDocument<P>(
+      TrustTaskDocument<P>.fromJson(json, payloadFromJson),
+    );
+  } on Object {
+    return malformed('a member is missing or is not of its type');
+  }
 }
 
 /// A single Trust Task document, per SPEC.md §4.2.
@@ -443,6 +511,7 @@ class SpecPolicy {
     this.isRecipientRequired = false,
     this.isIssuedAtRequired = false,
     this.payloadSchema,
+    this.maxDocumentBytes,
   });
 
   final String typeUri;
@@ -470,6 +539,18 @@ class SpecPolicy {
   /// consumer has something to validate against. Null only for a hand-written
   /// policy that omits it.
   final String? payloadSchema;
+
+  /// The specification's front-matter `maxDocumentBytes` for this variant, in
+  /// bytes of the serialized document as received (the JSON text, `proof`
+  /// included, no transport envelope), or null when it declares none.
+  ///
+  /// Two-sided (SPEC §12.4, as `CONTRIBUTING-SPECS.md` states it): a consumer
+  /// serving the task **MUST NOT** refuse a document within it on grounds of
+  /// size alone, and **SHOULD** refuse a larger one with `malformedRequest`.
+  /// Null declares nothing — the receiving party's own transport limit
+  /// applies. The two variants are independent: a response never inherits the
+  /// request's bound. The counterpart of Rust's `Payload::MAX_DOCUMENT_BYTES`.
+  final int? maxDocumentBytes;
 }
 
 /// Why a consumer rejected a document, and the §8.3 code it maps to.
@@ -495,16 +576,15 @@ class RejectReason {
 /// side. Build error responses with [rejectWith] / [rejectWithRecipient], or
 /// read the URI from here; do not spell it out again.
 ///
-/// The counterparts are `trust_task_error_type_uri()` in trust-tasks-rs,
-/// `TRUST_TASK_ERROR_TYPE_URI` in @openvtc/trust-tasks and
-/// `TrustTaskErrorTypeURI` in trust-tasks-go, all kept equal to this value.
-/// `scripts/check-bindings-conformance.mjs` enforces it.
+/// The counterparts are `TRUST_TASK_ERROR_TYPE_URI` in trust-tasks-rs and
+/// @openvtc/trust-tasks and `TrustTaskErrorTypeURI` in trust-tasks-go, all kept
+/// equal to this value. `scripts/check-bindings-conformance.mjs` enforces it.
 ///
-/// `0.5` because this runtime populates the `inResponseTo` member of §8.2 and
-/// can emit `idConflict` (§8.3), which is absent from `0.3`'s code enum and does
-/// not match its extended-code pattern — a document carrying it would not
-/// validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
-/// SHOULD accept it.
+/// The version is the one whose schema covers what this runtime writes: the
+/// `inResponseTo` member of §8.2 and every standard code it can emit. Per §5.2
+/// forward-minor compatibility a consumer of an earlier `0.x` SHOULD accept it.
+/// Moving it is a change to this constant alone; do not restate the number in
+/// prose.
 const String trustTaskErrorTypeUri =
     'https://trusttasks.org/spec/trust-task-error/0.6';
 
@@ -518,10 +598,10 @@ String systemClock() =>
 
 /// SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
 ///
-/// ⚠ This is *not* the full §7.2 check. Items 1–3 (framework schema, payload
-/// schema, unknown `type`) belong to the caller's parse and dispatch; items 5b,
-/// 7 and 8 need the specification's policy and live in [enforceSpecPolicy].
-/// [consumeInbound] bundles 4–8.
+/// ⚠ This is *not* the full §7.2 check. Item 1 (framework schema) belongs to
+/// the caller's parse; items 2 and 3 (payload schema, `type`) and items 5b, 7
+/// and 8 need the specification and run in [consumeInbound] (5b, 7 and 8 via
+/// [enforceSpecPolicy]).
 ///
 /// Returns null when the document passes.
 RejectReason? validateBasic<P>(

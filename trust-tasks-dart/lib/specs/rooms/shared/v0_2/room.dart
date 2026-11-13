@@ -2961,3 +2961,70 @@ class RecordMetadataV3 {
         if (kind != null) 'kind': kind!,
       };
 }
+
+/// What content is used for: a lowerCamelCase name registered in the VTI
+/// specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
+/// `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
+/// purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary
+/// (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality:
+/// a consumer MUST NOT treat a purpose it does not recognise as equal to any other,
+/// and grants only a request naming exactly a listed purpose (VTI-ACL-109). A
+/// registered name is never an IRI, because it contains no `:`.
+typedef Purpose = String;
+
+/// The one purpose for which a caller will use room content a request discloses
+/// (VTI-ACL-103): a name registered in the VTI specification's purpose registry
+/// (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute
+/// IRI. Granted only as the caller's authority grants it — `any` grants every purpose
+/// but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with
+/// the read. Distinct from `PermittedUse`, which is what a record's author permits and
+/// is a statement, not a grant.
+typedef RecordPurpose = Purpose;
+
+/// The order in which a listing returns a room's records (`rooms/records/list/0.7`,
+/// `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent:
+/// ascending `version`, the order an incremental sync reads in. `newestFirst`:
+/// descending `version`, so a reader that opens a conversation at its newest messages
+/// reads the room's head first and pages backwards; `sinceVersion` still bounds the
+/// listing from below. A cursor continues the listing in the order it was issued
+/// under, and a host refuses it under the other.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ListOrder(String value) {
+  static const ListOrder oldestFirst = ListOrder('oldestFirst');
+  static const ListOrder newestFirst = ListOrder('newestFirst');
+
+  /// Every value this specification's schema permits.
+  static const List<ListOrder> values = <ListOrder>[oldestFirst, newestFirst];
+}
+
+/// Whether a room's host waits a randomised interval before sending a `rooms/changed`
+/// signal: the room's **signal delay**. `randomised` is the default and what a room
+/// without one has: the host waits a few seconds after the change that fires a watch,
+/// so that the signal's time does not mark one write exactly (`rooms/changed`,
+/// producer item 4). `none` is for a room where members expect to see a write as soon
+/// as it is made, such as a conversation: the host sends the signal as soon as the
+/// change that fires it is stored, with no wait of its own. **A room's setting, not a
+/// member's.** The delay protects the room's writers as much as its watchers. A
+/// watcher whose signal is sent at once marks, to anyone who sees both the writer's
+/// request reach the host and the signal leave it, the moment of the write and that
+/// the two parties share the room. So one watcher cannot opt out for itself without
+/// giving away something about everyone who writes, and the setting is the room's:
+/// changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every
+/// member (`rooms/info`). **What `none` gives up.** Little in a busy room, where
+/// writes are frequent enough that their rhythm is visible anyway; most in a quiet
+/// one, where a single write and a single signal line up. A surface that offers the
+/// setting SHOULD say so. Absent means `randomised`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const SignalDelay(String value) {
+  static const SignalDelay randomised = SignalDelay('randomised');
+  static const SignalDelay none = SignalDelay('none');
+
+  /// Every value this specification's schema permits.
+  static const List<SignalDelay> values = <SignalDelay>[randomised, none];
+}

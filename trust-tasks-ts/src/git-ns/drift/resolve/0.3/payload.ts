@@ -113,8 +113,13 @@ export type Response = GitNamespacesResolveDriftResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/drift/resolve/0.3",
   "title": "Git Namespaces — Resolve Drift — payload",
@@ -179,38 +184,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Resolve Drift — response payload",
-      "description": "What the resolution did, and where the repository's sync now stands.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "action",
-        "sync"
-      ],
-      "properties": {
-        "action": {
-          "type": "string",
-          "enum": [
-            "adopt",
-            "revert"
-          ],
-          "description": "The action taken, as requested."
-        },
-        "right": {
-          "$ref": "#/$defs/RightRecord",
-          "description": "For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`."
-        },
-        "sync": {
-          "$ref": "#/$defs/Sync",
-          "description": "The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -219,81 +192,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Sync": {
-      "title": "Sync",
-      "description": "How the forge compares with the VTC's projection for one repository.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state",
-        "drift"
-      ],
-      "properties": {
-        "state": {
-          "type": "string",
-          "enum": [
-            "inSync",
-            "drift",
-            "pending",
-            "unchecked"
-          ],
-          "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace)."
-        },
-        "checkedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the forge was last compared. Absent if never."
-        },
-        "drift": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DriftItem"
-          },
-          "description": "Outstanding drift. Empty unless `state` is `drift`."
-        }
-      }
-    },
-    "DriftItem": {
-      "title": "DriftItem",
-      "description": "One difference between the forge's observed state and the VTC's projection of a repository.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "resource"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "roleAdded",
-            "roleRemoved",
-            "roleChanged",
-            "requiredCheckMissing",
-            "protectionWeakened",
-            "bootstrapMissing"
-          ],
-          "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone."
-        },
-        "resource": {
-          "$ref": "#/$defs/RepoResource"
-        },
-        "account": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "Whose role differs, for the three role types."
-        },
-        "observed": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there."
-        },
-        "expected": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing."
-        }
       }
     },
     "ForgeAccount": {
@@ -343,74 +241,12 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 455,
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
     },
-    "RightRecord": {
-      "title": "RightRecord",
-      "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "right",
-        "resource",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts."
-        },
-        "right": {
-          "$ref": "#/$defs/Right"
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "grantedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right lapses. Absent: no expiry."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it."
-        }
-      }
-    },
     "Did": {
       "title": "Did",
       "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
       "type": "string",
       "maxLength": 2048,
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-    },
-    "Resource": {
-      "title": "Resource",
-      "description": "A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-      "type": "string",
-      "maxLength": 455,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
     },
     "DriftType": {
       "title": "DriftType",
@@ -426,36 +262,13 @@ export const PAYLOAD_SCHEMA = {
       "description": "The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "DriftSelector": {
-      "title": "DriftSelector",
-      "description": "Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "$ref": "#/$defs/DriftType"
-        },
-        "account": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only."
-        },
-        "observed": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Git Namespaces — Resolve Drift — response payload",
@@ -688,22 +501,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "git.repo.maintain",
         "git.commit.sign"
       ]
-    },
-    "DriftType": {
-      "title": "DriftType",
-      "type": "string",
-      "enum": [
-        "roleAdded",
-        "roleRemoved",
-        "roleChanged",
-        "requiredCheckMissing",
-        "protectionWeakened",
-        "bootstrapMissing"
-      ],
-      "description": "The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -1,8 +1,8 @@
 package trusttasks
 
-// Inbound-document orchestration for SPEC.md §7.2 item 2, items 4–8, and the two
-// stateful checks — the freshness bound of item 4 and the duplicate-execution
-// record of item 11.
+// Inbound-document orchestration for SPEC.md §7.2 items 2–8 and the two stateful
+// checks — the duplicate-execution record of item 11 and the freshness bound of
+// item 13.
 //
 // Mirrors consume.rs in trust-tasks-rs and consume.ts in @openvtc/trust-tasks,
 // deliberately closely: a Go consumer and a Rust or TypeScript one must reach the
@@ -11,18 +11,18 @@ package trusttasks
 //
 //	guard := trusttasks.NewInMemoryReplayGuard(0) // one guard per consumer: it IS the record
 //
-//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
+//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_3.Payload, aclgrantv0_3.Response]{
 //	    Transport:     transport,
-//	    Spec:          aclgrantv0_2.Spec,
+//	    Spec:          aclgrantv0_3.Spec,
 //	    ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
 //	    PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
 //	    Checks:        trusttasks.ConsequentialChecks(guard), // acl/grant is consequential
 //	    Doc:           doc,
 //	    MyVID:         "did:web:maintainer.example",
 //	    Now:           time.Now(),
-//	    NewErrorID:    uuid.NewString,
-//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_2.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_2.Response], error) {
-//	        return trusttasks.RespondWith(doc, uuid.NewString(), buildResponse(parties), nil), nil
+//	    NewErrorID:    newID, // any func() string minting a unique id
+//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_3.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_3.Response], error) {
+//	        return trusttasks.RespondWith(doc, newID(), buildResponse(parties), nil), nil
 //	    },
 //	})
 //
@@ -37,8 +37,12 @@ package trusttasks
 //	    }
 //	}
 //
-// Items 1 (framework schema) and 3 (unknown type) are not attempted here — they
-// belong to the caller's parse and dispatch.
+// Item 1 (framework schema) is not attempted here — it belongs to the caller's
+// parse. Item 3 is: a document whose type is neither Spec.TypeURI (`#request` and
+// no fragment alike) nor a later version whose declared extension chain reaches
+// it (SPEC §5.2, see [ConsumeOptions.Extends]) is refused unsupportedVersion for
+// the same specification and unsupportedType for another, as [ReadForSpec]
+// refuses it.
 //
 // Item 2 (payload schema) is. Go's encoding/json enforces less than it looks like
 // it does: it ignores unknown members by default and does not enforce a single
@@ -279,6 +283,10 @@ const (
 
 	// ReplayRecordUnavailable is the message for a replay-record outage.
 	ReplayRecordUnavailable = "temporarily unavailable"
+
+	// DocumentTooLargeWireMessage is the message for a document larger than its
+	// specification's declared maxDocumentBytes (SPEC §12.4).
+	DocumentTooLargeWireMessage = "document exceeds the size bound for its type (SPEC §12.4)"
 )
 
 // Handler is the business handler, called only once every framework check has
@@ -351,7 +359,21 @@ type ConsumeOptions[P, R any] struct {
 	// that Doc is a reading of Received (the envelope equal, the payload a subset),
 	// and refuses proofInvalid when it is not: a proof over one document vouches
 	// for nothing about another.
+	//
+	// When set, and Doc is a reading of it, the §7.2 item 11 digest is over these
+	// bytes too, in canonical form, so two documents under one id that differ
+	// only in a member Doc's type does not model are an idConflict rather than a
+	// duplicate. Otherwise the digest is of Doc's re-encoding, which cannot see
+	// such a member.
 	Received json.RawMessage
+
+	// Extends is the [ExtendsLookup] the §7.2 item 3 type check follows when
+	// Doc's type is a later version than Spec's. Nil means [RegistryExtends].
+	// A caller that re-read Doc with [ReadForSpecWith] and its own lookup MUST
+	// pass that lookup here too: the check does not know how Doc was read, and
+	// under [RegistryExtends] a chain only the caller's lookup declares is refused
+	// unsupportedVersion.
+	Extends ExtendsLookup
 
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.
 	MyVID string
@@ -429,6 +451,24 @@ func ConsumeInbound[P, R any](
 			return ConsumeOutcome[R]{Kind: OutcomeSuppressed, Reason: reason}
 		}
 		return ConsumeOutcome[R]{Kind: OutcomeRejected, Error: errorResponse}
+	}
+
+	// §7.2 item 3 — Doc's type is the specification Spec describes. Decoding into
+	// Document[P] does not look at the type, so a document of another
+	// specification whose payload happens to decode as P would otherwise run under
+	// Spec's policy and Handler. Refused before the item-11 claim, so a refused
+	// document never burns its id.
+	if reason := typeRefusalFor(doc.Type, opts.Spec, opts.Extends); reason != nil {
+		return route(reason), nil
+	}
+
+	// SPEC §12.4 — the specification's declared maxDocumentBytes, over the bytes
+	// as received, when the caller has them. Only for a document of Spec's own
+	// version: a later version read forward along extends may declare a larger
+	// bound of its own, which a consumer MUST NOT refuse a document within.
+	if opts.Spec.MaxDocumentBytes > 0 && len(opts.Received) > opts.Spec.MaxDocumentBytes &&
+		sameVersion(doc.Type, opts.Spec.TypeURI) {
+		return route(&RejectReason{Code: CodeMalformedRequest, Message: DocumentTooLargeWireMessage}), nil
 	}
 
 	// §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
@@ -538,7 +578,18 @@ func ConsumeInbound[P, R any](
 		if guard == nil {
 			return zero, fmt.Errorf("%w: Checks.Replay.Guard under ReplayGuarded", ErrMissingOption)
 		}
-		digest, err := DocumentDigest(doc)
+		// Over the document as it arrived where the caller has it and it is the
+		// document being consumed: SPEC §7.2 compares the whole received
+		// document, and Doc's re-encoding drops every member its type does not
+		// model. A Received that is not a reading of Doc vouches for nothing
+		// about Doc, so its digest would key the record on another document.
+		var digest string
+		var err error
+		if len(opts.Received) > 0 && isReadingOf(doc, opts.Received) {
+			digest, err = receivedDigest(opts.Received)
+		} else {
+			digest, err = DocumentDigest(doc)
+		}
 		if err != nil {
 			return zero, err
 		}
@@ -552,7 +603,16 @@ func ConsumeInbound[P, R any](
 			return route(&RejectReason{Code: CodeExpired, Message: StaleWireMessage}), nil
 		}
 
-		verdict, err := guard.Claim(ctx, doc.ID, digest, retainUntil, opts.Now)
+		var verdict ReplayVerdict
+		if scoped, ok := guard.(IssuerScopedReplayGuard); ok {
+			issuer := ""
+			if parties.Issuer != nil {
+				issuer = *parties.Issuer
+			}
+			verdict, err = scoped.ClaimFor(ctx, issuer, doc.ID, digest, retainUntil, opts.Now)
+		} else {
+			verdict, err = guard.Claim(ctx, doc.ID, digest, retainUntil, opts.Now)
+		}
 		if err != nil {
 			// Fail closed. A consumer that cannot consult its record has not
 			// satisfied item 11, and executing anyway is exactly the double
@@ -594,7 +654,21 @@ func ConsumeInbound[P, R any](
 		}
 	}
 
+	// A handler that panics (or calls runtime.Goexit) never returns, so the
+	// settle and release calls below never run. This defer releases the claim on
+	// that path: nothing says the effect happened, and holding the claim would
+	// answer every resend with an in-flight duplicate until the record expired.
+	// It does not recover — the panic continues to the caller unchanged, with its
+	// original stack. Once the handler has returned, exactly one of the calls
+	// below settles the claim instead.
+	handlerReturned := false
+	defer func() {
+		if !handlerReturned {
+			claimed.release(ctx, doc.ID)
+		}
+	}()
 	response, err := opts.Handler(ctx, doc, parties)
+	handlerReturned = true
 	if err != nil {
 		var refusal *Refusal
 		if !errors.As(err, &refusal) {
@@ -635,6 +709,19 @@ type claim struct {
 	digest string
 }
 
+// claimSettleTimeout bounds a settle or release made after the request's own
+// context may have ended.
+const claimSettleTimeout = 5 * time.Second
+
+// settleContext detaches ctx from its cancellation for a settle or release. The
+// handler failing because ctx was cancelled — a client that went away, a
+// deadline — is exactly when the claim most needs releasing, and a guard backed
+// by a network store would refuse a call made on the cancelled context. The
+// values ctx carries are kept, and the call is bounded by claimSettleTimeout.
+func settleContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), claimSettleTimeout)
+}
+
 // settle records the response for a completed execution, best-effort.
 //
 // The effect has already happened, so a guard that cannot cache the response
@@ -646,11 +733,24 @@ func (c *claim) settle(ctx context.Context, id string, response any) {
 	if c == nil {
 		return
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	var encoded json.RawMessage
 	if response != nil {
+		// A MarshalJSON that panics must not leave the claim in flight: the
+		// handler returned, so the effect happened. Record it with no response
+		// to hand back — a resend is then absorbed, not executed again — and
+		// let the panic continue unchanged.
+		recorded := false
+		defer func() {
+			if !recorded {
+				_ = c.guard.RecordResponse(ctx, id, nil)
+			}
+		}()
 		if raw, err := json.Marshal(response); err == nil {
 			encoded = raw
 		}
+		recorded = true
 	}
 	_ = c.guard.RecordResponse(ctx, id, encoded)
 }
@@ -660,6 +760,8 @@ func (c *claim) release(ctx context.Context, id string) {
 	if c == nil {
 		return
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	_ = c.guard.Release(ctx, id, c.digest)
 }
 

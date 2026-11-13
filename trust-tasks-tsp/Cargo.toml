@@ -1,11 +1,12 @@
 [package]
 name = "trust-tasks-tsp"
-version = "0.37.10"
+version = "0.39.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "ToIP Trust Spanning Protocol (TSP) transport binding for the Trust Tasks framework, built on affinidi-tsp. Provides pack/unpack helpers and a TransportHandler that maps the authenticated VID sender into the framework's §4.8.1 precedence."
+readme = "README.md"
 keywords = ["trust-tasks", "tsp", "affinidi", "vid"]
 categories = ["network-programming", "cryptography"]
 publish = true
@@ -14,7 +15,7 @@ publish = true
 # The runtime only. This crate uses no generated specification module, and
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.39", default-features = false }
 affinidi-tsp = "0.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }

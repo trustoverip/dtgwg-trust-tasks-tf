@@ -74,7 +74,7 @@ related:
 
 **VTC Members — Make-Membership** — *Make this a membership* — gives an access-control entry that has no member record the membership a completed join would have given it: a member record, a revocation slot, the membership credential (VMC) and the role credential (VAC), at the community role the entry already holds. The entry itself — its role, authority, resource grants, label and expiry — is left exactly as it is.
 
-The case that prompted it is the community's **bootstrap administrator**: the first administrator is written into the access-control list when the community is installed, never joins, and so holds authority without a membership — and cannot, for instance, sign in where only members may. Any entry granted directly with [`acl/grant`](../../../../acl/grant/0.2/spec.md) is in the same position.
+The case that prompted it is the community's **bootstrap administrator**: the first administrator is written into the access-control list when the community is installed, never joins, and so holds authority without a membership — and cannot, for instance, sign in where only members may. Any entry granted directly with [`acl/grant`](../../../../acl/grant/0.3/spec.md) is in the same position.
 
 A DID with no entry is admitted with [`vtc/members/admit`](../../admit/0.1/spec.md) instead.
 

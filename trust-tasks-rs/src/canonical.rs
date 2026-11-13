@@ -29,10 +29,13 @@
 //!   documents being compared identically, so it cannot make two
 //!   JCS-identical documents differ here, nor two JCS-differing documents
 //!   agree.
-//! * **Number formatting** is `serde_json`'s, which is shortest-round-trip
-//!   like ECMAScript's `Number::toString` but spells some exponents
-//!   differently (`1e100` vs JCS's `1e+100`). Again, the same `f64` always
-//!   formats the same way, so the induced equality is unchanged.
+//! * **Number formatting.** Every number is read as the IEEE 754 double JCS
+//!   reads it as, so `1`, `1.0` and `1e0` are one number, as they are to the
+//!   TypeScript and Go runtimes. An integral value below `1e21` is written as
+//!   an integer, as ECMAScript's `Number::toString` writes it; anything else
+//!   is `serde_json`'s shortest-round-trip form, which spells some exponents
+//!   differently (`1e100` vs JCS's `1e+100`). The same `f64` always formats
+//!   the same way, so the induced equality is JCS's.
 //!
 //! The item-11 digest is **consumer-local**: it is written to the consumer's
 //! own replay record and never appears on the wire, in a citation, or in a
@@ -61,22 +64,70 @@ pub fn canonical_json(value: &Value) -> String {
     out
 }
 
-fn write_value(out: &mut String, value: &Value) {
+/// Lowercase-hex SHA-256 of [`canonical_json`]`(value)`, without building
+/// that string: the canonical form is written straight into the hasher, so
+/// the digest of a received document costs one walk of it rather than a
+/// walk, a string of the whole document and a copy of that string (#1092).
+/// The same digest, byte for byte.
+pub(crate) fn canonical_sha256_hex(value: &Value) -> String {
+    let mut sink = HashSink {
+        hasher: Sha256::new(),
+        buffer: Vec::with_capacity(HashSink::FLUSH_AT + 256),
+    };
+    write_value(&mut sink, value);
+    sink.hasher.update(&sink.buffer);
+    hex(&sink.hasher.finish())
+}
+
+/// Where the canonical form is written: a `String`, or the hasher.
+trait Sink {
+    fn put(&mut self, s: &str);
+}
+
+impl Sink for String {
+    fn put(&mut self, s: &str) {
+        self.push_str(s);
+    }
+}
+
+/// The hasher, fed through a buffer: the canonical form arrives a token at a
+/// time — often a single `,` or `:` — and handing each to the hasher on its
+/// own costs more than the copy.
+struct HashSink {
+    hasher: Sha256,
+    buffer: Vec<u8>,
+}
+
+impl HashSink {
+    const FLUSH_AT: usize = 4096;
+}
+
+impl Sink for HashSink {
+    fn put(&mut self, s: &str) {
+        self.buffer.extend_from_slice(s.as_bytes());
+        if self.buffer.len() >= Self::FLUSH_AT {
+            self.hasher.update(&self.buffer);
+            self.buffer.clear();
+        }
+    }
+}
+
+fn write_value(out: &mut impl Sink, value: &Value) {
     match value {
-        Value::Null => out.push_str("null"),
-        Value::Bool(true) => out.push_str("true"),
-        Value::Bool(false) => out.push_str("false"),
-        Value::Number(n) => out.push_str(&n.to_string()),
+        Value::Null => out.put("null"),
+        Value::Bool(true) => out.put("true"),
+        Value::Bool(false) => out.put("false"),
+        Value::Number(n) => write_number(out, n),
         Value::String(s) => write_string(out, s),
         Value::Array(items) => {
-            out.push('[');
+            out.put("[");
             for (i, item) in items.iter().enumerate() {
                 if i > 0 {
-                    out.push(',');
+                    out.put(",");
                 }
                 write_value(out, item);
             }
-            out.push(']');
+            out.put("]");
         }
         Value::Object(map) => {
             // Sorted explicitly rather than relying on `serde_json::Map`'s
@@ -85,18 +136,39 @@ fn write_value(out: &mut String, value: &Value) {
             // crate in the graph can turn that on without this crate saying
             // so. A digest that silently became insertion-ordered would key
             // on the sender's member order.
-            let mut keys: Vec<&String> = map.keys().collect();
-            keys.sort_unstable();
-            out.push('{');
-            for (i, key) in keys.iter().enumerate() {
+            let mut members: Vec<(&String, &Value)> = map.iter().collect();
+            members.sort_unstable_by(|a, b| a.0.cmp(b.0));
+            out.put("{");
+            for (i, (key, member)) in members.into_iter().enumerate() {
                 if i > 0 {
-                    out.push(',');
+                    out.put(",");
                 }
                 write_string(out, key);
-                out.push(':');
-                write_value(out, &map[key.as_str()]);
+                out.put(":");
+                write_value(out, member);
             }
-            out.push('}');
+            out.put("}");
+        }
+    }
+}
+
+/// A number as the IEEE 754 double RFC 8785 §3.2.2.3 reads it as: integral
+/// values below `1e21` as integers (`1.0` and `1e2` are `1` and `100`), and
+/// everything else in `serde_json`'s shortest-round-trip form.
+fn write_number(out: &mut impl Sink, n: &serde_json::Number) {
+    let Some(f) = n.as_f64() else {
+        // Not reachable without serde_json's `arbitrary_precision`; keep the
+        // number's own spelling rather than guess.
+        out.put(&n.to_string());
+        return;
+    };
+    if f.is_finite() && f.fract() == 0.0 && f.abs() < 1e21 {
+        // Exact: every integral f64 below 1e21 fits an i128. `-0.0` is `0`.
+        out.put(&(f as i128).to_string());
+    } else {
+        match serde_json::Number::from_f64(f) {
+            Some(n) => out.put(&n.to_string()),
+            None => out.put(&n.to_string()),
         }
     }
 }
@@ -104,29 +176,45 @@ fn write_value(out: &mut String, value: &Value) {
 /// RFC 8785 §3.2.2.2 string escaping: the two-character escapes where they
 /// exist, `\u00xx` for the remaining control characters, and the literal
 /// character otherwise.
-fn write_string(out: &mut String, s: &str) {
-    out.push('"');
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\u{08}' => out.push_str("\\b"),
-            '\u{0c}' => out.push_str("\\f"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            c if (c as u32) < 0x20 => {
-                let _ = write!(out, "\\u{:04x}", c as u32);
-            }
-            c => out.push(c),
+///
+/// Written a run at a time rather than a character at a time. Every byte that
+/// needs escaping is ASCII and no byte of a multi-byte UTF-8 sequence is, so
+/// splitting at those bytes always splits at a character boundary.
+fn write_string(out: &mut impl Sink, s: &str) {
+    out.put("\"");
+    let mut run = 0;
+    for (i, byte) in s.bytes().enumerate() {
+        let escape = match byte {
+            b'"' => "\\\"",
+            b'\\' => "\\\\",
+            0x08 => "\\b",
+            0x0c => "\\f",
+            b'\n' => "\\n",
+            b'\r' => "\\r",
+            b'\t' => "\\t",
+            0x00..=0x1f => "",
+            _ => continue,
+        };
+        out.put(&s[run..i]);
+        if escape.is_empty() {
+            out.put(&format!("\\u{byte:04x}"));
+        } else {
+            out.put(escape);
         }
+        run = i + 1;
     }
-    out.push('"');
+    out.put(&s[run..]);
+    out.put("\"");
 }
 
 /// Lowercase-hex SHA-256 of `bytes`.
 pub fn sha256_hex(bytes: &[u8]) -> String {
-    let digest = sha256(bytes);
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    hex(&hasher.finish())
+}
+
+fn hex(digest: &[u8; 32]) -> String {
     let mut hex = String::with_capacity(64);
     for byte in digest {
         let _ = write!(hex, "{byte:02x}");
@@ -145,81 +233,121 @@ const K: [u32; 64] = [
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ];
 
-/// FIPS 180-4 SHA-256.
+/// FIPS 180-4 SHA-256, fed incrementally.
 ///
 /// Hand-rolled rather than pulled in: this crate is deliberately
 /// dependency-light, and the digest is used for content *identity* in the
 /// consumer's own replay record, never as a signature or a MAC. The
 /// implementation is checked against the FIPS 180-4 / NIST CAVP vectors in
 /// this module's tests.
-fn sha256(input: &[u8]) -> [u8; 32] {
-    let mut h: [u32; 8] = [
-        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
-        0x5be0cd19,
-    ];
+///
+/// Incremental, so that the canonical form can be hashed as it is written:
+/// whole blocks are compressed straight from the input, and only a partial
+/// block is held back.
+struct Sha256 {
+    state: [u32; 8],
+    pending: [u8; 64],
+    pending_len: usize,
+    total_len: u64,
+}
 
-    let bit_len = (input.len() as u64).wrapping_mul(8);
-    let mut message = input.to_vec();
-    message.push(0x80);
-    while message.len() % 64 != 56 {
-        message.push(0);
-    }
-    message.extend_from_slice(&bit_len.to_be_bytes());
-
-    // `as_chunks` rather than `chunks_exact`: the sizes are compile-time
-    // constants, so the compiler can see the block and word shapes.
-    let (blocks, rest) = message.as_chunks::<64>();
-    debug_assert!(
-        rest.is_empty(),
-        "the message was padded to a block multiple"
-    );
-    for chunk in blocks {
-        let mut w = [0u32; 64];
-        for (i, word) in chunk.as_chunks::<4>().0.iter().enumerate() {
-            w[i] = u32::from_be_bytes(*word);
-        }
-        for i in 16..64 {
-            let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
-            let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
-            w[i] = w[i - 16]
-                .wrapping_add(s0)
-                .wrapping_add(w[i - 7])
-                .wrapping_add(s1);
-        }
-
-        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut hh] = h;
-        for i in 0..64 {
-            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
-            let ch = (e & f) ^ ((!e) & g);
-            let temp1 = hh
-                .wrapping_add(s1)
-                .wrapping_add(ch)
-                .wrapping_add(K[i])
-                .wrapping_add(w[i]);
-            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
-            let maj = (a & b) ^ (a & c) ^ (b & c);
-            let temp2 = s0.wrapping_add(maj);
-
-            hh = g;
-            g = f;
-            f = e;
-            e = d.wrapping_add(temp1);
-            d = c;
-            c = b;
-            b = a;
-            a = temp1.wrapping_add(temp2);
-        }
-
-        for (slot, v) in h.iter_mut().zip([a, b, c, d, e, f, g, hh]) {
-            *slot = slot.wrapping_add(v);
+impl Sha256 {
+    fn new() -> Self {
+        Self {
+            state: [
+                0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
+                0x5be0cd19,
+            ],
+            pending: [0; 64],
+            pending_len: 0,
+            total_len: 0,
         }
     }
 
-    let mut out = [0u8; 32];
-    for (i, word) in h.iter().enumerate() {
-        out[i * 4..i * 4 + 4].copy_from_slice(&word.to_be_bytes());
+    fn update(&mut self, mut input: &[u8]) {
+        self.total_len = self.total_len.wrapping_add(input.len() as u64);
+        if self.pending_len > 0 {
+            let take = (64 - self.pending_len).min(input.len());
+            self.pending[self.pending_len..self.pending_len + take].copy_from_slice(&input[..take]);
+            self.pending_len += take;
+            input = &input[take..];
+            if self.pending_len < 64 {
+                return;
+            }
+            let block = self.pending;
+            compress(&mut self.state, &block);
+            self.pending_len = 0;
+        }
+        // `as_chunks` rather than `chunks_exact`: the sizes are compile-time
+        // constants, so the compiler can see the block and word shapes.
+        let (blocks, rest) = input.as_chunks::<64>();
+        for block in blocks {
+            compress(&mut self.state, block);
+        }
+        self.pending[..rest.len()].copy_from_slice(rest);
+        self.pending_len = rest.len();
     }
-    out
+
+    fn finish(mut self) -> [u8; 32] {
+        // 0x80, zeros up to 56 mod 64, then the message length in bits as a
+        // 64-bit big-endian integer.
+        let bit_len = self.total_len.wrapping_mul(8);
+        let zeros = (64 + 55 - self.pending_len) % 64;
+        let mut padding = [0u8; 1 + 63 + 8];
+        padding[0] = 0x80;
+        padding[1 + zeros..1 + zeros + 8].copy_from_slice(&bit_len.to_be_bytes());
+        self.update(&padding[..1 + zeros + 8]);
+        debug_assert_eq!(self.pending_len, 0, "padded to a block multiple");
+
+        let mut out = [0u8; 32];
+        for (i, word) in self.state.iter().enumerate() {
+            out[i * 4..i * 4 + 4].copy_from_slice(&word.to_be_bytes());
+        }
+        out
+    }
+}
+
+/// One 64-byte block of the FIPS 180-4 compression function.
+fn compress(h: &mut [u32; 8], block: &[u8; 64]) {
+    let mut w = [0u32; 64];
+    for (i, word) in block.as_chunks::<4>().0.iter().enumerate() {
+        w[i] = u32::from_be_bytes(*word);
+    }
+    for i in 16..64 {
+        let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
+        let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
+        w[i] = w[i - 16]
+            .wrapping_add(s0)
+            .wrapping_add(w[i - 7])
+            .wrapping_add(s1);
+    }
+
+    let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut hh] = *h;
+    for i in 0..64 {
+        let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+        let ch = (e & f) ^ ((!e) & g);
+        let temp1 = hh
+            .wrapping_add(s1)
+            .wrapping_add(ch)
+            .wrapping_add(K[i])
+            .wrapping_add(w[i]);
+        let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+        let maj = (a & b) ^ (a & c) ^ (b & c);
+        let temp2 = s0.wrapping_add(maj);
+
+        hh = g;
+        g = f;
+        f = e;
+        e = d.wrapping_add(temp1);
+        d = c;
+        c = b;
+        b = a;
+        a = temp1.wrapping_add(temp2);
+    }
+
+    for (slot, v) in h.iter_mut().zip([a, b, c, d, e, f, g, hh]) {
+        *slot = slot.wrapping_add(v);
+    }
 }
 
 #[cfg(test)]
@@ -281,5 +409,76 @@ mod tests {
         let a: Value = serde_json::from_str(r#"{ "a" :  1 , "b": [ 2 ] }"#).unwrap();
         let b: Value = serde_json::from_str(r#"{"b":[2],"a":1}"#).unwrap();
         assert_eq!(canonical_json(&a), canonical_json(&b));
+    }
+
+    /// RFC 8785 §3.2.2.3 reads every number as an IEEE 754 double, so these
+    /// spellings are one number — as they are to the TypeScript and Go
+    /// runtimes, whose parsers produce a double for each.
+    #[test]
+    fn numbers_canonicalise_as_the_double_they_denote() {
+        let canon = |s: &str| canonical_json(&serde_json::from_str::<Value>(s).unwrap());
+        for (spellings, expected) in [
+            (&["1", "1.0", "1e0", "10e-1"][..], "1"),
+            (&["100", "100.0", "1e2", "1E+2"][..], "100"),
+            (&["-0", "-0.0", "0"][..], "0"),
+            (&["-7", "-7.0"][..], "-7"),
+            (&["1.5", "15e-1"][..], "1.5"),
+        ] {
+            for s in spellings {
+                assert_eq!(canon(s), expected, "{s}");
+            }
+        }
+        assert_ne!(canon("1"), canon("1.5"));
+        // Large integral values keep integer spelling below 1e21 and agree
+        // with their exponent forms.
+        assert_eq!(canon("1e20"), "100000000000000000000");
+        assert_eq!(canon("1e20"), canon("100000000000000000000"));
+        assert_eq!(canon("1e21"), canon("1000000000000000000000"));
+    }
+
+    /// The hasher fed in pieces agrees with it fed at once, for every split of
+    /// every length around the block and padding boundaries.
+    #[test]
+    fn sha256_fed_in_pieces_matches_sha256_fed_at_once() {
+        let data: Vec<u8> = (0..200u32).map(|i| (i * 31 + 7) as u8).collect();
+        for len in 0..data.len() {
+            let whole = sha256_hex(&data[..len]);
+            for split in 0..=len {
+                let mut hasher = Sha256::new();
+                hasher.update(&data[..split]);
+                hasher.update(&data[split..len]);
+                assert_eq!(hex(&hasher.finish()), whole, "len {len}, split {split}");
+            }
+            let mut bytewise = Sha256::new();
+            for byte in &data[..len] {
+                bytewise.update(&[*byte]);
+            }
+            assert_eq!(
+                hex(&bytewise.finish()),
+                whole,
+                "len {len}, a byte at a time"
+            );
+        }
+    }
+
+    /// Streaming the canonical form into the hasher hashes exactly the bytes
+    /// `canonical_json` writes.
+    #[test]
+    fn the_streamed_digest_is_the_digest_of_the_canonical_string() {
+        for v in [
+            json!(null),
+            json!("plain"),
+            json!({"k": "a\"b\\c\nd\te\u{1}f\u{1f}\u{7f}g€😀\u{8}\u{c}\r"}),
+            json!({"b": [1, 2.5, -0.0, 1e300, {"z": true, "a": false}], "a": {}}),
+            json!({ "long": "x".repeat(1000), "list": (0..100).collect::<Vec<_>>() }),
+            // Past the sink's flush point, in pieces and in one string.
+            json!({ "list": (0..3000).collect::<Vec<_>>(), "long": "y".repeat(9000) }),
+        ] {
+            assert_eq!(
+                canonical_sha256_hex(&v),
+                sha256_hex(canonical_json(&v).as_bytes()),
+                "{v}"
+            );
+        }
     }
 }

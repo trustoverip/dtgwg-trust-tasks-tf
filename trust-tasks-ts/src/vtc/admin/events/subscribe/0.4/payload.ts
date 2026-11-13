@@ -120,8 +120,13 @@ export type Response = VTCAdminEventsSubscribeResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4",
   "title": "VTC Admin Events — Subscribe — payload",
@@ -151,48 +156,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Events — Subscribe — response payload",
-      "description": "The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "topics",
-        "heartbeatSeconds",
-        "resumed",
-        "resumeToken"
-      ],
-      "properties": {
-        "topics": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 10,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Topic"
-          },
-          "description": "The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live."
-        },
-        "heartbeatSeconds": {
-          "type": "integer",
-          "minimum": 5,
-          "maximum": 60,
-          "description": "The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead."
-        },
-        "resumed": {
-          "type": "boolean",
-          "description": "`true` when the community recognised `since` and will send a hint for every effective topic that changed after it. `false` when no `since` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes."
-        },
-        "resumeToken": {
-          "$ref": "#/$defs/ResumeToken",
-          "description": "The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -229,10 +192,10 @@ export const PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -314,7 +277,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ]
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

@@ -71,8 +71,13 @@ export type Response = VTANotificationsDepositResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/notifications/deposit/0.1",
   "title": "VTA Notifications — Deposit — payload",
@@ -102,36 +107,6 @@ export const PAYLOAD_SCHEMA = {
       "type": "object",
       "minProperties": 1
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Notifications — Deposit — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "notificationId",
-        "revision"
-      ],
-      "description": "Receipt of a deposited document the VTA verified, naming the innermost notification. The same whether the VTA held it, declined it under its acceptance policy, or already held the revision, and never saying which (VTI-NTF-023, VTI-NTF-055).",
-      "properties": {
-        "notificationId": {
-          "$ref": "#/$defs/NotificationId"
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000000,
-          "description": "The revision of the innermost notification, echoed."
-        }
-      }
-    },
-    "NotificationId": {
-      "title": "NotificationId",
-      "description": "The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -150,19 +125,13 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 256
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "DepositedDocument": {
-      "title": "DepositedDocument",
-      "description": "The notifications/notify/0.1 or notifications/relay/0.1 document the client received, kept whole and exactly as received — proof included — never restated, re-serialised from a typed form, or re-signed. Deliberately an opaque object, so that every member its issuer signed survives byte for byte for the VTA, and later the principal's client through vta/notifications/show, to verify. Its `recipient` MUST be a DID the VTA holds keys of in `contextId`.",
-      "type": "object",
-      "minProperties": 1
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA Notifications — Deposit — response payload",
@@ -192,26 +161,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 256,
       "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContextId": {
-      "title": "ContextId",
-      "description": "The trust context the notification is held in: the one the addressed DID belongs to.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
@@ -226,6 +178,7 @@ export const SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
+  maxDocumentBytes: 106496,
 } as const;
 
 /**
@@ -240,4 +193,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 4096,
 } as const;

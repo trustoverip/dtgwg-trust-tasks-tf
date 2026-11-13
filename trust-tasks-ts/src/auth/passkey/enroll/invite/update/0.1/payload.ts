@@ -69,8 +69,13 @@ export type Response = AuthPasskeyInviteUpdateResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
   "title": "Auth Passkey Invite Update — payload",
@@ -146,23 +151,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Invite Update — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "invite"
-      ],
-      "properties": {
-        "invite": {
-          "$ref": "#/$defs/InviteSummary"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -172,63 +160,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "InviteSummary": {
-      "$anchor": "inviteSummary",
-      "title": "InviteSummary",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "inviteId",
-        "subject",
-        "purpose",
-        "createdAt",
-        "expiresAt",
-        "expired"
-      ],
-      "properties": {
-        "inviteId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VID the invite binds a passkey to."
-        },
-        "purpose": {
-          "type": "string",
-          "enum": [
-            "session",
-            "stepUp"
-          ],
-          "description": "What the redeemed credential may authenticate, as in auth/passkey/enroll/invite."
-        },
-        "role": {
-          "type": "string",
-          "description": "The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expired": {
-          "type": "boolean",
-          "description": "True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it."
-        }
-      }
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -311,7 +248,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       }
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
