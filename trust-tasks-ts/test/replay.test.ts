@@ -431,10 +431,18 @@ describe("InMemoryReplayGuard", () => {
     );
   });
 
-  it("rejects a capacity that would retain nothing", () => {
+  it("never retains nothing: a capacity below one takes the default", () => {
     // A guard that retains nothing answers `fresh` to everything, which is a
-    // silent total defeat of item 11 rather than a visible misconfiguration.
-    assert.throws(() => new InMemoryReplayGuard(0), RangeError);
+    // silent total defeat of item 11. Rust, Go and Dart read it the same way.
+    for (const capacity of [0, -1, Number.NaN]) {
+      const guard = new InMemoryReplayGuard(capacity);
+      guard.claim("req-1", D, undefined, NOW);
+      assert.equal(
+        guard.claim("req-1", D, undefined, NOW).kind,
+        "duplicate",
+        `capacity ${capacity} retained no record`,
+      );
+    }
   });
 });
 

@@ -11,6 +11,8 @@ import {
   CONSEQUENTIAL_FRESHNESS,
   InMemoryReplayGuard,
   consumeInbound,
+  readForSpec,
+  reject,
 } from "@openvtc/trust-tasks/runtime";
 import {
   packTrustTask,
@@ -143,7 +145,23 @@ export class TspConsumer {
     handler: (doc: TrustTaskDocument<P>, parties: ResolvedParties) => Promise<TrustTaskDocument<R> | ErrorResponse | void> | TrustTaskDocument<R> | ErrorResponse | void,
   ): Promise<Received<R>> {
     const transport = unpacked.transport;
-    const doc = unpacked.document as unknown as TrustTaskDocument<P>;
+
+    // SPEC §5.2 "Declared extension": a later version whose registry extends
+    // chain reaches spec's is read as spec's version, its payload pruned to the
+    // members spec's schema knows, as the Rust dispatcher and the Dart and Go
+    // bindings read it (#1117). Another specification is unsupportedType, an
+    // unreached version of this one unsupportedVersion, and a payload too complex
+    // to prune malformedRequest — each routed to the authenticated sender.
+    // consumeInbound verifies the proof and digests item 11 over the document as
+    // received, which readForSpec pairs with the pruned copy.
+    const read = readForSpec<P>(unpacked.document, spec);
+    if (read.kind === "refused") {
+      const error = reject(transport, unpacked.document as unknown as TrustTaskDocument<unknown>, this.newErrorId(), read.reason);
+      return error === undefined
+        ? { outcome: { kind: "suppressed", reason: read.reason }, transport, reply: undefined }
+        : { outcome: { kind: "rejected", error }, transport, reply: encoder.encode(JSON.stringify(error)) };
+    }
+    const doc = read.doc;
 
     const outcome = await consumeInbound<P, R>({
       transport,

@@ -60,6 +60,13 @@ type bundle struct {
 		ProofRequired     variantBool `json:"proofRequired"`
 		IssuedAtRequired  variantBool `json:"issuedAtRequired"`
 		RecipientRequired variantBool `json:"recipientRequired"`
+		// MaxDocumentBytes is absent from a bundle older than the member, which
+		// declares nothing; a variant that is null or absent declares no bound,
+		// and never inherits the other variant's.
+		MaxDocumentBytes struct {
+			Request  *int `json:"request"`
+			Response *int `json:"response"`
+		} `json:"maxDocumentBytes"`
 	} `json:"policy"`
 	PropertyOrder  map[string][]string `json:"propertyOrder"`
 	DefsOrder      map[string][]string `json:"defsOrder"` // absent before it was added: see applyDefsOrder
@@ -237,6 +244,11 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 	}
 	if !versionPattern.MatchString(b.Version) {
 		return generated{}, fmt.Errorf("`%s` is not a MAJOR.MINOR version", b.Version)
+	}
+	for variant, n := range map[string]*int{"request": b.Policy.MaxDocumentBytes.Request, "response": b.Policy.MaxDocumentBytes.Response} {
+		if n != nil && *n < 1 {
+			return generated{}, fmt.Errorf("`policy.maxDocumentBytes.%s` is not a positive integer", variant)
+		}
 	}
 
 	parsed, err := decodeOrdered(b.Schema)
@@ -588,15 +600,21 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 		}, "\n"))
 	}
 
-	block := func(uriConst string, proof, recipient, issuedAt bool, schemaConst string) string {
-		return strings.Join([]string{
+	// MaxDocumentBytes only where the variant declares one, as Rust emits
+	// MAX_DOCUMENT_BYTES only then: the zero value declares no bound.
+	block := func(uriConst string, proof, recipient, issuedAt bool, schemaConst string, maxBytes *int) string {
+		lines := []string{
 			fmt.Sprintf("\tTypeURI:             %s,", uriConst),
 			fmt.Sprintf("\tIsBearer:            %t,", b.Policy.Bearer),
 			fmt.Sprintf("\tIsProofRequired:     %t,", proof),
 			fmt.Sprintf("\tIsRecipientRequired: %t,", recipient),
 			fmt.Sprintf("\tIsIssuedAtRequired:  %t,", issuedAt),
 			fmt.Sprintf("\tPayloadSchema:       %s,", schemaConst),
-		}, "\n")
+		}
+		if maxBytes != nil {
+			lines = append(lines, fmt.Sprintf("\tMaxDocumentBytes:    %d,", *maxBytes))
+		}
+		return strings.Join(lines, "\n")
 	}
 	p := b.Policy
 	out = append(out, strings.Join([]string{
@@ -605,7 +623,7 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 		"// 7 and 8 are per-specification and cannot be derived from the document alone,",
 		"// and item 2 needs the schema it carries.",
 		"var Spec = trusttasks.SpecPolicy{",
-		block("TypeURI", p.ProofRequired.Request, p.RecipientRequired.Request, p.IssuedAtRequired.Request, "PayloadSchemaJSON"),
+		block("TypeURI", p.ProofRequired.Request, p.RecipientRequired.Request, p.IssuedAtRequired.Request, "PayloadSchemaJSON", p.MaxDocumentBytes.Request),
 		"}",
 	}, "\n"))
 	if hasResponse {
@@ -614,7 +632,7 @@ func emitTail(b *bundle, hasResponse bool, requestJSON, responseJSON, deprecatio
 			"// IsRecipientRequired tracks the *issuer* party's requirement, because a response",
 			"// swaps the parties (§7.3 item 5).",
 			"var ResponseSpec = trusttasks.SpecPolicy{",
-			block("ResponseTypeURI", p.ProofRequired.Response, p.RecipientRequired.Response, p.IssuedAtRequired.Response, "ResponsePayloadSchemaJSON"),
+			block("ResponseTypeURI", p.ProofRequired.Response, p.RecipientRequired.Response, p.IssuedAtRequired.Response, "ResponsePayloadSchemaJSON", p.MaxDocumentBytes.Response),
 			"}",
 		}, "\n"))
 	}

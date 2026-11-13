@@ -60,8 +60,10 @@ type ExtendsLookup func(typeURI string) string
 // whose packages the application never imports.
 func RegistryExtends(typeURI string) string { return specs.ExtendsOf(typeURI) }
 
-// maxExtendsChain bounds a chain walk, so a lookup that loops cannot hang the
-// consumer. Real chains are a handful of MINORs long.
+// maxExtendsChain bounds a chain walk: 64 links, in all four libraries
+// (docs/runtime-parity.md). Each link must name a strictly earlier MINOR, so
+// the walk ends anyway and real chains are a handful of MINORs long; the bound
+// is a backstop on the work one lookup may do.
 const maxExtendsChain = 64
 
 // UnsupportedVersionWireMessage is the message [ReadForSpec] refuses a document
@@ -111,6 +113,17 @@ func ExtendsChainReaches(receivedTypeURI, implementedTypeURI string, lookup Exte
 		return false
 	}
 	return chainReaches(received, implemented, lookup)
+}
+
+// sameVersion reports whether two Type URIs name the same MAJOR.MINOR — false
+// when either is not a Type URI.
+func sameVersion(a, b string) bool {
+	x, err := routingKey(a)
+	if err != nil {
+		return false
+	}
+	y, err := routingKey(b)
+	return err == nil && x.Major() == y.Major() && x.Minor() == y.Minor()
 }
 
 // chainReaches walks from's declared-extension chain, looking each link up as a
@@ -318,8 +331,11 @@ func compiledPattern(pattern string) *regexp.Regexp {
 	return re
 }
 
-// maxPruneDepth bounds schema recursion that consumes no value — a `$ref` cycle.
-const maxPruneDepth = 256
+// maxPruneDepth bounds how deep a prune recurses — through the payload and the
+// schema's `$ref`s and branches together, so it also stops a `$ref` cycle that
+// consumes no value — before leaving the rest of the value as it is: 128, in
+// all four libraries (docs/runtime-parity.md).
+const maxPruneDepth = 128
 
 // The work one prune may do, in steps (a value visited against a subschema, or
 // a branch test): pruneBaseSteps plus pruneStepsPerValue for every value in the

@@ -261,7 +261,16 @@ function emitTail(ts: string, rootType: string, responseType: string | null, whe
     );
   }
 
-  const obj = (uri: string, isProofRequired: boolean, isRecipientRequired: boolean, isIssuedAtRequired: boolean, schemaConst: string): string =>
+  // `maxDocumentBytes` only where the variant declares one, as Rust emits
+  // MAX_DOCUMENT_BYTES only then: SpecPolicy's member is optional.
+  const obj = (
+    uri: string,
+    isProofRequired: boolean,
+    isRecipientRequired: boolean,
+    isIssuedAtRequired: boolean,
+    schemaConst: string,
+    maxBytes: number | null | undefined,
+  ): string =>
     [
       `{`,
       `  typeUri: ${uri},`,
@@ -270,6 +279,7 @@ function emitTail(ts: string, rootType: string, responseType: string | null, whe
       `  isRecipientRequired: ${isRecipientRequired},`,
       `  isIssuedAtRequired: ${isIssuedAtRequired},`,
       `  payloadSchema: ${schemaConst},`,
+      ...(maxBytes === null || maxBytes === undefined ? [] : [`  maxDocumentBytes: ${maxBytes},`]),
       `} as const;`,
     ].join("\n");
 
@@ -286,6 +296,7 @@ function emitTail(ts: string, rootType: string, responseType: string | null, whe
       policy.recipientRequired.request,
       policy.issuedAtRequired.request,
       "PAYLOAD_SCHEMA",
+      policy.maxDocumentBytes?.request,
     )}`,
     "",
   );
@@ -303,6 +314,7 @@ function emitTail(ts: string, rootType: string, responseType: string | null, whe
         policy.recipientRequired.response,
         policy.issuedAtRequired.response,
         schemas.response ? "RESPONSE_PAYLOAD_SCHEMA" : "undefined",
+        policy.maxDocumentBytes?.response,
       )}`,
       "",
     );
