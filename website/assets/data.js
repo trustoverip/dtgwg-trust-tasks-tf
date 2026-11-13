@@ -2,11 +2,11 @@
    Trust Tasks — Taxonomy
    ------------------------------------------------------------
    This file holds the hand-edited taxonomy (categories).
-   Trust Task entries (window.TT_TASKS, window.TT_STATS) are
-   generated from specs/<slug>/<version>/ by
+   The registry index (window.TT_TASKS, window.TT_SHARED,
+   window.TT_STATS) is generated from specs/<slug>/<version>/ by
    scripts/build-registry.mjs and written to
    tasks.generated.js, which is loaded after this file in
-   index.template.html.
+   index.template.html (TT_STATS counts these categories).
 
    IMPORTANT: keep `id` values in sync with the enum in
    `specs/spec.meta.schema.json#/properties/category`. The build
