@@ -26,7 +26,10 @@ document in the same PR. Do not copy their content back into this file.
 ## ⚠️ Rules that must not be forgotten
 
 - **`SPEC.md` is generated — never edit it here.** Framework changes go to the
-  canonical repo; a `/SPEC.md#…` link that names no section fails the build.
+  canonical repo; the canonical commit is pinned in
+  `scripts/framework-spec-source.json` and moves only through the
+  `framework-spec-bump.yml` PR; a `/SPEC.md#…` link that names no section fails
+  the build.
   → [DEVELOPMENT.md](docs/DEVELOPMENT.md#specmd-is-generated--never-edit-it-here)
 - **Every commit MUST be DCO signed** — `git commit -s` (`git merge --signoff`).
   → [CONTRIBUTING.md](CONTRIBUTING.md#every-commit-must-be-dco-signed)

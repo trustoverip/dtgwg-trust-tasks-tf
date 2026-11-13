@@ -91,17 +91,21 @@ root only (Node 24, as `.nvmrc` and `engines` say), not to the published package
 `SPEC.md` is the Trust Tasks framework specification, **generated** from the
 canonical source, [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec),
 by `npm run generate-framework-spec` (`scripts/generate-framework-spec.mjs`).
-A framework change is a PR to that repository; this copy follows it. Every
-deploying run of `deploy.yml` (push to `main`, the nightly schedule, a dispatch
-from the canonical repository) regenerates `SPEC.md` from canonical `main` before
-the build, so trusttasks.org always serves the latest canonical text, and the
-committed copy is refreshed by running the script and committing the result. A
-**pull request builds from the committed copy** instead (#1138):
-`npm run check-framework-spec` regenerates from the canonical commit `SPEC.md`'s
-own banner names and fails only if the committed file is not that output, so a
-canonical change cannot turn an unrelated PR red. When a scheduled or dispatched
-deploy fails, it opens (or comments on) a "Scheduled website deploy is failing"
-issue.
+A framework change is a PR to that repository; this copy follows it **at a
+pinned commit**: `scripts/framework-spec-source.json` names the canonical
+commit (full SHA) `SPEC.md` is generated from, and `npm run
+generate-framework-spec` regenerates from that commit. The pin moves only in a
+pull request — `.github/workflows/framework-spec-bump.yml` runs nightly and on
+a `framework-spec-updated` dispatch from the canonical repository, runs `npm run
+bump-framework-spec` (canonical `main` → pin + `SPEC.md`), and opens or
+refreshes one "regenerate SPEC.md" PR when the text changed; when it fails it
+opens (or comments on) a "Framework specification bump is failing" issue. The
+website serves the **committed** copy: every run of `deploy.yml`, pull request
+or deploy, runs `npm run check-framework-spec`, which fetches the pinned commit
+by SHA, confirms the checkout is that commit, regenerates, and fails if the
+committed file is not that output (#1138). So a canonical change reaches
+trusttasks.org only by a reviewed merge here, and cannot turn an unrelated PR
+red.
 
 - **Section numbers are assigned by the generator**, in canonical order — the
   canonical text has none. When a canonical change moves a section, its number
@@ -359,9 +363,9 @@ defects three times.
 | `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; no withdrawn version is generated and every other one carries the same deprecation note in all four; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
-| `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
+| `test:infra` | the CloudFront negotiation function's routing decisions; that `response-headers-policy.json` sets every security header and its Content-Security-Policy allows each script, stylesheet and `fetch` the page makes, with no inline script | whether the deployed site actually serves them — the policy is applied by hand (`infra/cloudfront/apply-response-headers.sh`), and `verify.sh` checks the live headers |
 | `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.template.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; the page code compiles through the build's esbuild step, the template's production React pins match their files, and (after `npm run build`) the built bundle `index.html` names renders a set of routes through React's development server renderer against the real registry (`REACT_JS`, `REACT_DOM_SERVER_JS`, `REACT_PROD_JS`, `REACT_DOM_PROD_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
-| `npm run smoke:website` (in `deploy.yml`, after `npm run build`) | the built site, served through the CloudFront routing function, loads `/`, a spec, a binding, `/schema` and `/implementations/rust` in headless Chrome (over the DevTools protocol, no npm dependency; `CHROME_PATH` to choose the browser) with no console error, uncaught exception or failed/4xx request, an `<h1>`, and a canonical link naming the route | any other route, and the deployed CloudFront and S3 metadata (`immutable`, gzip encoding) |
+| `npm run smoke:website` (in `deploy.yml`, after `npm run build`) | the built site, served through the CloudFront routing function, loads `/`, a spec, a binding, `/schema` and `/implementations/rust` in headless Chrome (over the DevTools protocol, no npm dependency; `CHROME_PATH` to choose the browser) with no console error, uncaught exception or failed/4xx request — under the response headers policy's Content-Security-Policy, which `serve-website.mjs` sends — an `<h1>`, and a canonical link naming the route | any other route, and the deployed CloudFront and S3 metadata (`immutable`, gzip encoding) |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout (for TS, the newest on npm while the checkout's is unpublished — the Release PR — with a warning) | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
