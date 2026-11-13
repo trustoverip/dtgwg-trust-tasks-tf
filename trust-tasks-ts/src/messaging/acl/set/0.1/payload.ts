@@ -119,31 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Set ACL — response payload",
-      "description": "The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "acl"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Vid",
-          "description": "The account whose ACL was set."
-        },
-        "acl": {
-          "$ref": "#/$defs/MediatorAcl",
-          "description": "The full realized capability set the mediator now holds for the account."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

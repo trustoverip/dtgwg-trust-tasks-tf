@@ -106,44 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Deliver VMC — receipt payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "memberDid",
-        "vmcId",
-        "status"
-      ],
-      "properties": {
-        "memberDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The delivering member, as proven by the transport."
-        },
-        "vmcId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Identifier of the stored credential."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "stored"
-          ],
-          "description": "Terminal state of the delivery."
-        },
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

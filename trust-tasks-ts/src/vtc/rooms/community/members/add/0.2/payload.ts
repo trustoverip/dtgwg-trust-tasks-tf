@@ -118,24 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Community Members Add — response payload",
-      "description": "Success response to vtc/rooms/community/members/add. Type https://trusttasks.org/spec/vtc/rooms/community/members/add/0.2#response. The member as recorded, in state `offered`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member"
-      ],
-      "properties": {
-        "member": {
-          "$ref": "#/$defs/RoomMemberV2"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -145,65 +127,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoomMemberV2": {
-      "title": "RoomMemberV2",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "actions",
-        "validUntil",
-        "state",
-        "offeredAt"
-      ],
-      "description": "`RoomMember` with `MemberStateV2`, and `suspendedAt`.",
-      "properties": {
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "actions": {
-          "$ref": "#/$defs/MemberActions"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the member's authority credential expires."
-        },
-        "state": {
-          "$ref": "#/$defs/MemberStateV2"
-        },
-        "offeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "admittedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "removedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "suspendedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present exactly when `state` is `suspended`."
-        }
-      }
-    },
-    "MemberStateV2": {
-      "title": "MemberStateV2",
-      "type": "string",
-      "enum": [
-        "offered",
-        "admitted",
-        "suspended",
-        "removed"
-      ],
-      "description": "`MemberState` plus `suspended`. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `suspended`: admitted, but the room was archived with `noAccess` (or scheduled for removal), so the room's host refuses the member's credentials; on a sealed tier they are still in the room's group. Restored to `admitted` with freshly issued credentials when the room leaves that state, and never restored if it is removed. `removed`: an administrator removed them, or withdrew their offer — archiving withdraws every open offer; on a sealed tier the room has advanced past an admitted member."
     },
     "MemberActions": {
       "title": "MemberActions",
@@ -348,13 +271,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "curate"
       ],
       "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
-    },
-    "Reason": {
-      "title": "Reason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
 };

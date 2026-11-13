@@ -78,29 +78,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Config Reload — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keysReloaded"
-      ],
-      "properties": {
-        "keysReloaded": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "Keys whose live value was updated by the reload — the hot-reloadable keys whose stored value differed from what was running. A no-op reload returns an empty array. Restart-gated keys are never included; they need config/restart."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

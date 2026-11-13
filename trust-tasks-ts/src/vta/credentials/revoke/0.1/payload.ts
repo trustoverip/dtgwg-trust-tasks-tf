@@ -109,36 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Credentials Revoke — response payload",
-      "description": "The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "revokedAt"
-      ],
-      "properties": {
-        "credentialId": {
-          "$ref": "#/$defs/CredentialId"
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the revocation was recorded."
-        },
-        "statusListIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

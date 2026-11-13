@@ -134,42 +134,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Subscribe to Traffic Monitor — response payload",
-      "description": "The success response to a messaging/monitor/subscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "subscriptionId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "filter": {
-          "$ref": "#/$defs/MonitorFilter",
-          "description": "The filter in force, after the mediator narrowed it to what the requester is entitled to see."
-        },
-        "maxEventsPerSecond": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The rate ceiling in force."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "subscriptionId",
-        "expiresAt",
-        "filter",
-        "maxEventsPerSecond"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

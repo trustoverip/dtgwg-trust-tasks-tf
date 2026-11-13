@@ -158,67 +158,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Attribute Promote — response payload",
-      "description": "Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "version",
-        "promoted"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid",
-          "description": "Unchanged: the face keeps its id. It is now read through persona/profile/get."
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The face's version in the pool."
-        },
-        "promoted": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "description": "For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "entry",
-              "attributeId",
-              "wasCreated"
-            ],
-            "properties": {
-              "entry": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "attributeId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "wasCreated": {
-                "type": "boolean"
-              }
-            }
-          }
-        },
-        "reboundPersonaDids": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

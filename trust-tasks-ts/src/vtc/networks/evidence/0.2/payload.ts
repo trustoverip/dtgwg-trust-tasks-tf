@@ -114,66 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Networks — Evidence — response payload",
-      "description": "The chain links the caller may present, one per group and network.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "links"
-      ],
-      "properties": {
-        "links": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "groupId",
-              "groupDid",
-              "network",
-              "role",
-              "registration",
-              "acceptance"
-            ],
-            "properties": {
-              "groupId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 128
-              },
-              "groupDid": {
-                "type": "string",
-                "pattern": "^did:[a-z0-9]+:.+$",
-                "maxLength": 2048
-              },
-              "network": {
-                "type": "string",
-                "pattern": "^did:[a-z0-9]+:.+$",
-                "maxLength": 2048
-              },
-              "role": {
-                "type": "string",
-                "pattern": "^[a-z0-9_-]{1,64}$"
-              },
-              "registration": {
-                "type": "object",
-                "description": "The community's signed `vtn/groups/register` request for the group, with its proof, exactly as the network accepted it."
-              },
-              "acceptance": {
-                "type": "object",
-                "description": "The network's `groupRegistered/1` statement (VSC) accepting it, carrying the registration's digest: SHA-256 over the RFC 8785 (JCS) form of the signed request including its proof."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

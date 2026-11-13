@@ -140,82 +140,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Storage — Migrate — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "migrationId",
-        "roomId",
-        "toConfig",
-        "fromConfigs",
-        "state",
-        "totalFiles",
-        "totalBytes",
-        "doneFiles",
-        "doneBytes"
-      ],
-      "properties": {
-        "migrationId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Community-generated handle for this room's migration."
-        },
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier, as its owner minted it."
-        },
-        "toConfig": {
-          "$ref": "#/$defs/StorageConfigId",
-          "description": "The config this migration moves blobs to: the room's assigned config when the migration was approved. It does not change if the room is reassigned while the migration is under way."
-        },
-        "fromConfigs": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/StorageConfigId"
-          }
-        },
-        "state": {
-          "$ref": "#/$defs/MigrationState"
-        },
-        "totalFiles": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "totalBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "doneFiles": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "doneBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "pausedCause": {
-          "$ref": "#/$defs/MigrationPauseCause",
-          "description": "Present exactly when `state` is `paused`."
-        },
-        "lastError": {
-          "$ref": "#/$defs/MigrationLastError",
-          "description": "Present when `state` is `paused`; MAY be present while `running`, when a step is being retried."
-        },
-        "nextAttemptAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community will next try by itself. Present while a `running` migration waits out a backoff, and on a `paused` one the community will retry unprompted; absent on a `paused` one only re-issuing vtc/rooms/storage/migrate resumes (such as `capacity`)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -225,44 +149,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MigrationLastError": {
-      "title": "MigrationLastError",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents."
-    },
-    "MigrationPauseCause": {
-      "title": "MigrationPauseCause",
-      "type": "string",
-      "enum": [
-        "capacity",
-        "source",
-        "destination",
-        "credential"
-      ],
-      "description": "Why a migration is `paused`. `capacity`: the destination config cannot hold the rest. `source`: a config the blobs are being moved off keeps failing to serve them. `destination`: the destination config keeps refusing writes, or is no longer `active`. `credential`: the community cannot obtain a credential for one of the configs."
-    },
-    "MigrationState": {
-      "title": "MigrationState",
-      "type": "string",
-      "enum": [
-        "queued",
-        "running",
-        "paused",
-        "complete",
-        "failed"
-      ],
-      "description": "`queued`: approved and waiting for another migration on this community to finish; nothing copied yet (a community that runs one migration at a time). `running`: copying, including while it retries a failing step with backoff. `paused`: halted after its automatic retries reached their cap without success, or on a cause that retrying cannot clear (`pausedCause`); resumed by issuing vtc/rooms/storage/migrate again, and by the community itself at `nextAttemptAt` when present. `complete`: every blob that was to move has moved. `failed`: halted on a blob whose copy did not verify against its manifest; that blob stays where it was."
-    },
-    "StorageConfigId": {
-      "title": "StorageConfigId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-      "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value."
     }
   }
 };

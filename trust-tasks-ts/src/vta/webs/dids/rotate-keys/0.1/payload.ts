@@ -136,61 +136,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA did:webs DIDs Rotate-Keys — response payload",
-      "description": "Success response to vta/webs/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "sequenceNumber",
-        "versionId",
-        "signingKeyId",
-        "signingKey",
-        "nextKeyId",
-        "retiredKeyId",
-        "resumed"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "sequenceNumber": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Sequence number of the rotation event."
-        },
-        "versionId": {
-          "type": "string",
-          "pattern": "^[0-9]+:[A-Za-z0-9_-]+$",
-          "description": "The rotation event as `<sequence number>:<SAID>`."
-        },
-        "signingKeyId": {
-          "type": "string",
-          "description": "The VTA's id for the signing key the rotation installed: the successor the previous establishment event committed."
-        },
-        "signingKey": {
-          "type": "string",
-          "description": "That key in CESR. Its verification method is `<did>#<signingKey>`."
-        },
-        "nextKeyId": {
-          "type": "string",
-          "description": "The VTA's id for the fresh successor the rotation committed. Inactive until the next rotation."
-        },
-        "retiredKeyId": {
-          "type": "string",
-          "description": "The VTA's id for the signing key the rotation replaced. The VTA signs nothing more with it."
-        },
-        "resumed": {
-          "type": "boolean",
-          "description": "True when the VTA answered by completing a rotation it had already staged, rather than writing a new one: the request is satisfied by that rotation, and no second one was made."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

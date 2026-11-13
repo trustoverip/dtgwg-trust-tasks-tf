@@ -217,34 +217,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Step-up Approve Request — response payload",
-      "description": "Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.4#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "accepted",
-            "refused"
-          ],
-          "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Required when status is `refused`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -379,86 +351,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ApproverDid": {
-      "title": "ApproverDid",
-      "type": "string",
-      "minLength": 16,
-      "maxLength": 128,
-      "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$",
-      "description": "A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party."
-    },
-    "CredentialRequestOptions": {
-      "$anchor": "credentialRequestOptions",
-      "title": "PublicKeyCredentialRequestOptions",
-      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge"
-      ],
-      "properties": {
-        "extensions": {
-          "type": "object",
-          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
-        },
-        "challenge": {
-          "type": "string",
-          "description": "base64url-encoded one-time nonce."
-        },
-        "timeout": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "rpId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "allowCredentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CredentialDescriptor"
-          }
-        },
-        "userVerification": {
-          "enum": [
-            "discouraged",
-            "preferred",
-            "required"
-          ]
-        }
-      }
-    },
-    "CredentialDescriptor": {
-      "$anchor": "credentialDescriptor",
-      "title": "PublicKeyCredentialDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "id"
-      ],
-      "properties": {
-        "type": {
-          "const": "public-key"
-        },
-        "id": {
-          "type": "string",
-          "description": "base64url-encoded credential id."
-        },
-        "transports": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "usb",
-              "nfc",
-              "ble",
-              "internal",
-              "hybrid"
-            ]
-          }
-        }
       }
     }
   }

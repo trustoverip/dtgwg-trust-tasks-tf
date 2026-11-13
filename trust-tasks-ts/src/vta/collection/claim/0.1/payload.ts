@@ -111,31 +111,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Collection — Claim — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "identifier",
-        "endsAt"
-      ],
-      "description": "The grant: the VTA has stopped collecting for `identifier` and closed every connection it held for it, and the caller is its collector until `endsAt`.",
-      "properties": {
-        "identifier": {
-          "$ref": "#/$defs/Did"
-        },
-        "endsAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the claim ends unless renewed. The client stops collecting before this instant less its clock-skew tolerance (VTI-NTF-083)."
-        },
-        "renewed": {
-          "type": "boolean",
-          "description": "True when the caller already held a claim for the identifier and this grant moved its end; absent or false for a new claim."
-        }
-      }
-    },
     "Did": {
       "title": "Did",
       "description": "A DID.",
@@ -201,23 +176,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 8,
       "maxLength": 2048,
       "pattern": "^did:[a-z0-9]+:\\S+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContextId": {
-      "title": "ContextId",
-      "description": "The trust context the identifier belongs to.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
 };

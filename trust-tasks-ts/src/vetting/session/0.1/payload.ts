@@ -161,24 +161,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vetting Session — response payload",
-      "description": "The applicant's signed Vetting Card, bound to this session.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "card"
-      ],
-      "properties": {
-        "card": {
-          "$ref": "#/$defs/VettingCard"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -189,174 +171,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "VettingCard": {
-      "title": "VettingCard",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "id",
-        "publisher",
-        "cardVersion",
-        "audience",
-        "community",
-        "challenge",
-        "domain",
-        "issuedAt",
-        "expiresAt",
-        "claims",
-        "identityCommitment",
-        "commitmentSalt",
-        "proof"
-      ],
-      "properties": {
-        "type": {
-          "type": "array",
-          "minItems": 3,
-          "maxItems": 3,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "enum": [
-              "VerifiableDataStructure",
-              "RelationshipCard",
-              "VettingCard"
-            ]
-          },
-          "description": "Exactly `VerifiableDataStructure`, `RelationshipCard` and `VettingCard`, in any order."
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Fresh per card. A card is never re-sent to a second session under the same id."
-        },
-        "publisher": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The applicant's DID — the issuer of the vetting request and the subject every resulting statement names. The card is signed with this DID's assertion key."
-        },
-        "cardVersion": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "audience": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The vetter's DID — the issuer of the vetting session. A card addressed to anyone else is refused."
-        },
-        "community": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The community the applicant is being vetted for."
-        },
-        "challenge": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{43}$",
-          "description": "The session's challenge, copied verbatim."
-        },
-        "domain": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The session's domain, copied verbatim."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "No later than the session's `expiresAt`."
-        },
-        "claims": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/VettingCardClaim"
-          }
-        },
-        "identityCommitment": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "digestMultibase over the RFC 8785 canonicalization of `{ \"salt\": commitmentSalt, \"claims\": R }`, where R is `{ \"type\", \"value\" }` for every card claim whose type the session lists in `requiredClaims`, ordered by `type` then `value` (code-point order). SHA-256 RECOMMENDED. Because the applicant uses one salt per application, every vetter of that application sees the same value."
-        },
-        "commitmentSalt": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{43}$",
-          "description": "32 random bytes, base64url without padding, generated once per application. Goes to vetters inside the card and to nobody else: a party holding the commitment without the salt cannot test guesses at the claimed name."
-        },
-        "proof": {
-          "$ref": "#/$defs/DataIntegrityProof"
-        }
-      }
-    },
-    "DataIntegrityProof": {
-      "title": "DataIntegrityProof",
-      "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "type",
-        "cryptosuite",
-        "verificationMethod",
-        "proofPurpose",
-        "proofValue"
-      ],
-      "description": "A W3C Data Integrity proof by the card's publisher. Additional Data Integrity members (e.g. `created`) are permitted and are covered as the cryptosuite defines.",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "DataIntegrityProof"
-        },
-        "cryptosuite": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "pattern": "^[a-z0-9-]+$",
-          "description": "e.g. `eddsa-jcs-2022`."
-        },
-        "verificationMethod": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "A verification method of `publisher`, authorized for `assertionMethod`."
-        },
-        "proofPurpose": {
-          "type": "string",
-          "const": "assertionMethod"
-        },
-        "proofValue": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-        }
-      }
-    },
-    "VettingCardClaim": {
-      "title": "VettingCardClaim",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "value",
-        "provenance"
-      ],
-      "properties": {
-        "type": {
-          "$ref": "#/$defs/ClaimType",
-          "not": {
-            "const": "person.portrait"
-          },
-          "description": "The claim type. `person.portrait` is refused: identity vetting works by a vetter looking at the person, not by transmitting their image."
-        },
-        "value": {
-          "description": "The claimed value, exactly as rendered from the applicant's persona — a string for most claim types, structured JSON for some (e.g. a postal address). Authored by the applicant and asserted under their signature; the vetter's check is what gives it any assurance."
-        },
-        "provenance": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "pattern": "^[a-z][a-zA-Z0-9]*$",
-          "description": "Where the value's assurance comes from. `selfAsserted` — the applicant says so, and the vetter's human check is the only assurance added — is the only value this version defines; a verifier MUST NOT treat any other value as adding assurance it does not understand."
-        }
-      }
-    },
     "ClaimType": {
       "title": "ClaimType",
       "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
@@ -364,16 +178,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "VettingMethod": {
       "title": "VettingMethod",
@@ -606,16 +410,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "VettingMethod": {
-      "title": "VettingMethod",
-      "type": "string",
-      "enum": [
-        "inPerson",
-        "video",
-        "priorAcquaintance"
-      ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     }
   }
 };
