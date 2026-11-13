@@ -90,25 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Notifications — Dismiss — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "recordId",
-        "changed"
-      ],
-      "properties": {
-        "recordId": {
-          "$ref": "#/$defs/RecordId"
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "Whether this request dismissed it: false when it was already dismissed."
-        }
-      }
-    },
     "RecordId": {
       "title": "RecordId",
       "description": "The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.",
@@ -168,23 +149,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 16,
       "maxLength": 128,
       "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContextId": {
-      "title": "ContextId",
-      "description": "The trust context the notification is held in: the one the addressed DID belongs to.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
 };

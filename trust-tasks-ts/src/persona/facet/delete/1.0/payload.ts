@@ -112,30 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Facet Delete — response payload",
-      "description": "Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "existed"
-      ],
-      "properties": {
-        "existed": {
-          "type": "boolean",
-          "description": "False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first."
-        },
-        "releasedFaces": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -199,18 +175,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
 };

@@ -119,33 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Group Create — response payload",
-      "description": "Success response to rooms/owner/group/create. Type https://trusttasks.org/spec/rooms/owner/group/create/0.1#response. The room and the epoch its group was formed at; never a secret.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room whose group was formed."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The room epoch the group is at: 1, the epoch a host records when a room is registered."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -185,28 +185,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "JobId": {
-      "title": "JobId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 and 0.5) assigns and git-ns/bridge/result/0.1 reports against."
-    },
-    "JobKind": {
-      "title": "JobKind",
-      "type": "string",
-      "enum": [
-        "projectRoles",
-        "createRepo",
-        "bootstrap",
-        "archive",
-        "inspect",
-        "beginBind",
-        "beginAccountLink",
-        "closePullRequest"
-      ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.5 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.5 declares its `kind` inline rather than as a named $def; the two lists change together."
-    },
     "JobState": {
       "title": "JobState",
       "type": "string",
@@ -220,99 +198,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       ],
       "description": "The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it."
     },
-    "JobRow": {
-      "title": "JobRow",
-      "description": "One bridge job as the administrator's console shows it.",
-      "type": "object",
-      "additionalProperties": false,
-      "dependentRequired": {
-        "number": [
-          "repo"
-        ]
-      },
-      "required": [
-        "jobId",
-        "namespace",
-        "bridgeDid",
-        "kind",
-        "state",
-        "attempts",
-        "createdAt"
-      ],
-      "properties": {
-        "jobId": {
-          "$ref": "#/$defs/JobId"
-        },
-        "namespace": {
-          "$ref": "#/$defs/NamespaceId"
-        },
-        "bridgeDid": {
-          "$ref": "#/$defs/Did",
-          "description": "The bridge the job was dispatched to."
-        },
-        "kind": {
-          "$ref": "#/$defs/JobKind"
-        },
-        "state": {
-          "$ref": "#/$defs/JobState"
-        },
-        "repo": {
-          "$ref": "#/$defs/RepoResource",
-          "description": "The repository the job acts on. Absent for a namespace-wide `inspect` sweep or a job with no repository (`beginBind`, `beginAccountLink`)."
-        },
-        "number": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The pull request a `closePullRequest` job closes, in `repo` — the job's own `number`. Present for a `closePullRequest` job and absent for every other kind."
-        },
-        "attempts": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many times the VTC has dispatched this job to a bridge."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC queued the job."
-        },
-        "acceptedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When a bridge last accepted it. Absent while `state` is `pending` or `cancelled`."
-        },
-        "lastError": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The bridge's last reported error, verbatim. Diagnostic prose for an administrator; a consumer MUST NOT parse it. Absent unless `state` is `partial` or `failed`."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — List Bridge Jobs — response payload",
-      "description": "The matching jobs, newest first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jobs"
-      ],
-      "properties": {
-        "jobs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JobRow"
-          },
-          "description": "Jobs matching `namespace` and `state`, newest (`createdAt`) first."
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -322,20 +207,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RepoResource": {
-      "title": "RepoResource",
-      "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.",
-      "type": "string",
-      "maxLength": 455,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
-    },
-    "Did": {
-      "title": "Did",
-      "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-      "type": "string",
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
     },
     "NamespaceId": {
       "title": "NamespaceId",

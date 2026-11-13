@@ -101,31 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Get Message — response payload",
-      "description": "The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "meta": {
-          "$ref": "#/$defs/MessageMeta"
-        },
-        "message": {
-          "type": "string",
-          "description": "The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.",
-          "maxLength": 10485760
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "meta",
-        "message"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -135,92 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MessageMeta": {
-      "title": "MessageMeta",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "msgId",
-        "queue",
-        "size",
-        "receivedAt"
-      ],
-      "description": "Metadata of one stored message. Never carries the message body.",
-      "properties": {
-        "msgId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.",
-          "maxLength": 256
-        },
-        "queue": {
-          "$ref": "#/$defs/Queue"
-        },
-        "size": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Stored size in bytes."
-        },
-        "receivedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the mediator stored the message."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the mediator will expire the message if it is not deleted first."
-        },
-        "from": {
-          "$ref": "#/$defs/Vid",
-          "description": "The sender, where the mediator knows it. Absent for anonymous messages."
-        },
-        "to": {
-          "$ref": "#/$defs/Vid",
-          "description": "The recipient account."
-        },
-        "protocol": {
-          "$ref": "#/$defs/WireProtocol"
-        },
-        "deliveryState": {
-          "$ref": "#/$defs/DeliveryState"
-        },
-        "deliveredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the message was first handed to the recipient. Present only when deliveryState is `delivered`."
-        }
-      }
-    },
-    "DeliveryState": {
-      "title": "DeliveryState",
-      "type": "string",
-      "enum": [
-        "queued",
-        "delivered"
-      ],
-      "description": "`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it."
-    },
-    "WireProtocol": {
-      "title": "WireProtocol",
-      "type": "string",
-      "enum": [
-        "didcomm",
-        "didcommV1",
-        "tsp",
-        "other"
-      ],
-      "description": "The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify."
-    },
-    "Queue": {
-      "title": "Queue",
-      "type": "string",
-      "enum": [
-        "receive",
-        "send"
-      ],
-      "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
     },
     "Vid": {
       "title": "Vid",

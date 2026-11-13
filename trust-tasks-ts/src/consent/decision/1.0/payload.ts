@@ -127,38 +127,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent Decision — response payload",
-      "description": "Acknowledgement that the decision was recorded (or rejected).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "recorded",
-            "rejected"
-          ],
-          "description": "`recorded` = a grant was written. `rejected` = not accepted; `reason` MUST be set."
-        },
-        "grantId": {
-          "type": "string",
-          "description": "The VTA's id for the recorded grant (set when recorded)."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Required when status is `rejected`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -274,62 +242,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "receive",
-        "converse"
-      ],
-      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
-    },
-    "Effect": {
-      "type": "string",
-      "enum": [
-        "allow",
-        "deny"
-      ],
-      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
-    },
-    "ConsentSubject": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "platform",
-        "conversationRef",
-        "kind",
-        "agent"
-      ],
-      "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
-      "properties": {
-        "platform": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
-        },
-        "conversationRef": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id."
-        },
-        "kind": {
-          "$ref": "#/$defs/Kind"
-        },
-        "agent": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID (DID) of the AI agent the conversation would reach."
-        }
-      }
-    },
-    "Kind": {
-      "type": "string",
-      "enum": [
-        "dm",
-        "group",
-        "channel"
-      ],
-      "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel."
     }
   }
 };

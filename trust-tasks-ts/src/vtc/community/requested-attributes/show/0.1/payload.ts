@@ -75,23 +75,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community — Requested Attributes — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestedAttributes"
-      ],
-      "properties": {
-        "requestedAttributes": {
-          "$ref": "#/$defs/RequestedAttributes"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -101,42 +84,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RequestedAttributes": {
-      "title": "RequestedAttributes",
-      "type": "array",
-      "maxItems": 32,
-      "items": {
-        "$ref": "#/$defs/RequestedAttribute"
-      },
-      "description": "What the community asks an applicant to tell it about themselves, as claim types — never values. At most 32 entries, and no claim type twice: two answers to one question is a question nobody can answer. Self-asserted by the applicant when answered; a community MUST NOT describe an answer as verified. Empty means the community asks nothing."
-    },
-    "RequestedAttribute": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
-          "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
-        },
-        "required": {
-          "type": "boolean",
-          "default": true,
-          "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing."
-        },
-        "purpose": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Why the community asks, in words shown to the applicant before they disclose."
-        }
-      },
-      "title": "RequestedAttribute"
     }
   }
 };

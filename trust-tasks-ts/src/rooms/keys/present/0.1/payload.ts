@@ -146,31 +146,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Present — response payload",
-      "description": "Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "presentation"
-      ],
-      "properties": {
-        "presentation": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the presentation stops being accepted, so a caller can avoid presenting a stale one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

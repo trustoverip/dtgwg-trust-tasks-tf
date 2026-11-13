@@ -94,31 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Registry Sync Jobs Discard — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jobId",
-        "memberDid"
-      ],
-      "properties": {
-        "jobId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The deleted job, echoed."
-        },
-        "memberDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member whose pending change was dropped. Returned because the caller is discarding by identifier and this names what it actually cost."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

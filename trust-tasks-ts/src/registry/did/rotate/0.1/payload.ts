@@ -115,34 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry DID Rotate — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "new_scid",
-        "new_version_id"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "description": "The DID whose keys were rotated."
-        },
-        "new_scid": {
-          "type": "string",
-          "description": "The DID's SCID after rotation."
-        },
-        "new_version_id": {
-          "type": "string",
-          "description": "The did:webvh log's new versionId after rotation."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

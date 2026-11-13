@@ -96,35 +96,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Endorsements Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "endorsementId",
-        "revocation",
-        "statusListIndex"
-      ],
-      "properties": {
-        "endorsementId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "revocation": {
-          "$ref": "#/$defs/RevocationReceipt",
-          "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC)."
-        },
-        "statusListIndex": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The status-list slot whose bit was flipped, so a verifier can confirm the published effect."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -134,34 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RevocationReceipt": {
-      "$anchor": "revocationReceipt",
-      "title": "RevocationReceipt",
-      "description": "The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "revokedAt"
-      ],
-      "properties": {
-        "credentialId": {
-          "$ref": "#/$defs/CredentialId"
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the revocation was recorded."
-        }
-      }
-    },
-    "CredentialId": {
-      "$anchor": "credentialId",
-      "title": "CredentialId",
-      "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
-      "type": "string",
-      "minLength": 1
     }
   }
 };

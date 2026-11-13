@@ -133,32 +133,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Confirm Response — relying party ack",
-      "description": "Acknowledgement the relying party returns after processing the user decision. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/response/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "recorded",
-            "rejected"
-          ]
-        },
-        "reason": {
-          "type": "string",
-          "description": "Present when status is `rejected` (e.g. \"challenge expired\")."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

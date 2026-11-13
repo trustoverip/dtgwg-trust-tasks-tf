@@ -115,61 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Boards — Delete — response payload",
-      "description": "The success response to a vtc/boards/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/delete/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "boardId",
-        "ideasRemoved",
-        "notesRemoved",
-        "electionsRemoved",
-        "tombstones"
-      ],
-      "properties": {
-        "boardId": {
-          "$ref": "#/$defs/BoardId"
-        },
-        "ideasRemoved": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "notesRemoved": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "electionsRemoved": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Elections whose content the community removed. Each keeps a tombstone unless the retention is zero."
-        },
-        "tombstones": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "kept"
-          ],
-          "description": "What the community keeps of the board's elections (VTI-BRD-007, VTI-BRD-008).",
-          "properties": {
-            "kept": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Tombstones kept: each an election's identifier, manifest digest and the board heads the community kept. Zero when the retention is zero."
-            },
-            "removeAt": {
-              "type": "string",
-              "format": "date-time",
-              "description": "When they are removed. Absent when the retention is unbounded, or when none was kept."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

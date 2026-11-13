@@ -178,56 +178,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Application State Put — response payload",
-      "description": "Success response to vta/app-state/put. Type https://trusttasks.org/spec/vta/app-state/put/1.1#response. A failed precondition is not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict, whose details carry the maintainer's current version and value.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "namespace",
-        "key",
-        "version",
-        "wasCreated",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "namespace": {
-          "$ref": "#/$defs/Namespace"
-        },
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read."
-        },
-        "wasCreated": {
-          "type": "boolean",
-          "description": "True when no live record existed at the address beforehand — including when the address held a tombstone, since a tombstone is not a live record."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write was applied."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes as the maintainer measured it against its per-record cap. Lets a writer see how close it is to the limit before it hits it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -237,12 +187,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Key": {
       "title": "Key",
@@ -355,12 +299,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 64,
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \"absent\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.",
-      "type": "integer",
-      "minimum": 0
     }
   }
 };

@@ -75,23 +75,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community — Join Discovery — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "joinDiscovery"
-      ],
-      "properties": {
-        "joinDiscovery": {
-          "$ref": "#/$defs/JoinDiscovery"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -100,24 +83,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "JoinDiscovery": {
-      "title": "JoinDiscovery",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "public"
-      ],
-      "description": "Whether this community answers vtc/join-requests/manifest to a caller it cannot identify.",
-      "properties": {
-        "public": {
-          "type": "boolean",
-          "description": "True: the manifest is answered to any caller, identified or not — the setting of every community that never chose, because the manifest is a public read by design (an applicant has to know what is asked of them before they disclose anything). False: the manifest is answered only to a caller the community can identify — one with a verified proof or a transport-authenticated sender. Not secrecy: an identified caller is answered either way. False makes the answer attributable, which is what a closed or invite-only community wants rather than a crawler enumerating its criteria."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

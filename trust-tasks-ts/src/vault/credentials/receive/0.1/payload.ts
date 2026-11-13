@@ -162,54 +162,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Receive — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "types",
-        "status"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The handle the credential can now be fetched by."
-        },
-        "types": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          },
-          "description": "VC `type` tags the maintainer read."
-        },
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Classification the maintainer derived. Never supplied by the consumer."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "valid",
-            "expired",
-            "revoked",
-            "unknown"
-          ],
-          "description": "Validity the maintainer computed at storage time."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

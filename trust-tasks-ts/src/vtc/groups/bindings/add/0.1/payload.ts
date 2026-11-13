@@ -101,24 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Groups — Bindings — Add — response payload",
-      "description": "The success response to a vtc/groups/bindings/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/add/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "binding"
-      ],
-      "properties": {
-        "binding": {
-          "$ref": "#/$defs/GroupBinding"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -127,43 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "GroupBinding": {
-      "title": "GroupBinding",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bindingId",
-        "binding",
-        "state",
-        "createdAt"
-      ],
-      "properties": {
-        "bindingId": {
-          "$ref": "#/$defs/BindingId"
-        },
-        "binding": {
-          "$ref": "#/$defs/BindingSpec"
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "active",
-            "removing"
-          ],
-          "description": "`pending`: waiting for the consent the community requires. `active`: in force; the community's reconciler keeps members' admissions and grants in line with it. `removing`: being withdrawn; the reconciler is removing what only this binding provided."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        }
       }
     },
     "BindingSpec": {
@@ -315,11 +260,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "curate"
       ],
       "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
-    },
-    "BindingId": {
-      "title": "BindingId",
-      "type": "string",
-      "pattern": "^gb_[A-Za-z0-9_-]{16,64}$"
     },
     "GroupId": {
       "title": "GroupId",
@@ -554,12 +494,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "title": "BindingId",
       "type": "string",
       "pattern": "^gb_[A-Za-z0-9_-]{16,64}$"
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
 };

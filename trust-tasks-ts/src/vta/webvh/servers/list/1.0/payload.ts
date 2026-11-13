@@ -77,28 +77,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH Servers List — response payload",
-      "description": "Success response to vta/webvh/servers/list. Type https://trusttasks.org/spec/vta/webvh/servers/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "servers"
-      ],
-      "properties": {
-        "servers": {
-          "type": "array",
-          "description": "Hosting servers the VTA is registered with. Carries no credentials — what the VTA holds to authenticate against a server never appears in a response.",
-          "items": {
-            "$ref": "#/$defs/WebvhServerRecord"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -107,43 +85,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "WebvhServerRecord": {
-      "title": "WebvhServerRecord",
-      "description": "A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "did",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Local id for the server, chosen by the operator."
-        },
-        "did": {
-          "type": "string",
-          "description": "The server's own DID, used to authenticate it."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

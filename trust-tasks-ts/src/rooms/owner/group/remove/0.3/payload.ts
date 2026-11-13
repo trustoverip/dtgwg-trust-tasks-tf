@@ -217,60 +217,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Group Remove — response payload",
-      "description": "Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.3#response. The revocation list in force at the host, and the room's new epoch, which the removed member holds no key for.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "member",
-        "revocation",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Who was removed."
-        },
-        "revocation": {
-          "$ref": "#/$defs/RevocationHead",
-          "description": "The revocation list carrying the withdrawal, as `host` accepted it."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The withdrawal's `revokedAt`: credentials the room issued `member` before it are refused, and fresh ones issued after it are not."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "The room epoch after the removal, as the host recorded it."
-        },
-        "mirrorsPending": {
-          "type": "array",
-          "maxItems": 7,
-          "items": {
-            "type": "string",
-            "pattern": "^did:",
-            "maxLength": 2048
-          },
-          "description": "Mirrors that did not confirm the withdrawal. Each still honours the member's credentials until the list is delivered — with rooms/owner/revoke and no `withdraw`. Absent when every mirror confirmed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -280,37 +226,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RevocationHead": {
-      "title": "RevocationHead",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sequence",
-        "digest"
-      ],
-      "description": "Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.",
-      "properties": {
-        "sequence": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The list's `sequence`."
-        },
-        "digest": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence."
-        }
-      }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     }
   }
 };

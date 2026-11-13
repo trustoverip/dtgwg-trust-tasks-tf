@@ -118,34 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs Register-With-Server — response payload",
-      "description": "Success response to vta/webvh/dids/register-with-server. Type https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "serverId",
-        "logEntryCount"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "serverId": {
-          "type": "string"
-        },
-        "logEntryCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Entries the server accepted. Compare it with the DID's own log length: a shorter count means the server holds a truncated history and will resolve to an older document."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -89,28 +89,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Roles — List — response payload",
-      "description": "Every role the network defines.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roles"
-      ],
-      "properties": {
-        "roles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RoleDef"
-          },
-          "description": "The roles, each with whether a party must register a group for it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -120,34 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoleDef": {
-      "description": "A role the network defines.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "required"
-      ],
-      "properties": {
-        "name": {
-          "$ref": "#/$defs/RoleName"
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "What the role is for."
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether a party must register a group for it before its acknowledgement is accepted."
-        }
-      }
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
     },
     "Membership": {
       "type": "object",
@@ -220,10 +170,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^[a-z0-9_-]{1,64}$",
       "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
 };

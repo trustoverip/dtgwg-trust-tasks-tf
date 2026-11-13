@@ -97,47 +97,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Config Patch — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "applied",
-        "pendingRestart",
-        "rejected"
-      ],
-      "properties": {
-        "applied": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "Keys whose new value is now in effect."
-        },
-        "pendingRestart": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "Keys whose new value was stored but takes effect only after a restart (their ConfigField has requiresRestart: true)."
-        },
-        "rejected": {
-          "type": "array",
-          "description": "Keys that were not applied, each with a reason. Empty when every override succeeded.",
-          "items": {
-            "$ref": "#/$defs/RejectedKey"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -146,29 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "RejectedKey": {
-      "$anchor": "rejectedKey",
-      "title": "RejectedKey",
-      "description": "A key a patch declined to apply, with the reason.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "reason"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "minLength": 1
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc."
-        }
       }
     }
   }

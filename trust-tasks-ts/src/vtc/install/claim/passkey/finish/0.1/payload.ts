@@ -122,31 +122,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Install Claim Passkey Finish — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "adminDid",
-        "setupSessionToken"
-      ],
-      "properties": {
-        "adminDid": {
-          "type": "string",
-          "pattern": "^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."
-        },
-        "setupSessionToken": {
-          "type": "string",
-          "minLength": 1,
-          "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

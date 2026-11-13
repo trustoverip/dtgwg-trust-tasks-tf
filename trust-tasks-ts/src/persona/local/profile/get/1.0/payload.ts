@@ -94,50 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "required": [
-        "profile"
-      ],
-      "properties": {
-        "profile": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "profileId",
-            "name",
-            "entries",
-            "version"
-          ],
-          "properties": {
-            "profileId": {
-              "$ref": "#/$defs/Ulid"
-            },
-            "name": {
-              "type": "string",
-              "maxLength": 128
-            },
-            "entries": {
-              "type": "array",
-              "maxItems": 64,
-              "items": {
-                "type": "object"
-              }
-            },
-            "version": {
-              "$ref": "#/$defs/Version"
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "$anchor": "response",
-      "title": "Persona Local Profile Get — response payload",
-      "description": "Success response to persona/local/profile/get. Type https://trusttasks.org/spec/persona/local/profile/get/1.0#response.",
-      "type": "object",
-      "additionalProperties": false
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -147,12 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "Ulid": {
       "title": "Ulid",

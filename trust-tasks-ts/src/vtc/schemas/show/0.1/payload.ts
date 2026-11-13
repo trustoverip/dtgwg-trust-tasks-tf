@@ -82,23 +82,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "schema"
-      ],
-      "properties": {
-        "schema": {
-          "$ref": "#/$defs/SchemaEntry"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -108,75 +91,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "SchemaEntry": {
-      "title": "SchemaEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "typeUri",
-        "kind",
-        "createdAt",
-        "createdByDid"
-      ],
-      "description": "One registered credential type, as the community stores it.",
-      "properties": {
-        "typeUri": {
-          "$ref": "#/$defs/CredentialTypeUri"
-        },
-        "dtgType": {
-          "$ref": "#/$defs/DtgType"
-        },
-        "credentialSchema": {
-          "$ref": "#/$defs/CredentialSchema"
-        },
-        "kind": {
-          "$ref": "#/$defs/SchemaKind"
-        },
-        "description": {
-          "$ref": "#/$defs/SchemaDescription"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the entry."
-        }
-      }
-    },
-    "SchemaDescription": {
-      "title": "SchemaDescription",
-      "type": "string",
-      "maxLength": 1024,
-      "description": "An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic."
-    },
-    "SchemaKind": {
-      "title": "SchemaKind",
-      "type": "string",
-      "enum": [
-        "issues",
-        "accepts"
-      ],
-      "description": "Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type."
-    },
-    "CredentialSchema": {
-      "title": "CredentialSchema",
-      "type": "object",
-      "additionalProperties": true,
-      "description": "A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint."
-    },
-    "DtgType": {
-      "title": "DtgType",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z][A-Za-z0-9]*$",
-      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register."
     },
     "CredentialTypeUri": {
       "title": "CredentialTypeUri",

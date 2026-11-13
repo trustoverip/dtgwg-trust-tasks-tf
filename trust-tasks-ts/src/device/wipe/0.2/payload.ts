@@ -137,66 +137,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Device Wipe — response payload",
-      "description": "Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "deviceId",
-        "scope",
-        "completedAt"
-      ],
-      "properties": {
-        "deviceId": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "string",
-          "enum": [
-            "cache",
-            "cacheAndKeys",
-            "full"
-          ]
-        },
-        "completedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "diagnostics": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "cacheBytesWiped": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "keysWiped": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "osHooksInvoked": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "OS-level revocation hooks the target managed to invoke (e.g. \"navigator.credentials.preventSilentAccess\", \"ASCredentialIdentityStore.removeAllCredentialIdentities\")."
-            },
-            "partialReasons": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Free-form reasons why the wipe was partial (e.g. \"os-keychain-unavailable\", \"extension-storage-quota-exceeded\")."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

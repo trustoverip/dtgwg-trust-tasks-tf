@@ -117,37 +117,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Key-Package — response payload",
-      "description": "Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyPackage",
-        "expiresAt",
-        "alreadyMinted"
-      ],
-      "properties": {
-        "keyPackage": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it."
-        },
-        "alreadyMinted": {
-          "type": "boolean",
-          "description": "`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

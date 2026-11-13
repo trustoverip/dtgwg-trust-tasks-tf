@@ -116,31 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA DID-Template Delete — response payload",
-      "description": "Confirmation that the named global template was removed.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "deleted"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The deleted template's name, echoed for audit pipelines."
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "Always true on success."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
