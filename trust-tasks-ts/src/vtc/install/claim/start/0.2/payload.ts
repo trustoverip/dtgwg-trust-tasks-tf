@@ -113,30 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Install Claim Start — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registrationId",
-        "options"
-      ],
-      "properties": {
-        "registrationId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoes the install token's jti (a UUID); pass it back to claim/finish."
-        },
-        "options": {
-          "type": "object",
-          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}]."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -85,27 +85,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Management Reload Services — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The recipient's account of what it is doing. Advisory free text, deliberately not an enum: a producer must not parse it or branch on its value, because the reliable signal is whether the agent answers afterwards, not what it said before restarting. Bounded per §7.3 item 19 — the value lands in transcripts and audit entries."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

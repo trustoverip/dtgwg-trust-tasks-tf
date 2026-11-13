@@ -74,27 +74,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Invitations List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "invitations"
-      ],
-      "properties": {
-        "invitations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/InvitationSummary"
-          },
-          "description": "Every issued invitation, live and revoked. Never includes credential material."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -103,56 +82,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "InvitationSummary": {
-      "$anchor": "invitationSummary",
-      "title": "InvitationSummary",
-      "description": "Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "subjectDid",
-        "issuedBy",
-        "issuedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VIC identifier; the revoke target."
-        },
-        "subjectDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "DID the invitation admits."
-        },
-        "role": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Role granted on redemption, when the invitation names one."
-        },
-        "issuedBy": {
-          "type": "string",
-          "minLength": 1,
-          "description": "DID of the operator who issued it."
-        },
-        "issuedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was issued."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Expiry, when the invitation is time-bounded."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was revoked; absent while live."
-        }
       }
     }
   }

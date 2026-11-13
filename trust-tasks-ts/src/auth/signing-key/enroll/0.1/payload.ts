@@ -127,24 +127,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Signing Key Enroll — response payload",
-      "description": "The delegation as stored. From this point a document the key signs is authorized by the identity's standing, read at execution time.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "signingKey"
-      ],
-      "properties": {
-        "signingKey": {
-          "$ref": "#/$defs/SigningKey"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -153,62 +135,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SigningKey": {
-      "title": "SigningKey",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "signingKeyDid",
-        "identityDid",
-        "scope",
-        "createdAt",
-        "expiresAt",
-        "active"
-      ],
-      "description": "One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.",
-      "properties": {
-        "signingKeyDid": {
-          "$ref": "#/$defs/SigningKeyDid"
-        },
-        "identityDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The identity the key acts for. Included so a holder need not infer it."
-        },
-        "scope": {
-          "$ref": "#/$defs/SigningKeyScope"
-        },
-        "deviceLabel": {
-          "$ref": "#/$defs/DeviceLabel"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the delegation was enrolled."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy."
-        },
-        "lastUsedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again."
-        },
-        "active": {
-          "type": "boolean",
-          "description": "Whether the delegation authorizes documents right now: not revoked and not past `expiresAt`. Computed by the consumer with the predicate its verifier applies, so a holder does not re-implement it and disagree."
-        }
       }
     },
     "DeviceLabel": {

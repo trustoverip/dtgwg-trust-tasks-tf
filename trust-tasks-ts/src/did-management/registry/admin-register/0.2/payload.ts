@@ -103,23 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Admin Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entry"
-      ],
-      "properties": {
-        "entry": {
-          "$ref": "#/$defs/RegisteredInstance"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -129,48 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RegisteredInstance": {
-      "title": "RegisteredInstance",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "instanceId",
-        "did"
-      ],
-      "properties": {
-        "instanceId": {
-          "type": "string",
-          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts."
-        },
-        "did": {
-          "type": "string",
-          "description": "VID identifying the registered service."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256
-        },
-        "publicUrl": {
-          "type": "string",
-          "format": "uri"
-        },
-        "servedDomains": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow."
-        },
-        "lastSeenAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "description": "The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code."
     }
   }
 };

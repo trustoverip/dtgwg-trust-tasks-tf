@@ -144,32 +144,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys File Key — response payload",
-      "description": "Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "epoch"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{43}$",
-          "description": "The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

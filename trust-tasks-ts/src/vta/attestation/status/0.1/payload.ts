@@ -93,41 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Status — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "teeType",
-        "detected"
-      ],
-      "properties": {
-        "teeType": {
-          "type": "string",
-          "enum": [
-            "nitro",
-            "sev-snp",
-            "simulated"
-          ],
-          "description": "The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."
-        },
-        "detected": {
-          "type": "boolean",
-          "description": "Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence."
-        },
-        "platformVersion": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The platform's own version string, when it reports one. Informational."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -96,41 +96,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys — Import Wrapping Key — response payload",
-      "description": "The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "wrappingKey",
-        "keyId",
-        "expiresAt"
-      ],
-      "properties": {
-        "wrappingKey": {
-          "type": "string",
-          "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$",
-          "maxLength": 128,
-          "description": "The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice."
-        },
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

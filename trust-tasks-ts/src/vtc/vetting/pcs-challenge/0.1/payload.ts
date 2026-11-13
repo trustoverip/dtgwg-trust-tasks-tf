@@ -95,32 +95,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting PCS Challenge — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "expiresAt"
-      ],
-      "description": "The challenge, and when it stops being accepted.",
-      "properties": {
-        "challenge": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{32}$",
-          "description": "Lowercase hex, 16 bytes. Compared for equality and never parsed; the applicant binds it into the proof's context."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "After this instant the challenge is refused. A submission that misses it asks for another."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

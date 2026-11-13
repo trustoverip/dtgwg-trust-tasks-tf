@@ -127,30 +127,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Backup — Initiate Import — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "descriptor"
-      ],
-      "properties": {
-        "descriptor": {
-          "$ref": "#/$defs/BundleDescriptor",
-          "description": "Where or how to write the bytes, on what terms, and until when."
-        },
-        "completionHint": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -160,62 +136,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "BundleDescriptor": {
-      "title": "BundleDescriptor",
-      "description": "The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/StreamDescriptor"
-        },
-        {
-          "$ref": "#/$defs/ChunkedDescriptor"
-        }
-      ]
-    },
-    "ChunkedDescriptor": {
-      "title": "ChunkedDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.",
-      "required": [
-        "bundleId",
-        "algorithm",
-        "chunks",
-        "expectedSha256",
-        "expectedSizeBytes",
-        "expiresAt"
-      ],
-      "properties": {
-        "bundleId": {
-          "$ref": "#/$defs/BundleId"
-        },
-        "algorithm": {
-          "type": "string",
-          "enum": [
-            "chunkedTrustTask"
-          ],
-          "description": "Discriminates this shape from StreamDescriptor."
-        },
-        "chunks": {
-          "$ref": "#/$defs/ChunkManifest"
-        },
-        "expectedSha256": {
-          "$ref": "#/$defs/ExpectedSha256"
-        },
-        "expectedSizeBytes": {
-          "$ref": "#/$defs/ExpectedSizeBytes"
-        },
-        "expiresAt": {
-          "$ref": "#/$defs/ExpiresAt"
-        }
-      }
-    },
-    "ExpiresAt": {
-      "title": "ExpiresAt",
-      "description": "After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.",
-      "type": "string",
-      "format": "date-time"
     },
     "ExpectedSizeBytes": {
       "title": "ExpectedSizeBytes",
@@ -280,59 +200,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "BundleId": {
-      "title": "BundleId",
-      "description": "Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.",
-      "type": "string",
-      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    },
-    "StreamDescriptor": {
-      "title": "StreamDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.",
-      "required": [
-        "bundleId",
-        "algorithm",
-        "transportUrl",
-        "transportToken",
-        "expectedSha256",
-        "expectedSizeBytes",
-        "expiresAt"
-      ],
-      "properties": {
-        "bundleId": {
-          "$ref": "#/$defs/BundleId"
-        },
-        "algorithm": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed."
-        },
-        "transportUrl": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it."
-        },
-        "transportToken": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once."
-        },
-        "expectedSha256": {
-          "$ref": "#/$defs/ExpectedSha256"
-        },
-        "expectedSizeBytes": {
-          "$ref": "#/$defs/ExpectedSizeBytes"
-        },
-        "expiresAt": {
-          "$ref": "#/$defs/ExpiresAt"
-        }
-      }
     }
   }
 };

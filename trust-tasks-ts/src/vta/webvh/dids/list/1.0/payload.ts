@@ -93,28 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH DIDs List — response payload",
-      "description": "Success response to vta/webvh/dids/list. Type https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "dids"
-      ],
-      "properties": {
-        "dids": {
-          "type": "array",
-          "description": "Matching DIDs the caller may see. An empty array is a successful answer and does not imply the VTA holds none.",
-          "items": {
-            "$ref": "#/$defs/WebvhDidRecord"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -123,77 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "WebvhDidRecord": {
-      "title": "WebvhDidRecord",
-      "description": "A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "serverId",
-        "mnemonic",
-        "scid",
-        "contextId",
-        "portable",
-        "logEntryCount",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "description": "The DID, e.g. `did:webvh:<scid>:example.com:alice`."
-        },
-        "serverId": {
-          "type": "string",
-          "description": "Id of the hosting server serving this DID's log. Empty for a serverless DID, whose location comes from the URL it was created with."
-        },
-        "mnemonic": {
-          "type": "string",
-          "description": "The hosting server's handle for the record. Unrelated to a BIP-39 phrase; the collision of terms is historical."
-        },
-        "scid": {
-          "type": "string",
-          "description": "Self-certifying identifier: the hash committing to the log's first entry. It is what makes the DID's history tamper-evident, and it changes only when the log is re-created — never in place."
-        },
-        "contextId": {
-          "type": "string",
-          "description": "Context this DID belongs to. Deleting that context destroys this DID."
-        },
-        "portable": {
-          "type": "boolean",
-          "description": "Whether the DID may be moved to another domain without losing its identity. Fixed at creation: a DID created non-portable cannot be made portable later, because portability is a commitment recorded in the log's first entry."
-        },
-        "logEntryCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of entries in the log."
-        },
-        "preRotationCount": {
-          "type": "integer",
-          "minimum": 0,
-          "default": 0,
-          "description": "Pre-rotation keys committed by the most recent entry. `0` means pre-rotation is disabled — a compromise of the current key is then unrecoverable by rotation, because the successor was never committed in advance."
-        },
-        "nextFragmentId": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 1,
-          "description": "Next `#key-{n}` fragment id to mint. Monotonic and never decremented, so a fragment is never reused for a different key."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

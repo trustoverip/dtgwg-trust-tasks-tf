@@ -103,30 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Policy List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "policies"
-      ],
-      "properties": {
-        "policies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PolicyModule"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Opaque continuation token for the next page, sent back as the request's `cursor`. Present when more matching policies remain; absent on the last page."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -135,73 +111,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "PolicyModule": {
-      "title": "PolicyModule",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "module",
-        "version",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\")."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "module": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision."
-        },
-        "appliesTo": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy)."
-        },
-        "priority": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000,
-          "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins."
-        },
-        "enabled": {
-          "type": "boolean",
-          "default": true
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

@@ -99,53 +99,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Auth Recognise — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "data"
-      ],
-      "properties": {
-        "sessionId": {
-          "type": "string",
-          "pattern": "^xc-",
-          "description": "A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions."
-        },
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "accessToken",
-            "accessExpiresAt",
-            "foreignIssuerDid",
-            "mappedRole"
-          ],
-          "properties": {
-            "accessToken": {
-              "type": "string"
-            },
-            "accessExpiresAt": {
-              "type": "string",
-              "format": "date-time",
-              "description": "The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil)."
-            },
-            "foreignIssuerDid": {
-              "type": "string"
-            },
-            "mappedRole": {
-              "type": "string",
-              "description": "The LOCAL role from cross_community_roles policy — not the foreign role."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

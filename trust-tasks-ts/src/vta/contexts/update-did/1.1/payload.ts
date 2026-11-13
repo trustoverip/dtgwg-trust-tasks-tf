@@ -92,68 +92,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Contexts Update-DID — response payload",
-      "description": "Success response to vta/contexts/update-did: the context as it now stands. Type https://trusttasks.org/spec/vta/contexts/update-did/1.1#response.",
-      "$ref": "#/$defs/ContextRecord"
-    },
-    "ContextRecord": {
-      "title": "ContextRecord",
-      "description": "A context as the VTA holds it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "basePath",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim."
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
-        },
-        "did": {
-          "type": "string",
-          "description": "DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Free-form description."
-        },
-        "parent": {
-          "type": "string",
-          "description": "Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope."
-        },
-        "basePath": {
-          "type": "string",
-          "description": "Resolved path from the root context, as the VTA derives it from the parent chain. Consumers MUST treat this as derived state: it is recomputed by the maintainer and is not independently settable."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

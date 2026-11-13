@@ -154,24 +154,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Services — Update — response payload",
-      "description": "Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "result"
-      ],
-      "properties": {
-        "result": {
-          "$ref": "#/$defs/ServiceMutationResult"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -180,49 +162,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ServiceMutationResult": {
-      "title": "ServiceMutationResult",
-      "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "logEntryVersionId",
-        "effectiveAt"
-      ],
-      "properties": {
-        "logEntryVersionId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history."
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry."
-        },
-        "drainUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong."
-        },
-        "drainingMediator": {
-          "type": "string",
-          "description": "The mediator being drained, when `drainUntil` is present."
-        },
-        "vtaDid": {
-          "type": "string",
-          "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip."
-        },
-        "serverless": {
-          "type": "boolean",
-          "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
-          "default": false
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     },
     "ServiceKind": {
@@ -314,17 +253,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Ext"
         }
       }
-    },
-    "ServiceKind": {
-      "title": "ServiceKind",
-      "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
-      "type": "string",
-      "enum": [
-        "didcomm",
-        "rest",
-        "tsp",
-        "webauthn"
-      ]
     }
   }
 };

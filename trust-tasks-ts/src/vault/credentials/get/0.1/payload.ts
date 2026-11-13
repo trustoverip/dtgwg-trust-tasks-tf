@@ -109,26 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Get — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credential"
-      ],
-      "properties": {
-        "credential": {
-          "type": "object",
-          "minProperties": 1,
-          "description": "The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

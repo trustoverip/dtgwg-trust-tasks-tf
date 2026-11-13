@@ -110,32 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Clear Access List — response payload",
-      "description": "The success response to a messaging/access-list/clear request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/clear/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "accessListCount"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Vid",
-          "description": "The account whose access list was cleared."
-        },
-        "accessListCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The resulting number of entries in the account's access list (0 after a clear)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

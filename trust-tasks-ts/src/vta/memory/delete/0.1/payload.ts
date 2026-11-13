@@ -108,25 +108,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Delete — response payload",
-      "description": "Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "The forgotten item's key."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -124,30 +124,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Issue Membership — response payload",
-      "description": "Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credential",
-        "credentialId"
-      ],
-      "properties": {
-        "credential": {
-          "type": "string",
-          "description": "The signed Verifiable Membership Credential, serialised, for delivery to the member."
-        },
-        "credentialId": {
-          "type": "string",
-          "description": "Its `id`, which is how a re-send is told from a renewal."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -132,48 +132,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Invites Create — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "jti",
-        "installUrl",
-        "claimCode",
-        "expiresAt",
-        "aclEntryCreated"
-      ],
-      "properties": {
-        "jti": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Invite identifier; the revoke target."
-        },
-        "installUrl": {
-          "type": "string",
-          "minLength": 1,
-          "description": "One-shot enrolment URL. Returned once and never retrievable again."
-        },
-        "claimCode": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Secret that authorises the enrolment. Returned once."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the invite lapses."
-        },
-        "aclEntryCreated": {
-          "type": "boolean",
-          "description": "True when the target DID had no ACL entry and one was created."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

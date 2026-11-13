@@ -126,39 +126,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Mnemonic Export — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundle",
-        "digest",
-        "windowRemainingSeconds"
-      ],
-      "properties": {
-        "bundle": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 65536,
-          "description": "The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key."
-        },
-        "digest": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it."
-        },
-        "windowRemainingSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

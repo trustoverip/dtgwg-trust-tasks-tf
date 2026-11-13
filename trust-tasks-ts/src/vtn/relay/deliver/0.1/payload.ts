@@ -101,37 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Relay — Deliver — response payload",
-      "description": "What happened to the message here, and the receipts of this network's own deliveries.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status",
-        "relayed"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "delivered",
-            "duplicate"
-          ],
-          "description": "`delivered`: accepted and relayed. `duplicate`: seen before; nothing relayed."
-        },
-        "relayed": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Receipt"
-          },
-          "description": "One receipt per group this network delivered to; empty for a duplicate."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -141,63 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Receipt": {
-      "description": "The outcome of one delivery.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "group",
-        "member",
-        "status"
-      ],
-      "properties": {
-        "group": {
-          "type": "string",
-          "maxLength": 2048,
-          "description": "The group delivered to."
-        },
-        "member": {
-          "$ref": "#/$defs/Did",
-          "description": "The member that owns it."
-        },
-        "status": {
-          "$ref": "#/$defs/DeliveryStatus"
-        },
-        "detail": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "Why, for anything but `delivered`."
-        },
-        "network": {
-          "type": "boolean",
-          "description": "Whether the group is a network group, which relays further."
-        },
-        "relayed": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Receipt"
-          },
-          "description": "The receipts the network group's own relay returned."
-        }
-      }
-    },
-    "DeliveryStatus": {
-      "type": "string",
-      "enum": [
-        "delivered",
-        "duplicate",
-        "refused",
-        "queued",
-        "failed"
-      ],
-      "description": "What happened to one delivery. `queued` will be retried."
-    },
-    "Did": {
-      "type": "string",
-      "pattern": "^did:[a-z0-9]+:.+$",
-      "maxLength": 2048,
-      "description": "A DID."
     },
     "Envelope": {
       "description": "A broadcast in transit.",
@@ -336,38 +248,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "pattern": "^did:[a-z0-9]+:.+$",
       "maxLength": 2048,
       "description": "A DID."
-    },
-    "Envelope": {
-      "description": "A broadcast in transit.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "message",
-        "hops"
-      ],
-      "properties": {
-        "message": {
-          "$ref": "#/$defs/Credential",
-          "description": "The message, signed by the origin network."
-        },
-        "hops": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Credential"
-          },
-          "description": "One signed hop per relay step, each by the network that owns the previous hop's group.",
-          "maxItems": 16
-        }
-      }
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
     }
   }
 };

@@ -170,79 +170,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "registrationRefused"
       ]
     },
-    "ElectionListItem": {
-      "title": "ElectionListItem",
-      "description": "One election as a list shows it. vtc/elections/show reads it whole.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "state",
-        "votingOpensAt",
-        "votingClosesAt",
-        "binding",
-        "ticketHeld"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "title": {
-          "type": "string",
-          "maxLength": 512,
-          "description": "The manifest's `title`, when it has one."
-        },
-        "state": {
-          "$ref": "#/$defs/RegistrarState"
-        },
-        "votingOpensAt": {
-          "type": "string",
-          "format": "date-time",
-          "maxLength": 64
-        },
-        "votingClosesAt": {
-          "type": "string",
-          "format": "date-time",
-          "maxLength": 64
-        },
-        "binding": {
-          "type": "boolean",
-          "description": "The manifest's `binding`."
-        },
-        "ticketHeld": {
-          "type": "boolean",
-          "description": "Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Elections — List — response payload",
-      "description": "Success response to vtc/elections/list/0.2: one page of the elections the caller may see.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "elections"
-      ],
-      "properties": {
-        "elections": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/ElectionListItem"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -252,12 +179,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
 };

@@ -98,61 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Renderers List — response payload",
-      "description": "Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "renderers"
-      ],
-      "properties": {
-        "renderers": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "id",
-              "drops",
-              "canCarryPredicates"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "maxLength": 64
-              },
-              "description": {
-                "type": "string",
-                "maxLength": 512
-              },
-              "canonical": {
-                "type": "boolean",
-                "description": "True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical."
-              },
-              "drops": {
-                "type": "array",
-                "maxItems": 32,
-                "items": {
-                  "type": "string",
-                  "maxLength": 64
-                },
-                "description": "What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards."
-              },
-              "canCarryPredicates": {
-                "type": "boolean",
-                "description": "Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

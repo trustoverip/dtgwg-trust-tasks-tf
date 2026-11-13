@@ -135,44 +135,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Read Marker Set — response payload",
-      "description": "Success response to rooms/keys/read-marker/set. Type https://trusttasks.org/spec/rooms/keys/read-marker/set/0.1#response. The marker now in force, which the caller adopts, and whether this request moved it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "member",
-        "readMarker",
-        "moved"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Repeated from the request."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Repeated from the request."
-        },
-        "readMarker": {
-          "$ref": "#/$defs/ReadMarker",
-          "description": "The marker now in force: the requested one when it moved the marker, else the one the key holder already held — further on, because another of the member's devices had read further."
-        },
-        "moved": {
-          "type": "boolean",
-          "description": "`true` when this request changed the marker. `false` when the marker held was already as far on — or, for a rewind, already equal: nothing was written. A retried request answers `false`, which is what makes the task safe to repeat."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

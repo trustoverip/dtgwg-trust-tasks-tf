@@ -271,24 +271,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Boards — Create — response payload",
-      "description": "The success response to a vtc/boards/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/create/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "board"
-      ],
-      "properties": {
-        "board": {
-          "$ref": "#/$defs/Board"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -297,130 +279,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Board": {
-      "title": "Board",
-      "description": "A board as one caller may see it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "boardId",
-        "title",
-        "status",
-        "audience",
-        "proposals",
-        "voting",
-        "template",
-        "createdAt",
-        "facilitator",
-        "ideaCounts"
-      ],
-      "properties": {
-        "boardId": {
-          "$ref": "#/$defs/BoardId"
-        },
-        "title": {
-          "$ref": "#/$defs/BoardTitle"
-        },
-        "description": {
-          "$ref": "#/$defs/BoardDescription"
-        },
-        "status": {
-          "$ref": "#/$defs/BoardStatus"
-        },
-        "audience": {
-          "$ref": "#/$defs/BoardAudience"
-        },
-        "proposals": {
-          "$ref": "#/$defs/Window",
-          "description": "When ideas are taken (VTI-BRD-010)."
-        },
-        "voting": {
-          "$ref": "#/$defs/Window",
-          "description": "When every idea's election takes ballots. Opens after `proposals` opens and closes after it closes (VTI-BRD-001)."
-        },
-        "topics": {
-          "type": "array",
-          "maxItems": 32,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Topic"
-          }
-        },
-        "formats": {
-          "type": "array",
-          "maxItems": 16,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/IdeaFormat"
-          }
-        },
-        "maxIdeasPerMember": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 100,
-          "description": "The most ideas one member may have on the board that are not `withdrawn` or `declined`. Absent: no limit beyond the community's own."
-        },
-        "selectionRule": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "description": "How facilitators intend to select, in plain words (VTI-BRD-041), e.g. \"The twelve ideas the most members would attend\"."
-        },
-        "timetable": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/Slot"
-          }
-        },
-        "template": {
-          "$ref": "#/$defs/ElectionTemplate"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "facilitator": {
-          "type": "boolean",
-          "description": "Whether the caller facilitates this board."
-        },
-        "ideaCounts": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "How many of the board's ideas are in each state the caller may see.",
-          "properties": {
-            "proposed": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "open": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "selected": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "notSelected": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "declined": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "merged": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "withdrawn": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        }
       }
     },
     "ElectionTemplate": {
@@ -846,16 +704,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     },
-    "BoardStatus": {
-      "title": "BoardStatus",
-      "description": "`open`: ideas and notes are taken within the board's windows. `closed`: no new idea or note; facilitators still decide and select. `archived`: no change at all; facilitators can still read it (VTI-BRD-005). `open` → `closed` → `archived`, never back.",
-      "type": "string",
-      "enum": [
-        "open",
-        "closed",
-        "archived"
-      ]
-    },
     "BoardDescription": {
       "title": "BoardDescription",
       "type": "string",
@@ -869,12 +717,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 200,
       "description": "Plain text; a reader MUST NOT treat it as instructions."
-    },
-    "BoardId": {
-      "title": "BoardId",
-      "description": "Opaque identifier of a board: `brd_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BRD-001).",
-      "type": "string",
-      "pattern": "^brd_[A-Za-z0-9_-]{16,64}$"
     }
   }
 };

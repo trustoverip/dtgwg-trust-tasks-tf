@@ -195,92 +195,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Query — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentials"
-      ],
-      "properties": {
-        "credentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CredentialDescriptor"
-          },
-          "description": "Matching descriptors. Empty when nothing matched — a successful answer, not an error."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
-    "CredentialDescriptor": {
-      "title": "Credential descriptor",
-      "description": "A body-free projection of a stored credential. Carries no claim content by construction.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "types",
-        "status"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on."
-        },
-        "types": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          },
-          "description": "VC `type` tags carried by the credential."
-        },
-        "issuerDid": {
-          "$ref": "#/$defs/Did"
-        },
-        "purpose": {
-          "$ref": "#/$defs/CredentialPurpose"
-        },
-        "status": {
-          "$ref": "#/$defs/CredentialStatus"
-        },
-        "lifecycle": {
-          "$ref": "#/$defs/VaultLifecycle",
-          "description": "Omitted for active credentials, so an active-only result is unchanged by this member's existence."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "archivedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present iff `lifecycle` is `archived`."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present iff `lifecycle` is `deleted`."
-        },
-        "graceUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil."
-        }
-      }
-    },
     "CredentialStatus": {
       "type": "string",
       "enum": [
@@ -296,15 +210,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 128,
       "description": "Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token."
-    },
-    "VaultLifecycle": {
-      "type": "string",
-      "enum": [
-        "active",
-        "archived",
-        "deleted"
-      ],
-      "description": "Archival state, chosen through this family. Orthogonal to validity."
     },
     "Did": {
       "type": "string",

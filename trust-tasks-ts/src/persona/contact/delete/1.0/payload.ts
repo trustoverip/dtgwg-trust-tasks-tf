@@ -100,38 +100,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Contact Delete — response payload",
-      "description": "Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contactId",
-        "existed"
-      ],
-      "properties": {
-        "contactId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "existed": {
-          "type": "boolean"
-        },
-        "revisionsRemoved": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many revisions went with it, so a holder deleting a long history is told the size of what they removed."
-        },
-        "retainedForDisclosure": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

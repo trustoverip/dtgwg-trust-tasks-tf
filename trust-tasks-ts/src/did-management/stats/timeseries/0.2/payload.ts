@@ -123,64 +123,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Stats Timeseries — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "range",
-        "bucketSeconds",
-        "points"
-      ],
-      "properties": {
-        "range": {
-          "type": "string",
-          "enum": [
-            "lastHour",
-            "lastDay",
-            "lastWeek",
-            "last30Days"
-          ]
-        },
-        "bucketSeconds": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Width of each bucket."
-        },
-        "points": {
-          "type": "array",
-          "description": "One point per bucket in the window, oldest first, including buckets with no activity.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "startsAt",
-              "resolves",
-              "updates"
-            ],
-            "properties": {
-              "startsAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "Start of the bucket."
-              },
-              "resolves": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "updates": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

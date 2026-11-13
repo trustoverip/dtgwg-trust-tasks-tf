@@ -114,25 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Badges — Settings — Update — response payload",
-      "description": "The success response to a vtc/badges/settings/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/settings/update/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "settings"
-      ],
-      "properties": {
-        "settings": {
-          "$ref": "#/$defs/BadgeSettings",
-          "description": "The settings now in force, with `updatedAt`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

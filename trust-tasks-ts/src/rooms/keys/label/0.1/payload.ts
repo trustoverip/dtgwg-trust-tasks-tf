@@ -216,43 +216,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Label — response payload",
-      "description": "Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "member",
-        "changed"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Repeated from the request."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Repeated from the request."
-        },
-        "personal": {
-          "$ref": "#/$defs/PersonalLabel",
-          "description": "The label as it now stands. Absent when no detail remains: removing the last one removes the label."
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -261,35 +224,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "PersonalLabel": {
-      "title": "PersonalLabel",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "updatedAt"
-      ],
-      "minProperties": 2,
-      "description": "A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.",
-      "properties": {
-        "label": {
-          "$ref": "#/$defs/PersonalLabelName"
-        },
-        "description": {
-          "$ref": "#/$defs/PersonalLabelDescription"
-        },
-        "notes": {
-          "$ref": "#/$defs/PersonalLabelNotes"
-        },
-        "tags": {
-          "$ref": "#/$defs/PersonalLabelTags"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the label last changed, as the key holder recorded it. A request that changed nothing does not move it."
-        }
       }
     },
     "PersonalLabelTags": {

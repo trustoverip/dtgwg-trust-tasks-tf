@@ -163,67 +163,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Enroll Invite — response payload",
-      "description": "The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.3#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "invite",
-        "subject",
-        "purpose",
-        "expiresAt",
-        "claimCode"
-      ],
-      "properties": {
-        "invite": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "token",
-            "url"
-          ],
-          "properties": {
-            "token": {
-              "type": "string",
-              "minLength": 16,
-              "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy."
-            },
-            "url": {
-              "type": "string",
-              "format": "uri",
-              "description": "Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the redemption ceremony (auth/passkey/enroll/redeem/start). Carries the token. MUST NOT carry the claim code."
-            }
-          }
-        },
-        "subject": {
-          "type": "string",
-          "description": "Echo of the invitee's VID."
-        },
-        "purpose": {
-          "type": "string",
-          "enum": [
-            "session",
-            "stepUp"
-          ],
-          "description": "Echo of the purpose the redeemed credential will have."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        },
-        "claimCode": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 64,
-          "description": "A short code the invitee types at redemption, returned exactly once. The administrator delivers it over a different channel from `url`, so that intercepting one channel is not enough to redeem. The consumer stores only a slow hash of it."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -90,35 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Signing Key Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "signingKeyDid",
-        "revokedAt",
-        "remainingActive"
-      ],
-      "properties": {
-        "signingKeyDid": {
-          "$ref": "#/$defs/SigningKeyDid"
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing."
-        },
-        "remainingActive": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
