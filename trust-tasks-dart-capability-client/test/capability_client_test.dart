@@ -263,8 +263,8 @@ void main() {
         isA<WriteIdempotentSuccess>());
     expect(classifyGitTrustReplyTo(naming('urn:uuid:another'), grant), isNull);
 
-    final toggle =
-        buildToggleDocument('did:me', 'did:vtc', 'git-trust', '0.1', true);
+    final toggle = buildToggleDocument('did:me', 'did:vtc', 'git-trust', '0.1',
+        enable: true);
     final ack = answer(toggle, '$capabilityEnableType#response',
         {'capability': 'git-trust', 'enabled': true});
     expect(parseCapabilityReplyTo(ack, toggle), isA<CapabilityToggled>());
