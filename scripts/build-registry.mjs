@@ -34,6 +34,7 @@ import { checkMemberCasing } from './lib/member-casing.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
 import { checkSpecExamples } from './lib/spec-examples.mjs';
+import { checkSchemaBounds } from './lib/schema-bounds.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -2609,6 +2610,13 @@ function main() {
   checkSpecExamples({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'spec-examples-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkSchemaBounds({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'schema-bounds-allowlist.json'),
     fail,
     warn,
     log: console.log,
