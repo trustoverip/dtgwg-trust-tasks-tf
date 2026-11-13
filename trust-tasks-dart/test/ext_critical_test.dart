@@ -19,8 +19,8 @@ class _Subject {
 }
 
 void main() {
-  final schema = File('../fixtures/consume/ext-critical.schema.json')
-      .readAsStringSync();
+  final schema =
+      File('../fixtures/consume/ext-critical.schema.json').readAsStringSync();
   final vectors = jsonDecode(
     File('../fixtures/consume/ext-critical.json').readAsStringSync(),
   ) as Map<String, dynamic>;
@@ -40,7 +40,8 @@ void main() {
     }
   });
 
-  test('an unrecognized critical namespace is refused before the handler '
+  test(
+      'an unrecognized critical namespace is refused before the handler '
       'and the record', () async {
     final now = DateTime.now().toUtc();
     final received = <String, dynamic>{
@@ -58,29 +59,32 @@ void main() {
 
     Future<ConsumeOutcome<Map<String, dynamic>>> consume(
       List<String> recognized,
-    ) => consumeInbound<_Subject, Map<String, dynamic>>(
-      transport: const UnauthenticatedTransport(),
-      spec: SpecPolicy(typeUri: _marked, payloadSchema: schema),
-      proofPolicy: const ProofPolicy.acceptUnverified(),
-      payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
-      checks: consequentialChecks(guard).withRecognizedExtensions(recognized),
-      doc: TrustTaskDocument<_Subject>.fromJson(
-        received,
-        (p) => _Subject((p as Map)['subject'] as String),
-      ),
-      received: received,
-      myVid: 'did:web:consumer.example',
-      now: now,
-      newErrorId: () => 'err-1',
-      payloadToJson: (p) => p.toJson(),
-      responseToJson: (r) => r,
-      handler: (accepted, parties) async {
-        runs += 1;
-        return respondWith<_Subject, Map<String, dynamic>>(accepted, 'resp-1', {
-          'ok': true,
-        });
-      },
-    );
+    ) =>
+        consumeInbound<_Subject, Map<String, dynamic>>(
+          transport: const UnauthenticatedTransport(),
+          spec: SpecPolicy(typeUri: _marked, payloadSchema: schema),
+          proofPolicy: const ProofPolicy.acceptUnverified(),
+          payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+          checks:
+              consequentialChecks(guard).withRecognizedExtensions(recognized),
+          doc: TrustTaskDocument<_Subject>.fromJson(
+            received,
+            (p) => _Subject((p as Map)['subject'] as String),
+          ),
+          received: received,
+          myVid: 'did:web:consumer.example',
+          now: now,
+          newErrorId: () => 'err-1',
+          payloadToJson: (p) => p.toJson(),
+          responseToJson: (r) => r,
+          handler: (accepted, parties) async {
+            runs += 1;
+            return respondWith<_Subject, Map<String, dynamic>>(
+                accepted, 'resp-1', {
+              'ok': true,
+            });
+          },
+        );
 
     final refused = await consume(const []);
     expect(refused, isA<Rejected<Map<String, dynamic>>>());

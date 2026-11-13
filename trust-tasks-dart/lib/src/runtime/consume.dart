@@ -109,9 +109,9 @@ class ConsumeChecks {
 /// discloses a secret, or otherwise cannot be undone by ignoring the next
 /// document.
 ConsumeChecks consequentialChecks(ReplayGuard guard) => ConsumeChecks(
-  freshness: FreshnessPolicy.consequential,
-  replay: ReplayPolicy.guarded(guard),
-);
+      freshness: FreshnessPolicy.consequential,
+      replay: ReplayPolicy.guarded(guard),
+    );
 
 /// The posture for a task that is **not** consequential, or whose specification
 /// "explicitly declares repeated execution safe and intended" — the narrow
@@ -121,9 +121,9 @@ ConsumeChecks consequentialChecks(ReplayGuard guard) => ConsumeChecks(
 /// future-dated document and one with an empty validity interval are malformed
 /// whatever the task does.
 ConsumeChecks notConsequentialChecks() => const ConsumeChecks(
-  freshness: FreshnessPolicy.defaults,
-  replay: ReplayPolicy.notConsequential(),
-);
+      freshness: FreshnessPolicy.defaults,
+      replay: ReplayPolicy.notConsequential(),
+    );
 
 /// Verifies a document's Data Integrity proof (SPEC §4.7).
 ///
@@ -361,7 +361,8 @@ Refusal refuse<P>(
   String id,
   RejectReason reason, {
   Clock? clock,
-}) => Refusal(rejectWith(request, id, toErrorPayload(reason), clock: clock));
+}) =>
+    Refusal(rejectWith(request, id, toErrorPayload(reason), clock: clock));
 
 /// Run SPEC §7.2 items 4–8 against [doc], then either call [handler] or build
 /// the routed error response per §8.1.
@@ -420,8 +421,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
     const reason = RejectReason(
       code: StandardCode.malformedRequest,
-      message:
-          'document is not a well-formed Trust Task document '
+      message: 'document is not a well-formed Trust Task document '
           '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
     );
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
@@ -571,8 +571,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     // forward along an `extends` chain, the pruned payload members — so two
     // documents differing only there would be absorbed as a duplicate instead
     // of refused `idConflict`.
-    final digest =
-        received != null &&
+    final digest = received != null &&
             received['id'] == doc.id &&
             received['type'] == doc.type
         ? sha256HexOfString(canonicalJson(received))

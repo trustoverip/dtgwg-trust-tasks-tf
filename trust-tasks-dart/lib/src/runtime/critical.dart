@@ -79,16 +79,16 @@ class _Refusal implements Exception {
 }
 
 _Refusal _malformed(String message) => _Refusal(
-  RejectReason(
-    code: StandardCode.malformedRequest,
-    message: '$message (SPEC §4.5.2)',
-  ),
-);
+      RejectReason(
+        code: StandardCode.malformedRequest,
+        message: '$message (SPEC §4.5.2)',
+      ),
+    );
 
 _Refusal _tooComplex() => _malformed(
-  'payload is too deeply nested or too complex to check its critical '
-  'extensions',
-);
+      'payload is too deeply nested or too complex to check its critical '
+      'extensions',
+    );
 
 int? _countValuesIfMarked(Object? payload) {
   var n = 0;
@@ -183,7 +183,7 @@ List<Object?> _elementSchemas(
 
 class _Walk {
   _Walk(this.recognized, this.root, int values)
-    : left = _baseSteps + _stepsPerValue * values;
+      : left = _baseSteps + _stepsPerValue * values;
 
   final Set<String> recognized;
   final Object? root;
