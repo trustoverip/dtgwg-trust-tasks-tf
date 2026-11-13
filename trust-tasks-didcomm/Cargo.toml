@@ -16,7 +16,7 @@ publish = true
 # that depends on it, including one that generates only the tasks it pins.
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.38", default-features = false }
 affinidi-messaging-didcomm = "0.15.14"
-base64 = "0.22"
+base64 = "0.23"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

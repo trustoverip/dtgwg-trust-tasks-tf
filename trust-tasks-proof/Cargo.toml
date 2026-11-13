@@ -58,6 +58,6 @@ tokio = { version = "1", default-features = false, features = ["time"], optional
 trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
 affinidi-secrets-resolver = "0.5.18"
 affinidi-did-common = "0.4.7"
-base64 = "0.22"
+base64 = "0.23"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
