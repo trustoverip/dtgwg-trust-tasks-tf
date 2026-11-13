@@ -23,7 +23,7 @@ serde_json = "1"
 toml = "1"
 # The conformance tests are built as tokens and printed; the schemas go
 # through typify in `trust-tasks-build`, not here.
-prettyplease = "0.2"
+prettyplease = "0.3"
 syn = { version = "2", features = ["full"] }
 proc-macro2 = "1"
 quote = "1"
