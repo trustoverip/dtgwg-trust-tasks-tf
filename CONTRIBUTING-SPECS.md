@@ -90,7 +90,19 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
   - a **wire pin** (a schema `const`/`enum`/`pattern`/`$ref`) or a **normative value** (a full Type URI in prose, or a version in a MUST/SHOULD sentence — the `expects` entry a deferred operation sends, say): moving it changes what conforms, so the referencing spec takes a new version too, with a `## Changes from` section saying so;
   - an **example** carrying a Type URI: its payload was written for the old version, so check it against the new one before moving it.
   An old version named on purpose — in a `## Changes from` or `### What 0.4 changed` section, in a version run ending at the latest, after `since`/`added in`, before `or later` — is left alone. Anything else deliberate goes in `scripts/lib/stale-references-allowlist.json` with the reason.
+- **A new version targets the current framework version** — see [below](#the-current-framework-version).
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump. (That is the *spec's* version, which you do own — unlike the library versions, which the Release PR assigns; see [RELEASING.md](RELEASING.md).)
+
+## The current framework version
+
+The **current framework version is `0.6.0`**. It is the framework release a specification is written against today, the one `trust-tasks-rs` reports by default, and the one `npm run new-spec` fills in. (The canonical framework text may already be drafting a later release; "current" names the latest one published under `specs/_framework/`.)
+
+The lag rule:
+
+- **A new version targets the current framework or later.** That includes a new version made by copying the previous one: update its `targetFrameworkVersion`. CI checks every version a pull request adds (`npm run check-spec-lifecycle`).
+- **An existing version keeps the target it was published with**, and moves with its next revision — the next version folder of its slug. Nothing is re-targeted in place.
+
+The build reports how many latest versions and bindings still target an earlier release. When a later framework release is brought into the registry and adopted, `CURRENT_FRAMEWORK_VERSION` in `scripts/lib/spec-lifecycle.mjs` and `DEFAULT_FRAMEWORK_VERSION` in `trust-tasks-rs/src/discovery.rs` move together, and the build fails if they disagree.
 
 ## `spec.md` front matter
 
@@ -103,7 +115,7 @@ version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
-targetFrameworkVersion: "0.6.0"    # framework version this spec targets — the latest one;
+targetFrameworkVersion: "0.6.0"    # framework version this spec targets — the current one;
                                    # `npm run new-spec` fills it in. MAJOR.MINOR.PATCH
                                    # (preferred, matches the canonical spec repo) or MAJOR.MINOR
 category: access-control           # must be one of the TT_CATEGORIES ids
@@ -422,6 +434,7 @@ Must be a JSON Schema 2020-12 document. The build script enforces:
 - `$schema` = `https://json-schema.org/draft/2020-12/schema`
 - `$id` = `https://trusttasks.org/spec/<slug>/<version>` (the Type URI of your spec, with the slug's `/` separators preserved in the URL, and **without** a fragment)
 - `additionalProperties` declared explicitly (recommended: `false`).
+- **Every member has a `description`** (or a `$ref` to a definition that has one): what it means, its unit or format, and what its absence means. The spec page and the doc comment on every generated type come from it. This is a ratchet (`scripts/lib/member-descriptions.mjs`): a new slug may leave no member undescribed, and an existing slug's latest version may not leave more than `scripts/lib/member-descriptions-baseline.json` allows it. When you describe members an older slug lacked, run `node scripts/lib/member-descriptions.mjs --lower` and commit the lowered baseline.
 
 The schema describes **only the `payload` member**, not the outer document. The outer structure (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `proof`) is owned by the framework — see [SPEC.md §6.3](SPEC.md#63-schema-scope).
 
@@ -635,6 +648,8 @@ Status transitions follow [SPEC.md §5.3](SPEC.md#53-maturity-levels):
 
 - `draft` → `candidate`: change `status: candidate` in front matter once two independent, interoperable implementations exist.
 - `candidate` → `standard`: change `status: standard` once your candidate has gone 90 days without a breaking change.
+
+**Only the latest live version of a slug is promoted.** A version is superseded by a later live version at an equal or higher maturity, so promoting an older version above a newer `draft` would make it current again: all four libraries would drop its deprecation, and its withdrawal date would move. CI refuses such a promotion (`npm run check-spec-lifecycle`). A newer `draft` published *after* a promotion is fine — it never supersedes the promoted version, so nothing deprecated becomes current.
 
 Maturity bumps are PRs like any other. The build script enforces the values; the editors' team verifies the transition criteria.
 
