@@ -1,0 +1,89 @@
+{
+  "description": "Forward-MINOR routing along a declared `extends` chain (SPEC §5.2 \"Declared extension\", §7.2 item 3) as every runtime applies it. A consumer implements `implements.typeUri`, whose payload schema is `implements.payloadSchema` (JSON text, as a generated module carries it). `extends` is the declarations in force — bare request Type URI to the MAJOR.MINOR it directly extends — handed to the runtime's own lookup. Each case reads `document` (JSON text) for the implemented version and must reach `verdict`: `accept`, or the code it is refused with — `unsupportedVersion` for the same specification and variant at a version the chain does not reach, `unsupportedType` for anything else (another slug, the same slug under another authority, another variant). For an accepted case the payload read must equal `payload` (a document read forward is pruned to the members the implemented schema knows), `extended` says whether it was read forward, and a response to it is typed `answerType`: the RECEIVED type's `#response`, never the implemented version's.",
+  "implements": {
+    "typeUri": "https://example.com/spec/vector/grant/0.1",
+    "payloadSchema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"properties\":{\"subject\":{\"type\":\"string\"},\"role\":{\"type\":\"string\"}},\"required\":[\"subject\"],\"additionalProperties\":false}"
+  },
+  "extends": {
+    "https://example.com/spec/vector/grant/0.2": "0.1",
+    "https://example.com/spec/vector/grant/0.3": "0.2",
+    "https://example.com/spec/vector/grant/0.6": "0.5",
+    "https://other.example/spec/vector/grant/0.2": "0.1"
+  },
+  "cases": [
+    {
+      "name": "the implemented version itself is read as it stands",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.1\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "accept",
+      "extended": false,
+      "payload": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      },
+      "answerType": "https://example.com/spec/vector/grant/0.1#response"
+    },
+    {
+      "name": "the #request fragment names the same variant",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.1#request\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "accept",
+      "extended": false,
+      "payload": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      },
+      "answerType": "https://example.com/spec/vector/grant/0.1#response"
+    },
+    {
+      "name": "a later MINOR declaring extends of the implemented version is read as it, pruned",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.2\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\",\"note\":\"added in 0.2\"}}",
+      "verdict": "accept",
+      "extended": true,
+      "payload": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      },
+      "answerType": "https://example.com/spec/vector/grant/0.2#response"
+    },
+    {
+      "name": "the chain is walked: 0.3 extends 0.2 extends 0.1",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.3\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\",\"note\":\"added in 0.2\",\"expiresInSeconds\":3600}}",
+      "verdict": "accept",
+      "extended": true,
+      "payload": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      },
+      "answerType": "https://example.com/spec/vector/grant/0.3#response"
+    },
+    {
+      "name": "a later MINOR with no extends declaration is unsupportedVersion",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.4\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "unsupportedVersion"
+    },
+    {
+      "name": "a chain that does not reach the implemented version is unsupportedVersion",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.6\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "unsupportedVersion"
+    },
+    {
+      "name": "an earlier MINOR is unsupportedVersion",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.0\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "unsupportedVersion"
+    },
+    {
+      "name": "another slug is unsupportedType",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/revoke/0.1\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\"}}",
+      "verdict": "unsupportedType"
+    },
+    {
+      "name": "the same slug under another authority is another specification, even where its chain would reach 0.1",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://other.example/spec/vector/grant/0.2\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\",\"note\":\"added in 0.2\"}}",
+      "verdict": "unsupportedType"
+    },
+    {
+      "name": "the response variant of the implemented version is unsupportedType",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-000000000001\",\"type\":\"https://example.com/spec/vector/grant/0.1#response\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "unsupportedType"
+    }
+  ]
+}
