@@ -76,7 +76,9 @@
 //! what the parse step had established, so the residue is now a policy the
 //! caller chooses: see [`PayloadPolicy`].
 
+use std::collections::BTreeSet;
 use std::future::Future;
+use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -119,6 +121,41 @@ pub struct ConsumeChecks<'a> {
     /// Applies (or knowingly disapplies) the duplicate-execution rule of
     /// SPEC §7.2 item 11.
     pub replay: ReplayPolicy<'a>,
+    /// Refuse, with `proofRequired`, a document attributable to nobody: one
+    /// that carries no `proof` and arrived over a transport that
+    /// authenticated no sender ([`TransportContext::issuer`](crate::TransportContext::issuer)
+    /// is `None`). Off by default.
+    ///
+    /// With no authenticated sender and no proof, SPEC §4.8.1 resolves the
+    /// issuer to whatever in-band `issuer` string the sender typed, and every
+    /// authorization decision a handler makes from it is the sender's to
+    /// choose. A binding that authenticates some senders and not others — the
+    /// HTTPS binding, where a bearer token is optional on the wire — turns
+    /// this on; a message binding whose transport always authenticates the
+    /// sender has nothing for it to refuse. Runs after identity resolution and
+    /// before the proof is looked at. See [`Self::require_attribution`].
+    pub require_attribution: bool,
+    /// The DID methods `proof.verificationMethod` may name, checked **before**
+    /// the proof policy runs, so an unacceptable method never reaches a
+    /// verifier — and so never reaches the resolver behind it, which for
+    /// `did:web` is an outbound request to a host the sender chose. `None`, the
+    /// default, screens nothing. A `verificationMethod` that is not a DID URL
+    /// fails any screen. Refused `proofInvalid`, with a message that does not
+    /// name the accepted set. See [`Self::with_proof_did_methods`].
+    pub proof_did_methods: Option<BTreeSet<String>>,
+    /// The size, in bytes, of the document as received (its UTF-8 JSON text,
+    /// `proof` included, transport envelope excluded) — when the binding knows
+    /// it. With it, a document larger than its specification's declared
+    /// `maxDocumentBytes` ([`Payload::MAX_DOCUMENT_BYTES`]) — or, for a
+    /// specification that declares none, than
+    /// [`default_max_document_bytes`](Self::default_max_document_bytes) — is
+    /// refused `malformedRequest` as soon as the type is known, before anything
+    /// else reads it. See [`Self::with_received_bytes`].
+    pub received_bytes: Option<usize>,
+    /// The bound [`received_bytes`](Self::received_bytes) is held to for a
+    /// specification that declares no `maxDocumentBytes`: the binding's own
+    /// transport bound. `None` leaves such a document unbounded here.
+    pub default_max_document_bytes: Option<usize>,
 }
 
 impl<'a> ConsumeChecks<'a> {
@@ -133,6 +170,10 @@ impl<'a> ConsumeChecks<'a> {
         Self {
             freshness: FreshnessPolicy::consequential(),
             replay: ReplayPolicy::Guard(guard),
+            require_attribution: false,
+            proof_did_methods: None,
+            received_bytes: None,
+            default_max_document_bytes: None,
         }
     }
 
@@ -147,6 +188,10 @@ impl<'a> ConsumeChecks<'a> {
         Self {
             freshness: FreshnessPolicy::default(),
             replay: ReplayPolicy::NotConsequential,
+            require_attribution: false,
+            proof_did_methods: None,
+            received_bytes: None,
+            default_max_document_bytes: None,
         }
     }
 
@@ -155,6 +200,48 @@ impl<'a> ConsumeChecks<'a> {
     pub fn with_freshness(mut self, freshness: FreshnessPolicy) -> Self {
         self.freshness = freshness;
         self
+    }
+
+    /// Builder: set [`require_attribution`](Self#structfield.require_attribution).
+    #[must_use]
+    pub fn require_attribution(mut self, require: bool) -> Self {
+        self.require_attribution = require;
+        self
+    }
+
+    /// Builder: set [`proof_did_methods`](Self#structfield.proof_did_methods)
+    /// — the DID methods (`"key"`, `"web"`, …) `proof.verificationMethod` may
+    /// name.
+    #[must_use]
+    pub fn with_proof_did_methods<I, S>(mut self, methods: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.proof_did_methods = Some(methods.into_iter().map(Into::into).collect());
+        self
+    }
+
+    /// Builder: set [`received_bytes`](Self#structfield.received_bytes) and
+    /// [`default_max_document_bytes`](Self#structfield.default_max_document_bytes)
+    /// — the received document's size, and the bound for a specification that
+    /// declares none.
+    #[must_use]
+    pub fn with_received_bytes(mut self, bytes: usize, default_bound: Option<usize>) -> Self {
+        self.received_bytes = Some(bytes);
+        self.default_max_document_bytes = default_bound;
+        self
+    }
+
+    /// The size refusal for a document whose specification declares
+    /// `declared` — `None` when the document is within its bound or no size
+    /// is known.
+    fn size_rejection(&self, declared: Option<usize>) -> Option<RejectReason> {
+        let received = self.received_bytes?;
+        let bound = declared.or(self.default_max_document_bytes)?;
+        (received > bound).then(|| RejectReason::MalformedRequest {
+            reason: "document exceeds the size bound declared for its type".to_string(),
+        })
     }
 }
 
@@ -483,7 +570,12 @@ where
     // (SPEC §5.2, as `extension::read_as` reads one); refuse anything else
     // before the record is written, as the dispatched path does.
     if let Err(reason) = crate::extension::reading_of::<P>(&doc.type_uri) {
-        return route_rejection(transport, &doc, reason, error_id_factory);
+        return route_rejection(transport, &doc, reason, error_id_factory).into();
+    }
+    // SPEC §12.4 — the size bound the specification declares, now that the
+    // type is known.
+    if let Some(reason) = checks.size_rejection(P::MAX_DOCUMENT_BYTES) {
+        return route_rejection(transport, &doc, reason, error_id_factory).into();
     }
     consume_core(
         transport,
@@ -502,6 +594,7 @@ where
         handler,
     )
     .await
+    .into()
 }
 
 /// [`consume_inbound`] for a consumer that takes a document of **any** type
@@ -524,15 +617,18 @@ where
 ///    (SPEC §5.2) is refused `unsupportedVersion`. A forward-routed payload is
 ///    pruned to what the implemented version knows, as
 ///    [`AsyncDispatcher::dispatch`] does.
-/// 2. **The payload deserializes** into the registered `P` — the part of item
+/// 2. **The size bound** — with [`ConsumeChecks::received_bytes`], a document
+///    larger than the registered `P`'s `MAX_DOCUMENT_BYTES` (or the default
+///    bound, for one that declares none) is `malformedRequest`.
+/// 3. **The payload deserializes** into the registered `P` — the part of item
 ///    2 the typed path performs by parsing — or the document is
 ///    `malformedRequest`.
-/// 3. Everything [`consume_inbound`] does, with the registered `P`'s schema
+/// 4. Everything [`consume_inbound`] does, with the registered `P`'s schema
 ///    and policy.
-/// 4. The handler, through [`AsyncDispatcher::dispatch`], with the context
+/// 5. The handler, through [`AsyncDispatcher::dispatch`], with the context
 ///    `context` builds from the resolved parties.
 ///
-/// Every refusal in 1–3 happens **before** the record is written, so an
+/// Every refusal in 1–4 happens **before** the record is written, so an
 /// unrouteable or malformed document never burns its `id`.
 ///
 /// # Handlers
@@ -553,7 +649,7 @@ pub async fn consume_dispatched<Ctx, R, T, V, W>(
     payload_policy: PayloadPolicy<'_, W>,
     checks: ConsumeChecks<'_>,
     dispatcher: &AsyncDispatcher<Ctx, Result<TrustTask<R>, ErrorResponse>>,
-    mut doc: TrustTask<Value>,
+    doc: TrustTask<Value>,
     my_vid: &str,
     now: DateTime<Utc>,
     error_id_factory: impl FnOnce() -> String,
@@ -565,13 +661,113 @@ where
     V: ProofVerifier + ?Sized,
     W: PayloadValidator + ?Sized,
 {
-    // §7.2 item 3. Answered before anything else, as the HTTPS server does:
-    // there is no specification to apply the remaining checks under.
+    consume_dispatched_answer(
+        transport,
+        policy,
+        payload_policy,
+        checks,
+        dispatcher,
+        doc,
+        my_vid,
+        now,
+        error_id_factory,
+        context,
+    )
+    .await
+    .into()
+}
+
+/// What [`consume_dispatched_answer`] returns: [`ConsumeOutcome`], with the
+/// handler's answer in [`Handled`](Self::Handled) whatever its type.
+///
+/// Every variant but `Handled` means what the same variant of
+/// [`ConsumeOutcome`] means.
+// `Rejected` is as large as `ConsumeOutcome::Handled`'s response document;
+// boxing it would only move the allocation onto every caller, as
+// `ConsumeOutcome` does not.
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug)]
+pub enum AnswerOutcome<A> {
+    /// Every check passed and the handler answered `A`.
+    Handled(A),
+    /// See [`ConsumeOutcome::Rejected`].
+    Rejected(ErrorResponse),
+    /// See [`ConsumeOutcome::Suppressed`].
+    Suppressed,
+    /// See [`ConsumeOutcome::Duplicate`].
+    Duplicate {
+        /// The response the first execution produced, if the
+        /// [`ReplayGuard`](crate::ReplayGuard) retained one.
+        prior_response: Option<Value>,
+        /// Whether that first execution is still running.
+        in_flight: bool,
+    },
+}
+
+impl<R> From<AnswerOutcome<TrustTask<R>>> for ConsumeOutcome<R> {
+    fn from(outcome: AnswerOutcome<TrustTask<R>>) -> Self {
+        match outcome {
+            AnswerOutcome::Handled(response) => ConsumeOutcome::Handled(response),
+            AnswerOutcome::Rejected(error) => ConsumeOutcome::Rejected(error),
+            AnswerOutcome::Suppressed => ConsumeOutcome::Suppressed,
+            AnswerOutcome::Duplicate {
+                prior_response,
+                in_flight,
+            } => ConsumeOutcome::Duplicate {
+                prior_response,
+                in_flight,
+            },
+        }
+    }
+}
+
+/// [`consume_dispatched`] for a dispatcher whose handlers answer with any
+/// serialisable `A` rather than a response document — most usefully an
+/// `Option`, so that one dispatcher can hold handlers for specifications that
+/// define a success response and for those that define none (SPEC §4.4.1,
+/// fire-and-forget), which acknowledge with `None`.
+///
+/// The pipeline, its order and its refusals are [`consume_dispatched`]'s; the
+/// only difference is what the §7.2 item 11 record retains for a later
+/// duplicate. An answer is recorded as its serialisation, except that one
+/// which serialises to JSON `null` — `None` — is recorded as *no response*, so
+/// a duplicate of an acknowledged fire-and-forget document is
+/// `Duplicate { prior_response: None, .. }`: absorbed in silence, as §7.2
+/// prescribes, rather than answered with a `null`. A response document never
+/// serialises to `null`, so nothing else is affected.
+#[allow(clippy::too_many_arguments)]
+pub async fn consume_dispatched_answer<Ctx, A, T, V, W>(
+    transport: &T,
+    policy: ProofPolicy<'_, V>,
+    payload_policy: PayloadPolicy<'_, W>,
+    checks: ConsumeChecks<'_>,
+    dispatcher: &AsyncDispatcher<Ctx, Result<A, ErrorResponse>>,
+    mut doc: TrustTask<Value>,
+    my_vid: &str,
+    now: DateTime<Utc>,
+    error_id_factory: impl FnOnce() -> String,
+    context: impl FnOnce(ResolvedParties) -> Ctx,
+) -> AnswerOutcome<A>
+where
+    A: Serialize,
+    T: TransportHandler + Sync + ?Sized,
+    V: ProofVerifier + ?Sized,
+    W: PayloadValidator + ?Sized,
+{
+    // §7.2 item 3. Answered before anything else: there is no specification
+    // to apply the remaining checks under.
     let (target, forwarded) = match dispatcher.route(&doc.type_uri) {
         Ok(route) => route,
         Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
     };
     let facts = dispatcher.facts(&target);
+
+    // SPEC §12.4 — the size bound the implemented specification declares, the
+    // moment the type is known and before anything else reads the document.
+    if let Some(reason) = checks.size_rejection(facts.max_document_bytes) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
+
     let prune = |payload: &mut Value| -> Result<(), RejectReason> {
         match facts.schema {
             Some(schema) if forwarded => crate::extension::prune_forward(payload, schema),
@@ -662,7 +858,7 @@ struct SpecFacts {
 /// `is_received_form`; every check, its order, and the item-11 record are
 /// here once.
 #[allow(clippy::too_many_arguments)]
-async fn consume_core<P, R, T, V, W, F, Fut>(
+async fn consume_core<P, S, T, V, W, F, Fut>(
     transport: &T,
     policy: ProofPolicy<'_, V>,
     payload_policy: PayloadPolicy<'_, W>,
@@ -674,17 +870,25 @@ async fn consume_core<P, R, T, V, W, F, Fut>(
     spec: SpecFacts,
     is_received_form: impl FnOnce(&Value, &TrustTask<P>) -> bool,
     handler: F,
-) -> ConsumeOutcome<R>
+) -> AnswerOutcome<S>
 where
     P: Serialize + Send + Sync,
-    R: Serialize,
+    S: Serialize,
     T: TransportHandler + Sync + ?Sized,
     V: ProofVerifier + ?Sized,
     W: PayloadValidator + ?Sized,
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
-    Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
+    Fut: Future<Output = Result<S, ErrorResponse>>,
 {
-    let ConsumeChecks { freshness, replay } = checks;
+    let ConsumeChecks {
+        freshness,
+        replay,
+        require_attribution,
+        proof_did_methods,
+        // Applied by the callers, which know the specification's bound.
+        received_bytes: _,
+        default_max_document_bytes: _,
+    } = checks;
     // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
     // before any check that consults the payload's meaning: a document whose
     // payload is not the shape the specification declares should be refused as
@@ -720,6 +924,29 @@ where
         }
     }
 
+    // §7.2 item 6 first, when the transport authenticated no sender. The only
+    // identity that can then disagree is the recipient, and §8.1 suppresses
+    // that refusal: there is nobody to address it to, and a `wrongRecipient`
+    // answer (item 5a, below) would tell an unauthenticated prober which VIDs
+    // this consumer is not. Run first, a misaddressed document stays
+    // indistinguishable from any other suppressed one. With an authenticated
+    // sender the checks run in §7.2 order.
+    let authenticated = transport.derive_parties().issuer.is_some();
+    let mut parties = None;
+    if !authenticated {
+        match transport.resolve_parties(&doc) {
+            Ok(p) => parties = Some(p),
+            Err(mismatch) => {
+                return route_rejection(
+                    transport,
+                    &doc,
+                    RejectReason::IdentityMismatch(mismatch),
+                    error_id_factory,
+                );
+            }
+        }
+    }
+
     // §7.2 items 4 + 5a — expiry and wrong-recipient enforcement.
     if let Err(reason) = doc.validate_basic(now, my_vid) {
         return route_rejection(transport, &doc, reason, error_id_factory);
@@ -735,18 +962,55 @@ where
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
-    // §7.2 item 6 — in-band vs transport-derived identity cross-check.
-    let parties = match transport.resolve_parties(&doc) {
-        Ok(p) => p,
-        Err(mismatch) => {
+    // §7.2 item 6 — in-band vs transport-derived identity cross-check, unless
+    // it ran first above.
+    let parties = match parties {
+        Some(p) => p,
+        None => match transport.resolve_parties(&doc) {
+            Ok(p) => p,
+            Err(mismatch) => {
+                return route_rejection(
+                    transport,
+                    &doc,
+                    RejectReason::IdentityMismatch(mismatch),
+                    error_id_factory,
+                );
+            }
+        },
+    };
+
+    // Attribution (`ConsumeChecks::require_attribution`): with neither an
+    // authenticated sender nor a proof, the issuer §4.8.1 resolved is a string
+    // the sender typed.
+    if require_attribution && !authenticated && doc.proof.is_none() {
+        return route_rejection(
+            transport,
+            &doc,
+            RejectReason::ProofRequired,
+            error_id_factory,
+        );
+    }
+
+    // The DID-method screen (`ConsumeChecks::proof_did_methods`), ahead of the
+    // proof policy so an unacceptable method never reaches a verifier or the
+    // resolver behind it.
+    if let (Some(allowed), Some(proof)) = (&proof_did_methods, &doc.proof) {
+        if !did_method_allowed(&proof.verification_method, allowed) {
             return route_rejection(
                 transport,
                 &doc,
-                RejectReason::IdentityMismatch(mismatch),
+                RejectReason::ProofInvalid {
+                    // Does not name the accepted methods: that set is
+                    // deployment configuration, and echoing it would let a
+                    // probe fingerprint the fleet.
+                    reason: "verification method is not acceptable under this consumer's \
+                             proof policy"
+                        .to_string(),
+                },
                 error_id_factory,
             );
         }
-    };
+    }
 
     // The document as it arrived, where the policy carries it, and whether it
     // is the one being consumed. The proof is verified over it, and the item-11
@@ -879,7 +1143,7 @@ where
                 prior_response,
                 in_flight,
             }) => {
-                return ConsumeOutcome::Duplicate {
+                return AnswerOutcome::Duplicate {
                     prior_response,
                     in_flight,
                 };
@@ -905,17 +1169,31 @@ where
 
     // All §7.2 checks passed. Hand to the caller's business handler.
     //
-    // `claim` is held across this await: if the handler panics, or this
-    // future is dropped before the handler returns, its destructor releases
-    // the claim (see `HeldClaim`). Once the handler has returned, the claim is
+    // `claim` is held across this await. If the handler panics, its
+    // destructor releases the claim; if this future is dropped while the
+    // handler is running (a request timeout, a client disconnect), the claim
+    // is left in flight, because the handler may already have committed its
+    // effect (see `HeldClaim`). Once the handler has returned, the claim is
     // settled below exactly once.
     let doc_id = doc.id.clone();
+    let executing = AtomicBool::new(false);
     let claim = claim.map(|(guard, digest)| HeldClaim {
         guard,
         id: doc_id.clone(),
         digest: Some(digest),
+        executing: &executing,
     });
-    let outcome = handler(doc, parties).await;
+    let outcome = {
+        let mut running = std::pin::pin!(handler(doc, parties));
+        std::future::poll_fn(|cx| {
+            executing.store(true, AtomicOrdering::Relaxed);
+            running.as_mut().poll(cx)
+        })
+        .await
+    };
+    // The handler has returned: a cancellation from here on (mid-release,
+    // mid-record) abandons the settlement, not an effect in progress.
+    executing.store(false, AtomicOrdering::Relaxed);
     match outcome {
         Ok(response) => {
             if let Some(claim) = claim {
@@ -930,7 +1208,7 @@ where
                 let (guard, _) = claim.settle();
                 record_settled(guard, &doc_id, &response).await;
             }
-            ConsumeOutcome::Handled(response)
+            AnswerOutcome::Handled(response)
         }
         Err(error_response) => {
             if let Some(claim) = claim {
@@ -954,7 +1232,7 @@ where
                     record_settled(guard, &doc_id, &error_response).await;
                 }
             }
-            ConsumeOutcome::Rejected(error_response)
+            AnswerOutcome::Rejected(error_response)
         }
     }
 }
@@ -970,7 +1248,11 @@ async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, respons
     }));
     match encoded {
         Ok(value) => {
-            let _ = guard.record_response(id, value.ok().as_ref()).await;
+            // `null` is the acknowledgement of a specification that defines no
+            // success response (`consume_dispatched_answer`): there is no
+            // response to hand a duplicate back, only the completion to record.
+            let value = value.ok().filter(|v| !v.is_null());
+            let _ = guard.record_response(id, value.as_ref()).await;
         }
         Err(panic) => {
             let _ = guard.record_response(id, None).await;
@@ -981,18 +1263,29 @@ async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, respons
 
 /// The item-11 claim [`consume_core`] holds while the handler runs.
 ///
-/// Released from its destructor unless [`settle`](Self::settle) took it first.
-/// That covers the two ways the handler can fail to return: a panic, which
-/// unwinds through the await and drops the claim, and cancellation, where the
-/// future running the pipeline is dropped mid-await (a request timeout, a
-/// client disconnect). Either way nothing says the effect happened, and
-/// holding the claim would answer every resend with an in-flight duplicate
-/// until the record expired. The panic itself continues unchanged.
+/// Unless [`settle`](Self::settle) took it first, its destructor decides what
+/// becomes of the claim when the handler did not return:
+///
+/// * **A panic** unwinds through the await and drops the claim: it is
+///   released, and the panic continues unchanged.
+/// * **Cancellation while the handler runs** (the future running the
+///   pipeline dropped mid-await by a request timeout or a client disconnect)
+///   leaves the claim **in flight**. The handler may have committed its
+///   effect before the await it was cancelled at, and releasing would let a
+///   resend execute it a second time. A resend is answered as an in-flight
+///   duplicate until the record expires with the acceptance window: the same
+///   answer a resend gets while a handler that cannot be cancelled is still
+///   running.
+/// * **Cancellation before the handler first ran, or after it returned**
+///   (while a retryable refusal's claim is being released) releases the
+///   claim: no effect is in progress.
 struct HeldClaim<'g> {
     guard: &'g dyn ReplayGuard,
     id: String,
     /// `None` once settled.
     digest: Option<DocumentDigest>,
+    /// Whether the handler has been polled and has not yet returned.
+    executing: &'g AtomicBool,
 }
 
 impl<'g> HeldClaim<'g> {
@@ -1012,6 +1305,11 @@ impl<'g> HeldClaim<'g> {
 impl Drop for HeldClaim<'_> {
     fn drop(&mut self) {
         if let Some(digest) = self.digest.take() {
+            if self.executing.load(AtomicOrdering::Relaxed) && !std::thread::panicking() {
+                // Cancelled mid-handler: the effect may have happened. Leave
+                // the claim in flight; it expires with the record.
+                return;
+            }
             // A destructor that panics while a handler's panic unwinds aborts
             // the process; a guard that panics here loses only this release.
             let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -1033,20 +1331,37 @@ impl Drop for HeldClaim<'_> {
 pub const PROOF_NOT_ACCEPTED_BY_POLICY: &str =
     "in-band proof not accepted by consumer policy (SPEC §7.2 item 7)";
 
-fn route_rejection<P, R, T>(
+fn route_rejection<P, A, T>(
     transport: &T,
     doc: &TrustTask<P>,
     reason: RejectReason,
     error_id_factory: impl FnOnce() -> String,
-) -> ConsumeOutcome<R>
+) -> AnswerOutcome<A>
 where
     P: Serialize,
     T: TransportHandler + Sync + ?Sized,
 {
     match transport.reject(doc, error_id_factory(), reason) {
-        Some(error_response) => ConsumeOutcome::Rejected(error_response),
-        None => ConsumeOutcome::Suppressed,
+        Some(error_response) => AnswerOutcome::Rejected(error_response),
+        None => AnswerOutcome::Suppressed,
     }
+}
+
+/// `true` when `verification_method` is a DID URL whose method is in
+/// `allowed`. Anything that is not a DID URL (`did:<method>:<rest>`) fails —
+/// an `https://…` verification method would hand the resolver an arbitrary
+/// URL directly.
+fn did_method_allowed(verification_method: &str, allowed: &BTreeSet<String>) -> bool {
+    let Some(rest) = verification_method.strip_prefix("did:") else {
+        return false;
+    };
+    let Some((method, remainder)) = rest.split_once(':') else {
+        return false;
+    };
+    if method.is_empty() || remainder.is_empty() {
+        return false;
+    }
+    allowed.contains(method)
 }
 
 /// Whether `received` parses to the same document as `doc`, compared through
@@ -1890,6 +2205,240 @@ mod tests {
         assert!(
             matches!(outcome, ConsumeOutcome::Suppressed),
             "expected Suppressed under identity_mismatch with no transport-authenticated sender"
+        );
+    }
+
+    // ── The options binding pipelines add (ConsumeChecks) ──────────────────
+
+    fn list_doc(id: &str) -> TrustTask<crate::specs::acl::list::v0_3::Payload> {
+        let mut doc = TrustTask::for_payload(id, crate::specs::acl::list::v0_3::Payload::default());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.issued_at = Some(Utc::now());
+        doc
+    }
+
+    fn list_response() -> crate::specs::acl::list::v0_3::Response {
+        crate::specs::acl::list::v0_3::Response {
+            entries: vec![],
+            next_cursor: None,
+            redacted_fields: vec![],
+            ext: None,
+        }
+    }
+
+    async fn consume_list(
+        transport: &crate::handlers::InMemoryHandler,
+        policy: ProofPolicy<'_, StubVerifier>,
+        checks: ConsumeChecks<'_>,
+        doc: TrustTask<crate::specs::acl::list::v0_3::Payload>,
+    ) -> ConsumeOutcome<crate::specs::acl::list::v0_3::Response> {
+        consume_inbound(
+            transport,
+            policy,
+            PayloadPolicy::accept_unvalidated(),
+            checks,
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err".to_string(),
+            |req, _parties| async move { Ok(req.respond_with("resp", list_response())) },
+        )
+        .await
+    }
+
+    fn code_of<R: std::fmt::Debug>(outcome: ConsumeOutcome<R>) -> crate::TrustTaskCode {
+        match outcome {
+            ConsumeOutcome::Rejected(err) => err.payload.code,
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+    }
+
+    /// `require_attribution`: no authenticated sender and no proof is
+    /// `proofRequired`; either one on its own passes.
+    #[tokio::test]
+    async fn require_attribution_refuses_a_document_attributable_to_nobody() {
+        use crate::handlers::InMemoryHandler;
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let anonymous = InMemoryHandler::new().with_local("did:web:maintainer.example");
+        let checks = || ConsumeChecks::not_consequential().require_attribution(true);
+
+        let outcome = consume_list(
+            &anonymous,
+            ProofPolicy::Verify(&verifier),
+            checks(),
+            list_doc("a-1"),
+        )
+        .await;
+        assert_eq!(code_of(outcome), StandardCode::ProofRequired.into());
+
+        // Off by default.
+        let outcome = consume_list(
+            &anonymous,
+            ProofPolicy::Verify(&verifier),
+            ConsumeChecks::not_consequential(),
+            list_doc("a-2"),
+        )
+        .await;
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+
+        // A proof attributes it.
+        let mut signed = list_doc("a-3");
+        signed.proof = Some(dummy_proof());
+        let outcome =
+            consume_list(&anonymous, ProofPolicy::Verify(&verifier), checks(), signed).await;
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+
+        // So does an authenticated sender.
+        let authenticated = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        let outcome = consume_list(
+            &authenticated,
+            ProofPolicy::Verify(&verifier),
+            checks(),
+            list_doc("a-4"),
+        )
+        .await;
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+    }
+
+    /// `proof_did_methods` refuses an unlisted method before the verifier is
+    /// consulted, without naming the accepted set.
+    #[tokio::test]
+    async fn proof_did_methods_screens_before_the_verifier() {
+        use crate::handlers::InMemoryHandler;
+        let transport = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        // A verifier that would pass: the screen is what refuses.
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = list_doc("d-1");
+        doc.proof = Some(dummy_proof()); // did:web:org.example#key-1
+        let outcome = consume_list(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            ConsumeChecks::not_consequential().with_proof_did_methods(["key"]),
+            doc,
+        )
+        .await;
+        match outcome {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::ProofInvalid.into());
+                let message = err.payload.message.unwrap_or_default();
+                assert!(
+                    !message.contains("key"),
+                    "names the accepted set: {message}"
+                );
+            }
+            other => panic!("expected Rejected, got {other:?}"),
+        }
+
+        let mut doc = list_doc("d-2");
+        doc.proof = Some(dummy_proof());
+        let outcome = consume_list(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            ConsumeChecks::not_consequential().with_proof_did_methods(["web"]),
+            doc,
+        )
+        .await;
+        assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+
+        assert!(!did_method_allowed(
+            "https://evil.example/key",
+            &BTreeSet::from(["web".to_string()])
+        ));
+        assert!(!did_method_allowed(
+            "did:web",
+            &BTreeSet::from(["web".to_string()])
+        ));
+    }
+
+    /// `received_bytes` is held to the specification's declared bound, or to
+    /// the binding's default for one that declares none, before anything else.
+    #[tokio::test]
+    async fn received_bytes_are_held_to_the_declared_or_default_bound() {
+        use crate::handlers::InMemoryHandler;
+        let transport = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        let verifier = StubVerifier { outcome: Ok(()) };
+        // acl/list declares no bound, so the default applies.
+        assert_eq!(
+            <crate::specs::acl::list::v0_3::Payload as Payload>::MAX_DOCUMENT_BYTES,
+            None
+        );
+        let outcome = consume_list(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            ConsumeChecks::not_consequential().with_received_bytes(2048, Some(1024)),
+            list_doc("s-1"),
+        )
+        .await;
+        assert_eq!(code_of(outcome), StandardCode::MalformedRequest.into());
+
+        for checks in [
+            ConsumeChecks::not_consequential().with_received_bytes(512, Some(1024)),
+            ConsumeChecks::not_consequential().with_received_bytes(1 << 30, None),
+            ConsumeChecks::not_consequential(),
+        ] {
+            let outcome = consume_list(
+                &transport,
+                ProofPolicy::Verify(&verifier),
+                checks,
+                list_doc("s-2"),
+            )
+            .await;
+            assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
+        }
+    }
+
+    /// `consume_dispatched_answer` with an `Option` answer: `None` — an
+    /// acknowledgement — is recorded as no response, so its duplicate is
+    /// absorbed in silence rather than answered with `null`.
+    #[tokio::test]
+    async fn an_acknowledgement_is_recorded_as_no_response() {
+        use crate::handlers::InMemoryHandler;
+        use crate::specs::acl::list::v0_3 as list;
+        let transport = InMemoryHandler::new()
+            .with_local("did:web:maintainer.example")
+            .with_peer("did:web:org.example");
+        let guard = crate::replay::InMemoryReplayGuard::default();
+        let dispatcher = AsyncDispatcher::<(), Result<Option<Value>, ErrorResponse>>::new()
+            .on_async::<list::Payload, _, _>(|_req, ()| async { Ok(None) });
+        let doc: TrustTask<Value> =
+            serde_json::from_value(serde_json::to_value(list_doc("ack-1")).unwrap()).unwrap();
+
+        let mut outcomes = Vec::new();
+        for _ in 0..2 {
+            outcomes.push(
+                consume_dispatched_answer(
+                    &transport,
+                    ProofPolicy::<StubVerifier>::RejectIfPresent,
+                    PayloadPolicy::accept_unvalidated(),
+                    ConsumeChecks::consequential(&guard),
+                    &dispatcher,
+                    doc.clone(),
+                    "did:web:maintainer.example",
+                    Utc::now(),
+                    || "err".to_string(),
+                    |_| (),
+                )
+                .await,
+            );
+        }
+        assert!(matches!(outcomes[0], AnswerOutcome::Handled(None)));
+        assert!(
+            matches!(
+                outcomes[1],
+                AnswerOutcome::Duplicate {
+                    prior_response: None,
+                    in_flight: false
+                }
+            ),
+            "{:?}",
+            outcomes[1]
         );
     }
 

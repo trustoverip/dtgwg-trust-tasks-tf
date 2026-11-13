@@ -1,0 +1,17 @@
+# The Rust toolchain this workspace builds with, locally and in CI (#1142).
+#
+# CI builds with `RUSTFLAGS=-D warnings` and `clippy -- -D warnings`, so a
+# floating `stable` turned every open PR red on the day a release added a lint,
+# and the rustfmt behind the drift checks changed under contributors. Pinned,
+# a new stable arrives as one PR (opened by
+# `.github/workflows/rust-toolchain-bump.yml`) whose CI shows exactly what the
+# new release breaks.
+#
+# This sits at the workspace root, outside every crate's package, so it does
+# not reach anyone who depends on a published crate. The crates' MSRV is the
+# `rust-version` in Cargo.toml, a separate and lower floor; to build at it,
+# override this file with `cargo +1.95 …` or `RUSTUP_TOOLCHAIN=1.95`.
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

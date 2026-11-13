@@ -46,24 +46,33 @@ impl HttpsServerBuilder {
         let applied_freshness = Arc::clone(&self.applied_freshness);
         let registry_v0_2 = registry.clone();
         let registry_v0_3 = registry.clone();
-        self.on::<discovery_v0_1::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public_v0_1, ctx.authenticated_sender.is_none())?;
-            Ok(registry.respond_to(&req.payload))
-        })
-        .on::<discovery_v0_2::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public_v0_2, ctx.authenticated_sender.is_none())?;
-            Ok(registry_v0_2.respond_to_v0_2(&req.payload))
-        })
-        .on::<discovery_v0_3::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public_v0_3, ctx.authenticated_sender.is_none())?;
-            Ok(match applied_freshness.get() {
-                Some(policy) if advertise_freshness => registry_v0_3
-                    .clone()
-                    .acceptance_window_from(policy)
-                    .respond_to_v0_3(&req.payload),
-                _ => registry_v0_3.respond_to_v0_3(&req.payload),
-            })
-        })
+        self.on_sync::<discovery_v0_1::Payload, _>(
+            move |req, ctx| {
+                refuse_unauthenticated_discovery(&public_v0_1, ctx.authenticated_sender.is_none())?;
+                Ok(registry.respond_to(&req.payload))
+            },
+            false,
+        )
+        .on_sync::<discovery_v0_2::Payload, _>(
+            move |req, ctx| {
+                refuse_unauthenticated_discovery(&public_v0_2, ctx.authenticated_sender.is_none())?;
+                Ok(registry_v0_2.respond_to_v0_2(&req.payload))
+            },
+            false,
+        )
+        .on_sync::<discovery_v0_3::Payload, _>(
+            move |req, ctx| {
+                refuse_unauthenticated_discovery(&public_v0_3, ctx.authenticated_sender.is_none())?;
+                Ok(match applied_freshness.get() {
+                    Some(policy) if advertise_freshness => registry_v0_3
+                        .clone()
+                        .acceptance_window_from(policy)
+                        .respond_to_v0_3(&req.payload),
+                    _ => registry_v0_3.respond_to_v0_3(&req.payload),
+                })
+            },
+            false,
+        )
     }
 }
 // --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------

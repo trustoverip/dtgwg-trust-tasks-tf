@@ -50,6 +50,9 @@ on:
       # The composite actions the jobs below use (#1141).
       - ".github/actions/add-swap/**"
       - ".github/actions/install-libdbus/**"
+      # The pinned toolchain every job below installs (#1142).
+      - ".github/actions/rust-toolchain/**"
+      - "rust-toolchain.toml"
       # `cargo deny` reads this, so a change to it must run the job it
       # configures. Without it, the file that decides what the supply-chain
       # check bans is the one file that change cannot be tested by — the same
@@ -97,9 +100,7 @@ jobs:
         uses: ./.github/actions/add-swap
         with:
           mode: fixed
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
@@ -137,9 +138,7 @@ jobs:
         uses: ./.github/actions/add-swap
         with:
           mode: fixed
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
@@ -168,9 +167,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - name: cargo test --features <family>
         run: |
           for family in acl vault keys; do
@@ -203,9 +200,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - name: cargo run -p trust-tasks-example-consumer-app
         run: cargo run -p trust-tasks-example-consumer-app
       - name: cargo test -p trust-tasks-build --all-features
@@ -239,9 +234,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
@@ -272,10 +265,11 @@ jobs:
 
   # NOTE: every crate in this workspace ends up declaring MSRV 1.95 —
   # the Affinidi crate family requires it and the workspace resolves
-  # under a single Cargo.lock. A separate MSRV job would just retest
-  # the same toolchain as `test`. If the workspace ever splits its
-  # resolver, a `msrv` job picking a lower toolchain will be
-  # appropriate again.
+  # under a single Cargo.lock. There is no separate MSRV job. If one is
+  # added, it must select its toolchain with `RUSTUP_TOOLCHAIN` (or
+  # `cargo +1.95`) rather than `.github/actions/rust-toolchain`: the root
+  # rust-toolchain.toml pins every other job to the current stable and
+  # overrides a plain `rustup default` (#1142).
 
   # `published schemas change only additively` used to be here. It is node-only
   # and takes seconds, so it moved to the unfiltered checks.yml (#1135), where
@@ -308,9 +302,7 @@ jobs:
       # probe for libdbus-1.
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
         with:
           tool: cargo-semver-checks@0.51.0
@@ -348,10 +340,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
-          components: rustfmt
+      - uses: ./.github/actions/rust-toolchain
       - run: cargo fmt --all -- --check
 
   # Both feature sets, in parallel. Default features — the runtime alone, no
@@ -381,10 +370,7 @@ jobs:
         uses: ./.github/actions/add-swap
         with:
           mode: fixed
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
-          components: clippy
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # One cache per feature set: the two builds share almost nothing in
@@ -453,9 +439,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - name: Derive the publication order from cargo metadata
         run: |
           python3 - <<'PY'
@@ -532,9 +516,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           # Save from `main` only. A PR restores main's entry (GitHub lets a
@@ -628,9 +610,7 @@ jobs:
           persist-credentials: false
       # No rust-cache: nothing on `main` runs this job, so there is never an
       # entry to restore. It runs beside the rest of the Release PR's checks.
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
       # The verify build compiles trust-tasks-rs's packaged tree (mostly
@@ -662,9 +642,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}

@@ -77,7 +77,7 @@ mod client;
 #[cfg_attr(docsrs, doc(cfg(feature = "server")))]
 mod server;
 
-pub use auth::{Auth, BearerAuth};
+pub use auth::{AsyncAuth, Auth, AuthFuture, BearerAuth};
 
 #[cfg(feature = "jwt")]
 #[cfg_attr(docsrs, doc(cfg(feature = "jwt")))]

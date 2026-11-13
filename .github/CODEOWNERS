@@ -3,17 +3,16 @@
 # Each Trust Task specification lives in specs/<slug>/<version>/.
 # Slugs may be hierarchical (multiple path segments separated by /),
 # in which case the on-disk folder matches the slug (e.g. specs/acl/grant/).
-# CODEOWNERS gives every spec namespace its own reviewer set so editors can
-# manage their specifications independently. To add a new spec namespace:
+# Today one maintainer owns every rule here except /specs/process-attestation/,
+# so this file requests that maintainer's review rather than routing review per
+# namespace, and the release-critical paths have a single reviewer of record
+# (#1144). The per-namespace rules below are where a namespace's own editors go
+# once they exist: give a namespace an owner by appending a rule for its slug
+# or slug prefix naming that team or individual. Replace @stormer78 with
+# @org/<team> when a maintainers team is set up.
 #
-#   1. Create the folder specs/<slug>/<version>/ with spec.md +
-#      payload.schema.json (see CONTRIBUTING-SPECS.md).
-#   2. Append a rule below pointing at the team or individual that
-#      owns reviews for that slug or slug prefix.
-#
-# Until working-group teams exist in GitHub, individual specs default
-# to the framework editor. Replace @stormer78 with @org/<team> when
-# a team is set up.
+# Nothing else reads this file: the website's spec authors come from each
+# spec's front matter or its folder's git history, not from here.
 
 # Default — anything not matched below
 *                                  @stormer78
