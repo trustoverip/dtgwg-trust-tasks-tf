@@ -14,10 +14,17 @@ regenerates the website registry; `cargo run -p trust-tasks-codegen`,
 `SPEC.md` is the Trust Tasks framework specification, **generated** from the
 canonical source, [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec),
 by `npm run generate-framework-spec` (`scripts/generate-framework-spec.mjs`).
-A framework change is a PR to that repository; this copy follows it. CI
-regenerates `SPEC.md` from canonical `main` before every build, so trusttasks.org
-always serves the latest canonical text, and the committed copy is refreshed by
-running the script and committing the result.
+A framework change is a PR to that repository; this copy follows it. Every
+deploying run of `deploy.yml` (push to `main`, the nightly schedule, a dispatch
+from the canonical repository) regenerates `SPEC.md` from canonical `main` before
+the build, so trusttasks.org always serves the latest canonical text, and the
+committed copy is refreshed by running the script and committing the result. A
+**pull request builds from the committed copy** instead (#1138):
+`npm run check-framework-spec` regenerates from the canonical commit `SPEC.md`'s
+own banner names and fails only if the committed file is not that output, so a
+canonical change cannot turn an unrelated PR red. When a scheduled or dispatched
+deploy fails, it opens (or comments on) a "Scheduled website deploy is failing"
+issue.
 
 - **Section numbers are assigned by the generator**, in canonical order — the
   canonical text has none. When a canonical change moves a section, its number
@@ -127,6 +134,7 @@ defects three times.
 | the wire-conventions lint (`scripts/lib/wire-conventions.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — spells instants as RFC 3339 and names them `<event>At` (only a bound such as `since` or `validUntil` keeps a preposition; never a bare `timestamp` or `at`), pages with `cursor` + `limit` → `nextCursor` (never `null`, no `truncated`/`pageSize`/`offset`), uses `since` only as a time filter, never a boolean `created`, and names every integer duration's unit (`…Seconds`, not `…Secs` or a bare `ttl`); deliberate look-alikes are in `wire-conventions-allowlist.json` with a reason | a convention the lint has no rule for, or an instant whose name and description give no hint it is one |
 | the stale-references check (`scripts/lib/stale-references.mjs`) | no current spec names another spec at a superseded version — in a schema, a description, a prose link or mention, or an example — unless it is history (a `Changes from` section), a version run ending at the latest, or listed in `stale-references-allowlist.json` with a reason; `npm run fix-stale-references` rewrites the text references and lists the wire pins, normative values and examples a person must move | whether the newer version is the one the referencing spec should follow, or a version named in prose the heuristics read as history |
 | the spec-examples lint (`scripts/lib/spec-examples.mjs`) | the latest version of every non-retired spec has a fenced JSON example whose `type` is its own Type URI — and a `#response` one when the schema has `$defs.Response` — wherever it sits in `spec.md`, and each example's `payload` validates against the spec's own schema (`$defs.Response` for a response); offenders when it landed are in `spec-examples-allowlist.json`, keyed by version, which only shrinks (a stale entry fails too) | the envelope around the payload (`checkExampleDocuments` checks that); whether the Rust conformance tests round-trip the example — `extract_examples` still harvests only the `## Request` / `## Response` sections |
+| the schema-bounds lint (`scripts/lib/schema-bounds.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — gives every request-side array a `maxItems`, every request `limit` a `maximum` and every request `cursor` a `maxLength`, and every URL-named string member (either side) a scheme constraint (a scheme-anchored `pattern`, an `enum`/`const`, or a URI `format` whose description names the schemes); offenders when it landed are in `schema-bounds-allowlist.json`, keyed by version (or shared file), which only shrinks (a stale entry fails too) | whether a declared bound is the right size, a URL member whose name does not say it is one, or an integer or string bound other than `limit` and `cursor` |
 | `published schemas change only additively` (`checks.yml`, unfiltered; `scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed, deleted or renamed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no dropped error code, no deleted or renamed schema or `spec.md`, and no change to the per-variant policy the front matter derives (`proofRequirement` and `issuedAtRequirement` in either form, `parties[].requirement`, `bearer` — parsed as YAML) | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
 | the API compatibility jobs — `rs API compatibility`, `ts API compatibility`, `go API compatibility`, `Dart API compatibility` | the published crates' (`trust-tasks-rs` over the runtime and the `acl` family only; a binding crate only when the PR changes it) and the core npm, Go and Dart packages' public API is compatible with their last published release, or the PR title declares the break with a `!` scoped to that package (or one merged since the release already did); an appended string-union value is compatible by policy | a behavioural break that changes no signature (a spec that starts requiring a proof), and the hand-written sibling packages, which are not checked yet |
 | commit-lint's `!` rule | a `!` title scopes it only to an explicit list of package scopes (`pkg=` in `commit-lint.yml`, held equal to the release scripts' by `check-release-lists`) | whether the package API really broke |
@@ -378,9 +386,23 @@ and `/specs/index.json`; the bundles are not committed.
 
 - **A bundle is built from `generate_one`'s own code paths** — `spec_schemas()`
   for the schemas and `read_spec_policy()` for the policy — so its `schema` /
-  `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s. Change
-  the inlining or a policy reader there and both move together; do not give
-  `bundle.rs` a reader of its own.
+  `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s before
+  pruning. Change the inlining or a policy reader there and both move
+  together; do not give `bundle.rs` a reader of its own.
+- **The bundle carries both sides' full `$defs`; the generators prune what
+  they emit** (#1098). Every schema constant in all four languages — prebuilt
+  and consumer-side — keeps only the root `$defs` its root reaches (the request
+  drops `Response` and what only it uses; the response document drops what
+  only the request uses), and drops `$defs` when nothing is left. Pruning the
+  bundle instead would change every digest a `trust-tasks.lock` pins. Seven
+  independent copies of the rule (`prune_unreachable_defs` in
+  `trust-tasks-build`, `pruneUnreachableDefs` in the three `build-*-bindings`
+  scripts, `trust-tasks-ts-gen`, the Go `trust-tasks-gen` and the Dart
+  generator), plus an eighth re-derivation in `check-bundles`; a local `$ref`
+  other than `#/$defs/<name>…` keeps every definition in all of them. Change
+  one, change all. `check-bindings` fails on a shipped schema with a dangling
+  `#/$defs/` reference, which is what catches the copies agreeing on a wrong
+  rule. Types are still generated from the whole schema.
 - **`propertyOrder`, `defsOrder` and `defOrigins` restore what canonical form
   loses** — the authored member order, the `$defs` order the TS/Go/Dart
   inliners produce (a last-in-first-out `$ref` frontier, replayed in
@@ -521,6 +543,16 @@ needs the type-erased half of every binding:
   cannot hold **before** the item-11 record is written, and otherwise runs
   `consume_inbound`'s own body (`consume_core`). Do not give it a second copy
   of the checks. The synchronous `Dispatcher` has no such path.
+  `consume_dispatched_answer` is the same function for a dispatcher whose
+  handlers answer with something other than a response document — an
+  `Option`, where `None` acknowledges a fire-and-forget task and is recorded
+  as *no response*. **`trust-tasks-https`'s server is built on it** (#1089):
+  the server keeps only the body limit, content type, bearer auth and status
+  mapping, and every check it had alone is a `ConsumeChecks` option —
+  `require_attribution`, `proof_did_methods`, `received_bytes` (the per-type
+  `maxDocumentBytes` bound) — and the identity-first order with no
+  authenticated sender is `consume_core`'s own. A check a binding needs goes
+  there, not into the binding.
 - **TypeScript, Go, Dart.** No dispatcher: their consume functions take the
   specification's policy as a value (`spec`), and their binding unpack is
   already untyped, so the caller unpacks, looks up the spec for `type`, and
@@ -897,14 +929,17 @@ are not obvious:
   `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
-- **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
-  step**, including running expiry, freshness and identity (in §7.2 order, as
-  `consumeInbound` does — except that with no authenticated sender identity
+- **Its request pipeline mirrors the Rust HTTPS server's**, including running
+  expiry, freshness and identity (in §7.2 order, as `consumeInbound` does — except that with no authenticated sender identity
   runs first, so a misaddressed document stays suppressed per §8.1) *before*
   the attribution gate — `consumeInbound`
   repeats them afterwards, harmlessly. A reorder in one server changes which
   code a document that fails two checks is refused with, and the servers would
-  then disagree with each other and with `consumeInbound`.
+  then disagree with each other and with `consumeInbound`. The Rust server
+  now runs `consume_dispatched_answer` (see "Consumers that route on the Type
+  URI"); #1242 gave this one the same forward routing along `extends`,
+  `unsupportedVersion` and per-type `maxDocumentBytes` bound. Change either
+  server's order and the other in the same release.
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.
@@ -964,6 +999,18 @@ logic, no crypto** — document builders for the `governance/capability/*` and
   `release-bump-dart.sh` case, which `check-dart-packages` holds in agreement.
   Its first pub.dev publish (`0.1.0`) was the manual one.
 
+## The Rust toolchain is pinned — `rust-toolchain.toml`
+
+The root `rust-toolchain.toml` names the exact stable release (plus `rustfmt`
+and `clippy`) that contributors and every CI job build with (#1142); CI installs
+it through `.github/actions/rust-toolchain`, never `dtolnay/rust-toolchain@stable`.
+`rust-toolchain-bump.yml` opens a PR each week a newer stable is out — new lints
+and rustfmt changes are fixed on that PR, not discovered on every open one. The
+crates' MSRV (`rust-version` in `Cargo.toml`) is separate; a job building at it
+must set `RUSTUP_TOOLCHAIN`, since the file overrides `rustup default`. The root
+`.npmrc` sets `engine-strict=true`, which applies to installs at the repository
+root only (Node 24, as `.nvmrc` and `engines` say), not to the published packages.
+
 ## Build / validate / publish
 
 ```sh
@@ -992,6 +1039,10 @@ release. See `RELEASING.md` and the callout above.
 
 - **DCO sign-off is mandatory on every commit** (`git commit -s`) — see the ⚠️
   callout at the top of this file.
-- Touch only your own spec folder/namespace where possible — CODEOWNERS routes
-  review per slug; multi-folder changes need multiple approvals.
+- Touch only your own spec folder/namespace where possible. `.github/CODEOWNERS`
+  is effectively single-owner today (one maintainer on every rule but
+  `/specs/process-attestation/`), so it does not route review per slug and there
+  is no second reviewer of record (#1144); don't write prose that says otherwise.
+  Displayed spec authors come from front matter or git history, never from
+  CODEOWNERS.
 - See `CONTRIBUTING-SPECS.md` for the full spec-authoring guide.

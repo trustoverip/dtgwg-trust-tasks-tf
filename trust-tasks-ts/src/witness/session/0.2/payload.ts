@@ -105,32 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Witness Session — response payload",
-      "description": "The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "domain"
-      ],
-      "properties": {
-        "challenge": {
-          "type": "string",
-          "minLength": 16,
-          "description": "A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session."
-        },
-        "domain": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The domain the presentations bind alongside the challenge, identifying this witness's verification context."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

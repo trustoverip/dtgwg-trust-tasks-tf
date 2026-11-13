@@ -130,41 +130,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Purge Queue — response payload",
-      "description": "The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "matched": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Messages that matched the selection."
-        },
-        "matchedBytes": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "purged": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Messages actually removed. 0 on a dry run."
-        },
-        "dryRun": {
-          "type": "boolean"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      },
-      "required": [
-        "matched",
-        "purged",
-        "dryRun"
-      ]
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -242,21 +207,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Vid": {
-      "title": "Vid",
-      "type": "string",
-      "minLength": 1,
-      "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."
-    },
-    "Queue": {
-      "title": "Queue",
-      "type": "string",
-      "enum": [
-        "receive",
-        "send"
-      ],
-      "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
     }
   }
 };

@@ -126,45 +126,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Rotate — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "newDid",
-        "method",
-        "vmc",
-        "roleVac"
-      ],
-      "properties": {
-        "newDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "method": {
-          "type": "string",
-          "description": "The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.",
-          "enum": [
-            "did:key",
-            "did:webvh",
-            "did:scid",
-            "did:webs"
-          ]
-        },
-        "vmc": {
-          "type": "object",
-          "description": "Membership credential re-issued to the new DID (opaque here)."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -145,24 +145,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Fields — Update — response payload",
-      "description": "The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "field"
-      ],
-      "properties": {
-        "field": {
-          "$ref": "#/$defs/FieldDefinition"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -172,118 +154,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "FieldDefinition": {
-      "title": "FieldDefinition",
-      "description": "One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "label",
-        "type",
-        "source",
-        "base",
-        "ceiling",
-        "defaultVisibility",
-        "required",
-        "searchable",
-        "facet",
-        "order",
-        "state"
-      ],
-      "properties": {
-        "key": {
-          "$ref": "#/$defs/FieldKey"
-        },
-        "label": {
-          "$ref": "#/$defs/FieldLabel"
-        },
-        "description": {
-          "$ref": "#/$defs/FieldDescription"
-        },
-        "type": {
-          "$ref": "#/$defs/FieldType"
-        },
-        "constraints": {
-          "$ref": "#/$defs/FieldConstraints"
-        },
-        "source": {
-          "$ref": "#/$defs/FieldSource"
-        },
-        "base": {
-          "type": "boolean",
-          "description": "`true` for a base field, present in every community; `false` for a field this community defined."
-        },
-        "jsContactPath": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key."
-        },
-        "required": {
-          "type": "boolean"
-        },
-        "ceiling": {
-          "$ref": "#/$defs/Audience"
-        },
-        "defaultVisibility": {
-          "$ref": "#/$defs/Audience"
-        },
-        "searchable": {
-          "type": "boolean"
-        },
-        "facet": {
-          "type": "boolean"
-        },
-        "order": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 10000
-        },
-        "state": {
-          "$ref": "#/$defs/FieldState"
-        },
-        "retiredAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the field was retired. Present only on a retired field."
-        },
-        "purgeAfter": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the values of a retired field are purged. Present only on a retired field."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling."
-        }
-      }
-    },
-    "FieldState": {
-      "title": "FieldState",
-      "description": "`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.",
-      "type": "string",
-      "enum": [
-        "active",
-        "disabled",
-        "retired"
-      ]
-    },
-    "FieldSource": {
-      "title": "FieldSource",
-      "description": "Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.",
-      "type": "string",
-      "enum": [
-        "member",
-        "admin",
-        "credential",
-        "derived"
-      ]
     },
     "FieldConstraints": {
       "title": "FieldConstraints",
@@ -392,25 +262,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "What a reader is shown for it."
         }
       }
-    },
-    "FieldType": {
-      "title": "FieldType",
-      "description": "The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.",
-      "type": "string",
-      "enum": [
-        "text",
-        "longText",
-        "url",
-        "email",
-        "phone",
-        "enum",
-        "multiEnum",
-        "date",
-        "country",
-        "image",
-        "did",
-        "claim"
-      ]
     },
     "FieldDescription": {
       "title": "FieldDescription",

@@ -396,6 +396,14 @@ mod tests {
         assert!(source.contains("::trust_tasks_rs::DeclaredErrorCode::__from_declaration("));
         assert!(source.contains("(\"https://trusttasks.org/spec/demo/thing/0.2\", \"0.1\")"));
         assert!(source.contains("::trust_tasks_rs::extension::declare_extends(EXTENDS)"));
+        // The runtime contract is named once, at the top, so a mismatched
+        // runtime fails on a line that says what is wrong (#1101).
+        assert_eq!(
+            source
+                .matches("const _: () = ::trust_tasks_rs::__private::ABI_V1;")
+                .count(),
+            1
+        );
         // Every dependency path goes through the runtime's re-exports; none is
         // left for the application to supply.
         for dep in ["serde", "serde_json", "regress", "chrono"] {
@@ -746,5 +754,33 @@ mod tests {
             .to_string()
             .contains("locked more than once"));
         assert!(Lockfile::parse("version = 1\n").unwrap().tasks.is_empty());
+    }
+
+    /// An official entry's slug and version are path segments of its vendored
+    /// bundle's location, and its Type URI is built from the same strings, so
+    /// both are checked for their SPEC form on their own.
+    #[test]
+    fn an_official_entry_names_a_spec_slug_and_version() {
+        let lock = |slug: &str, version: &str| {
+            format!(
+                "version = 1\n[[task]]\nslug = \"{slug}\"\nversion = \"{version}\"\n\
+                 type_uri = \"https://trusttasks.org/spec/{slug}/{version}\"\n\
+                 digest = \"sha256:00\"\n"
+            )
+        };
+        for slug in ["../../x", "a/../b", "a//b", "/a", "A", "a/.", ""] {
+            let e = Lockfile::parse(&lock(slug, "0.1")).unwrap_err().to_string();
+            assert!(e.contains("is not a SPEC §6.1 slug"), "{slug}: {e}");
+        }
+        for version in ["../0.1", "0.1/../../x", "01.0", "1", "1.0.0", ""] {
+            let e = Lockfile::parse(&lock("a", version))
+                .unwrap_err()
+                .to_string();
+            assert!(e.contains("is not a SPEC §5.1 version"), "{version}: {e}");
+        }
+        assert_eq!(
+            Lockfile::parse(&lock("a/b-c", "10.2")).unwrap().tasks.len(),
+            1
+        );
     }
 }

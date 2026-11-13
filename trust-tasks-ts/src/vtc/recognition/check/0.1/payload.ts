@@ -98,43 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Recognition Check — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "recognised",
-        "registryConfigured"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The probed DID, echoed."
-        },
-        "recognised": {
-          "type": "boolean",
-          "description": "Whether the community recognises this DID. Meaningless unless registryConfigured is true."
-        },
-        "registryConfigured": {
-          "type": "boolean",
-          "description": "Whether a trust registry backs the answer. False makes `recognised` indeterminate, not negative."
-        },
-        "error": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 1024,
-          "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

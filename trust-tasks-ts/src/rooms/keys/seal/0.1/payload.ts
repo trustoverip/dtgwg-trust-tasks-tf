@@ -129,24 +129,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Seal — response payload",
-      "description": "Success response to rooms/keys/seal. Type https://trusttasks.org/spec/rooms/keys/seal/0.1#response. The sealed record, ready to hand to a host with rooms/records/put.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sealed"
-      ],
-      "properties": {
-        "sealed": {
-          "$ref": "#/$defs/SealedRecord"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -155,37 +137,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SealedRecord": {
-      "title": "SealedRecord",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ciphertext",
-        "nonce",
-        "epoch"
-      ],
-      "description": "A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.",
-      "properties": {
-        "ciphertext": {
-          "type": "string",
-          "description": "The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise."
-        },
-        "nonce": {
-          "type": "string",
-          "description": "AEAD nonce, base64url."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key."
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\n\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\n\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for."
-        }
       }
     }
   }

@@ -123,35 +123,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Chain — response payload",
-      "description": "Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "earliestReadableEpoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string"
-        },
-        "earliestReadableEpoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable."
-        },
-        "stored": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -233,32 +204,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "EpochLink": {
-      "title": "EpochLink",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "epoch",
-        "wrapped",
-        "nonce"
-      ],
-      "description": "One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.",
-      "properties": {
-        "epoch": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key."
-        },
-        "wrapped": {
-          "type": "string",
-          "description": "The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs."
-        },
-        "nonce": {
-          "type": "string",
-          "description": "AEAD nonce, base64url."
-        }
       }
     }
   }

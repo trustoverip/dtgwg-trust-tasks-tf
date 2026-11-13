@@ -101,35 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Server Domains — response payload",
-      "description": "The success response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/webvh/servers/domains/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "domains"
-      ],
-      "properties": {
-        "domains": {
-          "type": "array",
-          "description": "The domains the agent may use on that server, as the server reported them. Empty is a legitimate answer — a server the agent can reach but holds no domain grant on.",
-          "items": {
-            "$ref": "#/$defs/DomainEntry"
-          }
-        },
-        "default": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The domain used when a request names none — the caller's own default where the server records one, else the server's system default. Producers SHOULD omit it when there is neither; `null` is accepted as the same answer, and consumers MUST NOT read a difference between the two."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -138,56 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "DomainEntry": {
-      "title": "DomainEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "status",
-        "createdAt"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Hosting domain name (e.g. `did.example.com`). Compared case-insensitively; producers SHOULD emit lowercase canonical form."
-        },
-        "label": {
-          "type": "string",
-          "description": "Optional human-readable label."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "active",
-            "disabled"
-          ],
-          "description": "Domain lifecycle state. A `disabled` domain still serves existing DIDs in read-only mode for the host's configured grace period before purge becomes eligible."
-        },
-        "defaultDomain": {
-          "type": "boolean",
-          "description": "When `true`, this domain is the host's default — new DIDs created without an explicit domain are hosted here. Exactly one entry SHOULD carry `defaultDomain: true`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "disabledAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present iff `status === \"disabled\"`."
-        },
-        "purgeAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Earliest RFC3339 timestamp at which the host's background sweep is allowed to purge content for a disabled domain. Operators with administrative authority MAY override the wait via `domain/purge`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
       }
     }
   }

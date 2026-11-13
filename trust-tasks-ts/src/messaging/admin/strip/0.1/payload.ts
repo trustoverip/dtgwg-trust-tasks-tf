@@ -112,29 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Strip Admins — response payload",
-      "description": "The success response to a messaging/admin/strip request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/strip/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "stripped"
-      ],
-      "properties": {
-        "stripped": {
-          "type": "array",
-          "description": "The accounts whose admin rights were removed.",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

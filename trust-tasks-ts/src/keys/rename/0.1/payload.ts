@@ -111,31 +111,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys Rename — response payload",
-      "description": "The success response to a keys/rename request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/rename/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "updatedAt"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The identifier now in effect — the request's `newKeyId`."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 timestamp of the rename."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

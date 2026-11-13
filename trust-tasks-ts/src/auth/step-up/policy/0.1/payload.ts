@@ -167,33 +167,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Step-up Policy — response payload",
-      "description": "The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "enabled",
-        "floors"
-      ],
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "The effective master switch the maintainer now holds."
-        },
-        "floors": {
-          "type": "array",
-          "description": "The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).",
-          "items": {
-            "$ref": "#/$defs/Floor"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

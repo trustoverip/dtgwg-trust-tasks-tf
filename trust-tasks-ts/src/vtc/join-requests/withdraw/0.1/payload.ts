@@ -103,34 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests — Withdraw — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "status"
-      ],
-      "description": "Confirms which request was closed. Failures use trust-task-error, not this shape.",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The request that was withdrawn. Returned even when the request omitted it, so an applicant who used the id-less form learns which request they closed."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "withdrawn"
-          ],
-          "description": "The request's state after the withdrawal. Always `withdrawn`; returned rather than implied so the response is self-describing to a reader holding only this document."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

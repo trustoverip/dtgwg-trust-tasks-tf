@@ -31,9 +31,11 @@ import {
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 import { checkMemberCasing } from './lib/member-casing.mjs';
+import { findGeneratorKeywords } from './lib/generator-keywords.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
 import { checkSpecExamples } from './lib/spec-examples.mjs';
+import { checkSchemaBounds } from './lib/schema-bounds.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -199,6 +201,7 @@ function discoverSharedSchemas() {
       if (!underInternal) continue;
       try {
         const schema = readJson(full);
+        checkGeneratorKeywords(schema, rel);
         found.push({ filePath: full, rel, schema });
       } catch (e) {
         fail(rel, `invalid JSON: ${e.message}`);
@@ -1296,6 +1299,15 @@ function closedObjectSubschemas(schema) {
   return out;
 }
 
+/* A code generator's keyword (`tsType`, `tsEnumNames`) is not JSON Schema, and
+ * the TypeScript generators would write its value into a module as source. The
+ * generators add `tsType` themselves; a schema never carries one. */
+function checkGeneratorKeywords(schema, rel) {
+  for (const { pointer, keyword } of findGeneratorKeywords(schema)) {
+    fail(rel, `${pointer}: \`${keyword}\` is a code-generator keyword, not JSON Schema — remove it`);
+  }
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -1316,6 +1328,7 @@ function checkPayloadSchema(slug, version, dir) {
   if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
     fail(`${slug}/${version}/payload.schema.json`, `$schema must be JSON Schema 2020-12`);
   }
+  checkGeneratorKeywords(schema, `${slug}/${version}/payload.schema.json`);
   // §7.3 item 7.4 asks a schema to say how unrecognized members are treated.
   // `unevaluatedProperties` satisfies that as squarely as `additionalProperties`
   // and is the only one that composes: a schema built by `allOf` over a shared
@@ -1413,9 +1426,11 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * than the lazy one, which means it has to reach the same answer a
  * conscientious author would have typed:
  *
- *   authors  — from CODEOWNERS, which already names who reviews each slug and
- *              is kept current because GitHub enforces it. Falling back to the
- *              spec folder's git history, which is who actually wrote it.
+ *   authors  — from the spec folder's git history, which is who actually
+ *              wrote it. (This used to come from CODEOWNERS first, but that
+ *              file names one maintainer for nearly every family, so most
+ *              specs were credited to the reviewer of record rather than to
+ *              their authors — #1144.)
  *   keywords — from the slug's own segments plus the category, which is exactly
  *              what 46% of hand-written keyword lists already were.
  *
@@ -1423,69 +1438,17 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * ceremony, not to overrule an author who has something real to say.
  */
 
-let codeownersRules = null;
-
-/* CODEOWNERS, reduced to what this needs: (pattern, owners) in file order, last
- * match winning, as GitHub does. Only path-prefix patterns are honoured — the
- * file uses nothing else, and implementing the full gitignore grammar to serve
- * a display string would be a poor trade. */
-function loadCodeowners() {
-  if (codeownersRules) return codeownersRules;
-  codeownersRules = [];
-  for (const candidate of ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS']) {
-    const p = path.join(ROOT, candidate);
-    if (!fs.existsSync(p)) continue;
-    for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
-      const stripped = line.replace(/#.*$/, '').trim();
-      if (!stripped) continue;
-      const [pattern, ...owners] = stripped.split(/\s+/);
-      const handles = owners.filter((o) => o.startsWith('@'));
-      if (!handles.length) continue;
-      codeownersRules.push({ pattern, owners: handles });
-    }
-    break;
-  }
-  return codeownersRules;
-}
-
-function codeownersFor(relPath) {
-  let match = null;
-  for (const rule of loadCodeowners()) {
-    const p = rule.pattern;
-    if (p === '*') { match = rule; continue; }
-    const needle = p.startsWith('/') ? p.slice(1) : p;
-    if (relPath === needle || relPath.startsWith(needle.endsWith('/') ? needle : `${needle}/`)) {
-      match = rule;
-    }
-  }
-  return match ? match.owners : [];
-}
-
-/* A GitHub handle rendered in the same "Name (url)" shape the declared authors
- * use, so the spec page's existing renderer links it without a special case. */
-function handleToAuthor(handle) {
-  const login = handle.replace(/^@/, '');
-  // A team handle (@org/team) has no user profile page; link the org.
-  if (login.includes('/')) {
-    const [org, team] = login.split('/');
-    return `${login} (https://github.com/orgs/${org}/teams/${team})`;
-  }
-  return `${login} (https://github.com/${login})`;
-}
-
 function gitAuthorsFor(dirRel) {
   // Newest first, each once — from the same single pass as the dates.
   const authors = specHistory().get(gitKey(dirRel))?.authors;
-  return authors ? [...authors].map((s) => s.trim()).filter(Boolean) : [];
+  // A bot (the withdrawal batch, Dependabot) is not an author.
+  return authors ? [...authors].map((s) => s.trim()).filter((s) => s && !/\[bot\]$/.test(s)) : [];
 }
 
 function deriveAuthors(meta, entry) {
   if (Array.isArray(meta.authors) && meta.authors.length) {
     return { authors: meta.authors, source: 'declared' };
   }
-  const specRel = path.relative(ROOT, entry.specPath).split(path.sep).join('/');
-  const owners = codeownersFor(specRel);
-  if (owners.length) return { authors: owners.map(handleToAuthor), source: 'codeowners' };
   const fromGit = gitAuthorsFor(path.relative(ROOT, entry.dir));
   if (fromGit.length) return { authors: fromGit, source: 'git' };
   // Never empty: TT_STATS iterates authors unconditionally, and a spec with no
@@ -2609,6 +2572,13 @@ function main() {
   checkSpecExamples({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'spec-examples-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkSchemaBounds({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'schema-bounds-allowlist.json'),
     fail,
     warn,
     log: console.log,

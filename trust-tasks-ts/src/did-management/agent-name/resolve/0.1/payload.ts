@@ -104,45 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Agent Name Resolve — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entries"
-      ],
-      "properties": {
-        "entries": {
-          "type": "array",
-          "description": "One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "did",
-              "names"
-            ],
-            "properties": {
-              "did": {
-                "type": "string"
-              },
-              "names": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "string"
-                },
-                "description": "Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

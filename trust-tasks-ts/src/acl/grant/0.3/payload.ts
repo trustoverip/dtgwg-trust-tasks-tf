@@ -108,26 +108,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "ACL Grant 0.3 — response payload",
-      "description": "The success response to an acl/grant/0.3 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.3#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entry"
-      ],
-      "properties": {
-        "entry": {
-          "description": "The canonical AclEntry the maintainer now holds for the subject, including the maintainer-populated provenance (`createdAt`, `createdBy`, `delegatedBy`).",
-          "$ref": "#/$defs/AclEntry"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

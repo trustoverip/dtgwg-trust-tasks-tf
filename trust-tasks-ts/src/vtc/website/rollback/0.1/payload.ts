@@ -91,34 +91,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Website Rollback — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "generation",
-        "current",
-        "noop"
-      ],
-      "properties": {
-        "generation": {
-          "type": "string",
-          "minLength": 1
-        },
-        "current": {
-          "type": "boolean",
-          "description": "True once this generation is the active one."
-        },
-        "noop": {
-          "type": "boolean",
-          "description": "True when the requested generation was already current — nothing changed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

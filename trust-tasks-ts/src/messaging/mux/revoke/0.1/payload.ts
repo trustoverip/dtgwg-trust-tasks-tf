@@ -155,46 +155,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Mux Revoke — response payload",
-      "description": "The success response to a messaging/mux/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/revoke/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revoked"
-      ],
-      "properties": {
-        "revoked": {
-          "type": "array",
-          "maxItems": 512,
-          "items": {
-            "$ref": "#/$defs/GrantRef"
-          },
-          "description": "Grants this request deleted; their members are detached from every connection before this response is sent, and the principal's replay floor rises so their statements cannot be stored again."
-        },
-        "unmatchedGrantIds": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/GrantId"
-          },
-          "description": "Requested grant identifiers that name no stored grant the requester may revoke in the role it named."
-        },
-        "unmatchedDids": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/MuxDid"
-          },
-          "description": "Requested DIDs with no stored grant the requester may revoke in the role it named."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -220,30 +180,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 128,
       "pattern": "^[A-Za-z0-9._:-]+$",
       "description": "A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record."
-    },
-    "GrantRef": {
-      "title": "GrantRef",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "grantId",
-        "did",
-        "principal"
-      ],
-      "description": "Identifies one stored grant and the two parties to it.",
-      "properties": {
-        "grantId": {
-          "$ref": "#/$defs/GrantId"
-        },
-        "did": {
-          "$ref": "#/$defs/MuxDid",
-          "description": "The member DID."
-        },
-        "principal": {
-          "$ref": "#/$defs/MuxDid",
-          "description": "The principal DID the grant delegates to."
-        }
-      }
     },
     "MuxRole": {
       "title": "MuxRole",
@@ -351,15 +287,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "The principal DID the grant delegates to."
         }
       }
-    },
-    "MuxRole": {
-      "title": "MuxRole",
-      "type": "string",
-      "enum": [
-        "principal",
-        "member"
-      ],
-      "description": "The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated."
     }
   }
 };

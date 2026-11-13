@@ -132,41 +132,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Bind Namespace — response payload",
-      "description": "The namespace as recorded, and where to go next if it is still pending.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "namespace"
-      ],
-      "properties": {
-        "namespace": {
-          "$ref": "#/$defs/GitNamespace"
-        },
-        "next": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "url"
-          ],
-          "description": "Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).",
-          "properties": {
-            "url": {
-              "type": "string",
-              "format": "uri",
-              "maxLength": 2048,
-              "pattern": "^https://",
-              "description": "An https URL, single-use, carrying the bridge's binding nonce."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -175,55 +140,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "GitNamespace": {
-      "title": "GitNamespace",
-      "description": "The VTC's binding to one owner on one forge.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "forge",
-        "owner",
-        "mode",
-        "state"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/NamespaceId"
-        },
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "owner": {
-          "$ref": "#/$defs/Segment",
-          "description": "The organisation or user on the forge, lowercased."
-        },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "organization",
-            "user"
-          ],
-          "description": "Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it."
-        },
-        "mode": {
-          "type": "string",
-          "enum": [
-            "bridge",
-            "manual"
-          ],
-          "description": "`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone."
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "bound"
-          ],
-          "description": "`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace."
-        }
       }
     },
     "Segment": {
@@ -241,13 +157,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 3,
       "maxLength": 253,
       "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-    },
-    "NamespaceId": {
-      "title": "NamespaceId",
-      "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128
     }
   }
 };

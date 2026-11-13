@@ -114,49 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Offers Accept — response payload",
-      "description": "Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "state",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier: its DID."
-        },
-        "state": {
-          "const": "admitted"
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The room epoch the caller joins at."
-        },
-        "welcome": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else."
-        },
-        "ratchetTree": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

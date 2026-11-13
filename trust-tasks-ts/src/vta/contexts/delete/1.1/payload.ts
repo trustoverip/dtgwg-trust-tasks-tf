@@ -112,36 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Contexts Delete — response payload",
-      "description": "Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "deleted"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."
-        },
-        "daemonCleanupErrors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** Only ever present when the request set `abandonHostCopies`; a requester that did not is refused instead. A consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

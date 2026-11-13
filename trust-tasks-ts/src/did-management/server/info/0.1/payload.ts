@@ -86,43 +86,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Server Info — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "serviceDid",
-        "agentNames",
-        "serviceNames"
-      ],
-      "properties": {
-        "serviceDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response."
-        },
-        "agentNames": {
-          "type": "boolean",
-          "description": "Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one."
-        },
-        "serviceNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none."
-        },
-        "domainPurgeGraceSeconds": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

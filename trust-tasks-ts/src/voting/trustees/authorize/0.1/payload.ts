@@ -134,27 +134,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Voting — Trustees — Authorize — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "election",
-        "phase"
-      ],
-      "properties": {
-        "election": {
-          "$ref": "#/$defs/ElectionSummary"
-        },
-        "phase": {
-          "$ref": "#/$defs/TrusteePhase"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -163,58 +142,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "TrusteePhase": {
-      "title": "TrusteePhase",
-      "description": "`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.",
-      "type": "string",
-      "enum": [
-        "enrolling",
-        "dealing",
-        "confirming",
-        "keyed",
-        "decrypting",
-        "done",
-        "failed"
-      ]
-    },
-    "ElectionSummary": {
-      "title": "ElectionSummary",
-      "description": "A ballot box's view of one election.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "community",
-        "manifestDigest",
-        "state",
-        "ballotsAdmitted",
-        "head"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "community": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "state": {
-          "$ref": "#/$defs/ElectionState"
-        },
-        "ballotsAdmitted": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Distinct tags with a counted ballot."
-        },
-        "head": {
-          "$ref": "#/$defs/BoardHead"
-        }
       }
     },
     "BoardHead": {
@@ -260,18 +187,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
-    },
-    "ElectionState": {
-      "title": "ElectionState",
-      "type": "string",
-      "enum": [
-        "registered",
-        "registration",
-        "voting",
-        "closed",
-        "tallied",
-        "cancelled"
       ]
     }
   }

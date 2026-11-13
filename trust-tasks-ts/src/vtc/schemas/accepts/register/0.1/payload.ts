@@ -106,23 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Schemas — Accepts — Register — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "criterion"
-      ],
-      "properties": {
-        "criterion": {
-          "$ref": "#/$defs/AcceptsCriterion"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -131,43 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AcceptsCriterion": {
-      "title": "AcceptsCriterion",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "query",
-        "createdAt",
-        "createdByDid"
-      ],
-      "description": "A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.",
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/AcceptsCriterionId"
-        },
-        "query": {
-          "$ref": "#/$defs/DcqlQuery"
-        },
-        "description": {
-          "$ref": "#/$defs/CriterionDescription"
-        },
-        "vetting": {
-          "$ref": "#/$defs/VettingRequirements"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this criterion was last registered. Registering an existing id replaces it."
-        },
-        "createdByDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The administrator who last registered the criterion."
-        }
       }
     },
     "VettingRequirements": {

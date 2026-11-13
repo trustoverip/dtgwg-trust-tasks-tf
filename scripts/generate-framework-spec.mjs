@@ -14,6 +14,10 @@
  *   node scripts/generate-framework-spec.mjs --ref <sha>     # a specific commit
  *   node scripts/generate-framework-spec.mjs --from <dir>    # a local checkout
  *   node scripts/generate-framework-spec.mjs --check         # exit 1 if SPEC.md differs
+ *   node scripts/generate-framework-spec.mjs --check-committed
+ *       # exit 1 if SPEC.md differs from what the canonical commit its own banner
+ *       # names generates. Unlike --check, the answer does not change when
+ *       # canonical main moves, so pull requests run this one (#1138).
  *
  * What the transformation does, and nothing more:
  *
@@ -58,12 +62,13 @@ export function slugifyHeading(text) {
 }
 
 function parseArgs(argv) {
-  const args = { ref: 'main', from: null, check: false };
+  const args = { ref: 'main', from: null, check: false, committed: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--ref') args.ref = argv[++i];
     else if (a === '--from') args.from = argv[++i];
     else if (a === '--check') args.check = true;
+    else if (a === '--check-committed') args.check = args.committed = true;
     else throw new Error(`unknown argument '${a}'`);
   }
   return args;
@@ -282,8 +287,28 @@ function banner(sha, ref) {
   ].join('\n');
 }
 
+/* The canonical commit, and the ref it was generated from, that the committed
+ * SPEC.md's banner names — so --check-committed regenerates exactly that text. */
+function committedSource() {
+  const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
+  const m = /\/tree\/([0-9a-f]{40})\)(?: \(`([^`]+)`\))?/.exec(current.split('\n').slice(0, 12).join('\n'));
+  if (!m) {
+    console.error('SPEC.md names no canonical commit in its banner (generated from a local checkout?).');
+    console.error('Run `npm run generate-framework-spec` and commit the result.');
+    process.exit(1);
+  }
+  return { sha: m[1], label: m[2] ?? null };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
+  let label = args.from ? null : args.ref;
+  if (args.committed) {
+    if (args.from) throw new Error('--check-committed fetches the commit SPEC.md names; it takes no --from');
+    const source = committedSource();
+    args.ref = source.sha;
+    label = source.label;
+  }
   const { dir, sha } = checkout(args);
   const { lines, named } = number(assemble(dir));
   const missing = new Set();
@@ -295,7 +320,7 @@ function main() {
 
   // Title first, then the banner, then the rest of the canonical header.
   const titleEnd = text.indexOf('\n') + 1;
-  text = text.slice(0, titleEnd) + '\n' + banner(sha, args.from ? null : args.ref) + text.slice(titleEnd);
+  text = text.slice(0, titleEnd) + '\n' + banner(sha, label) + text.slice(titleEnd);
   text = text.replace(/\n{3,}/g, '\n\n').replace(/\s*$/, '\n');
 
   const problems = [];

@@ -157,30 +157,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Issue Authority — response payload",
-      "description": "Success response to rooms/owner/issue-authority. Type https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response. The signed VAC, a chain root at the room's scope.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credential",
-        "credentialId"
-      ],
-      "properties": {
-        "credential": {
-          "type": "string",
-          "description": "The signed Verifiable Authority Credential, serialised."
-        },
-        "credentialId": {
-          "type": "string",
-          "description": "Its `id`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

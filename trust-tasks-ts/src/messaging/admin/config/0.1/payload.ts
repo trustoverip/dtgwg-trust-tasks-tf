@@ -101,32 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Get Configuration — response payload",
-      "description": "The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "version",
-        "config"
-      ],
-      "properties": {
-        "version": {
-          "type": "string",
-          "description": "The mediator software version."
-        },
-        "config": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -264,6 +264,16 @@ impl Index {
                     e.version
                 )
             })?;
+            // `path` is read relative to the site's `specs/` (a directory or a
+            // URL), so it may name only the bundle the entry describes.
+            let expected = format!("{}/{}/bundle.json", e.slug, e.version);
+            if e.path != expected {
+                bail!(
+                    "{label}'s index entry {}: path `{}` is not `{expected}`",
+                    e.type_uri,
+                    e.path
+                );
+            }
             by_slug.entry(e.slug.clone()).or_default().insert(v, e);
         }
         Ok(Index {
@@ -630,6 +640,47 @@ mod tests {
             "http://[::2]",
         ] {
             assert!(!is_loopback_url(url), "{url}");
+        }
+    }
+
+    fn index_with_path(path: &str) -> Vec<u8> {
+        serde_json::to_vec(&serde_json::json!({
+            "indexVersion": INDEX_VERSION,
+            "specs": [{
+                "typeUri": "https://trusttasks.org/spec/vault/upsert/0.4",
+                "slug": "vault/upsert", "version": "0.4", "status": "current",
+                "deprecation": null, "extends": null,
+                "digest": format!("sha256:{}", "0".repeat(64)),
+                "path": path,
+            }],
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn index_entry_path_names_its_own_bundle() {
+        let index = Index::parse(
+            &index_with_path("vault/upsert/0.4/bundle.json"),
+            "the registry",
+        )
+        .expect("the canonical path is accepted");
+        assert_eq!(index.by_slug["vault/upsert"].len(), 1);
+        for path in [
+            "../../etc/passwd",
+            "vault/upsert/0.4/../../../x/bundle.json",
+            "/vault/upsert/0.4/bundle.json",
+            "vault/upsert/0.3/bundle.json",
+            "acl/grant/0.4/bundle.json",
+            "https://elsewhere.example/bundle.json",
+        ] {
+            let err = Index::parse(&index_with_path(path), "the registry")
+                .err()
+                .unwrap_or_else(|| panic!("{path} is refused"));
+            assert!(
+                err.to_string()
+                    .contains("is not `vault/upsert/0.4/bundle.json`"),
+                "{err}"
+            );
         }
     }
 

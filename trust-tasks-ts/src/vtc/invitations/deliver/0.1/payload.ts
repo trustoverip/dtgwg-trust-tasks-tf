@@ -116,45 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Invitations Deliver — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "channel",
-        "expiresAt"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The invitation's identifier, echoed."
-        },
-        "channel": {
-          "type": "string",
-          "enum": [
-            "message",
-            "offer"
-          ],
-          "description": "The channel used, echoed."
-        },
-        "offer": {
-          "type": "object",
-          "description": "Present exactly when `channel` is `offer`: an OID4VCI Credential Offer object, carried verbatim, whose pre-authorized code redeems only for the invited DID. Its members are OID4VCI's and are deliberately not re-specified here."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When this delivery's offer lapses. Never later than the invitation's own expiry."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

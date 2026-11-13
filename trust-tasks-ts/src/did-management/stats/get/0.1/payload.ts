@@ -113,48 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     ]
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Stats Get — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "totalResolves",
-        "totalUpdates"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "description": "Echo of the slot read. Absent on the server-wide aggregate."
-        },
-        "totalDids": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Slots the hosting service holds. Present only on the server-wide aggregate."
-        },
-        "totalResolves": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "totalUpdates": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "lastResolvedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Absent when the scope has never been resolved."
-        },
-        "lastUpdatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Absent when the scope has never been updated."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
