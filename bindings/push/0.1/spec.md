@@ -14,7 +14,7 @@ authors:
 
 This binding specifies how a *consumer* that cannot hold a live connection to its mediator — a mobile app suspended by the operating system, a desktop agent that is not running — is told that *Trust Task documents* are waiting for it. It is a **wake-up notification binding, not a document-carriage binding.** The documents themselves are carried by the [DIDComm binding](../../didcomm/0.1/spec.md) and retrieved from the mediator with DIDComm message-pickup (`https://didcomm.org/messagepickup/3.0`); this binding defines only the out-of-band signal that prompts the retrieval, the parties that send and authorize it, and the registration by which a consumer becomes wakeable.
 
-The motivating case is the mobile authenticator. A phone is sent an [`auth/step-up/approve-request`](../../../specs/auth/step-up/approve-request/0.1/spec.md), shows the user the `reason`, and returns an [`approve-response`](../../../specs/auth/step-up/approve-response/0.1/spec.md). For that to work while the app is backgrounded, something must wake it. A phone cannot keep a WebSocket open across OS suspension, so a **push gateway** sends a notification through the platform's push service (APNs, FCM, Web Push); the app wakes, authenticates to its mediator, and drains its queue over the DIDComm binding as usual.
+The motivating case is the mobile authenticator. A phone is sent an [`auth/step-up/approve-request`](../../../specs/auth/step-up/approve-request/0.5/spec.md), shows the user the `reason`, and returns an [`approve-response`](../../../specs/auth/step-up/approve-response/0.7/spec.md). For that to work while the app is backgrounded, something must wake it. A phone cannot keep a WebSocket open across OS suspension, so a **push gateway** sends a notification through the platform's push service (APNs, FCM, Web Push); the app wakes, authenticates to its mediator, and drains its queue over the DIDComm binding as usual.
 
 ### Three roles
 
@@ -24,7 +24,7 @@ Background wake-up involves three roles. Keeping them distinct is the whole poin
 |------|-------|------|
 | **Push gateway** | the *app's* platform push credentials (APNs auth key, FCM service account, Web Push VAPID key) and the `handle → push token` map | the only party that can talk to Apple / Google / a Web Push service for this app. Issues an **opaque handle** for a registered token, enforces a VTA-provisioned allowlist, and relays a **contentless** push. Operated by the app publisher. |
 | **Trigger** | a [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) (an opaque handle + the gateway's address) | decides *when* to wake the device and asks the gateway to do so. A trigger is either the device's **mediator** (queue-driven: it alone knows the device is offline with messages waiting) or its **VTA** (policy-driven: e.g. a step-up it is delegating to this device). A device MAY authorize both. |
-| **Device** (consumer) | its platform push token | registers the token with the gateway ([`push/register`](../../../specs/push/register/0.1/spec.md)), receives an opaque handle, and conveys that handle to its VTA via [`device/set-wake`](../../../specs/device/set-wake/0.1/spec.md). |
+| **Device** (consumer) | its platform push token | registers the token with the gateway ([`push/register`](../../../specs/push/register/0.2/spec.md)), receives an opaque handle, and conveys that handle to its VTA via [`device/set-wake`](../../../specs/device/set-wake/0.2/spec.md). |
 
 The credential reality drives the split. APNs and FCM credentials are bound to the **app**, not to any server operator: only the holder of the app's Team key (APNs) or Firebase project (FCM) can push to it. Neither an individual VTA nor a generic shared mediator holds those keys — the **app publisher** does, via the gateway. So the gateway is a necessary third service; the open question this binding answers is only *who is authorized to ask it to wake a device*, and the answer is a per-device, **VTA-owned allowlist** ([§3.3](#33-trigger-allowlist-vta-owned)).
 
@@ -32,7 +32,7 @@ The credential reality drives the split. APNs and FCM credentials are bound to t
 
 ## Status of This Document
 
-`0.1` draft. Targets **framework `0.5.0`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
+`0.1` draft. Targets **framework `0.5.0`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.2`](../../../specs/device/set-wake/0.2/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
 
 ## 1. Binding URI
 
@@ -80,19 +80,19 @@ The gateway's three control operations are **Trust Tasks** addressed to the gate
 
 | Operation | Trust Task | Parties |
 |-----------|-----------|---------|
-| Register a push token → handle | [`push/register/0.1`](../../../specs/push/register/0.1/spec.md) | device → gateway |
-| Provision a handle's trigger allowlist | [`push/provision/0.1`](../../../specs/push/provision/0.1/spec.md) | controller VTA → gateway |
-| Request a contentless wake | [`push/wake/0.1`](../../../specs/push/wake/0.1/spec.md) | trigger (mediator/VTA) → gateway |
+| Register a push token → handle | [`push/register/0.2`](../../../specs/push/register/0.2/spec.md) | device → gateway |
+| Provision a handle's trigger allowlist | [`push/provision/0.2`](../../../specs/push/provision/0.2/spec.md) | controller VTA → gateway |
+| Request a contentless wake | [`push/wake/0.2`](../../../specs/push/wake/0.2/spec.md) | trigger (mediator/VTA) → gateway |
 
 Only the contentless gateway → device doorbell ([§2](#2-what-this-binding-carries--and-what-it-must-not)) is *not* a Trust Task — it is sub-document by design.
 
-`push/register` returns an opaque [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle); the token stays at the gateway. The device conveys the handle (never the token) to its VTA via [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md). Because the gateway enforces the VTA-owned allowlist ([§3.3](#33-trigger-allowlist-vta-owned)), **possession of a handle is not authority to wake** — so however a trigger obtains the handle, allowlist membership (set by the VTA) is the control.
+`push/register` returns an opaque [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle); the token stays at the gateway. The device conveys the handle (never the token) to its VTA via [`device/set-wake/0.2`](../../../specs/device/set-wake/0.2/spec.md). Because the gateway enforces the VTA-owned allowlist ([§3.3](#33-trigger-allowlist-vta-owned)), **possession of a handle is not authority to wake** — so however a trigger obtains the handle, allowlist membership (set by the VTA) is the control.
 
-Tokens rotate. A device **MUST** re-register (`push/register`) on a new token, obtain a fresh handle, and re-convey it (`device/set-wake`). The gateway **MUST** treat the most recent registration as authoritative and drop the prior token; a push to a token the push service reports as permanently unregistered **MUST** cause the gateway to drop the stored token and report the handle dead ([`push/wake:token_unregistered`](../../../specs/push/wake/0.1/spec.md)), leaving any queued message for the consumer's next voluntary pickup.
+Tokens rotate. A device **MUST** re-register (`push/register`) on a new token, obtain a fresh handle, and re-convey it (`device/set-wake`). The gateway **MUST** treat the most recent registration as authoritative and drop the prior token; a push to a token the push service reports as permanently unregistered **MUST** cause the gateway to drop the stored token and report the handle dead ([`push/wake:token_unregistered`](../../../specs/push/wake/0.2/spec.md)), leaving any queued message for the consumer's next voluntary pickup.
 
 ### 3.3 Trigger allowlist (VTA-owned)
 
-Which DIDs may wake a device is **VTA policy**, not a device assertion or a gateway default — all device configuration state is authoritative at the VTA. The VTA computes a [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) for each handle and **provisions it to the gateway** (`push/provision/0.1`), which enforces it:
+Which DIDs may wake a device is **VTA policy**, not a device assertion or a gateway default — all device configuration state is authoritative at the VTA. The VTA computes a [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) for each handle and **provisions it to the gateway** (`push/provision/0.2`), which enforces it:
 
 ```
 Device ──device/set-wake (WakeHandle)──▶ VTA
@@ -107,7 +107,7 @@ The gateway accepts a `push/provision` for a handle **only from the VTA the devi
 
 ### 3.4 Triggering a wake
 
-A trigger sends [`push/wake/0.1`](../../../specs/push/wake/0.1/spec.md) — the handle plus the contentless hint fields — authenticated as the trigger's DID (the DIDComm authcrypt sender, preferred; or an HTTPS did-signed proof):
+A trigger sends [`push/wake/0.2`](../../../specs/push/wake/0.2/spec.md) — the handle plus the contentless hint fields — authenticated as the trigger's DID (the DIDComm authcrypt sender, preferred; or an HTTPS did-signed proof):
 
 ```
 Trigger ──push/wake { handle, v, mediator?, count?, urgency? } (sender = triggerDid)──▶ Gateway
@@ -208,7 +208,7 @@ Stating the whole column is the point. A binding that mapped even one row would 
 * **An allowlist refusal is not any document state.** The gateway refusing a wake from a trigger that is not on the handle's allowlist ([§3.3](#33-trigger-allowlist-vta-owned)) is reported to the *trigger*, never to the device, and no *Trust Task document* is involved in the refusal at all.
 * **The absence of a push means nothing, and means nothing loudly.** [§4](#4-delivery-flows) item 4 already makes this normative from the delivery side — loss, delay or suppression of a push **MUST NOT** cause a message to be missed, only delayed. The lifecycle consequence is the same rule from the other side: a *producer* **MUST NOT** infer any document state from a push that was sent, not sent, delivered, or dropped. The framework's general rule, that the absence of a reply distinguishes no two states, applies here to a channel that was never carrying a reply in the first place.
 
-One thing this binding does have a lifecycle for, and it is not mapped here. The gateway control plane is itself a Trust Task family — `push/*` and `device/set-wake` ([§3.2](#32-the-gateway-control-plane-is-a-trust-task-family-push)) — so a [`push/wake/0.1`](../../../specs/push/wake/0.1/spec.md) document has a lifecycle like any other document. It is expressed by whichever binding carries **it** — DIDComm or HTTPS, per [§3.4](#34-triggering-a-wake) — and by that binding's mapping. It is not expressed by the push channel, which is what those documents cause rather than what carries them.
+One thing this binding does have a lifecycle for, and it is not mapped here. The gateway control plane is itself a Trust Task family — `push/*` and `device/set-wake` ([§3.2](#32-the-gateway-control-plane-is-a-trust-task-family-push)) — so a [`push/wake/0.2`](../../../specs/push/wake/0.2/spec.md) document has a lifecycle like any other document. It is expressed by whichever binding carries **it** — DIDComm or HTTPS, per [§3.4](#34-triggering-a-wake) — and by that binding's mapping. It is not expressed by the push channel, which is what those documents cause rather than what carries them.
 
 ## 8. Platform profiles
 
@@ -230,12 +230,12 @@ This binding follows the framework's `MAJOR.MINOR` versioning ([SPEC §5](https:
 
 - [DIDComm binding](../../didcomm/0.1/spec.md) — carries the Trust Task documents this binding only signals the availability of.
 - [HTTPS binding](../../https/0.1/spec.md) — one of the two transports a REST gateway is reachable on.
-- [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) — the device → VTA conveyance of the `WakeHandle`.
+- [`device/set-wake/0.2`](../../../specs/device/set-wake/0.2/spec.md) — the device → VTA conveyance of the `WakeHandle`.
 - [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy) — the opaque handle and the VTA-owned trigger allowlist.
 - [`PushRegistration`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/PushRegistration) — the platform token the device registers with the gateway.
 - [DIDComm Messaging — Message Pickup 3.0](https://didcomm.org/messagepickup/3.0/).
 - [RFC 8030 — Generic Event Delivery Using HTTP Push](https://datatracker.ietf.org/doc/html/rfc8030) (Web Push).
-- [`push/register`](../../../specs/push/register/0.1/spec.md), [`push/provision`](../../../specs/push/provision/0.1/spec.md), [`push/wake`](../../../specs/push/wake/0.1/spec.md) — the gateway control-plane Trust Tasks (`push/*`, the `notifications` category).
+- [`push/register`](../../../specs/push/register/0.2/spec.md), [`push/provision`](../../../specs/push/provision/0.2/spec.md), [`push/wake`](../../../specs/push/wake/0.2/spec.md) — the gateway control-plane Trust Tasks (`push/*`, the `notifications` category).
 - [Aries RFC 0699 — Push Notifications APNs](https://github.com/hyperledger/aries-rfcs/tree/main/features/0699-push-notifications-apns) and [RFC 0734 — Push Notifications FCM](https://github.com/hyperledger/aries-rfcs/tree/main/features/0734-push-notifications-fcm) — prior art for device-push registration; superseded here by the `push/*` Trust Task family (which adds the opaque handle + VTA-owned allowlist).
 - [Matrix Sygnal](https://github.com/matrix-org/sygnal) — the app-publisher push-gateway topology this binding's gateway role mirrors.
 - [Trust Tasks framework specification](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md), §4.8.1, §7.2, §9.

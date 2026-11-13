@@ -55,7 +55,7 @@ struct AclChangeRole {
 
 let doc: TrustTask<AclChangeRole> = serde_json::from_str(r#"{
     "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-    "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+    "type": "https://trusttasks.org/spec/acl/change-role/0.3",
     "issuer": "did:web:org.example",
     "recipient": "did:web:maintainer.example",
     "issuedAt": "2026-06-10T14:00:00Z",
@@ -63,7 +63,7 @@ let doc: TrustTask<AclChangeRole> = serde_json::from_str(r#"{
 }"#)?;
 
 assert_eq!(doc.type_uri.slug(), "acl/change-role");
-assert_eq!(doc.type_uri.minor(), 1);
+assert_eq!(doc.type_uri.minor(), 3);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -102,11 +102,11 @@ that need to `await` and for the request-scoped context they need to do it:
 use trust_tasks_rs::{specs::acl, AsyncDispatcher};
 
 let dispatcher = AsyncDispatcher::<Arc<AppState>, Outcome>::new()
-    .on_async::<acl::grant::v0_1::Payload, _, _>(|req, ctx| async move {
+    .on_async::<acl::grant::v0_3::Payload, _, _>(|req, ctx| async move {
         ctx.db.record_grant(&req.payload.entry).await;      // a real await
         Outcome::Granted
     })
-    .on_async::<acl::revoke::v0_1::Payload, _, _>(|req, ctx| async move {
+    .on_async::<acl::revoke::v0_3::Payload, _, _>(|req, ctx| async move {
         ctx.db.revoke(&req.payload.subject).await;
         Outcome::Revoked
     });
@@ -210,11 +210,19 @@ one more optional setter and every existing call site keeps compiling. Reading
 is unchanged — the fields are `pub`.
 
 ```rust,ignore
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_3 as grant, Payload, TrustTask};
 
+// acl/grant/0.3 states every authority axis explicitly.
+let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+let capabilities =
+    grant::CapabilityScopeCeiling::try_from(grant::CapabilityScopeCeiling::builder().scope("ceiling"))?;
 let entry: grant::AclEntry = grant::AclEntry::builder()
     .subject("did:web:alice.example")
     .role("admin")
+    .act(act)
+    .keys(keys)
+    .capabilities(capabilities)
     .try_into()?;
 let payload: grant::Payload = grant::Payload::builder()
     .entry(entry)
@@ -225,7 +233,7 @@ assert_eq!(req.type_uri, grant::Payload::type_uri());
 ```
 
 A struct whose members are all optional also implements `Default`, so
-`acl::list::v0_1::Payload::default()` is the whole construction.
+`acl::list::v0_4::Payload::default()` is the whole construction.
 
 `RequestPayload` pairs a request with its response type, which is how a
 transport infers the response instead of being told it — see

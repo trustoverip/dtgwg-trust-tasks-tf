@@ -106,6 +106,25 @@ jobs:
           VERSION_BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: npm run check-spec-lifecycle
 
+  # #1123: the facts the docs still state in prose — RELEASING.md's package
+  # table, the crates outside a trust-tasks-rs leading-component bump, the
+  # Node floors, the current framework version — against the manifests and
+  # release lists that decide them. On every event: drift can come from
+  # either side, and a merge to `main` can combine two PRs that each passed.
+  doc-facts:
+    name: documented facts match the tree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      # No dependencies: the script reads the files with node: built-ins only.
+      - run: npm run check-doc-facts
+
   # The node tests of the checks above and of check-release-lists.mjs
   # (scripts/test-checks/).
   test-checks:

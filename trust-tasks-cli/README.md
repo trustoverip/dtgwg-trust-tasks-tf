@@ -36,7 +36,7 @@ Commit all three. Edits to `trust-tasks.toml` keep your comments.
 | | |
 |---|---|
 | `trust-tasks add <slug>…` | `vault/upsert` pins the latest live version exactly; `vault/upsert/0.4` (or `@0.4`) pins that version; `vault/upsert@latest` follows the latest live version on every `update`. Refuses a withdrawn version. Re-adding what is pinned changes nothing. |
-| `trust-tasks remove <slug>…` | Unpins a task (or one version, `vault/upsert/0.3`) and deletes its vendored bundles. Offline. |
+| `trust-tasks remove <slug>…` | Unpins a task (or one version, `vault/upsert/0.4`) and deletes its vendored bundles. Offline. |
 | `trust-tasks update [<slug>…] [--to-latest]` | Re-resolves. A `latest` intent moves to the latest live version, saying whether the move needs code changes: `0.5 extends 0.4: no code change needed` when the new version declares an `extends` chain that reaches the pinned one, `breaking: …` otherwise. An exact pin stays put, but takes new bytes if its draft changed in place, and a newer version is reported. `--to-latest` moves exact pins too. A pin to a version that has since been withdrawn is **refused**: it is left as it is (it still builds) and the command exits non-zero. |
 | `trust-tasks check` | **Offline**, for CI: every lock entry has its vendored bundle and `sha256(file)` is the locked digest; the bundle is the version it is filed as; no stray `*.bundle.json`; the manifest and the lock agree; the lock was resolved against the registry in use. Exits 1 on any problem. |
 | `trust-tasks fetch` | Restores missing or altered vendored bundles by the digest the lock pins, from the registry's by-digest store. Never moves a pin. |
