@@ -375,6 +375,13 @@ function nameComponents(components: readonly Component[]): Map<string, NamedEntr
       while (byName.has(`${name}_${n}`)) n++;
       name = `${name}_${n}`;
     }
+    // The name is written into the modules as code (a `tsType`, an import and
+    // an export clause), so it must be an identifier. A shared definition
+    // without a `title` is named from its `defOrigins` entry, which is bundle
+    // text.
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) {
+      throw new Error(`shared definition ${group.sources[0]!.origin} would be named ${JSON.stringify(name)}, which is not a TypeScript identifier`);
+    }
     const representative = group.sources[0]!;
     byName.set(name, { name, baseName: group.baseName, fragment: representative.fragment, representative });
     for (const c of group.sources) c.tsName = name;
