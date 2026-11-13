@@ -1217,7 +1217,8 @@ let entry: grant::AclEntry = grant::AclEntry::builder()
 `X::default()` also works. This was taken as one deliberate break so that an
 additive schema change — a new optional member, a new enum variant — is no
 longer a source break. See the `#[non_exhaustive]` section of
-[`CLAUDE.md`](./CLAUDE.md) for the full reasoning.
+[`docs/packages/rust.md`](./docs/packages/rust.md#generated-payload-types-are-non_exhaustive--builders-as-of-0140)
+for the full reasoning.
 
 ### 4.4 The facade and the crates it re-exports share one version
 

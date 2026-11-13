@@ -869,7 +869,7 @@ function readSpecPolicy(schemaPath) {
 // on its root payload types, so a consumer's editor and linter flag the use
 // without anything breaking. The note text is byte-identical across the four
 // libraries; `npm run check-bindings` holds them to it. This is a third
-// independent implementation of the rule (see CLAUDE.md on why the generators
+// independent implementation of the rule (see docs/DEVELOPMENT.md on why the generators
 // are not factored together).
 
 const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };

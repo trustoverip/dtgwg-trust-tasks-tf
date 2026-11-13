@@ -815,8 +815,8 @@ function checkIdentifierScopeJustification(meta, body, rel) {
  * The codes are *defined* by that schema's `code` enum — a document carrying a
  * code the declared version does not list will not validate — so the schema is
  * the only copy that cannot be wrong. A hard-coded list in this file would be a
- * fourth hand-maintained taxonomy of exactly the kind the callouts at the top of
- * CLAUDE.md exist to warn about: it would go stale the moment a
+ * fourth hand-maintained taxonomy of exactly the kind docs/DEVELOPMENT.md
+ * ("Hand-maintained lists") exists to warn about: it would go stale the moment a
  * `trust-task-error/0.6` adds a code, and the staleness would present as a lint
  * that quietly stops catching one shadow rather than as a failure.
  *
@@ -2114,7 +2114,7 @@ function checkBindingErrorSpecPin() {
  *
  * The rule the four generators apply (SPEC "Superseded and Withdrawn Versions";
  * see the lifecycle block in scripts/build-ts-bindings.mjs), implemented again
- * here rather than imported, as CLAUDE.md asks of every implementation of it:
+ * here rather than imported, as docs/DEVELOPMENT.md asks of every implementation of it:
  *
  *   withdrawn  — `status: withdrawn`.
  *   retired    — `status: retired`; successor is the `supersededBy` pin, the

@@ -130,7 +130,7 @@ jobs:
           title="Framework specification bump is failing"
           body="The \`$EVENT\` run of the framework specification bump failed: $RUN_URL
 
-          SPEC.md (and trusttasks.org) stays at the pinned canonical commit until a run succeeds. The usual cause is a change in the canonical framework repository that the generator refuses (a cross-reference to no heading, or a legacy anchor that now names no section); see CLAUDE.md, \"SPEC.md is generated\"."
+          SPEC.md (and trusttasks.org) stays at the pinned canonical commit until a run succeeds. The usual cause is a change in the canonical framework repository that the generator refuses (a cross-reference to no heading, or a legacy anchor that now names no section); see docs/DEVELOPMENT.md, \"SPEC.md is generated\"."
           existing=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
             --jq "[.[] | select(.title == \"$title\")][0].number // empty")
           if [ -n "$existing" ]; then
