@@ -739,3 +739,31 @@ func TestItem3TreatsRequestFragmentAndBareAsOneType(t *testing.T) {
 		t.Fatalf("expected handled, got %q", outcome.Kind)
 	}
 }
+
+// §8.1: an error response's issuer is the consumer that emitted it. A document
+// misaddressed to another VID is refused wrongRecipient, and the refusal must not
+// claim to come from that VID.
+func TestRejectIssuesTheErrorAsTheConsumer(t *testing.T) {
+	misaddressed := doc(func(d *tt.Document[payload]) { d.Recipient = ptr("did:web:someone-else.example") })
+	wrongRecipient := tt.RejectReason{Code: tt.CodeWrongRecipient, Message: "in-band recipient does not identify this consumer"}
+	proofRequired := tt.RejectReason{Code: tt.CodeProofRequired, Message: "x"}
+
+	// The transport's own identity, where it has one.
+	withLocal := tt.StaticTransport{Context: tt.TransportContext{Issuer: ptr(peer), Recipient: ptr(me)}}
+	for _, reason := range []tt.RejectReason{wrongRecipient, proofRequired} {
+		e := tt.Reject(withLocal, misaddressed, "err-1", reason, fixedClock)
+		if e == nil || e.Issuer == nil || *e.Issuer != me {
+			t.Errorf("%s: issuer = %v, want %s", reason.Code, e, me)
+		}
+	}
+
+	// No transport identity: no issuer under wrongRecipient; the in-band
+	// recipient otherwise.
+	anonymous := tt.UnauthenticatedTransport{}
+	if e := tt.Reject(anonymous, misaddressed, "err-1", wrongRecipient, fixedClock); e == nil || e.Issuer != nil {
+		t.Errorf("wrongRecipient with no transport identity: issuer = %v", e)
+	}
+	if e := tt.Reject(anonymous, doc(nil), "err-2", proofRequired, fixedClock); e == nil || e.Issuer == nil || *e.Issuer != me {
+		t.Errorf("proofRequired: issuer = %v", e)
+	}
+}
