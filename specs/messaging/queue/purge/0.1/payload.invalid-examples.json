@@ -1,22 +1,43 @@
 [
   {
     "note": "Missing `queue` — there is no implicit 'both queues' purge; the requester must name exactly one.",
-    "payload": { "did": "did:web:alice.example", "dryRun": true }
+    "payload": {
+      "did": "did:web:alice.example",
+      "dryRun": true
+    }
   },
   {
     "note": "Unknown top-level member — additionalProperties: false must reject `all` rather than silently ignore a widening the producer thought it asked for.",
-    "payload": { "queue": "send", "all": true }
+    "payload": {
+      "queue": "send",
+      "all": true
+    }
   },
   {
     "note": "Negative `olderThanSeconds` — an age filter cannot select messages from the future.",
-    "payload": { "queue": "receive", "olderThanSeconds": -60 }
+    "payload": {
+      "queue": "receive",
+      "olderThanSeconds": -60
+    }
   },
   {
     "note": "`queue` outside the Queue enum — `inbox` is a store-internal name, not the wire vocabulary.",
-    "payload": { "queue": "inbox" }
+    "payload": {
+      "queue": "inbox"
+    }
   },
   {
     "note": "`dryRun` as a string — a truthy string must not be read as a boolean, or a preview could become a real purge.",
-    "payload": { "queue": "send", "dryRun": "false" }
+    "payload": {
+      "queue": "send",
+      "dryRun": "false"
+    }
+  },
+  {
+    "note": "`storedBefore` as Unix seconds — instants are RFC 3339 strings, and a number must not be read as a bound.",
+    "payload": {
+      "queue": "send",
+      "storedBefore": 1790000000
+    }
   }
 ]

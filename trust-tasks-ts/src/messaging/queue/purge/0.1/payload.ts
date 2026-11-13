@@ -21,6 +21,10 @@ export interface MessagingPurgeQueuePayload {
    */
   olderThanSeconds?: number;
   /**
+   * Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview.
+   */
+  storedBefore?: string;
+  /**
    * Report what would be purged and purge nothing. Default false.
    */
   dryRun?: boolean;
@@ -43,6 +47,10 @@ export interface MessagingPurgeQueueResponsePayload {
    */
   purged: number;
   dryRun: boolean;
+  /**
+   * The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore.
+   */
+  selectedAt?: string;
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
@@ -120,6 +128,11 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minimum": 0,
       "description": "Only messages queued at least this long."
     },
+    "storedBefore": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview."
+    },
     "dryRun": {
       "type": "boolean",
       "description": "Report what would be purged and purge nothing. Default false."
@@ -186,6 +199,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "dryRun": {
           "type": "boolean"
+        },
+        "selectedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore."
         },
         "ext": {
           "$ref": "#/$defs/Ext",
