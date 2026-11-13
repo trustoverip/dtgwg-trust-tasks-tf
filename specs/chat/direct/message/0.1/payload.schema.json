@@ -40,14 +40,14 @@
     {
       "description": "The first revision of a message or reaction: `revision` 1, a non-empty `body`, no `editedAt`, and a reaction names its target in `inReplyTo`.",
       "properties": {
-        "revision": { "type": "integer", "const": 1 },
-        "body": { "type": "string", "minLength": 1, "maxLength": 16384 }
+        "revision": { "description": "Revision 1: the first time the author sends this `messageId`.", "type": "integer", "const": 1 },
+        "body": { "description": "The message's content, which a first revision MUST NOT leave empty: only a rewrite withdraws a message by emptying its `body`.", "type": "string", "minLength": 1, "maxLength": 16384 }
       },
       "not": {
         "anyOf": [
           { "required": ["editedAt"] },
           {
-            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "properties": { "kind": { "description": "A reaction, which MUST name the message it responds to in `inReplyTo`; matching this subschema refuses a reaction without one.", "type": "string", "const": "reaction" } },
             "required": ["kind"],
             "not": { "required": ["inReplyTo"] }
           }
@@ -57,13 +57,13 @@
     {
       "description": "A rewrite (an edit, a withdrawal, a changed or withdrawn reaction): `revision` greater than 1, `editedAt` present, and a reaction names its target in `inReplyTo`.",
       "properties": {
-        "revision": { "type": "integer", "minimum": 2 }
+        "revision": { "description": "A revision greater than 1: a rewrite of a message the author sent before under the same `messageId`.", "type": "integer", "minimum": 2 }
       },
       "required": ["editedAt"],
       "not": {
         "anyOf": [
           {
-            "properties": { "kind": { "type": "string", "const": "reaction" } },
+            "properties": { "kind": { "description": "A reaction, which MUST name the message it responds to in `inReplyTo`; matching this subschema refuses a reaction without one.", "type": "string", "const": "reaction" } },
             "required": ["kind"],
             "not": { "required": ["inReplyTo"] }
           }
