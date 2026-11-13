@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Nine message ids exceeds maxItems 8 — a wake names the few messages just queued, not a backlog.",
+    "payload": { "addressee": "did:example:phone", "msgIds": ["1","2","3","4","5","6","7","8","9"] }
+  },
+  {
+    "note": "A request naming no queued message is no request at all (minItems 1).",
+    "payload": { "addressee": "did:example:phone", "msgIds": [] }
+  },
+  {
+    "note": "The addressee is a DID, never a handle or an address.",
+    "payload": { "addressee": "wh_7Q2kR9vXb3LmT0pN", "msgIds": ["5e3f"] }
+  },
+  {
+    "note": "No reason, task type or content travels — additionalProperties: false.",
+    "payload": { "addressee": "did:example:phone", "msgIds": ["5e3f"], "reason": "approve a key rotation" }
+  },
+  {
+    "note": "urgency is one of the two push binding values.",
+    "payload": { "addressee": "did:example:phone", "msgIds": ["5e3f"], "urgency": "critical" }
+  },
+  {
+    "variant": "response",
+    "note": "The response is exactly {} — any member, including an outcome, would be an oracle.",
+    "payload": { "outcome": "rung" }
+  }
+]

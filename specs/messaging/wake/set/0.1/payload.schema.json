@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/wake/set/0.1",
+  "title": "Messaging — Wake Set — payload",
+  "description": "An account gives its own mediator the opaque wake handle its push gateway issued for it, or takes it back, so that the mediator can ring the account's device when a sender asks it to (messaging/wake/request). The mediator never receives a platform push token. Absence of `wakeHandle` clears the handle.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "wakeHandle": {
+      "$ref": "../../../../device/_shared/0.2/device-binding.schema.json#/$defs/WakeHandle",
+      "description": "The opaque handle the account's push gateway issued at push/register, with the gateway that acts on it. Present: replaces whatever handle the mediator held for this account. Absent: the mediator drops the handle it held, and the account is no longer wakeable through this mediator."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Wake Set — response payload",
+      "description": "The success response to a messaging/wake/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/wake/set/0.1#response. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wakeCapable"
+      ],
+      "properties": {
+        "wakeCapable": {
+          "type": "boolean",
+          "description": "true when the mediator now holds a handle for the account and will ask the handle's gateway to ring on a qualifying messaging/wake/request. false when it holds none — the request cleared it, or the mediator does not ring for this account (its operator does not offer waking, or it cannot reach the named gateway over any transport it speaks)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

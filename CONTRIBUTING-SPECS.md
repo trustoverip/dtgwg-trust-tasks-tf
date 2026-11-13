@@ -243,7 +243,7 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 
 - **Distinguish it from identity and proof validation.** Per [SPEC §7.2 item 10](SPEC.md#72-consumer-requirements), verifying a VID, `issuer`, `recipient`, transport identity or `proof` establishes *who* and *unaltered*, never *authorized*. If your task requires a `proof`, say explicitly what the proof does and does not buy: usually it makes some later comparison possible (against an owner, an enrolled subject, an expected author) rather than being the authorization itself. Where two proofs are in play — an envelope proof plus a credential's own proof — say which, if either, carries authority. Neither usually does.
 
-- **Say so when there is none.** A task open to any caller is a legitimate design, and item 15 asks that it be stated rather than inferred from silence. [`push/register/0.2`](specs/push/register/0.2/spec.md) is the worked example: registration presupposes nothing beyond gateway policy, and that is safe only because a fresh handle starts inert. If your task is open *because* something downstream is the real gate, name the downstream gate and the task that enforces it.
+- **Say so when there is none.** A task open to any caller is a legitimate design, and item 15 asks that it be stated rather than inferred from silence. [`push/register/0.3`](specs/push/register/0.3/spec.md) is the worked example: registration presupposes nothing beyond gateway policy, and that is safe only because a fresh handle starts inert. If your task is open *because* something downstream is the real gate, name the downstream gate and the task that enforces it.
 
 - **Keep it descriptive.** The section states what authority the task *assumes*; it never obliges a consumer to authorize anything, and the final decision always rests with the consumer under its own policy and governance framework. The bar from [item 13](SPEC.md#73-specification-requirements) applies here unchanged: a specification **MUST NOT** declare, in any form, that a task does or does not require consent, human approval, or an authentication step-up. That policy is not delegable to a spec or to the registry that serves it.
 
@@ -256,7 +256,7 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 | [`witness/session/submit/0.2`](specs/witness/session/submit/0.2/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
 | [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
 | [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
-| [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
+| [`push/register/0.3`](specs/push/register/0.3/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
 
 ## The `## Security & Privacy` section
 

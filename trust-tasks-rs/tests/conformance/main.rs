@@ -1043,8 +1043,19 @@ mod messaging {
             mod v0_1;
         }
     }
+    mod receipt {
+        mod v0_1;
+    }
     mod stats {
         mod show {
+            mod v0_1;
+        }
+    }
+    mod wake {
+        mod request {
+            mod v0_1;
+        }
+        mod set {
             mod v0_1;
         }
     }
@@ -1182,6 +1193,7 @@ mod push {
     mod register {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod wake {
         mod v0_1;

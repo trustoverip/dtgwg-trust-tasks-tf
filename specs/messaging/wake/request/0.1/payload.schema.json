@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/wake/request/0.1",
+  "title": "Messaging — Wake Request — payload",
+  "description": "A sender that has just queued mail for a DID asks that DID's mediator to ring the device, naming the queued messages by the identifiers the mediator stores them under. Contentless: no task type, reason or content. The mediator answers every request with the same empty response, whatever it did.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "addressee",
+    "msgIds"
+  ],
+  "properties": {
+    "addressee": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The DID the queued messages are addressed to — an account at the mediator receiving this request."
+    },
+    "msgIds": {
+      "type": "array",
+      "description": "The messages the requester queued for the addressee, by the identifier the addressee's mediator stores each under (as messaging/message/status and messaging/message/list name them). Holding one is evidence of having held the stored message.",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "interactive",
+        "background"
+      ],
+      "description": "OPTIONAL. Passed to the gateway as push/wake's urgency hint. `interactive`: a person is expected to act now. `background`: the device may collect at its convenience. Absent: the mediator sends no urgency."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A mediator ignores every ext member when deciding whether to ring."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Wake Request — response payload",
+      "description": "Always exactly {}: the same answer whether the mediator rang, armed the request, coalesced it, or did nothing, so that the response cannot tell a sender whether the addressee exists, is wakeable, is online or was rung. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/wake/request/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    }
+  }
+}

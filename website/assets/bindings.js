@@ -10,6 +10,20 @@
 
 window.TT_BINDINGS = [
   {
+    id: "tsp/0.2",
+    slug: "tsp",
+    version: "0.2",
+    title: "Trust Spanning Protocol (TSP)",
+    summary:
+      "Carries Trust Task documents inside ToIP Trust Spanning Protocol messages, as 0.1 does, and adds an optional deliveryId envelope member by which a producer requests an end-to-end delivery receipt (messaging/receipt) — delivery evidence that holds across mediators.",
+    bindingURI: "https://trusttasks.org/binding/tsp/0.2",
+    envelopeType: "https://trusttasks.org/binding/tsp/0.1/envelope",
+    status: "draft",
+    accent: "sky",
+    prosePath: "/bindings/tsp/0.2/spec.md",
+    implementations: [],
+  },
+  {
     id: "tsp/0.1",
     slug: "tsp",
     version: "0.1",

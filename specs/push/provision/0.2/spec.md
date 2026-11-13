@@ -102,7 +102,7 @@ A conforming **consumer** (the push gateway) **MUST**:
 ### Data carried
 
 Two members, and neither describes a person. `handle` is the opaque reference
-the gateway itself minted at [`push/register`](../../register/0.2/spec.md), so
+the gateway itself minted at [`push/register`](../../register/0.3/spec.md), so
 the caller is telling the gateway nothing it did not already know.
 `policy.allowedTriggers` is the substance: a list of DIDs, typically the
 device's mediator and the VTA itself, naming who may cause this device to be

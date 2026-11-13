@@ -1348,9 +1348,18 @@ export import MessagingQueuePurge_v0_1 = _MessagingQueuePurge_v0_1;
 import * as _MessagingQueueStatus_v0_1 from "./messaging/queue/status/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingQueueStatus_v0_1 = _MessagingQueueStatus_v0_1;
+import * as _MessagingReceipt_v0_1 from "./messaging/receipt/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingReceipt_v0_1 = _MessagingReceipt_v0_1;
 import * as _MessagingStatsShow_v0_1 from "./messaging/stats/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingStatsShow_v0_1 = _MessagingStatsShow_v0_1;
+import * as _MessagingWakeRequest_v0_1 from "./messaging/wake/request/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingWakeRequest_v0_1 = _MessagingWakeRequest_v0_1;
+import * as _MessagingWakeSet_v0_1 from "./messaging/wake/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingWakeSet_v0_1 = _MessagingWakeSet_v0_1;
 import * as _NotificationShared_v0_1 from "./notifications/_shared/0.1/notification.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import NotificationShared_v0_1 = _NotificationShared_v0_1;
@@ -1627,6 +1636,9 @@ export import PushRegister_v0_1 = _PushRegister_v0_1;
 import * as _PushRegister_v0_2 from "./push/register/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import PushRegister_v0_2 = _PushRegister_v0_2;
+import * as _PushRegister_v0_3 from "./push/register/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import PushRegister_v0_3 = _PushRegister_v0_3;
 import * as _PushWake_v0_1 from "./push/wake/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import PushWake_v0_1 = _PushWake_v0_1;

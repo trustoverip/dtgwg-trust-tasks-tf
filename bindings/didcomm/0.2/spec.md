@@ -51,6 +51,20 @@ A consumer **MUST**:
 3. Deserialise `body` as a *Trust Task document* (`TrustTask<P>` for some payload type `P`). Keep the received JSON object alongside it: the `proof` is verified over that object with only the top-level `proof` removed, never over a re-serialisation of the typed document, and the typed document is the one parsed from it ([SPEC §4.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#47-proof), "What a consumer verifies").
 4. Proceed with the framework's [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) pipeline.
 
+### 2.1 Delivery receipts
+
+A producer that wants end-to-end evidence that the consumer holds the message **MAY** add a `delivery_id` header — a string of 1 to 256 characters — to the DIDComm message. Its presence is the request for a receipt. The receipt is the [`messaging/receipt`](../../../specs/messaging/receipt/0.1/spec.md) Trust Task, which states the rules for choosing the id, for sending and for settling, and is carried back as an ordinary envelope of [§2](#2-document-carriage). It is an additional header of the kind §2 already permits, and nothing else in this binding changes.
+
+This matters most where the producer's mediator relays the message to the consumer's own mediator. The producer's mediator no longer holds the message, so it cannot answer for it, and the consumer's mediator does not answer the producer at all; the receipt comes from the consumer, over this binding, authenticated as the consumer.
+
+The delivery id is carried in its own header, not in `thid`, because [§3.1](#31-thread-correlation) gives `thid` to the document's `threadId`. A consumer that receives a message with a `delivery_id` header:
+
+1. **SHOULD** send the receipt once it durably holds the message, as `messaging/receipt` requires, to the verified `sender_kid` of that message. It **MAY** decline, silently.
+2. **MUST NOT** let the header affect the framework pipeline. It is not the document `id`, not a `threadId`, and not an input to the duplicate-execution record of [§6.1](#61-duplicate-execution-record).
+3. **MUST NOT** set a `delivery_id` header on the message carrying a receipt.
+
+A consumer that does not know the header ignores it and sends no receipt, which the producer must already treat as no evidence rather than as failure. Delivery layers that predate `messaging/receipt` correlate their receipts on `thid`; that convention, and the transition from it, are described in [`messaging/receipt`](../../../specs/messaging/receipt/0.1/spec.md#transition-from-the-delivery-layer-receipt).
+
 ## 3. Identity mapping
 
 The mapping into the framework's [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity) precedence is:
@@ -105,7 +119,7 @@ DIDComm is one-way and store-and-forward. There is no request/response pair at t
 
 | Lifecycle state | DIDComm counterpart |
 |---|---|
-| `received` | **No counterpart.** Unpacking the authcrypt envelope and deserialising `body` happen inside the *consumer* and emit nothing. In particular, a **mediator's** acknowledgement is not this state — see below. |
+| `received` | **No counterpart** in the pipeline. Unpacking the authcrypt envelope and deserialising `body` happen inside the *consumer* and emit nothing. In particular, a **mediator's** acknowledgement is not this state — see below. Where the producer requested one ([§2.1](#21-delivery-receipts)), a `messaging/receipt` from the *consumer* reports that its delivery layer durably holds the message — evidence that the document reached `received`, and of no later state. |
 | `validated` | **No counterpart.** [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) items 1–10 are internal to the *consumer* and are never signalled. |
 | `accepted` | **No counterpart**, unless the *Trust Task specification* defines a reply that acknowledges acceptance. The duplicate-execution record of [§6.1](#61-duplicate-execution-record) is written internally. Where the *consumer* is understood but **blocked**, the framework's reserved `trust-task-next-step` document is carried as an ordinary envelope of [§2](#2-document-carriage) and the document remains `accepted` with the exchange open. A DIDComm-layer `ack` or `problem-report` is **not** such a reply: this binding carries only its own envelope type, so a message of any other type is not a framework reply and **MUST NOT** be read as one. |
 | `executing` | **No counterpart.** Nothing is emitted when work begins, and the *consumer* is under no obligation to emit anything until it has an outcome. |
@@ -122,7 +136,7 @@ Four substitutions this transport invites, stated so no implementer has to infer
 * **A `problem-report` is not an *error response*.** DIDComm's own problem-reporting is a transport-layer signal about a *message*. The framework's `errored` state is carried by a `trust-task-error` document, which names the reported-on document by `inResponseTo` ([SPEC §8.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#82-error-payload)); a `problem-report` names a DIDComm message and cannot be correlated to a document state.
 * **Silence is not a state, and on this transport there is a great deal of it.** A one-way message that produces no reply is consistent with `received`, `validated`, `accepted`, `executing`, `responded` — and with the message having been dropped by a mediator, refused at the envelope layer, or never delivered. A *producer* **MUST NOT** infer any of them. Where a reply matters, [SPEC §8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retry-semantics)'s bit-for-bit resend is the remedy, and [§6.1](#61-duplicate-execution-record) is what makes resending safe.
 
-Because the transport is one-way, this binding expresses **no** counterpart for `received`, `validated`, `accepted` or `executing`. Only the four states that have a reserved framework reply — `suspended`, `responded`, `errored`, `cancelled` — become observable, and each becomes observable as a *document*, never as a DIDComm event.
+Because the transport is one-way, this binding expresses **no** counterpart for `validated`, `accepted` or `executing`, and none for `received` beyond the optional receipt of [§2.1](#21-delivery-receipts). Only the four states that have a reserved framework reply — `suspended`, `responded`, `errored`, `cancelled` — become observable, and each becomes observable as a *document*, never as a DIDComm event.
 
 ## 5. Proof interaction
 
@@ -236,4 +250,5 @@ A `0.1` producer that never set `thid` remains conforming under `0.2`: the mappi
 ## 8. References
 
 - [DIDComm Messaging v2.1](https://identity.foundation/didcomm-messaging/spec/) — Decentralized Identity Foundation.
+- [`messaging/receipt`](../../../specs/messaging/receipt/0.1/spec.md) — the delivery receipt a `delivery_id` header requests.
 - [Trust Tasks framework specification](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md), §4.8.1, §7.2, §8, §9.
