@@ -35,12 +35,12 @@ Map<String, dynamic> echoDoc({
 }) => <String, dynamic>{
   'id': id,
   'type': echoType,
-  if (threadId != null) 'threadId': threadId,
-  if (issuer != null) 'issuer': issuer,
-  if (recipient != null) 'recipient': recipient,
+  'threadId': ?threadId,
+  'issuer': ?issuer,
+  'recipient': ?recipient,
   'issuedAt': fixedIssuedAt,
   'payload': <String, dynamic>{'text': text},
-  if (proof != null) 'proof': proof,
+  'proof': ?proof,
 };
 
 /// A resolver over a fixed set of known VIDs — no network, for tests.
