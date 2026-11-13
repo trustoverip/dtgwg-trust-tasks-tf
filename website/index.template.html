@@ -7,6 +7,19 @@
   <meta name="description" content="An open registry of self-contained, transport-agnostic, JSON-based Trust Task specifications. Developed under the Trust Over IP DTGWG. Linked to the Decentralized Trust Graph, Verifiable Trust Infrastructure, and OpenVTC projects.">
   <link rel="icon" type="image/svg+xml" href="/assets/trust-tasks-favicon.svg">
 
+  <!-- Link previews and the canonical URL (#1151). These are the home page's;
+       app.jsx rewrites the canonical link, og:title, og:description, og:url
+       and the twitter: pair for each route once the page runs. -->
+  <link rel="canonical" href="https://trusttasks.org/">
+  <meta property="og:site_name" content="Trust Tasks">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trusttasks.org/">
+  <meta property="og:title" content="Trust Tasks — Reference registry of trust task specifications">
+  <meta property="og:description" content="An open registry of self-contained, transport-agnostic, JSON-based Trust Task specifications. Developed under the Trust Over IP DTGWG. Linked to the Decentralized Trust Graph, Verifiable Trust Infrastructure, and OpenVTC projects.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Trust Tasks — Reference registry of trust task specifications">
+  <meta name="twitter:description" content="An open registry of self-contained, transport-agnostic, JSON-based Trust Task specifications. Developed under the Trust Over IP DTGWG. Linked to the Decentralized Trust Graph, Verifiable Trust Infrastructure, and OpenVTC projects.">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..600,30..100,0..1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;450;500;600&display=swap" rel="stylesheet">
@@ -16,8 +29,9 @@
 
   <!-- The template for index.html, which scripts/build-website.mjs writes (run
        by `npm run build`): it names the content-hashed bundle of
-       components.jsx, pages.jsx and app.jsx in place of __APP_BUNDLE__ below.
-       Edit this file, not index.html. -->
+       components.jsx, pages.jsx and app.jsx in place of __APP_BUNDLE__ below,
+       and the content-hashed copy, under /assets/hashed/, of every other
+       /assets/*.js script here (#1148). Edit this file, not index.html. -->
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
