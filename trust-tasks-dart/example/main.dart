@@ -112,6 +112,7 @@ Future<void> main() async {
       now: DateTime.parse('2026-01-01T00:00:30Z'),
       newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
       payloadToJson: (p) => p.toJson(),
+      responseToJson: (r) => r.toJson(),
       // The document as it arrived, for the item-11 digest.
       received: json as Map<String, dynamic>,
       handler: (accepted, parties) async {

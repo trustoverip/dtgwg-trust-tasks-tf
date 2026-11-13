@@ -97,12 +97,12 @@ final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   doc: doc,
   myVid: 'did:web:maintainer.example',
   now: DateTime.now(),
-  newErrorId: () => uuid.v4(),
   payloadToJson: (p) => p.toJson(),
+  responseToJson: (r) => r.toJson(),
   received: json as Map<String, dynamic>,
   handler: (accepted, parties) async => respondWith(
     accepted,
-    uuid.v4(),
+    newUrnUuid(),
     acl_grant.Response(entry: await applyGrant(accepted.payload.entry, parties)),
   ),
 );
@@ -117,8 +117,10 @@ switch (outcome) {
   case Accepted():
     break; // fire-and-forget (§4.4.1): nothing to emit
   case DuplicateOutcome(:final priorResponse):
-    // §7.2 item 11 — already executed. NOT an error.
-    if (priorResponse != null) emit(priorResponse);
+    // §7.2 item 11 — already executed. NOT an error. The first execution's
+    // response document, as the JSON map that was recorded (`isError` says
+    // whether it was a refusal).
+    if (priorResponse != null) emitJson(priorResponse);
 }
 ```
 

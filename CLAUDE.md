@@ -542,6 +542,23 @@ Every known cross-runtime difference — this one, Rust-only `ERROR_CODES`, TS's
 closed `StandardCode`, and the open gaps — is tabled as yes / deliberately no /
 todo in **`docs/runtime-parity.md`**; update it when you change a row.
 
+## The Rust message bindings share one consumer — `GuardedConsumer`
+
+`DidcommConsumer`, `TspConsumer` and `DidcommV1Consumer` are thin wrappers
+that dereference to `trust_tasks_rs::GuardedConsumer` (#1096): the item-11
+record, the freshness bound, and `consume_body` / `consume_body_dispatched`,
+which parse the body a binding opened. A binding keeps only its unpack (an
+`open` that stops short of parsing) and its envelope check (DIDComm's thread
+headers), passed as a closure. Do not give a binding its own copy back.
+
+An authenticated body that does not parse, or that the envelope check
+refuses, is **answered** — `ConsumeOutcome::Rejected(malformedRequest)`,
+addressed to the transport-authenticated sender, never the unchecked in-band
+`issuer`, and refused before the item-11 record is written — as the Go and
+Dart bindings do. Only a body with no string `id` / Trust Task `type` to name
+in `inResponseTo`, or a transport with no authenticated sender, is an
+`Err` (`UnanswerableBody`, mapped to the binding's own error).
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
@@ -564,6 +581,21 @@ derive a census of declared-vs-emitted codes rather than hand-keep one.
 - **TypeScript, Go and Dart do not emit them yet.** When they do, add them to the
   same comparison so the four agree with each other, not only with the front
   matter.
+
+## `maxDocumentBytes` is generated — Rust and Dart only, so far
+
+A spec's `maxDocumentBytes` front matter (per variant; an absent `response`
+never inherits the request's bound) reaches Rust as
+`Payload::MAX_DOCUMENT_BYTES` and Dart as `SpecPolicy.maxDocumentBytes` on
+`spec` / `responseSpec` — emitted by **both** Dart generators
+(`build-dart-bindings.mjs` from front matter, `lib/src/generator/emit.dart`
+from the bundle's `policy.maxDocumentBytes`), independently. `check-bindings`
+compares Rust and Dart against the front matter. The Dart HTTPS server enforces
+it: its pre-parse body limit is the largest registered bound with a 256 KiB
+floor, then each document is held to its route's bound (`malformedRequest`).
+The Rust server still has a flat 256 KiB cap (#1121's Rust half rides with
+#1089); TypeScript and Go emit nothing yet — add them to the same comparison
+when they do.
 
 ## ⚠️ The Go module — four things that bite
 
@@ -875,20 +907,17 @@ are not obvious:
   `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
-- **Its request pipeline mirrors the Rust HTTPS server's as it was before
-  #1089**, including running expiry, freshness and identity (in §7.2 order, as
+- **Its request pipeline mirrors the Rust HTTPS server's**, including running expiry, freshness and identity (in §7.2 order, as
   `consumeInbound` does — except that with no authenticated sender identity
   runs first, so a misaddressed document stays suppressed per §8.1) *before*
   the attribution gate — `consumeInbound`
   repeats them afterwards, harmlessly. A reorder in one server changes which
   code a document that fails two checks is refused with, and the servers would
-  then disagree with each other and with `consumeInbound`. ⚠️ The Rust server
+  then disagree with each other and with `consumeInbound`. The Rust server
   now runs `consume_dispatched_answer` (see "Consumers that route on the Type
-  URI"), so the two currently differ: Rust routes forward along `extends` and
-  answers `unsupportedVersion`, enforces each type's `maxDocumentBytes`, parses
-  the payload and applies the per-spec policy *before* the item-11 claim, and
-  records a handler's non-retryable refusal. Bringing this server into line is
-  the Dart half of #1117/#1121 (decision brief group D).
+  URI"); #1242 gave this one the same forward routing along `extends`,
+  `unsupportedVersion` and per-type `maxDocumentBytes` bound. Change either
+  server's order and the other in the same release.
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.

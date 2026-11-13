@@ -52,6 +52,7 @@ mod dispatcher;
 mod document;
 mod error;
 mod extends_index;
+mod guarded;
 mod payload;
 mod proof;
 mod schema_cache;
@@ -96,6 +97,7 @@ pub use error::{
 pub use freshness::{
     FreshnessPolicy, StaleReason, DEFAULT_EXPIRY_HORIZON, DEFAULT_MAX_AGE, DEFAULT_SKEW,
 };
+pub use guarded::{GuardedConsumer, UnanswerableBody};
 pub use payload::{Payload, RequestPayload, SpecPolicy};
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,

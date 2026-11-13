@@ -350,6 +350,19 @@ function rustMaxDocumentBytes(src, ident) {
   return m ? Number(m[1].replace(/_/g, "")) : null;
 }
 
+/**
+ * The `maxDocumentBytes` argument of a generated Dart
+ * `const SpecPolicy <name> = SpecPolicy( … );`: a number, `null` when the
+ * policy omits it (the constructor's default), or `undefined` when there is
+ * no such policy.
+ */
+function dartMaxDocumentBytes(src, name) {
+  const block = new RegExp(`const SpecPolicy ${name} = SpecPolicy\\(([\\s\\S]*?)\\n\\);`, "m").exec(src);
+  if (!block) return undefined;
+  const m = /maxDocumentBytes:\s*([0-9_]+),/.exec(block[1]);
+  return m ? Number(m[1].replace(/_/g, "")) : null;
+}
+
 /** The fields inside `var <name> = trusttasks.SpecPolicy{ … }`. */
 function goPolicy(src, name) {
   const block = new RegExp(`var ${name} = trusttasks\\.SpecPolicy\\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
@@ -588,6 +601,7 @@ const seenDart = new Set();
 let rustErrorCodesChecked = 0;
 let rustDetailsSchemasChecked = 0;
 let rustSizeBoundsChecked = 0;
+let dartSizeBoundsChecked = 0;
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -777,6 +791,30 @@ for (const spec of specs) {
       }
       comparePolicy(where, "response", expected.response, dartResp, "Dart");
     }
+
+    // Front matter `maxDocumentBytes`, as for Rust below and re-derived the
+    // same way: an absent `response` bound is absent, never the request's.
+    // The Dart HTTPS server enforces this per type, so a wrong value is a
+    // document wrongly refused (or wrongly admitted) for its size.
+    const declaredDartSize = meta.maxDocumentBytes || {};
+    for (const [variant, name, want] of [
+      ["request", "spec", declaredDartSize.request ?? null],
+      ["response", "responseSpec", declaredDartSize.response ?? null],
+    ]) {
+      if (variant === "response" && !hasResponse) continue;
+      const got = dartMaxDocumentBytes(dart.src, name);
+      if (got === undefined) continue; // a missing policy is reported above
+      if (got !== want) {
+        fail(
+          where,
+          `Dart ${name}.maxDocumentBytes is ${got === null ? "absent" : got}, but the front matter ` +
+            `declares ${want === null ? "no bound" : want} for the ${variant} (maxDocumentBytes). ` +
+            `The Dart HTTPS server enforcing the bound per type would enforce the wrong one.`,
+        );
+      } else if (want !== null) {
+        dartSizeBoundsChecked += 1;
+      }
+    }
   }
 
   /* — Rust — */
@@ -883,7 +921,7 @@ for (const spec of specs) {
     }
 
     // Front matter `maxDocumentBytes`: the per-type document size bound a
-    // dispatcher enforces. Rust-only so far, like ERROR_CODES above, and
+    // dispatcher enforces. Rust and Dart (checked above) so far, and
     // re-derived here rather than imported from the generator. An absent
     // `response` bound is absent — it does not inherit the request's.
     const declaredSize = meta.maxDocumentBytes || {};
@@ -1391,6 +1429,6 @@ console.log(
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
     `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes (${rustDetailsSchemasChecked} with a detailsSchema) ` +
     `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
-    `MAX_DOCUMENT_BYTES. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +
+    `MAX_DOCUMENT_BYTES and ${dartSizeBoundsChecked} match Dart maxDocumentBytes. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +
     `deprecation note in all four; ${lifecycleSummary.withdrawn} withdrawn version(s) are generated in none.`,
 );
