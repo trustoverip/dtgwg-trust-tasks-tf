@@ -21,6 +21,7 @@
     "check-bundles": "node scripts/check-bundles.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "test:website": "node --test scripts/test/*.test.mjs",
+    "smoke:website": "node scripts/smoke-website.mjs",
     "test:release-scripts": "node --test scripts/test-release/*.test.mjs",
     "test:checks": "node --test scripts/test-checks/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
