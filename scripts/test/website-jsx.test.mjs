@@ -28,7 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { compileApp, JSX_FILES, BUNDLE_RE } from '../build-website.mjs';
+import { compileApp, JSX_FILES, BUNDLE_RE, HASHED_DIR, LOCAL_SCRIPT_RE, contentHash } from '../build-website.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const website = path.join(here, '..', '..', 'website');
@@ -104,18 +104,37 @@ test('the template loads the data scripts, then the bundle', () => {
 // ---------------------------------------------------------------------------
 
 const builtIndex = path.join(website, 'index.html');
-const bundleName = fs.existsSync(builtIndex)
-  ? (/<script defer src="\/assets\/(app\.[0-9a-f]+\.js)"><\/script>/.exec(fs.readFileSync(builtIndex, 'utf8')) || [])[1]
-  : undefined;
-const haveBuild = fs.existsSync(path.join(assets, 'tasks.generated.js')) && !!bundleName && fs.existsSync(path.join(assets, bundleName));
+const builtHtml = fs.existsSync(builtIndex) ? fs.readFileSync(builtIndex, 'utf8') : '';
+// The page's own scripts as the built index.html names them, in order.
+const builtScripts = [...builtHtml.matchAll(/<script defer src="\/assets\/hashed\/([^"]+)"><\/script>/g)].map((m) => m[1]);
+const bundleName = builtScripts.find((f) => BUNDLE_RE.test(f));
+const haveBuild = fs.existsSync(path.join(assets, 'tasks.generated.js')) && !!bundleName && fs.existsSync(path.join(HASHED_DIR, bundleName));
 
-test('the built index.html names the bundle the build wrote', { skip: !haveBuild && 'run `npm run build` first' }, () => {
-  assert.match(bundleName, BUNDLE_RE);
-  const bundles = fs.readdirSync(assets).filter((f) => BUNDLE_RE.test(f));
-  assert.deepEqual(bundles, [bundleName], 'one bundle, the one index.html names');
-  const hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(assets, bundleName))).digest('hex').slice(0, 16);
-  assert.equal(bundleName, `app.${hash}.js`, 'the name is its content hash, so it can be cached as immutable');
-  assert.equal(fs.readFileSync(path.join(assets, bundleName), 'utf8'), compileApp(), 'the bundle is current: rerun `npm run build`');
+test('the built index.html names content-hashed copies of every page script (#1148)', { skip: !haveBuild && 'run `npm run build` first' }, () => {
+  // Every script the template names, in its order, and the bundle last.
+  const templateScripts = [...template.matchAll(LOCAL_SCRIPT_RE)].map((m) => m[1]);
+  assert.equal(builtScripts.length, templateScripts.length + 1, 'one hashed name per template script, and the bundle');
+  assert.equal(builtScripts.at(-1), bundleName, 'the bundle runs last');
+  assert.doesNotMatch(builtHtml, /<script defer src="\/assets\/(?!hashed\/)/, 'no page script is loaded by its unhashed name');
+  assert.doesNotMatch(builtHtml, /__APP_BUNDLE__/);
+  templateScripts.forEach((f, i) => {
+    const bytes = fs.readFileSync(path.join(HASHED_DIR, builtScripts[i]));
+    assert.equal(builtScripts[i], `${f.replace(/\.js$/, '')}.${contentHash(bytes)}.js`, `${f}'s copy is named by its content hash, so it can be cached as immutable`);
+    assert.ok(bytes.equals(fs.readFileSync(path.join(assets, f))), `${builtScripts[i]} is current: rerun \`npm run build\``);
+  });
+  const bundle = fs.readFileSync(path.join(HASHED_DIR, bundleName));
+  assert.equal(bundleName, `app.${contentHash(bundle)}.js`, 'the bundle is named by its content hash');
+  assert.equal(bundle.toString('utf8'), compileApp(), 'the bundle is current: rerun `npm run build`');
+  // deploy.yml uploads the whole of assets/hashed/ as immutable.
+  assert.deepEqual(fs.readdirSync(HASHED_DIR).sort(), [...builtScripts].sort(), 'assets/hashed/ holds exactly what index.html names');
+  assert.deepEqual(fs.readdirSync(assets).filter((f) => BUNDLE_RE.test(f)), [], 'no bundle is left in assets/ itself');
+});
+
+test('the built index.html carries the link-preview and canonical tags (#1151)', { skip: !haveBuild && 'run `npm run build` first' }, () => {
+  assert.match(builtHtml, /<link rel="canonical" href="https:\/\/trusttasks\.org\/">/);
+  for (const tag of ['property="og:title"', 'property="og:description"', 'property="og:url"', 'property="og:type"', 'property="og:site_name"', 'name="twitter:card"', 'name="twitter:title"', 'name="twitter:description"']) {
+    assert.match(builtHtml, new RegExp(`<meta ${tag} content="[^"]+">`), tag);
+  }
 });
 
 /** A browser-ish global for the page scripts, with React and the data loaded. */
@@ -147,15 +166,13 @@ async function pageContext() {
   assert.equal(ctx.React.version, pageReactVersion);
   vm.runInContext(await loadPinned(REACT_DOM_SERVER, 'REACT_DOM_SERVER_JS'), ctx, { filename: 'react-dom-server.js' });
 
-  // The deferred scripts, in the template's order, with the built bundle in
-  // its placeholder's place. markdown.js is skipped: it needs marked and is
-  // only called from effects, which a server render does not run.
-  const scripts = [...template.matchAll(/<script defer src="\/assets\/([^"]+)"><\/script>/g)].map((m) => m[1]);
-  assert.ok(scripts.includes('tasks.generated.js'), 'the template loads tasks.generated.js');
-  for (const f of scripts) {
-    if (f === 'markdown.js') continue;
-    const file = f === '__APP_BUNDLE__' ? bundleName : f;
-    vm.runInContext(fs.readFileSync(path.join(assets, file), 'utf8'), ctx, { filename: file });
+  // The deferred scripts the built index.html names, in its order: the
+  // hashed copies, then the bundle. markdown.js is skipped: it needs marked
+  // and is only called from effects, which a server render does not run.
+  assert.ok(builtScripts.some((f) => f.startsWith('tasks.generated.')), 'index.html loads tasks.generated.js');
+  for (const f of builtScripts) {
+    if (f.startsWith('markdown.')) continue;
+    vm.runInContext(fs.readFileSync(path.join(HASHED_DIR, f), 'utf8'), ctx, { filename: f });
   }
   // The bundle's top-level declarations are globals, as they are in the page.
   ctx.__App = vm.runInContext('App', ctx);
