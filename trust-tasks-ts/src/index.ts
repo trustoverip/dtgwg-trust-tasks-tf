@@ -2053,6 +2053,9 @@ export import RoomsRecordsPut_v0_4 = _RoomsRecordsPut_v0_4;
 import * as _RoomsRecordsPut_v0_5 from "./rooms/records/put/0.5/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsRecordsPut_v0_5 = _RoomsRecordsPut_v0_5;
+import * as _RoomsRecordsPut_v0_6 from "./rooms/records/put/0.6/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsRecordsPut_v0_6 = _RoomsRecordsPut_v0_6;
 import * as _RoomsRecordsRetentionSet_v0_1 from "./rooms/records/retention/set/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsRecordsRetentionSet_v0_1 = _RoomsRecordsRetentionSet_v0_1;
