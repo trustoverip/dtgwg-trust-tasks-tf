@@ -75,6 +75,7 @@ updates:
       - /trust-tasks-ts-capability-client
       - /trust-tasks-ts-gen
       - /examples/consumer-app-ts
+      - /examples/getting-started-ts
     schedule:
       interval: weekly
     groups:
@@ -120,6 +121,7 @@ updates:
       - /trust-tasks-go/capabilityclient
       - /trust-tasks-go/tsp
       - /examples/consumer-app-go
+      - /examples/getting-started-go
     schedule:
       interval: weekly
     groups:
@@ -139,6 +141,7 @@ updates:
       - /trust-tasks-dart-tsp
       - /trust-tasks-dart-capability-client
       - /examples/consumer-app-dart
+      - /examples/getting-started-dart
     schedule:
       interval: weekly
     groups:

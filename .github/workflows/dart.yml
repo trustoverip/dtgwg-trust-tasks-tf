@@ -235,6 +235,31 @@ jobs:
       - name: Run
         working-directory: examples/consumer-app-dart
         run: dart run bin/main.dart
+      # examples/getting-started-dart: the application behind
+      # GETTING-STARTED.md §3b, a signed acl/grant round trip over
+      # trust_tasks_https that asserts its own output, and its snippets held to
+      # the document (the Dart counterpart of
+      # trust-tasks/tests/getting_started_snippets.rs). Not on the 3.3 floor:
+      # trust_tasks_proof's is 3.6, which ssi 3.9 sets.
+      - name: "Getting started: install dependencies"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart pub get
+      - name: "Getting started: generate"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
+      - name: "Getting started: analyze"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart analyze --fatal-infos
+      - name: "Getting started: run"
+        if: matrix.sdk != '3.3'
+        working-directory: examples/getting-started-dart
+        run: dart run bin/main.dart
+      - name: "Getting started: GETTING-STARTED.md §3b matches the example"
+        if: matrix.sdk != '3.3'
+        run: node scripts/check-getting-started-snippets.mjs examples/getting-started-dart/bin/main.dart
 
   # The release is sized by the PR title: `feat(dart)!:` makes trust_tasks a
   # breaking release, anything else a patch. Nothing else stopped an accidental

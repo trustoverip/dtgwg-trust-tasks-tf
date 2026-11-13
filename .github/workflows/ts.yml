@@ -321,6 +321,11 @@ jobs:
   # through the runtime — against the runtime in this checkout, because the
   # generated index calls `declareExtends`, which is newer than the last
   # release. The TypeScript twin of rust.yml's `consumer-app`.
+  #
+  # It also runs examples/getting-started-ts, the application behind
+  # GETTING-STARTED.md §3 — a signed acl/grant round trip over HTTP that
+  # asserts its own output — and holds that section's snippets to its source
+  # (the TypeScript counterpart of trust-tasks/tests/getting_started_snippets.rs).
   consumer-app-ts:
     name: example application (trust-tasks-gen-ts)
     runs-on: ubuntu-24.04
@@ -342,3 +347,11 @@ jobs:
       - name: Generate, build and run
         working-directory: examples/consumer-app-ts
         run: npm ci --no-audit --no-fund && npm run all
+      - name: Build @openvtc/trust-tasks-proof
+        working-directory: trust-tasks-ts-proof
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: "Getting started: generate, build and run"
+        working-directory: examples/getting-started-ts
+        run: npm ci --no-audit --no-fund && npm run all
+      - name: "Getting started: GETTING-STARTED.md §3 matches the example"
+        run: node scripts/check-getting-started-snippets.mjs examples/getting-started-ts/src/main.ts
