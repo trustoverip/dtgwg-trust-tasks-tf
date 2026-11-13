@@ -121,9 +121,10 @@ jobs:
 
       # The markdown renderer's raw-HTML allow-list and link-scheme check
       # (website/assets/markdown.js), end to end through the marked build the
-      # page loads — fetched from the URL pinned in index.html and checked
-      # against its integrity hash.
-      - name: Test the website markdown renderer
+      # page loads — fetched from the URL pinned in index.template.html and
+      # checked against its integrity hash — and the built page bundle,
+      # server-rendered for a set of routes (website-jsx.test.mjs).
+      - name: Test the website
         run: npm run test:website
 
       - name: Sync SPEC.md into website/
@@ -218,17 +219,18 @@ jobs:
           --size-only
           --cache-control "public, max-age=31536000, immutable"
 
-      # The site in four syncs, each with its own object metadata (#1145,
-      # #1148, #1152). `aws s3 sync` applies `--exclude`/`--include` to
-      # `--delete` too, so each sync deletes only within its own slice, and the
-      # by-digest prefix (above) is in none of them.
+      # The site in five syncs, each with its own object metadata (#1145,
+      # #1148, #1152, #1147). `aws s3 sync` applies `--exclude`/`--include`
+      # to `--delete` too, so each sync deletes only within its own slice, and
+      # the by-digest prefix (above) is in none of them.
       #
-      # Cache-Control: asset URLs are not content-hashed, so nothing can be
-      # `immutable`. Pages and assets are `no-cache` (always revalidated — a
-      # cheap 304 when unchanged), so a new index.html never runs against stale
-      # JSX or data. The specs tree is read by tools as well as the page, and
-      # tolerates a few minutes' staleness: a short max-age with
-      # stale-while-revalidate.
+      # Cache-Control: the page bundle, assets/app.<hash>.js, is named by its
+      # content hash (scripts/build-website.mjs), so it is `immutable`. Every
+      # other asset URL is not content-hashed: pages and assets are `no-cache`
+      # (always revalidated — a cheap 304 when unchanged), so a new index.html
+      # never runs against stale data. The specs tree is read by tools as well
+      # as the page, and tolerates a few minutes' staleness: a short max-age
+      # with stale-while-revalidate.
       #
       # 1. Payload and shared schemas, with the media type a Type URI is
       #    negotiated for (SPEC §6.2) — S3 would otherwise guess
@@ -272,7 +274,18 @@ jobs:
             --content-type "text/javascript; charset=utf-8" \
             --cache-control "no-cache"
 
-      # 4. Everything else — index.html, the JSX, the hand-kept data files,
+      # 4. The page bundle, before the index.html that names it (step 5), and
+      #    without `--delete`: a visitor holding the previous index.html can
+      #    still fetch the previous bundle. Step 6 removes it afterwards.
+      - name: Deploy the page bundle to S3 (content-hashed)
+        if: steps.fresh.outputs.current == 'true'
+        run: >-
+          aws s3 sync website/assets/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/
+          --exclude "*" --include "app.*.js"
+          --content-type "text/javascript; charset=utf-8"
+          --cache-control "public, max-age=31536000, immutable"
+
+      # 5. Everything else — index.html, the JSX sources, the hand-kept data files,
       #    registry.json, robots.txt, sitemap.xml, bindings/, ceremonies/.
       - name: Deploy to S3
         if: steps.fresh.outputs.current == 'true'
@@ -281,7 +294,19 @@ jobs:
           --delete
           --exclude "specs/*"
           --exclude "assets/tasks.generated.js"
+          --exclude "assets/app.*.js"
+          --exclude "index.template.html"
           --cache-control "no-cache"
+
+      # 6. Remove the bundles no index.html names any more, now the new one is live.
+      - name: Remove superseded page bundles from S3
+        if: steps.fresh.outputs.current == 'true'
+        run: >-
+          aws s3 sync website/assets/ s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/
+          --delete
+          --exclude "*" --include "app.*.js"
+          --content-type "text/javascript; charset=utf-8"
+          --cache-control "public, max-age=31536000, immutable"
 
       - name: Invalidate CloudFront Cache
         if: steps.fresh.outputs.current == 'true' && env.CLOUDFRONT_DISTRIBUTION_ID != ''
