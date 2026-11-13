@@ -66,6 +66,13 @@ changelog entry and the signal that sizes each package's version bump.
 
 The commit body is included in the changelog verbatim.
 
+## Code of conduct
+
+Participation in this repository — issues, pull requests, review and
+discussion — is governed by the LF Decentralized Trust
+[Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct), which
+the ToIP community follows.
+
 ## Review
 
 - Touch only your own spec folder/namespace where possible. `.github/CODEOWNERS`

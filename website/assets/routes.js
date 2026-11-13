@@ -1,8 +1,8 @@
 /* ============================================================
    Trust Tasks — routing and version helpers (plain script)
    ------------------------------------------------------------
-   Loaded before tasks.generated.js, whose TT_STATS footer uses
-   `latestPerSlug`, and before the JSX, which uses all of it.
+   Loaded before the JSX, which uses all of it. The registry
+   build evaluates it too, and computes TT_STATS by `latestPerSlug`.
    A plain script rather than JSX so that Node can load it too:
    scripts/build-registry.mjs runs `resolveProseHref` over every
    relative link in spec and binding prose, and the website tests
