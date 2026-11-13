@@ -155,6 +155,24 @@ function routeMeta(r) {
   }
 }
 
+/* The canonical URL of a route (#1151): the production origin, whatever host
+   served the page, and the path without the registry's filters — they narrow
+   one page rather than name another. A versionless /spec/<slug> or
+   /binding/<slug> canonicalises to the version it shows. */
+const SITE_ORIGIN = "https://trusttasks.org";
+function canonicalPath(r) {
+  if (r.name === "registry") return routePath({ name: "registry", cat: r.cat });
+  if (r.name === "notfound" || ((r.name === "spec" || r.name === "binding") && !r.slug)) {
+    return "/" + location.pathname.replace(/^\/+|\/+$/g, "");
+  }
+  return routePath(r);
+}
+
+function setHead(selector, attr, value) {
+  const el = document.querySelector(selector);
+  if (el) el.setAttribute(attr, value);
+}
+
 /* Remounts the page — and clears a caught render error — whenever the page
    changes, but not when only the registry's filters do. */
 function routeKey(r) {
@@ -218,11 +236,20 @@ function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  // Title and description follow the route.
+  // Title, description, canonical link and link-preview tags follow the route.
   useEffectApp(() => {
     const meta = routeMeta(route);
-    document.title = meta.title || SITE_TITLE;
-    document.querySelector('meta[name="description"]').setAttribute("content", meta.description || SITE_DESCRIPTION);
+    const title = meta.title || SITE_TITLE;
+    const description = meta.description || SITE_DESCRIPTION;
+    const url = SITE_ORIGIN + canonicalPath(route);
+    document.title = title;
+    setHead('meta[name="description"]', "content", description);
+    setHead('link[rel="canonical"]', "href", url);
+    setHead('meta[property="og:url"]', "content", url);
+    setHead('meta[property="og:title"]', "content", title);
+    setHead('meta[property="og:description"]', "content", description);
+    setHead('meta[name="twitter:title"]', "content", title);
+    setHead('meta[name="twitter:description"]', "content", description);
   }, [route]);
 
   // Move focus to the new page's heading, so a keyboard or screen-reader

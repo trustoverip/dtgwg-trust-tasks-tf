@@ -14,7 +14,7 @@ import (
 // Response Success response to rooms/records/put. Type
 // https://trusttasks.org/spec/rooms/records/put/0.3#response.
 //
-// Deprecated: superseded by rooms/records/put/0.5
+// Deprecated: superseded by rooms/records/put/0.6
 type Response struct {
 	// The stored record's key.
 	Key string `json:"key"`
@@ -483,7 +483,7 @@ type PayloadCleartext struct {
 // signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its
 // `FileManifest`, with the file key it was sealed under, in `cleartext.file`.
 //
-// Deprecated: superseded by rooms/records/put/0.5
+// Deprecated: superseded by rooms/records/put/0.6
 type Payload struct {
 	// The room's identifier. A host verifies the presentation against credentials issued by
 	// this identifier, never against a member list of its own — which is what lets a room
@@ -543,7 +543,7 @@ const Extends = "0.3"
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/records/put/0.5"
+const Deprecation = "superseded by rooms/records/put/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/records/put/0.4#response"

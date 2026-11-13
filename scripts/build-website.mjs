@@ -1,17 +1,27 @@
 #!/usr/bin/env node
 /**
- * Compiles the website's page code into one minified, content-hashed bundle
- * and writes `website/index.html` naming it (#1147).
+ * Compiles the website's page code into one minified, content-hashed bundle,
+ * gives every other script the page loads a content-hashed copy too, and
+ * writes `website/index.html` naming them (#1147, #1148).
  *
  * The page used to load `@babel/standalone` (3 MB) and React's development
  * builds from unpkg and compile ~240 KB of JSX on every visit. Now:
  *
  *   website/assets/{components,pages,app}.jsx
- *     → website/assets/app.<hash>.js      (esbuild: JSX → React.createElement, minified)
+ *     → website/assets/hashed/app.<hash>.js    (esbuild: JSX → React.createElement, minified)
+ *   website/assets/<name>.js, for every `<script defer src="/assets/<name>.js">`
+ *   in the template — markdown.js, routes.js, the hand-kept data files and
+ *   tasks.generated.js
+ *     → website/assets/hashed/<name>.<hash>.js (a byte-for-byte copy)
  *   website/index.template.html
- *     → website/index.html                (names that bundle)
+ *     → website/index.html                     (names the hashed files)
  *
- * Both outputs are .gitignore'd. React and ReactDOM stay UMD globals, loaded
+ * <hash> is the first 16 hex digits of the file's SHA-256, so a name is only
+ * ever served with one content, and deploy.yml uploads `assets/hashed/` as
+ * `immutable`. The unhashed sources stay where they are: the template names
+ * them and the tests read them. Every output is .gitignore'd, and
+ * `assets/hashed/` holds exactly what the current index.html names — the
+ * build empties it first, since a stale file there would be uploaded too. React and ReactDOM stay UMD globals, loaded
  * from unpkg as production builds pinned by `integrity` in the template, as
  * `marked` is, so this script adds no runtime dependency and no network fetch.
  *
@@ -42,7 +52,17 @@ export const TEMPLATE = path.join(WEBSITE_DIR, 'index.template.html');
 export const JSX_FILES = ['components.jsx', 'pages.jsx', 'app.jsx'];
 
 const PLACEHOLDER = '/assets/__APP_BUNDLE__';
+/** Where the content-hashed files go, and the URL prefix they are served at. */
+export const HASHED_DIR = path.join(ASSETS_DIR, 'hashed');
+export const HASHED_PREFIX = '/assets/hashed/';
 export const BUNDLE_RE = /^app\.[0-9a-f]{16}\.js$/;
+/** The page's own scripts in the template (the bundle placeholder aside). */
+export const LOCAL_SCRIPT_RE = /<script defer src="\/assets\/([A-Za-z0-9_.-]+\.js)"><\/script>/g;
+
+export const contentHash = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+
+/** `data.js` → `data.<hash>.js`. */
+export const hashedName = (file, bytes) => `${file.replace(/\.js$/, '')}.${contentHash(bytes)}.js`;
 const TEMPLATE_NOTE = /[ \t]*<!-- The template for index\.html[\s\S]*?-->\n/;
 
 /** Compile the page code to one script. Throws on a syntax error, naming the
@@ -68,27 +88,44 @@ export function compileApp() {
   return parts.join('\n');
 }
 
-/** Build the bundle and index.html. Returns the bundle's file name. */
+/** Build the bundle, the hashed copies and index.html. Returns the bundle's
+ * file name. */
 export function buildWebsite({ log = console.log } = {}) {
   const code = compileApp();
-  const hash = crypto.createHash('sha256').update(code).digest('hex').slice(0, 16);
-  const name = `app.${hash}.js`;
-
-  for (const f of fs.readdirSync(ASSETS_DIR)) {
-    if (BUNDLE_RE.test(f) && f !== name) fs.rmSync(path.join(ASSETS_DIR, f));
-  }
-  fs.writeFileSync(path.join(ASSETS_DIR, name), code);
+  const name = hashedName('app.js', code);
 
   const template = fs.readFileSync(TEMPLATE, 'utf8');
   if (template.split(PLACEHOLDER).length !== 2) {
     throw new Error(`website/index.template.html must name ${PLACEHOLDER} exactly once`);
   }
+  const copies = [...template.matchAll(LOCAL_SCRIPT_RE)].map(([, f]) => {
+    const src = path.join(ASSETS_DIR, f);
+    if (!fs.existsSync(src)) {
+      throw new Error(`website/assets/${f}: named by index.template.html but missing` +
+        (f === 'tasks.generated.js' ? ' (`npm run build` generates it)' : ''));
+    }
+    const bytes = fs.readFileSync(src);
+    return { f, bytes, hashed: hashedName(f, bytes) };
+  });
+
+  fs.rmSync(HASHED_DIR, { recursive: true, force: true });
+  fs.mkdirSync(HASHED_DIR, { recursive: true });
+  fs.writeFileSync(path.join(HASHED_DIR, name), code);
+  for (const { hashed, bytes } of copies) fs.writeFileSync(path.join(HASHED_DIR, hashed), bytes);
+  // The bundle's previous home (#1257), before it moved under hashed/.
+  for (const f of fs.readdirSync(ASSETS_DIR)) {
+    if (BUNDLE_RE.test(f)) fs.rmSync(path.join(ASSETS_DIR, f));
+  }
+
+  const names = Object.fromEntries(copies.map(({ f, hashed }) => [f, hashed]));
   const html = template
     .replace(TEMPLATE_NOTE, '  <!-- Generated from index.template.html by scripts/build-website.mjs. Edit the template. -->\n')
-    .replace(PLACEHOLDER, `/assets/${name}`);
+    .replace(PLACEHOLDER, `${HASHED_PREFIX}${name}`)
+    .replace(LOCAL_SCRIPT_RE, (_, f) => `<script defer src="${HASHED_PREFIX}${names[f]}"></script>`);
   fs.writeFileSync(path.join(WEBSITE_DIR, 'index.html'), html);
 
-  log(`Wrote website/assets/${name} (${(code.length / 1024).toFixed(0)} KB) and website/index.html.`);
+  log(`Wrote website/assets/hashed/${name} (${(code.length / 1024).toFixed(0)} KB), ` +
+    `content-hashed copies of ${copies.length} scripts, and website/index.html.`);
   return name;
 }
 

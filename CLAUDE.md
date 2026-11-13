@@ -40,6 +40,14 @@ document in the same PR. Do not copy their content back into this file.
 - **Changed anything under `specs/`? Regenerate all four libraries** (Rust, TS,
   Go, Dart) in the same PR; a released version only changes additively.
   → [DEVELOPMENT.md](docs/DEVELOPMENT.md#changing-a-spec-or-payload-schema--regenerate-the-libraries)
+- **A spec version you add must target the current framework**
+  (`CURRENT_FRAMEWORK_VERSION`, `0.6.0`), and a status you raise must be on the
+  latest live version of its slug (`spec lifecycle rules`).
+  → [DEVELOPMENT.md](docs/DEVELOPMENT.md#what-the-ci-checks-actually-assert)
+- **The Rust toolchain is pinned** in `rust-toolchain.toml`; CI installs it via
+  `.github/actions/rust-toolchain`, never `dtolnay/rust-toolchain@stable`; an MSRV
+  job sets `RUSTUP_TOOLCHAIN`.
+  → [DEVELOPMENT.md](docs/DEVELOPMENT.md#the-rust-toolchain-is-pinned--rust-toolchaintoml)
 - **Judge a library bump by what a consumer observes** — a behavioural break
   counts, and a leading-component bump is a workspace event.
   → [DEVELOPMENT.md](docs/DEVELOPMENT.md#library-versions-are-semver-over-the-librarys-api-not-the-frameworks)
