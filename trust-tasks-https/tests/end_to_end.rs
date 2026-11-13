@@ -1030,6 +1030,62 @@ async fn unattributable_document_is_rejected_before_the_handler() {
     );
 }
 
+/// The attribution gate runs before the route lookup, so a sender it refuses
+/// gets one answer whether or not the `type` is registered: the route table is
+/// not readable without attribution. An authenticated sender still learns that
+/// a type is unsupported.
+#[tokio::test]
+async fn unattributed_sender_gets_one_answer_for_registered_and_unregistered_types() {
+    let (addr, seen) = spawn_spy_server(true).await;
+    let anonymous = build_client(addr, "did:web:alice.example", None);
+
+    let registered = anonymous
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-route-registered",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    let unregistered = anonymous
+        .send::<show::v0_2::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-route-unregistered",
+            show::v0_2::Payload::builder()
+                .subject("did:web:bob.example")
+                .try_into()
+                .expect("acl show payload builder"),
+        ))
+        .await
+        .unwrap_err();
+    for err in [registered, unregistered] {
+        match err {
+            ClientError::TrustTaskError { http_status, error } => {
+                assert_eq!(http_status, 422);
+                assert_eq!(error.payload.code, StandardCode::ProofRequired.into());
+            }
+            other => panic!("expected proofRequired, got {other:?}"),
+        }
+    }
+    assert!(seen.lock().unwrap().is_empty());
+
+    let authenticated = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = authenticated
+        .send::<show::v0_2::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-route-authenticated",
+            show::v0_2::Payload::builder()
+                .subject("did:web:bob.example")
+                .try_into()
+                .expect("acl show payload builder"),
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::TrustTaskError { error, .. } => {
+            assert_eq!(error.payload.code, StandardCode::UnsupportedType.into())
+        }
+        other => panic!("expected unsupportedType, got {other:?}"),
+    }
+}
+
 /// The gate is not "authenticated only" — an in-band `proof` is the other
 /// admissible form of attribution, and a proof-bearing document gets past it
 /// (here to be refused further down by the no-verifier policy, which is a
