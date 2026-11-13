@@ -502,7 +502,7 @@ fn main() -> Result<()> {
 /// table: one feature per top-level spec family, an `all-specs` umbrella
 /// enabling every one of them, and an empty `default`.
 ///
-/// Generated rather than hand-maintained on purpose. `CLAUDE.md` records three
+/// Generated rather than hand-maintained on purpose. `docs/DEVELOPMENT.md` records three
 /// separate incidents of a hand-kept list drifting from the tree; a family
 /// whose feature was forgotten would simply vanish from the crate, and the
 /// `codegen-drift` job would not see it because it only diffs `src/specs`.

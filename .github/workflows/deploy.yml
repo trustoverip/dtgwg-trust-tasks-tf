@@ -339,7 +339,7 @@ jobs:
           title="Scheduled website deploy is failing"
           body="The \`$EVENT\` run of the website deploy failed: $RUN_URL
 
-          trusttasks.org keeps serving the previous build until a run succeeds. The usual cause is a change in the canonical framework repository (an anchor that a \`/SPEC.md#…\` link here names, or a heading the legacy-anchors file maps to); see CLAUDE.md, \"SPEC.md is generated\"."
+          trusttasks.org keeps serving the previous build until a run succeeds. The usual cause is a change in the canonical framework repository (an anchor that a \`/SPEC.md#…\` link here names, or a heading the legacy-anchors file maps to); see docs/DEVELOPMENT.md, \"SPEC.md is generated\"."
           existing=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
             --jq "[.[] | select(.title == \"$title\")][0].number // empty")
           if [ -n "$existing" ]; then
