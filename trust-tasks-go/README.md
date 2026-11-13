@@ -154,7 +154,9 @@ has no dependencies, so it brings no UUID package. With the standard library:
 // newID returns a random (version 4) urn:uuid identifier.
 func newID() string {
     var b [16]byte
-    _, _ = rand.Read(b[:]) // crypto/rand
+    if _, err := rand.Read(b[:]); err != nil { // crypto/rand
+        panic(err) // never mint an all-zero id: it would collide in the peer's replay record
+    }
     b[6] = b[6]&0x0f | 0x40
     b[8] = b[8]&0x3f | 0x80
     return fmt.Sprintf("urn:uuid:%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
