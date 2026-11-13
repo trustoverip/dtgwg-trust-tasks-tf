@@ -24,6 +24,11 @@
       "minimum": 0,
       "description": "Only messages queued at least this long."
     },
+    "storedBefore": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Only messages stored at or before this instant. A producer confirming a dry run sends that dry run's selectedAt here, so the purge removes nothing stored after the preview."
+    },
     "dryRun": {
       "type": "boolean",
       "description": "Report what would be purged and purge nothing. Default false."
@@ -57,6 +62,11 @@
         },
         "dryRun": {
           "type": "boolean"
+        },
+        "selectedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The instant at which the mediator took the selection. Returned on a dry run so the producer can pin the confirming purge to it with storedBefore."
         },
         "ext": {
           "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
