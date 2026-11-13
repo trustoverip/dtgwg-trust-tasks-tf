@@ -153,12 +153,20 @@ pub trait TransportHandler {
     /// `None` when the rejection is `identityMismatch` and the transport
     /// has no authenticated sender for the inbound document — per §8.1, the
     /// consumer SHOULD NOT emit a response in that case.
+    ///
+    /// The response's `issuer` is the consumer that emits it (§8.1): the
+    /// transport's own identity ([`TransportContext::recipient`]) where the
+    /// transport has one. Otherwise it is the rejected document's in-band
+    /// `recipient`, except under `wrongRecipient`, where that value is by
+    /// definition not this consumer and the `issuer` is left out.
     fn reject<P>(
         &self,
         doc: &TrustTask<P>,
         id: impl Into<String>,
         reason: RejectReason,
     ) -> Option<ErrorResponse> {
+        let not_me = matches!(reason, RejectReason::WrongRecipient { .. });
+        let local = self.derive_parties().recipient;
         let recipient = match &reason {
             RejectReason::IdentityMismatch(_) => {
                 // §8.1: transport-authenticated sender only. If the
@@ -170,6 +178,10 @@ pub trait TransportHandler {
             }
             _ => doc.issuer.clone(),
         };
-        Some(doc.reject_with_recipient(id, reason, recipient))
+        let mut response = doc.reject_with_recipient(id, reason, recipient);
+        if local.is_some() || not_me {
+            response.issuer = local;
+        }
+        Some(response)
     }
 }

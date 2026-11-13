@@ -16,6 +16,7 @@ import {
   InMemoryReplayGuard,
   notConsequentialChecks,
   refuse,
+  reject,
   rejectWithRecipient,
   respondWith,
   StaticTransport,
@@ -630,5 +631,35 @@ describe("a handler that returns nothing", () => {
     // isErrorResponse.
     const outcome = await run({ proof: PROOF }, { handlerReturnsNothing: true });
     assert.equal(outcome.kind, "accepted");
+  });
+});
+
+describe("§8.1 — the error response is issued by the consumer", () => {
+  // A document misaddressed to another VID is refused `wrongRecipient`; the
+  // refusal must not claim to come from that VID.
+  const misaddressed = doc({ recipient: "did:web:someone-else.example" });
+  const wrongRecipient = {
+    code: "wrongRecipient",
+    message: "in-band recipient does not identify this consumer",
+    retryable: false,
+  } as const;
+
+  it("as the transport's own identity, where it has one", () => {
+    const transport = new StaticTransport({ issuer: PEER, recipient: ME });
+    const error = reject(transport, misaddressed, "err-1", wrongRecipient);
+    assert.equal(error?.issuer, ME);
+    assert.equal(error?.recipient, PEER);
+    const other = reject(transport, misaddressed, "err-2", { code: "proofRequired", message: "x", retryable: false });
+    assert.equal(other?.issuer, ME);
+  });
+
+  it("with no issuer under wrongRecipient where the transport has none", () => {
+    const transport = new UnauthenticatedTransport();
+    const error = reject(transport, misaddressed, "err-1", wrongRecipient);
+    assert.ok(error !== undefined);
+    assert.equal("issuer" in error, false);
+    // Other refusals keep the in-band recipient.
+    const other = reject(transport, doc(), "err-2", { code: "proofRequired", message: "x", retryable: false });
+    assert.equal(other?.issuer, ME);
   });
 });

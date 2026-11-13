@@ -20,6 +20,9 @@ export {
   newAttempt,
   correlationThread,
   repliesTo,
+  answersRequest,
+  isFrameworkError,
+  isRegistryType,
   typeUriParts,
   parseEnvelopeDocument,
   parseEnvelopeDocumentFor,
@@ -27,7 +30,9 @@ export {
 } from "./document.js";
 export {
   classifyGitTrustReply,
+  classifyGitTrustReplyTo,
   parseCapabilityReply,
+  parseCapabilityReplyTo,
   parseEnvelopeReply,
   type WriteOutcome,
   type ReplyPolicy,

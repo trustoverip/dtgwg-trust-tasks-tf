@@ -14,10 +14,17 @@ regenerates the website registry; `cargo run -p trust-tasks-codegen`,
 `SPEC.md` is the Trust Tasks framework specification, **generated** from the
 canonical source, [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec),
 by `npm run generate-framework-spec` (`scripts/generate-framework-spec.mjs`).
-A framework change is a PR to that repository; this copy follows it. CI
-regenerates `SPEC.md` from canonical `main` before every build, so trusttasks.org
-always serves the latest canonical text, and the committed copy is refreshed by
-running the script and committing the result.
+A framework change is a PR to that repository; this copy follows it. Every
+deploying run of `deploy.yml` (push to `main`, the nightly schedule, a dispatch
+from the canonical repository) regenerates `SPEC.md` from canonical `main` before
+the build, so trusttasks.org always serves the latest canonical text, and the
+committed copy is refreshed by running the script and committing the result. A
+**pull request builds from the committed copy** instead (#1138):
+`npm run check-framework-spec` regenerates from the canonical commit `SPEC.md`'s
+own banner names and fails only if the committed file is not that output, so a
+canonical change cannot turn an unrelated PR red. When a scheduled or dispatched
+deploy fails, it opens (or comments on) a "Scheduled website deploy is failing"
+issue.
 
 - **Section numbers are assigned by the generator**, in canonical order — the
   canonical text has none. When a canonical change moves a section, its number
@@ -536,6 +543,16 @@ needs the type-erased half of every binding:
   cannot hold **before** the item-11 record is written, and otherwise runs
   `consume_inbound`'s own body (`consume_core`). Do not give it a second copy
   of the checks. The synchronous `Dispatcher` has no such path.
+  `consume_dispatched_answer` is the same function for a dispatcher whose
+  handlers answer with something other than a response document — an
+  `Option`, where `None` acknowledges a fire-and-forget task and is recorded
+  as *no response*. **`trust-tasks-https`'s server is built on it** (#1089):
+  the server keeps only the body limit, content type, bearer auth and status
+  mapping, and every check it had alone is a `ConsumeChecks` option —
+  `require_attribution`, `proof_did_methods`, `received_bytes` (the per-type
+  `maxDocumentBytes` bound) — and the identity-first order with no
+  authenticated sender is `consume_core`'s own. A check a binding needs goes
+  there, not into the binding.
 - **TypeScript, Go, Dart.** No dispatcher: their consume functions take the
   specification's policy as a value (`spec`), and their binding unpack is
   already untyped, so the caller unpacks, looks up the spec for `type`, and
@@ -912,14 +929,17 @@ are not obvious:
   `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
-- **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
-  step**, including running expiry, freshness and identity (in §7.2 order, as
-  `consumeInbound` does — except that with no authenticated sender identity
+- **Its request pipeline mirrors the Rust HTTPS server's**, including running
+  expiry, freshness and identity (in §7.2 order, as `consumeInbound` does — except that with no authenticated sender identity
   runs first, so a misaddressed document stays suppressed per §8.1) *before*
   the attribution gate — `consumeInbound`
   repeats them afterwards, harmlessly. A reorder in one server changes which
   code a document that fails two checks is refused with, and the servers would
-  then disagree with each other and with `consumeInbound`.
+  then disagree with each other and with `consumeInbound`. The Rust server
+  now runs `consume_dispatched_answer` (see "Consumers that route on the Type
+  URI"); #1242 gave this one the same forward routing along `extends`,
+  `unsupportedVersion` and per-type `maxDocumentBytes` bound. Change either
+  server's order and the other in the same release.
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.
@@ -979,6 +999,18 @@ logic, no crypto** — document builders for the `governance/capability/*` and
   `release-bump-dart.sh` case, which `check-dart-packages` holds in agreement.
   Its first pub.dev publish (`0.1.0`) was the manual one.
 
+## The Rust toolchain is pinned — `rust-toolchain.toml`
+
+The root `rust-toolchain.toml` names the exact stable release (plus `rustfmt`
+and `clippy`) that contributors and every CI job build with (#1142); CI installs
+it through `.github/actions/rust-toolchain`, never `dtolnay/rust-toolchain@stable`.
+`rust-toolchain-bump.yml` opens a PR each week a newer stable is out — new lints
+and rustfmt changes are fixed on that PR, not discovered on every open one. The
+crates' MSRV (`rust-version` in `Cargo.toml`) is separate; a job building at it
+must set `RUSTUP_TOOLCHAIN`, since the file overrides `rustup default`. The root
+`.npmrc` sets `engine-strict=true`, which applies to installs at the repository
+root only (Node 24, as `.nvmrc` and `engines` say), not to the published packages.
+
 ## Build / validate / publish
 
 ```sh
@@ -1007,6 +1039,10 @@ release. See `RELEASING.md` and the callout above.
 
 - **DCO sign-off is mandatory on every commit** (`git commit -s`) — see the ⚠️
   callout at the top of this file.
-- Touch only your own spec folder/namespace where possible — CODEOWNERS routes
-  review per slug; multi-folder changes need multiple approvals.
+- Touch only your own spec folder/namespace where possible. `.github/CODEOWNERS`
+  is effectively single-owner today (one maintainer on every rule but
+  `/specs/process-attestation/`), so it does not route review per slug and there
+  is no second reviewer of record (#1144); don't write prose that says otherwise.
+  Displayed spec authors come from front matter or git history, never from
+  CODEOWNERS.
 - See `CONTRIBUTING-SPECS.md` for the full spec-authoring guide.

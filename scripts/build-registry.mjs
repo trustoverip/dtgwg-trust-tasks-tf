@@ -1426,9 +1426,11 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * than the lazy one, which means it has to reach the same answer a
  * conscientious author would have typed:
  *
- *   authors  — from CODEOWNERS, which already names who reviews each slug and
- *              is kept current because GitHub enforces it. Falling back to the
- *              spec folder's git history, which is who actually wrote it.
+ *   authors  — from the spec folder's git history, which is who actually
+ *              wrote it. (This used to come from CODEOWNERS first, but that
+ *              file names one maintainer for nearly every family, so most
+ *              specs were credited to the reviewer of record rather than to
+ *              their authors — #1144.)
  *   keywords — from the slug's own segments plus the category, which is exactly
  *              what 46% of hand-written keyword lists already were.
  *
@@ -1436,69 +1438,17 @@ function applyMethodExtensions(meta, slug, version, uses, sharedBySlug) {
  * ceremony, not to overrule an author who has something real to say.
  */
 
-let codeownersRules = null;
-
-/* CODEOWNERS, reduced to what this needs: (pattern, owners) in file order, last
- * match winning, as GitHub does. Only path-prefix patterns are honoured — the
- * file uses nothing else, and implementing the full gitignore grammar to serve
- * a display string would be a poor trade. */
-function loadCodeowners() {
-  if (codeownersRules) return codeownersRules;
-  codeownersRules = [];
-  for (const candidate of ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS']) {
-    const p = path.join(ROOT, candidate);
-    if (!fs.existsSync(p)) continue;
-    for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
-      const stripped = line.replace(/#.*$/, '').trim();
-      if (!stripped) continue;
-      const [pattern, ...owners] = stripped.split(/\s+/);
-      const handles = owners.filter((o) => o.startsWith('@'));
-      if (!handles.length) continue;
-      codeownersRules.push({ pattern, owners: handles });
-    }
-    break;
-  }
-  return codeownersRules;
-}
-
-function codeownersFor(relPath) {
-  let match = null;
-  for (const rule of loadCodeowners()) {
-    const p = rule.pattern;
-    if (p === '*') { match = rule; continue; }
-    const needle = p.startsWith('/') ? p.slice(1) : p;
-    if (relPath === needle || relPath.startsWith(needle.endsWith('/') ? needle : `${needle}/`)) {
-      match = rule;
-    }
-  }
-  return match ? match.owners : [];
-}
-
-/* A GitHub handle rendered in the same "Name (url)" shape the declared authors
- * use, so the spec page's existing renderer links it without a special case. */
-function handleToAuthor(handle) {
-  const login = handle.replace(/^@/, '');
-  // A team handle (@org/team) has no user profile page; link the org.
-  if (login.includes('/')) {
-    const [org, team] = login.split('/');
-    return `${login} (https://github.com/orgs/${org}/teams/${team})`;
-  }
-  return `${login} (https://github.com/${login})`;
-}
-
 function gitAuthorsFor(dirRel) {
   // Newest first, each once — from the same single pass as the dates.
   const authors = specHistory().get(gitKey(dirRel))?.authors;
-  return authors ? [...authors].map((s) => s.trim()).filter(Boolean) : [];
+  // A bot (the withdrawal batch, Dependabot) is not an author.
+  return authors ? [...authors].map((s) => s.trim()).filter((s) => s && !/\[bot\]$/.test(s)) : [];
 }
 
 function deriveAuthors(meta, entry) {
   if (Array.isArray(meta.authors) && meta.authors.length) {
     return { authors: meta.authors, source: 'declared' };
   }
-  const specRel = path.relative(ROOT, entry.specPath).split(path.sep).join('/');
-  const owners = codeownersFor(specRel);
-  if (owners.length) return { authors: owners.map(handleToAuthor), source: 'codeowners' };
   const fromGit = gitAuthorsFor(path.relative(ROOT, entry.dir));
   if (fromGit.length) return { authors: fromGit, source: 'git' };
   // Never empty: TT_STATS iterates authors unconditionally, and a spec with no

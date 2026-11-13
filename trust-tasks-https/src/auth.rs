@@ -8,6 +8,8 @@
 //! verifier, etc.
 
 use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
 
 /// Resolves bearer tokens to Verifiable Identifiers.
 ///
@@ -20,6 +22,48 @@ use std::collections::HashMap;
 pub trait Auth: Send + Sync + 'static {
     /// Resolve `token` to a VID, or return `None` if the token is unknown.
     fn resolve(&self, token: &str) -> Option<String>;
+}
+
+/// The boxed future an [`AsyncAuth`] resolves through.
+pub type AuthFuture<'a> = Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>>;
+
+/// Resolves bearer tokens to Verifiable Identifiers, asynchronously — what
+/// the server calls.
+///
+/// [`Auth`] is the synchronous form, for a lookup that never waits (a token
+/// map, a JWT signature check), and **every [`Auth`] is an `AsyncAuth`**
+/// through the blanket implementation below, so an existing authenticator
+/// needs no change. Implement this trait instead when resolving a token must
+/// `await` — a session store, a token-introspection endpoint, a database —
+/// rather than blocking an executor thread inside [`Auth::resolve`].
+///
+/// The method is named `resolve_async` rather than `resolve` so that a type
+/// implementing [`Auth`] (and so, through the blanket impl, this trait) is
+/// never ambiguous to call with both traits in scope.
+///
+/// ```rust,ignore
+/// use trust_tasks_https::{AsyncAuth, AuthFuture};
+///
+/// struct SessionAuth { store: SessionStore }
+///
+/// impl AsyncAuth for SessionAuth {
+///     fn resolve_async<'a>(&'a self, token: &'a str) -> AuthFuture<'a> {
+///         Box::pin(async move { self.store.vid_for(token).await.ok().flatten() })
+///     }
+/// }
+/// ```
+///
+/// Resolution runs on every request before any framework check, so it should
+/// fail closed (`None`) and quickly; bound any network call it makes.
+pub trait AsyncAuth: Send + Sync + 'static {
+    /// Resolve `token` to a VID, or `None` if the token is unknown.
+    fn resolve_async<'a>(&'a self, token: &'a str) -> AuthFuture<'a>;
+}
+
+impl<A: Auth> AsyncAuth for A {
+    fn resolve_async<'a>(&'a self, token: &'a str) -> AuthFuture<'a> {
+        Box::pin(std::future::ready(Auth::resolve(self, token)))
+    }
 }
 
 /// Static `HashMap`-backed [`Auth`] implementation. Constructed from a
