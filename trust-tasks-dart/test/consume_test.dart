@@ -585,4 +585,43 @@ void main() {
       expect(again['x-vendor-hint'], <String, dynamic>{'keep': 'me'});
     });
   });
+
+  // §8.1: an error response's `issuer` is the consumer that emitted it. A
+  // document misaddressed to another VID is refused `wrongRecipient`, and the
+  // refusal must not claim to come from that VID.
+  group('§8.1 — the error response is issued by the consumer', () {
+    final misaddressed = doc(recipient: 'did:web:someone-else.example');
+    const wrongRecipient = RejectReason(
+      code: StandardCode.wrongRecipient,
+      message: 'in-band recipient does not identify this consumer',
+    );
+    const proofRequired =
+        RejectReason(code: StandardCode.proofRequired, message: 'x');
+
+    test("as the transport's own identity, where it has one", () {
+      const transport = StaticTransport(
+        TransportContext(issuer: peer, recipient: me),
+      );
+      for (final reason in [wrongRecipient, proofRequired]) {
+        final error =
+            reject(transport, misaddressed, 'err-1', reason, clock: fixedClock);
+        expect(error?.issuer, me, reason: '${reason.code}');
+        expect(error?.recipient, peer);
+      }
+    });
+
+    test('with no issuer under wrongRecipient where the transport has none',
+        () {
+      const transport = UnauthenticatedTransport();
+      final error = reject(transport, misaddressed, 'err-1', wrongRecipient,
+          clock: fixedClock);
+      expect(error, isNotNull);
+      expect(error!.issuer, isNull);
+      expect(error.toJson((p) => p.toJson()).containsKey('issuer'), isFalse);
+      // Other refusals keep the in-band recipient.
+      final other =
+          reject(transport, doc(), 'err-2', proofRequired, clock: fixedClock);
+      expect(other?.issuer, me);
+    });
+  });
 }

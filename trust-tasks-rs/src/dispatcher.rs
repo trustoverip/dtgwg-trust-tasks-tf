@@ -341,6 +341,9 @@ pub(crate) struct RouteFacts {
     pub(crate) schema: Option<&'static str>,
     /// `SpecPolicy::of::<P>()` — items 5b, 7A and 8, and §7.3 item 17.
     pub(crate) policy: crate::SpecPolicy,
+    /// `P::MAX_DOCUMENT_BYTES` — the size bound the specification declares
+    /// (SPEC §12.4), held against `ConsumeChecks::received_bytes`.
+    pub(crate) max_document_bytes: Option<usize>,
     /// Whether a payload deserializes into `P`, with the rejection
     /// [`downcast_payload`] would give.
     pub(crate) check: fn(&Value) -> Result<(), RejectReason>,
@@ -351,6 +354,7 @@ impl RouteFacts {
         Self {
             schema: P::PAYLOAD_SCHEMA,
             policy: crate::SpecPolicy::of::<P>(),
+            max_document_bytes: P::MAX_DOCUMENT_BYTES,
             check: check_payload::<P>,
         }
     }
@@ -360,13 +364,15 @@ impl RouteFacts {
 fn check_payload<P: Payload>(payload: &Value) -> Result<(), RejectReason> {
     P::deserialize(payload)
         .map(drop)
-        .map_err(|e| malformed_payload::<P>(&e))
+        .map_err(|e| malformed_payload(&e))
 }
 
-fn malformed_payload<P: Payload>(e: &serde_json::Error) -> RejectReason {
-    RejectReason::MalformedRequest {
-        reason: format!("payload does not match {}: {e}", P::TYPE_URI),
-    }
+/// The category of the failure, not `serde_json`'s rendering of it: that names
+/// the member, the offending value and the byte offset, which on the wire
+/// describes this consumer's type layout to anyone who sends a bad payload
+/// (SPEC §10.4). The detail belongs in the operator's log.
+fn malformed_payload(e: &serde_json::Error) -> RejectReason {
+    RejectReason::malformed_from_serde(e)
 }
 
 /// SPEC §5.2 / §8.3 routing over a handler table: the registered key `type_uri`
@@ -412,7 +418,7 @@ where
         extra,
     } = doc;
 
-    let payload: P = serde_json::from_value(payload).map_err(|e| malformed_payload::<P>(&e))?;
+    let payload: P = serde_json::from_value(payload).map_err(|e| malformed_payload(&e))?;
 
     Ok(TrustTask {
         id,

@@ -543,6 +543,16 @@ needs the type-erased half of every binding:
   cannot hold **before** the item-11 record is written, and otherwise runs
   `consume_inbound`'s own body (`consume_core`). Do not give it a second copy
   of the checks. The synchronous `Dispatcher` has no such path.
+  `consume_dispatched_answer` is the same function for a dispatcher whose
+  handlers answer with something other than a response document — an
+  `Option`, where `None` acknowledges a fire-and-forget task and is recorded
+  as *no response*. **`trust-tasks-https`'s server is built on it** (#1089):
+  the server keeps only the body limit, content type, bearer auth and status
+  mapping, and every check it had alone is a `ConsumeChecks` option —
+  `require_attribution`, `proof_did_methods`, `received_bytes` (the per-type
+  `maxDocumentBytes` bound) — and the identity-first order with no
+  authenticated sender is `consume_core`'s own. A check a binding needs goes
+  there, not into the binding.
 - **TypeScript, Go, Dart.** No dispatcher: their consume functions take the
   specification's policy as a value (`spec`), and their binding unpack is
   already untyped, so the caller unpacks, looks up the spec for `type`, and
@@ -608,14 +618,15 @@ bundle's `policy.maxDocumentBytes` (`trust-tasks-ts-gen/src/emit.ts`,
 `trust-tasks-go/cmd/trust-tasks-gen`, `lib/src/generator/emit.dart`),
 independently. `check-bindings` compares all four against the front matter.
 
-Enforcement: the Dart HTTPS server's pre-parse body limit is the largest
-registered bound with a 256 KiB floor, then each document is held to its
-route's bound (`malformedRequest`). Go's `ConsumeInbound` refuses a document of
-`Spec`'s own version over the bound when given its bytes as
-`ConsumeOptions.Received`. A document read forward along `extends` is never
-held to the implemented version's bound. The Rust server still has a flat
-256 KiB cap (#1121's Rust half rides with #1089); the TypeScript runtime never
-sees the bytes, so its transport enforces the bound.
+Enforcement: the Rust and Dart HTTPS servers' pre-parse body limit is the
+largest registered bound with a 256 KiB floor, then each document is held to
+its route's bound (`malformedRequest`) — in Rust through
+`ConsumeChecks::received_bytes`, which `consume_inbound` / `consume_dispatched`
+check. Go's `ConsumeInbound` refuses a document of `Spec`'s own version over the
+bound when given its bytes as `ConsumeOptions.Received`. A document read forward
+along `extends` is never held to the implemented version's bound. The Rust
+message bindings do not pass the bytes yet; the TypeScript runtime never sees
+them, so its transport enforces the bound.
 
 ## ⚠️ The Go module — four things that bite
 
@@ -927,14 +938,17 @@ are not obvious:
   `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
-- **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
-  step**, including running expiry, freshness and identity (in §7.2 order, as
-  `consumeInbound` does — except that with no authenticated sender identity
+- **Its request pipeline mirrors the Rust HTTPS server's**, including running
+  expiry, freshness and identity (in §7.2 order, as `consumeInbound` does — except that with no authenticated sender identity
   runs first, so a misaddressed document stays suppressed per §8.1) *before*
   the attribution gate — `consumeInbound`
   repeats them afterwards, harmlessly. A reorder in one server changes which
   code a document that fails two checks is refused with, and the servers would
-  then disagree with each other and with `consumeInbound`.
+  then disagree with each other and with `consumeInbound`. The Rust server
+  now runs `consume_dispatched_answer` (see "Consumers that route on the Type
+  URI"); #1242 gave this one the same forward routing along `extends`,
+  `unsupportedVersion` and per-type `maxDocumentBytes` bound. Change either
+  server's order and the other in the same release.
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.
