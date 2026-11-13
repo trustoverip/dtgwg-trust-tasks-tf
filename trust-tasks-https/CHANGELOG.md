@@ -6,6 +6,89 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.38.0...trust-tasks-https-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs,https**: Build the HTTPS server on consume_dispatched; async handlers and auth ([#1244](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1244))
+
+* feat(rs,https)!: build the HTTPS server on consume_dispatched; async handlers and auth
+
+  HttpsServer now runs every framework check through
+  trust_tasks_rs::consume_dispatched_answer and keeps only the HTTP steps.
+  The checks only it had become ConsumeChecks options (require_attribution,
+  proof_did_methods, received_bytes). Adds on_async/on_ack_async, an
+  AsyncAuth trait every Auth satisfies, extends forward routing with
+  unsupportedVersion, and per-type maxDocumentBytes enforcement with a body
+  limit derived from the registered tasks.
+
+
+
+### Build & CI
+
+- **proof, didcomm**: Affinidi-crypto 0.3 and the matching Affinidi releases ([#1265](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1265))
+
+* build(proof,didcomm): affinidi-crypto 0.3 and the matching Affinidi releases
+
+  trust-tasks-proof requires affinidi-crypto 0.3, affinidi-data-integrity
+  0.8.7, affinidi-did-common 0.4.7 and affinidi-did-resolver-cache-sdk
+  0.8.53, the releases built on affinidi-crypto 0.3, so its KeyType is the
+  one those crates use. The trust-tasks-didcomm dev dependencies move to
+  affinidi-crypto 0.3 and affinidi-messaging-didcomm 0.15.14, and the
+  affinidi-secrets-resolver dev dependencies to 0.5.18.
+
+  The mediator integration test leaves the tree for now: the published
+  test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto 0.2 and
+  no longer compile beside affinidi-messaging-didcomm 0.15.14.
+
+- Catch superseded versions and drifted counts in the docs ([#1268](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1268))
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+
+
+### Fixed
+
+- **rs,https,dart-https**: Run the attribution gate before the route lookup ([#1246](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1246))
+
+Both HTTPS servers looked the route up before the attribution gate, so a sender with neither a bearer token nor a proof could tell a registered type (proofRequired) from an unregistered one (unsupportedType).
+
+  The Rust server now runs on consume_dispatched_answer, so the reorder is made there: the checks that read only the envelope (expiry, recipient, freshness, identity) and the attribution gate move out of consume_core into envelope_checks, which consume_inbound and consume_dispatched_answer both run ahead of their item-3 type check. The route lookup still precedes the DID-method screen and proof verification, so an unregistered type never reaches a resolver.
+
+  The Dart server runs the same checks before the route lookup and before decoding the payload.
+
+
+
+### Performance
+
+- **rs,https**: Hash, compare and route each inbound document once ([#1259](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1259))
+
+* test(rs,https): time the inbound path and pin the item-11 digest values
+
+
+
 ## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.37.15...trust-tasks-https-v0.38.0) — 2026-11-12
 
 

@@ -31,6 +31,218 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.38.0...trust-tasks-rs-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **messaging/queue/purge**: 0.1 gains storedBefore and selectedAt to pin a confirming purge to its dry run ([#1288](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1288))
+- **rooms/records/put**: 0.6 declares a 2 MiB document bound ([#1252](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1252))
+
+* feat(rooms/records/put): 0.6 declares a 64 KiB document bound
+
+  rooms/records/put/0.6 extends 0.5 and changes no member. Its front matter
+  declares maxDocumentBytes.request: 65536, the bound a deployed host already
+  enforces, so hosts stop disagreeing on the largest record and a room can move
+  between them without stranding records; larger content goes through files.
+  Adding the bound to 0.5 in place would have narrowed what a 0.5 host must
+  accept. The response declares no bound.
+
+  Rust, TypeScript, Go and Dart regenerated; earlier versions now carry
+  "superseded by rooms/records/put/0.6".
+
+- **rs,build**: A generated file names the runtime contract it needs ([#1253](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1253))
+
+trust-tasks-rs gains a hidden __private::ABI_V1, and every file
+  trust-tasks-build generates for an application opens with
+  const _: () = ::trust_tasks_rs::__private::ABI_V1; under a comment naming
+  the trust-tasks-build version. A runtime too old for the generator, or one
+  that has moved to a newer contract, now fails on that line with an error
+  naming the contract, instead of on whichever hidden door the generated code
+  reaches first ([#1101](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1101)). The in-repo prebuilt tree is unchanged.
+
+- **rs,https**: Build the HTTPS server on consume_dispatched; async handlers and auth ([#1244](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1244))
+
+* feat(rs,https)!: build the HTTPS server on consume_dispatched; async handlers and auth
+
+  HttpsServer now runs every framework check through
+  trust_tasks_rs::consume_dispatched_answer and keeps only the HTTP steps.
+  The checks only it had become ConsumeChecks options (require_attribution,
+  proof_did_methods, received_bytes). Adds on_async/on_ack_async, an
+  AsyncAuth trait every Auth satisfies, extends forward routing with
+  unsupportedVersion, and per-type maxDocumentBytes enforcement with a body
+  limit derived from the registered tasks.
+
+- **rs,build,ts,ts-gen,go,dart**: Emit only the $defs each schema constant reaches ([#1243](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1243))
+
+* feat(rs,build,ts,ts-gen,go,dart): emit only the $defs each schema constant reaches
+
+  Each generated request and response schema constant now keeps only the root $defs its root reaches: the request drops Response and what only the response uses, the response document drops what only the request uses. Registry bundles are unchanged, so no pinned digest moves. Types are still generated from the whole schema.
+
+  trust-tasks-rs packages at 10,037,990 bytes (9.57 MiB) against 10,349,753 (9.87 MiB) before.
+
+- **rs,tsp,didcomm,didcomm-v1**: One guarded consumer for the binding crates; answer an authenticated unparsable body ([#1241](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1241))
+
+The TSP, DIDComm v2.1 and DIDComm v1 consumers each carried the same wrapper
+  (record, freshness policy, consume/consume_dispatched). It now lives once in
+  trust-tasks-rs as GuardedConsumer; each binding consumer dereferences to it and
+  keeps only its unpack and its envelope check (the DIDComm thread headers).
+
+  receive now answers an authenticated body that fails to deserialise, or fails
+  the thread cross-check, with ConsumeOutcome::Rejected(malformedRequest),
+  addressed to the transport-authenticated sender and refused before the item-11
+  record is written, as binding section 4 requires and the Go and Dart bindings
+  already do. It used to return Err with nothing to answer.
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+- **messaging/mux**: Admin-list, admin-revoke and admin-revoke-all for operators ([#1234](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1234))
+
+Adds three administrator tasks (0.1, draft) for DID multiplexing, the
+  operator side of the mediator design's §7.8:
+
+  - messaging/mux/admin-list: list stored grants by principal DID, member
+    DID or both (one is required), paged, in every state, without the
+    signed statements; with `member`, the member's current epoch.
+  - messaging/mux/admin-revoke: revoke grants of other accounts by
+    principal, member, both, or member + grantIds; a bounded batch per
+    request (`limit`), with an exact `remaining` count; synchronous detach,
+    replay floors raised, detached events and grantsRevoked notices with
+    reason `admin`.
+  - messaging/mux/admin-revoke-all: advance a member DID's epoch without
+    its signature, naming the current epoch so a replay is inert; same
+    state change as revoke-all, reported with reason `admin`.
+
+  admin-list admits the admin, rootAdmin and mediator account types, as
+  messaging/mux/connections does. The two destructive tasks admit admin and
+  rootAdmin only, and refuse an admin whose target member or principal is a
+  rootAdmin account with <slug>:protectedAccount, as messaging/account/remove
+  protects root admins. No shared-schema change: DetachReason,
+  MemberChangeReason and the grantsRevoked notice already carry `admin`.
+  Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+- **messaging/monitor**: Opt-in mux membership events (event 0.3, subscribe 0.2) ([#1235](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1235))
+
+messaging/monitor/subscribe 0.2 (extends 0.1) adds `membership`, a
+  MembershipFilter whose presence opts a subscription in to mux membership
+  events (none are sent without it), and `traffic: false` for a
+  membership-only tap. Non-admins are narrowed to changes they are party
+  to, as for traffic.
+
+  messaging/monitor/event 0.3 (extends 0.2) adds `membership`, an array of
+  MonitorMembershipEvent (occurredAt, change attached|detached, principal,
+  member, wire didcomm|tsp, source grant|attach, reason, optional
+  sessionId) mirroring each messaging/mux/event member change, and
+  `membershipDropped`. MonitorEvent and the closed TrafficStage are
+  unchanged: a membership change is not a step in a message's life.
+
+  Shared, additive in place: MembershipChange, MonitorMembershipEvent and
+  MembershipFilter in messaging/_shared/0.3/mediator-ops; MuxWire in
+  messaging/mux/_shared/0.1. Regenerates the Rust, TypeScript, Go and Dart
+  bindings.
+
+
+
+### Build & CI
+
+- Catch superseded versions and drifted counts in the docs ([#1268](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1268))
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows ([#1251](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1251))
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+- **rs,https,dart-https**: Run the attribution gate before the route lookup ([#1246](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1246))
+
+Both HTTPS servers looked the route up before the attribution gate, so a sender with neither a bearer token nor a proof could tell a registered type (proofRequired) from an unregistered one (unsupportedType).
+
+  The Rust server now runs on consume_dispatched_answer, so the reorder is made there: the checks that read only the envelope (expiry, recipient, freshness, identity) and the attribution gate move out of consume_core into envelope_checks, which consume_inbound and consume_dispatched_answer both run ahead of their item-3 type check. The route lookup still precedes the DID-method screen and proof verification, so an unregistered type never reaches a resolver.
+
+  The Dart server runs the same checks before the route lookup and before decoding the payload.
+
+- **rs,ts,go,dart**: Issue an error response as the consumer, not as the rejected document's recipient ([#1249](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1249))
+
+SPEC §8.1 makes an error response's issuer the consumer that emitted it. All four runtimes copied the rejected document's in-band recipient into it, which is unchecked for a refusal raised before item 5 and, under wrongRecipient, is by definition another party. The transport-level reject now sets the issuer to the transport's own identity where it has one; with none, it keeps the in-band recipient except under wrongRecipient, where it leaves the issuer out.
+
+
+
+### Performance
+
+- **rs,https**: Hash, compare and route each inbound document once ([#1259](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1259))
+
+* test(rs,https): time the inbound path and pin the item-11 digest values
+
+
+
 ## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.15...trust-tasks-rs-v0.38.0) — 2026-11-12
 
 

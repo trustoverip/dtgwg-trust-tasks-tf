@@ -3,6 +3,47 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.2.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.4...trust-tasks-build-v0.2.0) — 2026-11-13
+
+
+### Added
+
+- **rs,build**: A generated file names the runtime contract it needs ([#1253](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1253))
+
+trust-tasks-rs gains a hidden __private::ABI_V1, and every file
+  trust-tasks-build generates for an application opens with
+  const _: () = ::trust_tasks_rs::__private::ABI_V1; under a comment naming
+  the trust-tasks-build version. A runtime too old for the generator, or one
+  that has moved to a newer contract, now fails on that line with an error
+  naming the contract, instead of on whichever hidden door the generated code
+  reaches first ([#1101](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1101)). The in-repo prebuilt tree is unchanged.
+
+- **rs,build,ts,ts-gen,go,dart**: Emit only the $defs each schema constant reaches ([#1243](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1243))
+
+* feat(rs,build,ts,ts-gen,go,dart): emit only the $defs each schema constant reaches
+
+  Each generated request and response schema constant now keeps only the root $defs its root reaches: the request drops Response and what only the response uses, the response document drops what only the request uses. Registry bundles are unchanged, so no pinned digest moves. Types are still generated from the whole schema.
+
+  trust-tasks-rs packages at 10,037,990 bytes (9.57 MiB) against 10,349,753 (9.87 MiB) before.
+
+- **rs**: No prebuilt specification families by default ([#1240](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1240))
+
+`trust-tasks-rs` and the `trust-tasks` facade now have `default = []`. A
+  plain dependency compiles the runtime and the framework's own
+  `trust-task-*` modules, not every deprecated prebuilt family (a ~17 GB
+  build). A consumer that still uses `specs::<family>` enables
+  `features = ["all-specs"]`, or the one family it uses.
+
+
+
+### Fixed
+
+- **build,cli**: Require a spec slug and version for every locked task, and the canonical path for every index entry ([#1245](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1245))
+
+An official lockfile entry's slug and version were checked only against a Type URI built from the same strings, then used as path segments of the vendored bundle's location. Each entry's slug and version must now have their SPEC form, whichever registry it comes from. The CLI now also requires an index entry's path to be <slug>/<version>/bundle.json, the only form the registry publishes.
+
+
+
 ## [0.1.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.3...trust-tasks-build-v0.1.4) — 2026-11-12
 
 

@@ -6,6 +6,98 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.38.0...trust-tasks-proof-v0.39.0) — 2026-11-13
+
+
+### Build & CI
+
+- **proof, didcomm**: Affinidi-crypto 0.3 and the matching Affinidi releases ([#1265](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1265))
+
+* build(proof,didcomm): affinidi-crypto 0.3 and the matching Affinidi releases
+
+  trust-tasks-proof requires affinidi-crypto 0.3, affinidi-data-integrity
+  0.8.7, affinidi-did-common 0.4.7 and affinidi-did-resolver-cache-sdk
+  0.8.53, the releases built on affinidi-crypto 0.3, so its KeyType is the
+  one those crates use. The trust-tasks-didcomm dev dependencies move to
+  affinidi-crypto 0.3 and affinidi-messaging-didcomm 0.15.14, and the
+  affinidi-secrets-resolver dev dependencies to 0.5.18.
+
+  The mediator integration test leaves the tree for now: the published
+  test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto 0.2 and
+  no longer compile beside affinidi-messaging-didcomm 0.15.14.
+
+- Catch superseded versions and drifted counts in the docs ([#1268](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1268))
+
+The stale-references check now reads every *.md outside specs/ (READMEs,
+  guides, docs/, the latest version of each binding) and every
+  examples/**/trust-tasks.toml [tasks] pin, as well as the registry. A
+  reference may be a link, a mention, a path through a mirroring directory
+  (specs/…, src/…), a generated module path (acl::grant::v0_2,
+  acl/grant/v0_2) or a Type URI. CHANGELOGs, SPEC.md and ADRs are history;
+  other deliberate references are listed with a reason under `documents` in
+  stale-references-allowlist.json. `npm run fix-stale-references` rewrites the
+  text references in documents too.
+
+  Fixed what it found: README examples in trust-tasks-rs, -https and -proof
+  on acl/grant 0.1; the push binding's links to push/* and device/set-wake
+  0.1; CONTRIBUTING-SPECS.md's examples; consumer-side-generation.md, which
+  said examples/consumer-app pins acl/grant/0.2 and keys/list/0.2 (it pins
+  0.3 and `latest`).
+
+  New scripts/check-doc-facts.mjs (`npm run check-doc-facts`, in `npm run
+  check` and a `documented facts match the tree` job in checks.yml) checks
+  the facts the docs still state in prose: RELEASING.md's package table
+  against the manifests and release-pr.sh's lists, the crates DEVELOPMENT.md
+  says do not depend on trust-tasks-rs, the layout table, the Node floors,
+  and the current framework version.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+- **rs,ts,go,dart,go-didcomm,go-tsp,ts-tsp**: Settle the open runtime parity rows ([#1251](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1251))
+
+* fix(rs,ts,go,dart): settle the open runtime parity rows
+
+  Replay guard: a capacity below one takes the default capacity in all four
+  libraries. Rust's InMemoryReplayGuard::new(0) no longer panics and the
+  TypeScript constructor no longer throws RangeError; Go and Dart already
+  defaulted. Moving the two to the default only relaxes them.
+
+
+
 ## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.37.15...trust-tasks-proof-v0.38.0) — 2026-11-12
 
 

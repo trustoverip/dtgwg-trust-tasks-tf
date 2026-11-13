@@ -6,6 +6,81 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v0.38.0...trust-tasks-didcomm-v0.39.0) — 2026-11-13
+
+
+### Added
+
+- **rs,tsp,didcomm,didcomm-v1**: One guarded consumer for the binding crates; answer an authenticated unparsable body ([#1241](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1241))
+
+The TSP, DIDComm v2.1 and DIDComm v1 consumers each carried the same wrapper
+  (record, freshness policy, consume/consume_dispatched). It now lives once in
+  trust-tasks-rs as GuardedConsumer; each binding consumer dereferences to it and
+  keeps only its unpack and its envelope check (the DIDComm thread headers).
+
+  receive now answers an authenticated body that fails to deserialise, or fails
+  the thread cross-check, with ConsumeOutcome::Rejected(malformedRequest),
+  addressed to the transport-authenticated sender and refused before the item-11
+  record is written, as binding section 4 requires and the Go and Dart bindings
+  already do. It used to return Err with nothing to answer.
+
+
+
+### Build & CI
+
+- **proof, didcomm**: Affinidi-crypto 0.3 and the matching Affinidi releases ([#1265](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1265))
+
+* build(proof,didcomm): affinidi-crypto 0.3 and the matching Affinidi releases
+
+  trust-tasks-proof requires affinidi-crypto 0.3, affinidi-data-integrity
+  0.8.7, affinidi-did-common 0.4.7 and affinidi-did-resolver-cache-sdk
+  0.8.53, the releases built on affinidi-crypto 0.3, so its KeyType is the
+  one those crates use. The trust-tasks-didcomm dev dependencies move to
+  affinidi-crypto 0.3 and affinidi-messaging-didcomm 0.15.14, and the
+  affinidi-secrets-resolver dev dependencies to 0.5.18.
+
+  The mediator integration test leaves the tree for now: the published
+  test-mediator 0.16 / messaging-sdk 0.32 build on affinidi-crypto 0.2 and
+  no longer compile beside affinidi-messaging-didcomm 0.15.14.
+
+
+
+### Fixed
+
+- **rs,ts,ts-tsp,proof,didcomm,didcomm-v1,tsp,dart-didcomm,dart-tsp,go-didcomm,go-tsp**: Message bindings enforce document size bounds; shared extends routing vector ([#1263](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1263))
+
+Size bounds ([#1121](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1121)). GuardedConsumer::consume_body and
+  consume_body_dispatched, the inbound half of the DIDComm, DIDComm v1 and
+  TSP consumers, now hold a body to its specification's declared
+  maxDocumentBytes (SPEC §12.4) and refuse a larger one malformedRequest. The
+  refusal comes after the envelope has authenticated the sender, goes to that
+  sender, and is made before the item-11 record is written. The size is the
+  body's compact JSON text, because those stacks hand over a decoded body. A
+  specification that declares no bound gets no default bound.
+  consume_inbound and consume_dispatched used to hold a document read forward
+  along extends to the implemented version's bound. They no longer do, because
+  a later version may declare a larger bound. The Dart DIDComm and TSP
+  consumers and the TypeScript TSP consumer now apply the same rule. The
+  TypeScript consumer reads SPEC.maxDocumentBytes defensively, since core
+  0.29.0 does not carry it yet.
+
+  Extends ([#1117](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1117)). trust-tasks-go/didcomm and trust-tasks-go/tsp now require
+  the published core v0.11.0, use ReadForSpecWith, and take an optional
+  Consumer.Extends lookup that is passed through to ConsumeOptions.Extends.
+  They already pass the received bytes as ConsumeOptions.Received, so size
+  bounds take effect there once they require a core that carries #1251's
+  check, which v0.11.0 predates.
+  A new shared vector, fixtures/consume/extends-routing.json, is run by all
+  four runtimes. It found that TypeScript's readForSpec refused the
+  implemented version's own #request Type URI as unsupportedType; that is now
+  fixed.
+
+  Proof ([#1092](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1092)). verify_raw no longer clones the whole document (or the
+  proof) to drop `proof`. It serialises a borrowed view without that member.
+  The byte-for-byte fixtures still pass.
+
+
+
 ## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v0.37.15...trust-tasks-didcomm-v0.38.0) — 2026-11-12
 
 
