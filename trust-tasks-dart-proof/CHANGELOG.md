@@ -10,6 +10,12 @@ Publishing is triggered by the `trust-tasks-dart-proof-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.2 — 2026-11-14
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.12.0 (was ^0.11.0), the core released beside it.
+
 ## 0.2.1 — 2026-11-13
 
 

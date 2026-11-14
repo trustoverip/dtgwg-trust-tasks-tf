@@ -4,7 +4,7 @@ name: trust_tasks_capability_client
 description: >-
   Client-side wire helpers for the capability Trust Task families: document
   builders and reply classification for governance/capability and git-trust.
-version: 0.2.0
+version: 0.2.1
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
@@ -17,7 +17,7 @@ dependencies:
   # compile against; the `packages` job in dart.yml checks it with
   # `dart pub downgrade`. Raise it when this package starts using newer core API.
   # 0.9.3 still holds: it uses only the document type and systemClock.
-  trust_tasks: ^0.11.0
+  trust_tasks: ^0.12.0
 
 dev_dependencies:
   lints: ">=5.1.1 <7.0.0"

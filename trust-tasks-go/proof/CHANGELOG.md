@@ -3,6 +3,17 @@
 All notable changes to `trust-tasks-go/proof` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.2.2 — 2026-11-14
+
+
+### Fixed
+
+- **go-didcomm,go-tsp**: Require core v0.11.1 so the message bindings enforce document size bounds (#1303)
+
+The DIDComm and TSP nested modules already hand ConsumeInbound the exact received document bytes (#1263), but core v0.11.0 predates the per-type maxDocumentBytes check (#1251). Requiring v0.11.1 puts it in force. proof and capabilityclient move to v0.11.1 too.
+
+  New tests in both modules: a document over its type's bound from an authenticated sender is answered malformedRequest to that sender, the handler does not run, and the replay record stays empty, so the same id within the bound is then handled.
+
 ## 0.2.1 — 2026-11-13
 
 

@@ -2,6 +2,8 @@
 
 All notable changes to `@openvtc/trust-tasks-capability-client` are documented here.
 
+## 0.2.1 — 2026-11-14
+
 ## 0.2.0 — 2026-11-13
 
 

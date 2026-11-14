@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-11-14
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.12.0 (was ^0.11.0), the core released beside it.
+
 ## 0.2.0 — 2026-11-13
 
 

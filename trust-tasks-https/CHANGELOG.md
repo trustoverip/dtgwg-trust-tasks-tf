@@ -6,6 +6,46 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.40.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.39.0...trust-tasks-https-v0.40.0) — 2026-11-14
+
+
+### Build & CI
+
+- **https**: Jsonwebtoken 11 in trust-tasks-https, jsonschema 0.60 in trust-tasks-rs ([#1290](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1290))
+
+Aligns the two dependencies a downstream workspace (OpenVTC VTI) compiles
+  twice because these crates pinned older majors: jsonschema 0.49 in
+  trust-tasks-rs (`validate` feature) beside its 0.60, and jsonwebtoken 10 in
+  trust-tasks-https (`jwt` feature) beside its 11.
+
+  jsonschema is private to trust-tasks-rs (no jsonschema type is in its public
+  API) and needed no code change. jsonwebtoken is public through
+  `JwtBearerAuth::new(DecodingKey, Validation, _)`, so a consumer that builds
+  those values with jsonwebtoken 10 must move to 11: a break of the `jwt`
+  feature's API, hence the `!`. No source change was needed in this crate.
+
+
+
+### Fixed
+
+- **rs,https,ts,go,dart**: Refuse a document that marks an unrecognized ext namespace critical ([#1256](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1256))
+
+* fix(rs,https,ts,go,dart)!: refuse a document that marks an unrecognized ext namespace critical
+
+  SPEC §4.5.2 rule 4: a consumer that does not recognize a namespace named in
+  extCritical MUST NOT process the document and MUST reject it with
+  unsupportedExtension. No runtime read the member, so a document whose payload
+  type does not model it was processed as if the namespace were absent.
+
+  Each runtime gains a check (check_critical_extensions, checkCriticalExtensions,
+  CheckCriticalExtensions) that walks the payload as received alongside its
+  schema, applies rules 1, 2 and 4, and runs in every consume pipeline after
+  the proof and per-specification checks and before the item-11 record. The
+  recognized namespaces are a new consume-checks option, empty by default.
+  Shared vectors in fixtures/consume/ext-critical.json pin the four together.
+
+
+
 ## [0.39.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.38.0...trust-tasks-https-v0.39.0) — 2026-11-13
 
 

@@ -14,6 +14,115 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.12.0 — 2026-11-14
+
+
+### Added
+
+- **messaging**: Wake a device through its own mediator, and end-to-end delivery receipts (#1297)
+
+Two gaps in getting a document to a device that is on another mediator
+  or has no agent of its own.
+
+  Waking (messaging/wake/set 0.1, messaging/wake/request 0.1):
+  - messaging/wake/set: an account gives its own mediator the opaque
+    WakeHandle its push gateway issued, or clears it (absent = clear). The
+    mediator never holds a token. Response { wakeCapable }.
+  - messaging/wake/request: a sender that has just queued mail for a DID
+    asks that DID's mediator to ring, naming the queued messages by their
+    stored ids (<= 8). Contentless. The mediator rings (push/wake, as
+    itself) only when the account has a handle, every id is queued for it,
+    fresh (10 min) and undelivered, the stored sender is the requester
+    where the envelope reveals one, the requester is not blocked, the
+    account is offline, no id has rung before, and per-(sender, addressee)
+    and per-addressee limits hold. Requests may arm for 120 s. The response
+    is always {} so it is not a presence oracle. Proof REQUIRED.
+  - push/register 0.3: `selfControl` lets a device with no controller VTA
+    register as its own controller, with an initial allowlist (normally its
+    mediator), under gateway policy (push/register:selfControlRefused).
+    Exactly one of controllerVtaDid / selfControl.
+  - push binding 0.1 (draft, in place): §3.5 sender-requested,
+    mediator-triggered wake; self-controlled handles in §3.3.
+
+  Receipts (messaging/receipt 0.1, TSP binding 0.2):
+  - messaging/receipt: a fire-and-forget Trust Task { confirms } the
+    recipient's delivery layer sends to the transport-authenticated sender
+    once it durably holds a message that asked for a receipt. Requested,
+    never automatic; may be declined; settles only from the addressed
+    party; never answered. A transition section accepts the earlier
+    https://affinidi.com/delivery/1.0/receipt body alongside it.
+  - TSP binding 0.2: optional `deliveryId` envelope member requests a
+    receipt; envelope type unchanged, so 0.1 and 0.2 interoperate.
+  - DIDComm binding 0.2 (draft, in place): §2.1, a `delivery_id` header
+    requests a receipt (not `thid`, which §3.1 gives to threadId).
+
+  Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+- **rooms**: Load-older paging by version (records/list 0.8, keys/browse 0.6) and host size limits in rooms/info 0.5 (#1289)
+
+rooms/records/list 0.8 adds `beforeVersion`, an exclusive upper bound on
+  `version` that mirrors `sinceVersion`. Under `newestFirst` (0.7) it lets a
+  reader showing a conversation from its head ask for the records before the
+  oldest one it holds by naming that version, with no cursor to keep: the
+  cursor is the host's, short-lived and lost with the client's state. It
+  applies under either order, and a cursor now belongs to the bounds as well
+  as the order it was issued under. Not `extends: "0.7"`: a 0.7 host that
+  pruned the bound would answer "load older" with the room's head.
+
+  rooms/keys/browse 0.6 passes `beforeVersion` through for a member whose
+  surface reaches the room only through their key holder, and answers
+  `hostRefused` rather than drop the bound against a host without
+  records/list 0.8.
+
+  rooms/info 0.5 (`extends: "0.4"`) adds two optional response members so a
+  client can refuse before it writes: `maxRecordDocumentBytes`, the largest
+  rooms/records/put document the host accepts (its own per-record limit,
+  refused with `recordTooLarge`, never above put 0.6's declared 2 MiB), and
+  `maxChunkSize`, the largest proxied chunk it admits at its own size. File
+  limits and the member's allowance were already in the response (`limits`,
+  `usage.member.limits`).
+
+  Requested by a wallet integrator (OpenVTC/verifiable-trust-infrastructure#2294,
+  points 3 and 4). `order` itself shipped in records/list 0.7 / keys/browse
+  0.5 (#1088) and put's `maxDocumentBytes` in records/put 0.6 (#1252).
+
+- **chat/direct**: A message from one person to another, rewritable by its author (chat/direct/message/0.1) (#1066)
+
+* feat(chat/direct): a message from one person to another, rewritable by its author (chat/direct/message/0.1)
+
+
+
+### Build & CI
+
+- **cli**: Build the release binaries for Linux and Windows only, until macOS runners are available (#1293)
+
+
+### Fixed
+
+- **rs,https,ts,go,dart**: Refuse a document that marks an unrecognized ext namespace critical (#1256)
+
+* fix(rs,https,ts,go,dart)!: refuse a document that marks an unrecognized ext namespace critical
+
+  SPEC §4.5.2 rule 4: a consumer that does not recognize a namespace named in
+  extCritical MUST NOT process the document and MUST reject it with
+  unsupportedExtension. No runtime read the member, so a document whose payload
+  type does not model it was processed as if the namespace were absent.
+
+  Each runtime gains a check (check_critical_extensions, checkCriticalExtensions,
+  CheckCriticalExtensions) that walks the payload as received alongside its
+  schema, applies rules 1, 2 and 4, and runs in every consume pipeline after
+  the proof and per-specification checks and before the item-11 record. The
+  recognized namespaces are a new consume-checks option, empty by default.
+  Shared vectors in fixtures/consume/ext-critical.json pin the four together.
+
+- **chat/direct**: Describe the oneOf members of message/0.1 and regenerate its bindings (#1295)
+
+* fix(chat/direct): describe the oneOf members of message/0.1 and regenerate its bindings
+
+  #1066 merged with five undescribed payload members, which the description
+  ratchet refuses, and with TypeScript, Go and Dart bindings generated before
+  the front matter's maxDocumentBytes. Describe the members and regenerate.
+
 ## 0.11.0 — 2026-11-13
 
 
