@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Proposed — decisions recorded and reviewed on [#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204); no normative text written yet |
+| **Status** | Implemented as a draft — the normative text is `specs/trust-task-control/0.1` (status `draft`), written from the decisions reviewed on [#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204) |
 | **Date** | 2026-08-15, revised 2026-08-16 after review |
 | **Applies to** | Any *producer* that needs previously requested work to stop, and any *consumer* that executes work which outlives the exchange that requested it |
 | **Related** | [#204](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues/204), SPEC §7.2 items 10–12, §8, §4.11.4, §6.1, `specs/trust-task-next-step/0.1` |
