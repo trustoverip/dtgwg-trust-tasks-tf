@@ -39,6 +39,23 @@ And the one that has no undo: **a Go release cannot be retracted.**
 vets and tests *before* `publish-go` tags for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
+### `ConsumeReceived` — the inbound body every message binding shares
+
+A binding that opens an envelope and authenticates its sender ends up holding
+the document's bytes and who sent them; from there the work is the same for
+every envelope. `trusttasks.ConsumeReceived(ctx, received, transport, spec,
+decode, handler, opts)` is that work, once (#1110): it answers a body that does
+not parse with `malformedRequest` addressed from the routing members that did,
+runs the binding's own check (`ReceiveOptions.BindingCheck` — DIDComm's §3.1
+thread cross-check), refuses members differing only by case, reads a later
+version forward with `ReadForSpecWith`, decodes, and runs `ConsumeInbound` with
+the bytes as `Received` (proof, item-11 digest and `maxDocumentBytes` over what
+arrived). Every refusal precedes the replay record. It refuses a transport that
+authenticated no sender (`ErrNoAuthenticatedSender`), because those answers are
+only safe when they go to the authenticated party. `trusttasks.NewURNUUID()`
+mints document ids and panics when `crypto/rand` fails. A binding needing a
+check of its own adds it through `BindingCheck` rather than copying the body.
+
 ### The `trust-tasks-go/tsp` nested module
 
 The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
