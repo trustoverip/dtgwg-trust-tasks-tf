@@ -127,6 +127,7 @@ are the manifests (for crates) and the package arrays at the top of
 | `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
 | `trust-tasks-go/capabilityclient` | none — a **separate** nested Go module (capability wire client), released on its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag, the same way as `proof`. |
 | `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
+| `trust-tasks-go/specs` | none — a **separate** nested Go module holding the generated (prebuilt) specification packages, so the core no longer carries the tree (#1112). **Not released yet**: every published core up to v0.12.x still contains `specs/`, so this module cannot require one without its imports being ambiguous, and CI does not build it. Step 3 of #1112, after the first core without `specs/` is on the proxy, points its `go.mod` at that core and wires its release (`trust-tasks-go/specs/vX.Y.Z` tags) like `proof`'s. |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
 | `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
 | `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
@@ -230,8 +231,11 @@ one; the tag is what actually publishes. The nested modules
 (`trust-tasks-go/proof`, `trust-tasks-go/didcomm`,
 `trust-tasks-go/capabilityclient`) version on their own
 `trust-tasks-go/<name>/vX.Y.Z` tags, and the **core's** watch set excludes them,
-so a change under a nested module releases that module, not the core. `tsp` is
-the exception — still unreleased, see the table above.
+so a change under a nested module releases that module, not the core. `tsp`
+and `specs` are the exceptions — still unreleased, see the table above. The
+core still watches `specs/` because the generator writes its extends index
+(`trusttasks/extends_index.go`); the generated packages themselves are in
+`trust-tasks-go/specs`, which the core's watch excludes.
 
 **The Dart packages** — `scripts/release-bump-dart.sh <package>`, from the
 `trust-tasks-dart[-<name>]-v*` tag. For `trust_tasks` (watching `specs/`,

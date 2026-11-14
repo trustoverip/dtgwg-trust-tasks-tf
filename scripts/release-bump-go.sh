@@ -59,12 +59,14 @@ case "$PKG" in
     PKG_DIR="trust-tasks-go"
     VERSION_FILE="$PKG_DIR/trusttasks/version.go"
     TAG_PREFIX="trust-tasks-go/v"
-    # `specs/**` because the packages under `trust-tasks-go/specs` are generated
-    # from it, and `scripts/build-go-bindings.mjs` because it is the generator.
-    # The nested modules are excluded — they release on their own tags.
+    # `specs/**` and `scripts/build-go-bindings.mjs` because the generator writes
+    # the core's extends index (trusttasks/extends_index.go) from the specs. The
+    # nested modules are excluded — they release on their own tags — and so is
+    # trust-tasks-go/specs, the generated packages' own module since #1112
+    # (unreleased until step 3, which gives it a watch of its own).
     WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs"
            ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp"
-           ":(exclude)$PKG_DIR/capabilityclient")
+           ":(exclude)$PKG_DIR/capabilityclient" ":(exclude)$PKG_DIR/specs")
     CLIFF_PATHS=("trust-tasks-go/**" "specs/**" "scripts/build-go-bindings.mjs")
     SCOPES="go go-bindings"
     ;;
