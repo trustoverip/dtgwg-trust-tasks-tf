@@ -41,8 +41,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-
-	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs"
 )
 
 // ExtendsLookup returns the MAJOR.MINOR that the specification version named by
@@ -55,10 +53,20 @@ import (
 type ExtendsLookup func(typeURI string) string
 
 // RegistryExtends is the [ExtendsLookup] over the generated registry index
-// (package specs, regenerated with the specification packages), so it reflects
-// every specification this release of the library knows — including versions
-// whose packages the application never imports.
-func RegistryExtends(typeURI string) string { return specs.ExtendsOf(typeURI) }
+// (extends_index.go in this package, regenerated with the specification
+// packages), so it reflects every specification this release of the library
+// knows — including versions whose packages the application never imports, and
+// for an application that imports none of them (one using cmd/trust-tasks-gen).
+// The index is in the runtime's own package so the runtime imports nothing from
+// the generated tree (#1112). A #request / #response fragment is ignored. The
+// direct declaration only: walk the chain by calling it again with the extended
+// version's Type URI.
+func RegistryExtends(typeURI string) string {
+	if i := strings.IndexByte(typeURI, '#'); i >= 0 {
+		typeURI = typeURI[:i]
+	}
+	return registryExtendsIndex[typeURI]
+}
 
 // maxExtendsChain bounds a chain walk: 64 links, in all four libraries
 // (docs/runtime-parity.md). Each link must name a strictly earlier MINOR, so

@@ -544,7 +544,7 @@ four libraries act on it:
 
 - **Every generated module carries the direct declaration** — `EXTENDS` (Rust, TS),
   `Extends` (Go), `extendsVersion` (Dart) — and each library generates an index
-  from bare Type URI to it (`extends_index.rs`, `_extends.ts`, `specs/extends.go`,
+  from bare Type URI to it (`extends_index.rs`, `_extends.ts`, `trusttasks/extends_index.go`,
   `extends_index.dart`). `check-bindings` compares the constant with the front matter.
 - **The runtime reads a later version as the one implemented** when the chain
   reaches it: Rust's `Dispatcher`/`AsyncDispatcher` route a miss to the highest
