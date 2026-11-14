@@ -82,3 +82,22 @@ test('versions compare numerically, and latestPerSlug prefers a live version', (
   const latest = Object.fromEntries(R.latestPerSlug(tasks).map((t) => [t.slug, t.version]));
   assert.deepEqual(latest, { a: '0.10', b: '0.2' });
 });
+
+test('slug families: two segments of a deep slug, one of a two-segment slug (#1154)', () => {
+  assert.equal(R.slugFamily('governance/capability/grant'), 'governance/capability');
+  assert.equal(R.slugFamily('vtc/members/roles/add'), 'vtc/members');
+  assert.equal(R.slugFamily('acl/grant'), 'acl');
+  assert.equal(R.slugFamily('trust-task-ok'), null);
+});
+
+test('groupFamilies groups three or more listed slugs, in place, and leaves the rest', () => {
+  const t = (slug) => ({ slug, version: '0.1' });
+  const tasks = ['acl/grant', 'acl/revoke', 'governance/capability/grant', 'governance/capability/list',
+    'governance/capability/revoke', 'trust-task-ok', 'witness/session', 'witness/session/close', 'witness/session/open'].map(t);
+  const rows = R.groupFamilies(tasks, 3);
+  const shape = Array.from(rows, (r) => (r.family ? `${r.family}:${r.tasks.length}` : r.task.slug));
+  // acl has only two here, so stays flat; witness/session is the family of its own children.
+  assert.deepEqual(shape, ['acl/grant', 'acl/revoke', 'governance/capability:3', 'trust-task-ok', 'witness/session:3']);
+  // A filtered list groups only what it still holds.
+  assert.deepEqual(Array.from(R.groupFamilies(tasks.slice(2, 4), 3), (r) => r.task.slug), ['governance/capability/grant', 'governance/capability/list']);
+});
