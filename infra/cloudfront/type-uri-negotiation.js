@@ -68,7 +68,7 @@ var ASSET_PREFIXES = ['/assets/', '/specs/', '/bindings/', '/ceremonies/'];
 // file added without updating this list is served the SPA shell instead of
 // itself. robots.txt and sitemap.xml are written by scripts/build-registry.mjs.
 var ROOT_FILES = [
-  '/index.html', '/registry.json', '/SPEC.md', '/_redirects', '/vercel.json',
+  '/index.html', '/registry.json', '/SPEC.md',
   '/robots.txt', '/sitemap.xml'
 ];
 
