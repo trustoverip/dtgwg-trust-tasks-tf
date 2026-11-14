@@ -45,6 +45,7 @@ const SITE_ORIGIN = 'https://trusttasks.org';
 /** The routes to load. Each must render a page of its own, not the not-found view. */
 export const ROUTES = [
   '/',
+  '/registry/governance',
   '/spec/acl/grant/0.3',
   '/binding/https/0.3',
   '/schema',

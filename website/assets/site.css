@@ -922,6 +922,64 @@ pre[tabindex]:focus-visible {
   background: color-mix(in srgb, var(--tt-coral) 7%, var(--tt-surface));
 }
 
+/* ---------- Registry: slug family groups (#1154) ---------- */
+.tt-family {
+  position: relative;
+  padding: var(--tt-space-4) var(--tt-space-5);
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border);
+  border-radius: var(--tt-radius-lg);
+  overflow: hidden;
+}
+.tt-family::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent, var(--tt-teal));
+  opacity: 0.6;
+}
+.tt-family__heading { margin: 0; font-size: inherit; font-weight: inherit; }
+.tt-family__toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tt-space-2) var(--tt-space-3);
+  width: 100%;
+  padding: var(--tt-space-1) 0;
+  background: none;
+  border: 0;
+  color: var(--tt-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tt-family__toggle:hover .tt-family__name { text-decoration: underline; }
+.tt-family__toggle:focus-visible { outline: 2px solid var(--tt-link); outline-offset: 2px; }
+.tt-family__chevron { flex: none; transition: transform var(--tt-duration-1) var(--tt-ease); }
+.tt-family.is-open .tt-family__chevron { transform: rotate(90deg); }
+.tt-family__name {
+  font-family: var(--tt-font-mono);
+  font-size: var(--tt-text-lg);
+  overflow-wrap: anywhere;
+}
+.tt-family__count { color: var(--tt-text-muted); font-size: var(--tt-text-sm); }
+.tt-family__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tt-space-2) var(--tt-space-3);
+  margin-top: var(--tt-space-2);
+  padding-left: calc(16px + var(--tt-space-3));
+}
+.tt-family__preview { color: var(--tt-text-muted); font-size: var(--tt-text-sm); }
+.tt-family__list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tt-space-4);
+  margin-top: var(--tt-space-4);
+}
+
 /* ---------- Registry: show more --------------------------- */
 .tt-show-more { margin-top: var(--tt-space-5); text-align: center; }
 
