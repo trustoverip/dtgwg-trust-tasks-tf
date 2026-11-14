@@ -141,7 +141,7 @@ A conforming **host** (`recipient`):
 
    A prune that removed nothing takes no version and leaves no mark.
 6. **MUST** return `lastPrune` thereafter wherever a response can carry it
-   ([`rooms/records/list`](../../list/0.7/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.5/spec.md)
+   ([`rooms/records/list`](../../list/0.8/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.6/spec.md)
    0.2 through it, [`rooms/info`](../../../info/0.4/spec.md) 0.2).
 7. **MUST** keep the audit trail below, and **MUST NOT** keep anything else of a removed
    record.
@@ -216,7 +216,7 @@ the same way a short listing is.
 
 **A prune removes records from the host, not from the world.** A member who read a record has
 it; a member's agent that cached it holds it until it next synchronises, when
-[`rooms/records/list`](../../list/0.7/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
+[`rooms/records/list`](../../list/0.8/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
 what is gone. An export is beyond the room entirely. On the sealed tiers the ciphertext of a
 removed record may survive in a backup, a mirror or a store that publishes ciphertext; to make
 such copies unreadable, the room prunes its key chain

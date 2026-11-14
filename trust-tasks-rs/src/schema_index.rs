@@ -626,6 +626,9 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/backup/put-chunk/0.1#response" => <crate::specs::backup::put_chunk::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "chat")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/chat/direct/message/0.1" => <crate::specs::chat::direct::message::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "chat")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/chat/message/0.1" => <crate::specs::chat::message::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "config")]
         #[cfg(not(test))]
@@ -3089,6 +3092,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/info/0.4#response" => <crate::specs::rooms::info::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.5" => <crate::specs::rooms::info::v0_5::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.5#response" => <crate::specs::rooms::info::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => <crate::specs::rooms::keys::act::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3201,6 +3210,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.5#response" => <crate::specs::rooms::keys::browse::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.6" => <crate::specs::rooms::keys::browse::v0_6::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.6#response" => <crate::specs::rooms::keys::browse::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => <crate::specs::rooms::keys::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3585,6 +3600,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.7#response" => <crate::specs::rooms::records::list::v0_7::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.8" => <crate::specs::rooms::records::list::v0_8::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.8#response" => <crate::specs::rooms::records::list::v0_8::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/prune/0.1" => <crate::specs::rooms::records::prune::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -8804,6 +8825,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "chat")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/chat/direct/message/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::chat::direct::message::v0_1::Payload,
+        >()),
+        #[cfg(feature = "chat")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/chat/message/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::chat::message::v0_1::Payload,
         >()),
@@ -11211,6 +11237,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.5" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::info::v0_5::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::act::v0_1::Payload,
         >()),
@@ -11303,6 +11334,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.5" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::browse::v0_5::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.6" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::browse::v0_6::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -11652,6 +11688,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.7" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::list::v0_7::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.8" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::list::v0_8::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -16684,6 +16725,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "chat")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/chat/direct/message/0.1" => {
+            Some(crate::specs::chat::direct::message::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "chat")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/chat/message/0.1" => {
             Some(crate::specs::chat::message::v0_1::ERROR_CODES)
         }
@@ -18779,6 +18825,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.5" => {
+            Some(crate::specs::rooms::info::v0_5::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => {
             Some(crate::specs::rooms::keys::act::v0_1::ERROR_CODES)
         }
@@ -18871,6 +18922,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.5" => {
             Some(crate::specs::rooms::keys::browse::v0_5::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.6" => {
+            Some(crate::specs::rooms::keys::browse::v0_6::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -19196,6 +19252,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/list/0.7" => {
             Some(crate::specs::rooms::records::list::v0_7::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.8" => {
+            Some(crate::specs::rooms::records::list::v0_8::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -23096,6 +23157,9 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
 pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
     #[allow(clippy::match_single_binding)]
     match type_uri {
+        #[cfg(feature = "chat")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/chat/direct/message/0.1" => <crate::specs::chat::direct::message::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "external")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/external/credentials/issue/0.2" => <crate::specs::external::credentials::issue::v0_2::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,

@@ -43,6 +43,7 @@ library;
 export 'src/runtime/canonical.dart';
 export 'src/runtime/codes.dart';
 export 'src/runtime/consume.dart';
+export 'src/runtime/critical.dart';
 export 'src/runtime/document.dart';
 export 'src/runtime/events.dart';
 export 'src/runtime/extension.dart' hide typeRefusalFor;

@@ -8,6 +8,8 @@ import type { BlobRef, DataCommitment, DigestMultibase, Ext, HeadVersion, ListOr
 
 /**
  * TODO: what the request payload of rooms/keys/browse carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/keys/browse/0.6
  */
 export interface RoomsKeysBrowsePayload {
   /**
@@ -49,6 +51,8 @@ export interface RoomsKeysBrowsePayload {
 }
 /**
  * Success response to rooms/keys/browse. Type https://trusttasks.org/spec/rooms/keys/browse/0.5#response.
+ *
+ * @deprecated superseded by rooms/keys/browse/0.6
  */
 export interface RoomsKeysBrowseResponsePayload {
   roomId: string;
@@ -95,15 +99,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/keys/browse/0.6";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/browse/0.6
+ */
 export type Payload = RoomsKeysBrowsePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/browse/0.5#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/browse/0.6
+ */
 export type Response = RoomsKeysBrowseResponsePayload;
 
 /**

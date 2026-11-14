@@ -9,7 +9,7 @@ import type { AuthorityPresentation, Ext, RecordPrune_RoomsV0_2 as RecordPrune, 
 /**
  * A member asks a room's host what it holds about the room: its tier, its current epoch, how long it keeps its records and when it last pruned them, the limits the host applies to its files, and how much of them the room and the member have used.
  *
- * @deprecated superseded by rooms/info/0.4
+ * @deprecated superseded by rooms/info/0.5
  */
 export interface RoomsInfoPayload {
   /**
@@ -28,7 +28,7 @@ export interface RoomsInfoPayload {
 /**
  * Success response to rooms/info. Type https://trusttasks.org/spec/rooms/info/0.3#response.
  *
- * @deprecated superseded by rooms/info/0.4
+ * @deprecated superseded by rooms/info/0.5
  */
 export interface RoomsInfoResponsePayload {
   /**
@@ -95,12 +95,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/info/0.4";
+export const DEPRECATION: string | null = "superseded by rooms/info/0.5";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/info/0.4
+ * @deprecated superseded by rooms/info/0.5
  */
 export type Payload = RoomsInfoPayload;
 
@@ -110,7 +110,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/info/0.3#res
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/info/0.4
+ * @deprecated superseded by rooms/info/0.5
  */
 export type Response = RoomsInfoResponsePayload;
 

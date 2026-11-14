@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/browse/0.5");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/browse/0.6");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -316,7 +316,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/browse/0.5")]
+#[deprecated(note = "superseded by rooms/keys/browse/0.6")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1087,7 +1087,7 @@ impl RecordPrune {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/browse/0.5")]
+#[deprecated(note = "superseded by rooms/keys/browse/0.6")]
 pub struct Response {
     ///Whether the recipient followed the host's cursor to the end. `false` means a page bound was hit, and is what makes `verification.count` `notComparable` even on an unfiltered listing — a short listing and a truncated one are indistinguishable by length alone, which is exactly the confusion this member exists to prevent.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

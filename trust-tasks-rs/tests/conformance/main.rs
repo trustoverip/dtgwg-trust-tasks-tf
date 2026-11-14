@@ -276,6 +276,11 @@ mod backup {
 }
 #[cfg(feature = "chat")]
 mod chat {
+    mod direct {
+        mod message {
+            mod v0_1;
+        }
+    }
     mod message {
         mod v0_1;
     }
@@ -1286,6 +1291,7 @@ mod rooms {
         mod v0_2;
         mod v0_3;
         mod v0_4;
+        mod v0_5;
     }
     mod keys {
         mod act {
@@ -1312,6 +1318,7 @@ mod rooms {
             mod v0_3;
             mod v0_4;
             mod v0_5;
+            mod v0_6;
         }
         mod chain {
             mod v0_1;
@@ -1424,6 +1431,7 @@ mod rooms {
             mod v0_5;
             mod v0_6;
             mod v0_7;
+            mod v0_8;
         }
         mod prune {
             mod v0_1;

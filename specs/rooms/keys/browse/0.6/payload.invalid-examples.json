@@ -1,0 +1,50 @@
+[
+  {
+    "note": "An order that is neither `oldestFirst` nor `newestFirst`. The two orders are a closed set, passed through to the host as they are.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": "latestFirst"
+    }
+  },
+  {
+    "note": "`order` as a boolean. It names an order, `oldestFirst` or `newestFirst`; a flag cannot say which way `true` points.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": true
+    }
+  },
+  {
+    "note": "`maxPages` of zero. A browse that may read no page lists nothing and could only answer `complete: false`; the least is one page.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "order": "newestFirst",
+      "maxPages": 0
+    }
+  },
+  {
+    "note": "`beforeVersion` of 0. The bound is exclusive and versions start at 1, so 0 selects nothing; a surface that sends it has lost its place, and an empty answer would read as a room with nothing older.",
+    "payload": {
+      "roomId": "did:example:room",
+      "host": "did:example:host",
+      "order": "newestFirst",
+      "beforeVersion": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A null nextCursor. A listing read to its end omits nextCursor; it is never null.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "records": [],
+      "complete": true,
+      "nextCursor": null,
+      "verification": {
+        "priorRoots": "noneHeld",
+        "count": "notOffered"
+      }
+    }
+  }
+]
