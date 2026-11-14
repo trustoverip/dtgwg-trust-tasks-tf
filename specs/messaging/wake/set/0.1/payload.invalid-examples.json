@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false) — a producer cannot smuggle a platform token beside the handle.",
+    "payload": { "wakeHandle": { "gateway": "did:web:push.wallet.example", "handle": "wh_1" }, "pushToken": "a1b2c3" }
+  },
+  {
+    "note": "A WakeHandle without its gateway names nothing a mediator could ring.",
+    "payload": { "wakeHandle": { "handle": "wh_1" } }
+  },
+  {
+    "note": "An empty handle is not a handle (minLength 1).",
+    "payload": { "wakeHandle": { "gateway": "did:web:push.wallet.example", "handle": "" } }
+  },
+  {
+    "note": "null is not a way to clear the handle — absence is.",
+    "payload": { "wakeHandle": null }
+  },
+  {
+    "variant": "response",
+    "note": "The response says only whether the mediator will ring; wakeCapable is required.",
+    "payload": {}
+  }
+]

@@ -8,6 +8,8 @@ import type { Apns, Ext, Fcm, PushRegistration, WakeHandle, WebPush } from "../.
 
 /**
  * A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and names the controller VTA permitted to provision its trigger allowlist. The gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
+ *
+ * @deprecated superseded by push/register/0.3
  */
 export interface PushRegisterPayload {
   /**
@@ -20,6 +22,7 @@ export interface PushRegisterPayload {
   controllerVtaDid: string;
   ext?: Ext;
 }
+/** @deprecated superseded by push/register/0.3 */
 export interface PushRegisterResponsePayload {
   /**
    * The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.
@@ -48,15 +51,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by push/register/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by push/register/0.3
+ */
 export type Payload = PushRegisterPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/register/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by push/register/0.3
+ */
 export type Response = PushRegisterResponsePayload;
 
 /**

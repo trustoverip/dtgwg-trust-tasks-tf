@@ -2318,10 +2318,25 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/queue/status/0.1#response" => <crate::specs::messaging::queue::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/receipt/0.1" => <crate::specs::messaging::receipt::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => <crate::specs::messaging::stats::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1#response" => <crate::specs::messaging::stats::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/request/0.1" => <crate::specs::messaging::wake::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/request/0.1#response" => <crate::specs::messaging::wake::request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/set/0.1" => <crate::specs::messaging::wake::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/set/0.1#response" => <crate::specs::messaging::wake::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "notifications")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/notifications/notify/0.1" => <crate::specs::notifications::notify::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2823,6 +2838,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "push")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/register/0.2#response" => <crate::specs::push::register::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "push")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/push/register/0.3" => <crate::specs::push::register::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "push")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/push/register/0.3#response" => <crate::specs::push::register::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "push")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/wake/0.1" => <crate::specs::push::wake::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -10521,8 +10542,23 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/receipt/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::receipt::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::stats::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::wake::request::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/set/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::wake::set::v0_1::Payload,
         >()),
         #[cfg(feature = "notifications")]
         #[cfg(not(test))]
@@ -10993,6 +11029,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/register/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::push::register::v0_2::Payload,
+        >()),
+        #[cfg(feature = "push")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/push/register/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::push::register::v0_3::Payload,
         >()),
         #[cfg(feature = "push")]
         #[cfg(not(test))]
@@ -18175,8 +18216,23 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/receipt/0.1" => {
+            Some(crate::specs::messaging::receipt::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => {
             Some(crate::specs::messaging::stats::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/request/0.1" => {
+            Some(crate::specs::messaging::wake::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/wake/set/0.1" => {
+            Some(crate::specs::messaging::wake::set::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "notifications")]
         #[cfg(not(test))]
@@ -18597,6 +18653,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/register/0.2" => {
             Some(crate::specs::push::register::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/push/register/0.3" => {
+            Some(crate::specs::push::register::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "push")]
         #[cfg(not(test))]

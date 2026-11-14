@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Neither a controller VTA nor self-control: nobody could ever provision the handle (oneOf).",
+    "payload": { "registration": { "platform": "fcm", "token": "fcm-token-1" } }
+  },
+  {
+    "note": "Both a controller VTA and self-control: the handle would have two controllers (oneOf).",
+    "payload": {
+      "registration": { "platform": "fcm", "token": "fcm-token-1" },
+      "controllerVtaDid": "did:web:vta.example",
+      "selfControl": { "allowedTriggers": ["did:web:mediator.example"] }
+    }
+  },
+  {
+    "note": "Self-control names its allowlist explicitly; allowedTriggers is required.",
+    "payload": { "registration": { "platform": "fcm", "token": "fcm-token-1" }, "selfControl": {} }
+  },
+  {
+    "note": "An allowlist is a handful of DIDs (maxItems 4).",
+    "payload": {
+      "registration": { "platform": "fcm", "token": "fcm-token-1" },
+      "selfControl": { "allowedTriggers": ["did:example:a", "did:example:b", "did:example:c", "did:example:d", "did:example:e"] }
+    }
+  },
+  {
+    "note": "A trigger is a DID, never a URL.",
+    "payload": {
+      "registration": { "platform": "fcm", "token": "fcm-token-1" },
+      "selfControl": { "allowedTriggers": ["https://mediator.example"] }
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "registration": { "platform": "fcm", "token": "fcm-token-1" }, "controllerVtaDid": "did:web:vta.example", "__notARealMember__": true }
+  }
+]

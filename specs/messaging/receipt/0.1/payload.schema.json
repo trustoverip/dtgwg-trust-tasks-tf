@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/receipt/0.1",
+  "title": "Messaging — Receipt — payload",
+  "description": "A recipient's delivery layer tells the sender that it durably holds a message the sender asked to be receipted, by echoing the delivery id the sender stamped on it. Fire-and-forget: no response, and no receipt of a receipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "confirms"
+  ],
+  "properties": {
+    "confirms": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The delivery id the sender stamped on the message — the TSP binding envelope's `deliveryId`, or the DIDComm binding's `delivery_id` header — echoed exactly."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  }
+}

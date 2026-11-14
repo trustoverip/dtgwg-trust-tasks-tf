@@ -1,0 +1,14 @@
+[
+  {
+    "note": "A receipt that confirms nothing settles nothing — confirms is required.",
+    "payload": {}
+  },
+  {
+    "note": "An empty delivery id names no delivery (minLength 1).",
+    "payload": { "confirms": "" }
+  },
+  {
+    "note": "A receipt carries the echoed id only — no state, time or content (additionalProperties: false).",
+    "payload": { "confirms": "push-7f3a:1:tsp", "state": "read" }
+  }
+]

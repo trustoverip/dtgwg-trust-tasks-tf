@@ -312,10 +312,6 @@
       "missing-request": "Baseline (#1131): no request example when the lint landed.",
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
     },
-    "push/register/0.2": {
-      "missing-request": "Baseline (#1131): no request example when the lint landed.",
-      "missing-response": "Baseline (#1131): no #response example when the lint landed."
-    },
     "push/wake/0.2": {
       "missing-request": "Baseline (#1131): no request example when the lint landed.",
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
