@@ -23,7 +23,7 @@ package main
 //   - The whole file is byte-identical once the two header lines and the
 //     embedded schema literals are masked — nothing between declarations
 //     differs either.
-//   - The extends index holds the same entries as specs/extends.go.
+//   - The extends index holds the same entries as trusttasks/extends_index.go.
 //
 // The differences it permits, and why:
 //
@@ -193,7 +193,7 @@ func TestEquivalenceWithPrebuiltTree(t *testing.T) {
 	}
 
 	// The extends index.
-	want := extendsEntries(t, filepath.Join(prebuilt, "extends.go"))
+	want := extendsEntries(t, filepath.Join(prebuilt, "..", "trusttasks", "extends_index.go"))
 	var root []byte
 	for _, f := range res.files {
 		if f.slug == "" {
@@ -201,19 +201,19 @@ func TestEquivalenceWithPrebuiltTree(t *testing.T) {
 		}
 	}
 	got := map[string]string{}
-	for _, m := range regexp.MustCompile(`(?m)^\t("[^"]+"): ("[^"]*"),$`).FindAllSubmatch(root, -1) {
+	for _, m := range indexEntry.FindAllSubmatch(root, -1) {
 		k, _ := strconv.Unquote(string(m[1]))
 		v, _ := strconv.Unquote(string(m[2]))
 		got[k] = v
 	}
 	for k, v := range want {
 		if got[k] != v {
-			fail("extends index: %s is %q in specs/extends.go, %q generated", k, v, got[k])
+			fail("extends index: %s is %q in trusttasks/extends_index.go, %q generated", k, v, got[k])
 		}
 	}
 	for k := range got {
 		if _, ok := want[k]; !ok {
-			fail("extends index: %s generated, absent from specs/extends.go", k)
+			fail("extends index: %s generated, absent from trusttasks/extends_index.go", k)
 		}
 	}
 
@@ -393,7 +393,12 @@ func splitFile(src []byte) (string, []decl, error) {
 	return head.String(), decls, nil
 }
 
-// extendsEntries reads the entries of the prebuilt specs/extends.go.
+// indexEntry is one `"<Type URI>": "<M.N>",` line of an extends index. gofmt
+// aligns the values, so any run of spaces may follow the colon; matching only
+// one read just the longest keys of each index, and compared those alone.
+var indexEntry = regexp.MustCompile(`(?m)^\t("[^"]+"):\s+("[^"]*"),$`)
+
+// extendsEntries reads the entries of the prebuilt index, trusttasks/extends_index.go.
 func extendsEntries(t *testing.T, path string) map[string]string {
 	t.Helper()
 	src, err := os.ReadFile(path)
@@ -401,12 +406,12 @@ func extendsEntries(t *testing.T, path string) map[string]string {
 		t.Fatal(err)
 	}
 	out := map[string]string{}
-	for _, m := range regexp.MustCompile(`(?m)^\t("[^"]+"): ("[^"]*"),$`).FindAllSubmatch(src, -1) {
+	for _, m := range indexEntry.FindAllSubmatch(src, -1) {
 		k, _ := strconv.Unquote(string(m[1]))
 		v, _ := strconv.Unquote(string(m[2]))
 		out[k] = v
 	}
-	if len(out) == 0 && !bytes.Contains(src, []byte("var extendsIndex = map[string]string{}")) {
+	if len(out) == 0 && !bytes.Contains(src, []byte("var registryExtendsIndex = map[string]string{}")) {
 		t.Fatalf("no entries read from %s, and it is not the empty index", path)
 	}
 	return out
