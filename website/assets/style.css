@@ -327,6 +327,8 @@ a.btn[class*="--primary"]:hover { border-bottom-color: var(--tt-teal); }
   margin-bottom: var(--tt-space-4);
 }
 .card h4 { margin-bottom: var(--tt-space-3); }
+/* A card heading one level under its section h2, sized as the h4 it was. */
+.card .card__title { font-size: var(--tt-text-xl); font-weight: 450; margin-bottom: var(--tt-space-3); }
 .card p:last-child { margin-bottom: 0; }
 
 /* Feature card — accent stripe at top */

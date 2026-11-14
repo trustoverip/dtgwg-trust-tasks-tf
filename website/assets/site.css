@@ -135,8 +135,10 @@
   width: 7px; height: 7px; border-radius: 50%;
 }
 .tt-chip__count {
+  /* No opacity: dimming --tt-text-muted to 0.7 left 3.6:1 on white at ~10px.
+     It inherits the chip's color (muted, or cream on a pressed chip), which
+     clears 4.5:1 on every chip background in both themes. */
   font-size: 0.85em;
-  opacity: 0.7;
   margin-left: 0.2em;
 }
 
@@ -210,7 +212,11 @@
   transition: all var(--tt-duration-1) var(--tt-ease);
 }
 .tt-keyword:hover { border-color: var(--tt-line); }
-.tt-keyword[aria-pressed="true"] {
+/* A keyword shown as a tag inside a card link, not a control. */
+.tt-keyword--tag { cursor: inherit; }
+.tt-keyword--tag:hover { border-color: transparent; }
+.tt-keyword[aria-pressed="true"],
+.tt-keyword--tag.is-active {
   background: var(--tt-amber);
   color: var(--tt-navy);
   border-color: var(--tt-amber);
@@ -537,7 +543,17 @@ body[data-type="hybrid"] h1, body[data-type="hybrid"] h2 {
   font-size: var(--tt-text-sm);
   letter-spacing: 0.04em;
 }
-
+/* The h1 of a "nothing registered here" page: it reads as the bold line it
+   was, but a page with no h1 has no heading to land on (#1156). */
+.tt-empty__title {
+  display: block;
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  color: inherit;
+  font-variation-settings: normal;
+}
 /* ---------- Category tile --------------------------------- */
 .tt-cat-grid {
   display: grid;
@@ -569,7 +585,9 @@ body[data-type="hybrid"] h1, body[data-type="hybrid"] h2 {
   box-shadow: var(--tt-shadow);
   color: inherit;
 }
-.tt-cat-tile h3 {
+.tt-cat-tile h2 {
+  /* An h2 (it follows the page h1) styled as the h3 it used to be. */
+  font-weight: 400;
   font-size: var(--tt-text-2xl);
   margin: var(--tt-space-3) 0 var(--tt-space-3);
 }
@@ -824,6 +842,11 @@ mark.tt-mark {
 }
 .tt-skip-link:focus { top: var(--tt-space-3); }
 main:focus, main h1:focus { outline: none; }
+/* A scrollable code block is a tab stop (CodeBlock, TTProse); show where focus is. */
+pre[tabindex]:focus-visible {
+  outline: 2px solid var(--tt-link);
+  outline-offset: 2px;
+}
 
 /* ---------- Narrow-width navigation (#1149) ---------------
    The eleven links do not fit one row below this width, so the row becomes a
