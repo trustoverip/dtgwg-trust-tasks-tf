@@ -702,6 +702,14 @@ pub enum RejectReason {
         retry_after: Option<DateTime<Utc>>,
     },
 
+    /// The document marked an `ext` namespace critical (SPEC §4.5.2) that
+    /// the consumer does not recognize.
+    #[error("unsupported critical extension: {namespace}")]
+    UnsupportedExtension {
+        /// The first unrecognized namespace named in `extCritical`.
+        namespace: String,
+    },
+
     /// The consumer encountered an unexpected internal failure.
     #[error("internal error: {reason}")]
     InternalError {
@@ -728,6 +736,7 @@ impl RejectReason {
             RejectReason::TaskFailed { .. } => StandardCode::TaskFailed,
             RejectReason::Unavailable { .. } => StandardCode::Unavailable,
             RejectReason::InternalError { .. } => StandardCode::InternalError,
+            RejectReason::UnsupportedExtension { .. } => StandardCode::UnsupportedExtension,
         }
     }
 

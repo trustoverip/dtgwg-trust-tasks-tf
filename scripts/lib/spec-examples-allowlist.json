@@ -382,10 +382,6 @@
       "missing-request": "Baseline (#1131): no request example when the lint landed.",
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
     },
-    "rooms/records/list/0.7": {
-      "missing-request": "Baseline (#1131): no request example when the lint landed.",
-      "missing-response": "Baseline (#1131): no #response example when the lint landed."
-    },
     "trust-ceremony-receipt/0.1": {
       "missing-request": "Baseline (#1131): no request example when the lint landed."
     },

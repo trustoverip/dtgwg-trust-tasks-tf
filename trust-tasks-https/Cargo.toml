@@ -58,13 +58,13 @@ reqwest = { version = "0.13", optional = true, default-features = false, feature
 ] }
 
 # JWT bearer-auth adapter (feature-gated under `jwt`).
-# jsonwebtoken 10 split crypto into provider features — at least one of
+# jsonwebtoken 10+ split crypto into provider features — at least one of
 # `rust_crypto` / `aws_lc_rs` MUST be enabled. We pick `aws_lc_rs`:
 # the `rust_crypto` provider transitively pulls in `rsa` 0.9, which
 # carries the open Marvin-Attack advisory RUSTSEC-2023-0071 with no
 # patch available. `aws-lc-rs` is already in the workspace dep graph
 # via rustls, so reusing it here costs nothing extra.
-jsonwebtoken = { version = "10", optional = true, default-features = false, features = [
+jsonwebtoken = { version = "11", optional = true, default-features = false, features = [
   "aws_lc_rs",
 ] }
 
