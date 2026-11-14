@@ -316,6 +316,24 @@ test('registry filters are read from the URL', { skip: !haveBuild && 'run `npm r
   if (ctx.TT_TASKS.some((t) => t.status === 'retired')) assert.match(html, /aria-pressed="false"[^>]*>.*?retired/s);
 });
 
+test('the registry groups slug families: closed unfiltered, open under a search (#1154)', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
+  const ctx = await pageContext();
+  const toggles = (html) => [...html.matchAll(/<button type="button" class="tt-family__toggle" aria-expanded="(true|false)" aria-controls="([^"]+)"/g)];
+  const plain = render(ctx, '/registry/governance').html;
+  const closed = toggles(plain);
+  assert.ok(closed.length > 0, 'the governance category has family groups');
+  assert.ok(closed.every((m) => m[1] === 'false'), 'unfiltered, every family starts closed');
+  // The group heading sits under the page's results heading; its cards are not rendered while closed.
+  assert.match(plain, /<h2 class="sr-only">Specifications<\/h2>/);
+  assert.match(plain, /<h3 class="tt-family__heading">/);
+  for (const [, , id] of closed) assert.ok(plain.includes(`id="${id}" class="tt-family__list" hidden=""`), `${id} is the hidden list`);
+  // A search opens every family left in the list, and the cards inside are h4.
+  const searched = render(ctx, '/registry/governance?q=member').html;
+  const open = toggles(searched);
+  assert.ok(open.length > 0 && open.every((m) => m[1] === 'true'), 'under a search, families holding matches are open');
+  assert.match(searched, /<h4 class="tt-task-card__title">/);
+});
+
 test('the registry index is slim, and every version and shared schema has its detail file (#1145)', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
   const ctx = await pageContext();
   for (const t of ctx.TT_TASKS) {

@@ -56,6 +56,53 @@
     return list.filter(x => x.slug === slug).sort(byVersionDesc)[0];
   }
 
+  /* Slug families for the registry list (#1154).
+   *
+   * A slug's family is its first two segments when it has three or more
+   * (`governance/capability/grant` -> `governance/capability`), and its first
+   * segment when it has two (`acl/grant` -> `acl`); a one-segment slug has
+   * none. A slug that is itself another slug's family (`witness/session`
+   * beside `witness/session/open`) belongs to that family rather than its
+   * parent's.
+   *
+   * `groupFamilies(tasks, min)` walks `tasks` (one entry per slug, as
+   * latestPerSlug returns them) and returns rows in their order: a family
+   * with at least `min` (default 3) members in `tasks` becomes one
+   * `{ family, tasks }` row, placed where its first member was; every other
+   * task stays a `{ task }` row. Grouping is decided on the list it is given,
+   * so a filtered list groups only what it still holds. */
+  function slugFamily(slug) {
+    const parts = String(slug).split("/");
+    if (parts.length < 2) return null;
+    return parts.slice(0, Math.min(2, parts.length - 1)).join("/");
+  }
+
+  function groupFamilies(tasks, min) {
+    const minSize = min || 3;
+    const keys = new Set();
+    for (const t of tasks) { const f = slugFamily(t.slug); if (f) keys.add(f); }
+    const familyOf = (t) => (keys.has(t.slug) ? t.slug : slugFamily(t.slug));
+    const members = new Map();
+    for (const t of tasks) {
+      const f = familyOf(t);
+      if (!f) continue;
+      if (!members.has(f)) members.set(f, []);
+      members.get(f).push(t);
+    }
+    const rows = [];
+    const placed = new Set();
+    for (const t of tasks) {
+      const f = familyOf(t);
+      const group = f ? members.get(f) : null;
+      if (group && group.length >= minSize) {
+        if (!placed.has(f)) { placed.add(f); rows.push({ family: f, tasks: group }); }
+      } else {
+        rows.push({ task: t });
+      }
+    }
+    return rows;
+  }
+
   const REPO_BLOB = "https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main";
 
   /* Trees the site serves as files (the CloudFront function's ASSET_PREFIXES). */
@@ -135,7 +182,7 @@
   }
 
   global.ttRoutes = {
-    cmpVersion, byVersionDesc, isLive, latestPerSlug, latestOf,
+    cmpVersion, byVersionDesc, isLive, latestPerSlug, latestOf, slugFamily, groupFamilies,
     isSpaPath, resolveProseHref, rewriteProseLinks, ASSET_PREFIXES, REPO_BLOB,
   };
 })(typeof window !== "undefined" ? window : globalThis);

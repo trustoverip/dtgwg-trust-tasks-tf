@@ -70,11 +70,11 @@ jobs:
         run: |
           # `git status`, not `git diff`: a package the generator newly wrote is
           # untracked, and `git diff` cannot see an untracked file (codegen.yml).
-          if [ -n "$(git status --porcelain -- trust-tasks-go/specs)" ]; then
+          if [ -n "$(git status --porcelain -- trust-tasks-go/specs trust-tasks-go/trusttasks/extends_index.go)" ]; then
             echo "::error::Go bindings are stale. Run \`npm run build-go-bindings\` and commit the diff, including any new files. Do NOT bump a version — the Release PR does that; see RELEASING.md."
-            git status --short -- trust-tasks-go/specs
-            git add -N -- trust-tasks-go/specs
-            git diff -- trust-tasks-go/specs | head -200
+            git status --short -- trust-tasks-go/specs trust-tasks-go/trusttasks/extends_index.go
+            git add -N -- trust-tasks-go/specs trust-tasks-go/trusttasks/extends_index.go
+            git diff -- trust-tasks-go/specs trust-tasks-go/trusttasks/extends_index.go | head -200
             exit 1
           fi
 
