@@ -130,7 +130,7 @@ serde_with = "3"
 chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
 thiserror = "2"
 async-trait = "0.1"
-jsonschema = { version = "0.60", default-features = false, optional = true }
+jsonschema = { version = "0.61", default-features = false, optional = true }
 # Used by codegen-emitted `FromStr` impls for newtypes whose underlying
 # JSON Schema declares a `pattern`. Pulled in transparently because the
 # typify-generated code references `::regress::Regex` directly.
