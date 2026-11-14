@@ -504,7 +504,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to rooms/keys/browse. Type
 /// https://trusttasks.org/spec/rooms/keys/browse/0.1#response.
-@Deprecated('superseded by rooms/keys/browse/0.5')
+@Deprecated('superseded by rooms/keys/browse/0.6')
 class Response {
   const Response({
     required this.roomId,
@@ -557,7 +557,7 @@ class Response {
 /// TODO: what the request payload of rooms/keys/browse carries. The outer document
 /// members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 /// framework — SPEC §6.3.
-@Deprecated('superseded by rooms/keys/browse/0.5')
+@Deprecated('superseded by rooms/keys/browse/0.6')
 class Payload {
   const Payload({
     required this.roomId,
@@ -621,7 +621,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/browse/0.5';
+const String? deprecation = 'superseded by rooms/keys/browse/0.6';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/browse/0.1';
