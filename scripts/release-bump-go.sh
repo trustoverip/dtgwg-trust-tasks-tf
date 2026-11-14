@@ -39,7 +39,11 @@
 # Run from the repository root, on a full-history checkout of `main`, with
 # `git-cliff` on PATH.
 
-set -euo pipefail
+set -Eeuo pipefail
+# Name the command that failed. Under `set -e` a failing step otherwise ends the
+# job with a bare exit code (141 is SIGPIPE) and no line to look at; -E carries
+# the trap into functions and subshells.
+trap 'rc=$?; echo "::error file=${BASH_SOURCE[0]},line=${LINENO}::exit ${rc} from: ${BASH_COMMAND}" >&2' ERR
 
 # Which Go module to release. The core defaults; the nested modules
 # (trust-tasks-go/proof, trust-tasks-go/didcomm, trust-tasks-go/capabilityclient)

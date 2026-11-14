@@ -54,7 +54,11 @@
 # authenticated (GH_TOKEN) for `open`. When PUSH_TOKEN is set, `open` pushes
 # with it; otherwise with git's own credentials.
 
-set -euo pipefail
+set -Eeuo pipefail
+# Name the command that failed. Under `set -e` a failing step otherwise ends the
+# job with a bare exit code (141 is SIGPIPE) and no line to look at; -E carries
+# the trap into functions and subshells.
+trap 'rc=$?; echo "::error file=${BASH_SOURCE[0]},line=${LINENO}::exit ${rc} from: ${BASH_COMMAND}" >&2' ERR
 
 usage() {
   echo "usage: $0 [prepare DIR | open DIR]" >&2
