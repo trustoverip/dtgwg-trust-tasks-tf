@@ -781,7 +781,7 @@ function HomePage({ tweaks, setRoute }) {
           >
             <div style={{ flex: "1 1 auto", minWidth: "240px" }}>
               <span className="eyebrow" style={{ display: "inline-flex", marginBottom: "var(--tt-space-2)" }}>v0.1 framework specification</span>
-              <h3 style={{ margin: 0, marginBottom: "var(--tt-space-2)" }}>Read the framework specification.</h3>
+              <h2 style={{ margin: 0, marginBottom: "var(--tt-space-2)", fontSize: "var(--tt-text-2xl)" }}>Read the framework specification.</h2>
               <p style={{ margin: 0, color: "var(--tt-text-muted)" }}>Document structure, version scheme, namespace, errors, and transport bindings — the contract every individual Trust Task conforms to.</p>
             </div>
             <span style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-accent, var(--tt-violet))", whiteSpace: "nowrap" }}>
@@ -906,7 +906,7 @@ function SpecListRow({ task, dateLabel, dateValue, setRoute }) {
 /* ============================================================
    REGISTRY CARD (shared between Home featured + Registry list)
    ============================================================ */
-function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
+function RegistryCard({ task, setRoute, query, activeKw }) {
   return (
     <a
       className="tt-task-card"
@@ -926,13 +926,11 @@ function RegistryCard({ task, setRoute, query, activeKw, onKwToggle }) {
             {catName(task.category)}
           </span>
           <div className="tt-task-card__keywords">
+            {/* Plain tags: the card is one link, so nothing inside it can be a
+                control (the old mouse-only toggle carried aria-pressed on a span).
+                The registry's filter rail is where a keyword toggles. */}
             {task.keywords.slice(0, 5).map(k => (
-              <span
-                key={k}
-                className="tt-keyword"
-                aria-pressed={activeKw === k}
-                onClick={onKwToggle ? (e) => { e.preventDefault(); e.stopPropagation(); onKwToggle(k); } : undefined}
-              >{k}</span>
+              <span key={k} className={`tt-keyword tt-keyword--tag${activeKw === k ? " is-active" : ""}`}>{k}</span>
             ))}
           </div>
         </div>
@@ -1114,7 +1112,6 @@ function RegistryPage({ route, setRoute }) {
                         setRoute={setRoute}
                         query={q}
                         activeKw={activeKw}
-                        onKwToggle={toggleKw}
                       />
                     ))}
                   </div>
@@ -1330,7 +1327,7 @@ function SchemaPage({ slug, setRoute }) {
     return (
       <section className="container">
         <div className="tt-empty" style={{ padding: "var(--tt-space-6)", marginTop: "var(--tt-space-6)" }}>
-          <b>No shared schema matches <code>/schema/{slug}</code>.</b>
+          <h1 className="tt-empty__title">No shared schema matches <code>/schema/{slug}</code>.</h1>
           <div style={{ marginTop: "var(--tt-space-4)" }}>
             <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>← Back to registry</a>
           </div>
@@ -1523,7 +1520,7 @@ function SchemaPage({ slug, setRoute }) {
         </div>
       </div>
 
-      <aside className="tt-spec__sidebar">
+      <nav className="tt-spec__sidebar" aria-label="On this page">
         <div className="tt-toc-title">On this page</div>
         <ol className="tt-toc">
           {[
@@ -1535,7 +1532,7 @@ function SchemaPage({ slug, setRoute }) {
             <li key={sid}><a href={`#${sid}`}>{text}</a></li>
           ))}
         </ol>
-      </aside>
+      </nav>
     </section>
   );
 }
@@ -1685,12 +1682,12 @@ function SpecNotFound({ slug, version, id, registered, setRoute }) {
       <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
         {registered.length === 0 ? (
           <>
-            <b>No specifications are currently registered.</b><br />
+            <h1 className="tt-empty__title">No specifications are currently registered.</h1>
             Add one under <code>specs/&lt;slug&gt;/&lt;version&gt;/</code> and run <code>npm run build</code>.
           </>
         ) : (
           <>
-            <b>No Trust Task registered for <code>{asked}</code>.</b><br />
+            <h1 className="tt-empty__title">No Trust Task registered for <code>{asked}</code>.</h1>
             {siblings.length > 0 && (
               <span>
                 Registered {siblings.length === 1 ? "version" : "versions"} of <code>{slug}</code>:{" "}
@@ -1980,7 +1977,7 @@ function SpecDetail({ task, setRoute }) {
           <p style={{ color: "var(--tt-text-muted)" }}>Loading specification…</p>
         )}
         {!proseError && proseHtml && (
-          <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: proseHtml }} />
+          <TTProse html={proseHtml} onClick={onProseClick} />
         )}
 
         <h2 id="schema">JSON Schema</h2>
@@ -2038,7 +2035,7 @@ function SpecDetail({ task, setRoute }) {
         </div>
       </div>
 
-      <aside className="tt-spec__sidebar">
+      <nav className="tt-spec__sidebar" aria-label="On this page">
         <div className="tt-toc-title">On this page</div>
         <ol className="tt-toc">
           {[
@@ -2052,7 +2049,7 @@ function SpecDetail({ task, setRoute }) {
             <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{text}</a></li>
           ))}
         </ol>
-      </aside>
+      </nav>
     </section>
   );
 }
@@ -2081,7 +2078,7 @@ function CategoriesPage({ setRoute }) {
                 onClick={(e) => { e.preventDefault(); setRoute({ name: "registry", cat: c.id }); }}
               >
                 <span className="tt-cat-tile__count">{counts[c.id] || 0} {(counts[c.id] || 0) === 1 ? "spec" : "specs"}</span>
-                <h3>{c.name}</h3>
+                <h2>{c.name}</h2>
                 <p style={{ margin: 0 }}>{c.blurb}</p>
               </a>
             ))}
@@ -2111,17 +2108,17 @@ function AboutPage() {
           <div className="grid grid--3" style={{ marginTop: "var(--tt-space-6)" }}>
             <article className="card card--accent card--coral">
               <div className="card__index">01 · Self-contained</div>
-              <h4>Everything in one document.</h4>
+              <h3 className="card__title">Everything in one document.</h3>
               <p>A Trust Task contains all relevant information needed to complete the task within the definition itself — parties, scope, criteria, schema. No hidden context.</p>
             </article>
             <article className="card card--accent card--teal">
               <div className="card__index">02 · Transport-agnostic</div>
-              <h4>Indifferent to delivery.</h4>
+              <h3 className="card__title">Indifferent to delivery.</h3>
               <p>The definition does not assume any particular protocol or channel. DIDComm, HTTP, message queue, paper — the task is the task.</p>
             </article>
             <article className="card card--accent card--violet">
               <div className="card__index">03 · JSON-based</div>
-              <h4>One canonical encoding.</h4>
+              <h3 className="card__title">One canonical encoding.</h3>
               <p>JSON is the single normative serialization. Other encodings MAY be derived; the JSON document is authoritative.</p>
             </article>
           </div>
@@ -2179,25 +2176,25 @@ function EcosystemPage({ setRoute }) {
           <div className="grid grid--4" style={{ marginTop: "var(--tt-space-5)", gap: "var(--tt-space-4)" }}>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("violet")}` }}>
               <div className="card__index" style={{ color: accentText("violet") }}>Layer 01</div>
-              <h4>Vocabulary</h4>
+              <h3 className="card__title">Vocabulary</h3>
               <p>What two parties exchange. Typed, JSON, transport-agnostic.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Trust Tasks</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("teal")}` }}>
               <div className="card__index" style={{ color: accentText("teal") }}>Layer 02</div>
-              <h4>Credentials</h4>
+              <h3 className="card__title">Credentials</h3>
               <p>What participants carry. Six W3C VC types from the DTG.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>DTG Credentials</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("coral")}` }}>
               <div className="card__index" style={{ color: accentText("coral") }}>Layer 03</div>
-              <h4>Infrastructure</h4>
+              <h3 className="card__title">Infrastructure</h3>
               <p>What holds keys and authorizes operations. The VTA.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>Verifiable Trust Infrastructure</div>
             </article>
             <article className="card" style={{ borderTop: `3px solid ${accentColor("amber")}` }}>
               <div className="card__index" style={{ color: accentText("amber") }}>Layer 04</div>
-              <h4>Tooling</h4>
+              <h3 className="card__title">Tooling</h3>
               <p>What developers use to participate in a community.</p>
               <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-2)" }}>OpenVTC</div>
             </article>
@@ -2426,7 +2423,7 @@ function FrameworkSpecPage({ setRoute }) {
             <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>Loading specification…</div>
           )}
           {!error && html && (
-            <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: html }} />
+            <TTProse html={html} onClick={onProseClick} />
           )}
         </div>
       </section>
@@ -3457,12 +3454,12 @@ function BindingSpecPage({ slug, version, setRoute }) {
         <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
           {all.length === 0 ? (
             <>
-              <b>No transport bindings are currently registered.</b><br />
+              <h1 className="tt-empty__title">No transport bindings are currently registered.</h1>
               Add one under <code>bindings/&lt;slug&gt;/&lt;version&gt;/</code>.
             </>
           ) : (
             <>
-              <b>No binding registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</b><br />
+              <h1 className="tt-empty__title">No binding registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</h1>
               <a href="/bindings" onClick={(e) => { e.preventDefault(); setRoute({ name: "bindings" }); }}>
                 See the binding registry →
               </a>
@@ -3626,7 +3623,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
           <p style={{ color: "var(--tt-text-muted)" }}>Loading binding specification…</p>
         )}
         {!proseError && proseHtml && (
-          <article className="tt-prose" onClick={onProseClick} dangerouslySetInnerHTML={{ __html: proseHtml }} />
+          <TTProse html={proseHtml} onClick={onProseClick} />
         )}
 
         <div style={{ marginTop: "var(--tt-space-8)", paddingTop: "var(--tt-space-5)", borderTop: "1px solid var(--tt-line)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "var(--tt-space-4)" }}>
@@ -3635,14 +3632,14 @@ function BindingSpecPage({ slug, version, setRoute }) {
         </div>
       </div>
 
-      <aside className="tt-spec__sidebar">
+      <nav className="tt-spec__sidebar" aria-label="On this page">
         <div className="tt-toc-title">On this page</div>
         <ol className="tt-toc">
           {[{ id: "metadata", text: "Metadata" }, ...proseToc].map(({ id: sid, text }) => (
             <li key={sid}><a href={`#${sid}`} className={activeSection === sid ? "active" : ""}>{text}</a></li>
           ))}
         </ol>
-      </aside>
+      </nav>
     </section>
   );
 }
@@ -3739,7 +3736,7 @@ function CeremonyPage({ slug, version, setRoute }) {
     return (
       <section className="container">
         <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
-          <b>No ceremony registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</b><br />
+          <h1 className="tt-empty__title">No ceremony registered for <code>{slug || "(missing slug)"}{version ? `/${version}` : ""}</code>.</h1>
           <a href="/ceremonies" onClick={(e) => { e.preventDefault(); setRoute({ name: "ceremonies" }); }}>
             See the ceremony registry →
           </a>
@@ -3816,7 +3813,7 @@ function CeremonyPage({ slug, version, setRoute }) {
               <p style={{ color: "var(--tt-text-muted)" }}>
                 Served as <code>application/json</code> at the definition URI above.
               </p>
-              <pre style={{ overflowX: "auto" }}><code>{JSON.stringify(def, null, 2)}</code></pre>
+              <pre style={{ overflowX: "auto" }} tabIndex={0} role="group" aria-label="Ceremony definition (JSON)"><code>{JSON.stringify(def, null, 2)}</code></pre>
             </React.Fragment>
           )}
 

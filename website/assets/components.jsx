@@ -266,7 +266,17 @@ function Highlight({ text, query }) {
 }
 
 /* ---------- Code block w/ copy ---------------------------- */
-function CodeBlock({ json, language = "json" }) {
+const CODE_LANGUAGE_NAMES = { json: "JSON", sh: "Shell", rust: "Rust", toml: "TOML", ts: "TypeScript", go: "Go", dart: "Dart" };
+function codeBlockLabel(language) {
+  const name = language && (CODE_LANGUAGE_NAMES[language.toLowerCase()] || language);
+  return name ? `${name} code` : "Code";
+}
+
+/* A code block can scroll, and a scrolling region a keyboard cannot reach is
+   one a keyboard user cannot read (WCAG 2.1.1; axe scrollable-region-focusable).
+   So each <pre> is a named, focusable group: role="group" rather than "region",
+   so a page of code blocks does not become a page of landmarks. */
+function CodeBlock({ json, language = "json", label }) {
   const [copied, setCopied] = useState(false);
   const text = typeof json === "string" ? json : JSON.stringify(json, null, 2);
   const onCopy = () => {
@@ -282,9 +292,50 @@ function CodeBlock({ json, language = "json" }) {
         {copied ? "Copied" : "Copy"}
       </button>
       <span className="sr-only" aria-live="polite">{copied ? "Copied to the clipboard" : ""}</span>
-      <pre><code>{text}</code></pre>
+      <pre tabIndex={0} role="group" aria-label={label || codeBlockLabel(language)}><code>{text}</code></pre>
     </div>
   );
+}
+
+/* Rendered markdown prose. Its <pre> blocks come from `marked`, so the
+   attributes CodeBlock sets in JSX are added here once the markup is in the
+   page — and only to a block that actually scrolls, re-checked on resize, so
+   short examples do not each become a tab stop. */
+function TTProse({ html, onClick }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return undefined;
+    const apply = () => {
+      root.querySelectorAll("pre").forEach((pre) => {
+        const scrolls = pre.scrollWidth > pre.clientWidth || pre.scrollHeight > pre.clientHeight;
+        if (scrolls) {
+          const code = pre.querySelector("code");
+          const lang = code && (/\blanguage-([\w-]+)/.exec(code.className) || [])[1];
+          pre.setAttribute("tabindex", "0");
+          pre.setAttribute("role", "group");
+          pre.setAttribute("aria-label", codeBlockLabel(lang));
+        } else {
+          pre.removeAttribute("tabindex");
+          pre.removeAttribute("role");
+          pre.removeAttribute("aria-label");
+        }
+      });
+    };
+    // A markdown table with a blank header cell (a row-label column) renders
+    // an empty <th>, which names nothing; an empty <td> says the same thing
+    // without claiming to head the column.
+    root.querySelectorAll("th").forEach((th) => {
+      if (th.textContent.trim() !== "" || th.children.length > 0) return;
+      const td = document.createElement("td");
+      for (const { name, value } of Array.from(th.attributes)) td.setAttribute(name, value);
+      th.replaceWith(td);
+    });
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, [html]);
+  return <article ref={ref} className="tt-prose" onClick={onClick} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 /* ---------- Animated network glyph (hero) ---------------- */
@@ -511,7 +562,7 @@ function linkifySpec(text, setRoute) {
 
 /* expose */
 Object.assign(window, {
-  TTMark, TTNav, TTFooter, TTStatus, Highlight, CodeBlock,
+  TTMark, TTNav, TTFooter, TTStatus, Highlight, CodeBlock, TTProse,
   HeroGlyph, PageHero, AnimNumber, catColor, catTextColor, accentText, copyText, catName,
   SPEC_ANCHORS, SpecRef, linkifySpec, TTErrorBoundary, NotFoundPage, TT_NAV_GROUPS
 });
