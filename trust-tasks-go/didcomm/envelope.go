@@ -2,7 +2,6 @@ package didcomm
 
 import (
 	"crypto/ecdh"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -310,27 +309,6 @@ func bareDID(didURL string) string {
 }
 
 // NewMessageID returns a fresh DIDComm message id (a UUID URN), independent of
-// the Trust Task document's own id (binding §2).
-func NewMessageID() string {
-	return "urn:uuid:" + uuidV4()
-}
-
-func uuidV4() string {
-	var b [16]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		// A document id needs entropy. Ignoring the error would mint the same
-		// all-zero id every time, which the peer's item-11 record then reads as
-		// an idConflict; fail loudly instead, as the tsp module's NewURNUUID does.
-		panic("trust-tasks: crypto/rand failed: " + err.Error())
-	}
-	b[6] = (b[6] & 0x0f) | 0x40
-	b[8] = (b[8] & 0x3f) | 0x80
-	const hexd = "0123456789abcdef"
-	buf := make([]byte, 36)
-	for i, p := range []int{0, 2, 4, 6, 9, 11, 14, 16, 19, 21, 24, 26, 28, 30, 32, 34} {
-		buf[p] = hexd[b[i]>>4]
-		buf[p+1] = hexd[b[i]&0x0f]
-	}
-	buf[8], buf[13], buf[18], buf[23] = '-', '-', '-', '-'
-	return string(buf)
-}
+// the Trust Task document's own id (binding §2). It is [tt.NewURNUUID], and
+// panics when crypto/rand fails.
+func NewMessageID() string { return tt.NewURNUUID() }

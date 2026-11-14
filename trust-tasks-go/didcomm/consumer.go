@@ -107,11 +107,10 @@ type Received[R any] struct {
 //
 // decode reads the request payload from JSON. A document holding two members
 // whose names differ only by case is refused malformedRequest before decode
-// runs; decode itself sees exact names only as far as it checks them — pass one
-// built on trusttasks.CheckMemberNames once this module requires a core that
-// has it; handler returns the response
-// document (build it with [tt.RespondWith]), nil for a fire-and-forget spec, or
-// a [tt.Refusal] error.
+// runs; decode itself sees exact names only as far as it checks them — build it
+// on [tt.CheckMemberNames] to refuse a member encoding/json would match by case
+// alone. handler returns the response document (build it with
+// [tt.RespondWith]), nil for a fire-and-forget spec, or a [tt.Refusal] error.
 //
 // It returns an *[EnvelopeError] for a message that never reached the pipeline
 // (binding §4): nothing can be sent back for those.
@@ -132,7 +131,9 @@ func Receive[P, R any](
 }
 
 // Consume runs an already-unpacked document through §7.2 — for a caller that
-// routes on the document's type before choosing the specification.
+// routes on the document's type before choosing the specification. It is
+// [tt.ConsumeReceived] with this consumer's configuration, and binding §3.1's
+// thread cross-check as its BindingCheck.
 func Consume[P, R any](
 	ctx context.Context,
 	c *Consumer,
@@ -141,99 +142,9 @@ func Consume[P, R any](
 	decode func(json.RawMessage) (P, error),
 	handler tt.Handler[P, R],
 ) (*Received[R], error) {
-	transport := unpacked.Transport
-	now := c.now()
-
-	refused := func(doc *tt.Document[json.RawMessage], reason tt.RejectReason) *Received[R] {
-		errResp := tt.Reject(transport, doc, c.newID(), reason, nil)
-		out := tt.ConsumeOutcome[R]{}
-		var reply json.RawMessage
-		if errResp == nil {
-			out.Kind = tt.OutcomeSuppressed
-			out.Reason = &reason
-		} else {
-			out.Kind = tt.OutcomeRejected
-			out.Error = errResp
-			reply, _ = json.Marshal(errResp)
-		}
-		return &Received[R]{Outcome: out, Transport: transport, Reply: reply}
-	}
-
-	var raw tt.Document[json.RawMessage]
-	if err := json.Unmarshal(unpacked.Document, &raw); err != nil {
-		return refused(&tt.Document[json.RawMessage]{}, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: "envelope body is not a Trust Task document",
-		}), nil
-	}
-
-	// Binding §3.1 — where both a DIDComm thread header and its framework member
-	// are present they MUST be equal. A mismatch is malformedRequest (a
-	// structurally inconsistent document), never identityMismatch, and is routed
-	// to the authenticated sender.
-	if h, m := unpacked.Thid, raw.ThreadID; threadMismatch(h, m) {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: fmt.Sprintf("DIDComm thid %q disagrees with the document threadId %q", h, *m),
-		}), nil
-	}
-	if h, m := unpacked.Pthid, raw.ParentThreadID; threadMismatch(h, m) {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: fmt.Sprintf("DIDComm pthid %q disagrees with the document parentThreadId %q", h, *m),
-		}), nil
-	}
-
-	// Two members differing only by case would be read as one by encoding/json
-	// and as two by every other reader; see caseFoldedDuplicate.
-	if _, dup := caseFoldedDuplicate(unpacked.Document); dup {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: "document has two members whose names differ only by case",
-		}), nil
-	}
-
-	// SPEC §5.2 "Declared extension": a later version whose extends chain
-	// (per c.Extends; nil is the registry's) reaches spec's is read as spec's
-	// version, its payload pruned to the members spec's schema knows, as the
-	// Rust dispatcher and the Dart bindings read it (#1117). Another
-	// specification is unsupportedType, an unreached version of this one
-	// unsupportedVersion, and a payload too complex to prune malformedRequest
-	// — each routed to the authenticated sender. The proof and the item-11
-	// digest stay over the document as received (Received below).
-	reading, reason, err := tt.ReadForSpecWith(unpacked.Document, spec, c.Extends)
-	if err != nil {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: "envelope body is not a Trust Task document",
-		}), nil
-	}
-	if reason != nil {
-		return refused(&raw, *reason), nil
-	}
-	var read tt.Document[json.RawMessage]
-	if err := json.Unmarshal(reading, &read); err != nil {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: "envelope body is not a Trust Task document",
-		}), nil
-	}
-
-	payload, err := decode(read.Payload)
-	if err != nil {
-		return refused(&raw, tt.RejectReason{
-			Code:    tt.CodeMalformedRequest,
-			Message: "payload does not match the specification",
-		}), nil
-	}
-	doc := documentWith(raw, payload)
-
 	proofPolicy := tt.ProofPolicy{Kind: tt.ProofRejectIfPresent}
 	if c.ProofVerifier != nil {
-		proofPolicy = tt.ProofPolicy{
-			Kind:     tt.ProofVerify,
-			Verifier: asReceived{inner: c.ProofVerifier, json: unpacked.Document},
-		}
+		proofPolicy = tt.ProofPolicy{Kind: tt.ProofVerify, Verifier: c.ProofVerifier}
 	}
 	payloadPolicy := tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated}
 	if c.PayloadValidator != nil {
@@ -244,41 +155,52 @@ func Consume[P, R any](
 		checks.Replay = tt.ReplayPolicy{Kind: tt.ReplayGuarded, Guard: c.Guard}
 	}
 
-	outcome, err := tt.ConsumeInbound(ctx, tt.ConsumeOptions[P, R]{
-		Transport:     transport,
-		Spec:          spec,
+	// The core's inbound body (#1110): a body that does not parse is answered
+	// malformedRequest to the authenticated sender (binding §4), addressed from
+	// the routing members that did parse; the thread cross-check below runs
+	// next; two members differing only by case are refused; a later version
+	// whose extends chain (per c.Extends; nil is the registry's) reaches spec's
+	// is read as spec's version (SPEC §5.2 "Declared extension"); and §7.2 runs
+	// with the document as it arrived as Received, so the proof, the item-11
+	// digest and SPEC §12.4's maxDocumentBytes are all over those bytes.
+	result, err := tt.ConsumeReceived[P, R](ctx, unpacked.Document, unpacked.Transport, spec, decode, handler, tt.ReceiveOptions{
 		ProofPolicy:   proofPolicy,
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
-		Doc:           doc,
-		// The document as it arrived: the item-11 digest is over it, so a
-		// member the payload type does not model still tells two documents
-		// under one id apart.
-		// It is also what SPEC §12.4's maxDocumentBytes bounds, where the core
-		// enforces it.
-		Received:   unpacked.Document,
-		Extends:    c.Extends,
-		MyVID:      transport.Local,
-		Now:        now,
-		NewErrorID: c.newID,
-		Handler:    handler,
+		Extends:       c.Extends,
+		MyVID:         unpacked.Transport.Local,
+		Now:           c.now(),
+		NewErrorID:    c.newID,
+		BindingCheck:  threadCheck(unpacked),
 	})
 	if err != nil {
 		// A handler error that is not a Refusal, or a misconfiguration. The core
 		// has already released the claim if the handler failed.
 		return nil, err
 	}
+	return &Received[R]{Outcome: result.Outcome, Transport: unpacked.Transport, Reply: result.Reply}, nil
+}
 
-	var reply json.RawMessage
-	switch outcome.Kind {
-	case tt.OutcomeHandled:
-		reply, _ = json.Marshal(outcome.Response)
-	case tt.OutcomeRejected:
-		reply, _ = json.Marshal(outcome.Error)
-	case tt.OutcomeDuplicate:
-		reply = outcome.PriorResponse
+// threadCheck is binding §3.1: where both a DIDComm thread header and its
+// framework member are present they MUST be equal. A mismatch is
+// malformedRequest (a structurally inconsistent document), never
+// identityMismatch, and is routed to the authenticated sender.
+func threadCheck(unpacked *Unpacked) func(*tt.Document[json.RawMessage]) *tt.RejectReason {
+	return func(doc *tt.Document[json.RawMessage]) *tt.RejectReason {
+		if h, m := unpacked.Thid, doc.ThreadID; threadMismatch(h, m) {
+			return &tt.RejectReason{
+				Code:    tt.CodeMalformedRequest,
+				Message: fmt.Sprintf("DIDComm thid %q disagrees with the document threadId %q", h, *m),
+			}
+		}
+		if h, m := unpacked.Pthid, doc.ParentThreadID; threadMismatch(h, m) {
+			return &tt.RejectReason{
+				Code:    tt.CodeMalformedRequest,
+				Message: fmt.Sprintf("DIDComm pthid %q disagrees with the document parentThreadId %q", h, *m),
+			}
+		}
+		return nil
 	}
-	return &Received[R]{Outcome: outcome, Transport: transport, Reply: reply}, nil
 }
 
 // PackReply seals a reply document back to the authenticated sender (binding §4,
@@ -294,36 +216,4 @@ func PackReply(sender *Identity, recipient *PeerKey, reply json.RawMessage) ([]b
 // threadMismatch is binding §3.1's both-present-and-differ test.
 func threadMismatch(header string, inBand *string) bool {
 	return header != "" && inBand != nil && header != *inBand
-}
-
-// documentWith rebuilds a typed document from the raw view and the decoded
-// payload, preserving every other member.
-func documentWith[P any](raw tt.Document[json.RawMessage], payload P) *tt.Document[P] {
-	return &tt.Document[P]{
-		ID:             raw.ID,
-		ThreadID:       raw.ThreadID,
-		ParentThreadID: raw.ParentThreadID,
-		Ceremony:       raw.Ceremony,
-		Type:           raw.Type,
-		Issuer:         raw.Issuer,
-		Recipient:      raw.Recipient,
-		IssuedAt:       raw.IssuedAt,
-		ExpiresAt:      raw.ExpiresAt,
-		Payload:        payload,
-		Context:        raw.Context,
-		Proof:          raw.Proof,
-		Extra:          raw.Extra,
-	}
-}
-
-// asReceived verifies the document as it arrived rather than as the typed decode
-// would re-encode it, which drops members the generated type does not model and
-// so breaks a valid signature.
-type asReceived struct {
-	inner tt.ProofVerifier
-	json  json.RawMessage
-}
-
-func (a asReceived) Verify(ctx context.Context, _ json.RawMessage) error {
-	return a.inner.Verify(ctx, a.json)
 }

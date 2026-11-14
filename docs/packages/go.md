@@ -93,6 +93,9 @@ authenticated no sender (`ErrNoAuthenticatedSender`), because those answers are
 only safe when they go to the authenticated party. `trusttasks.NewURNUUID()`
 mints document ids and panics when `crypto/rand` fails. A binding needing a
 check of its own adds it through `BindingCheck` rather than copying the body.
+The `tsp` and `didcomm` consumers are built on it (core v0.12.0), and `tsp`,
+`didcomm` and `capabilityclient` mint ids with `NewURNUUID` — `tsp.NewURNUUID`
+and `didcomm.NewMessageID` remain, as forwarders to it.
 
 ### The `trust-tasks-go/tsp` nested module
 
