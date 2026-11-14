@@ -137,7 +137,7 @@ fi
 # than lexically, so v0.10.0 sorts above v0.9.0. The glob is anchored on the
 # module's own prefix, so `trust-tasks-go/v*` never matches a nested module's
 # `trust-tasks-go/proof/v*` and vice versa.
-tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | sed -n 1p)
 if [ -z "$tag" ]; then
   # Reaching here means `publish-go` did not run or did not finish — this job
   # has `needs: publish-go`, and that job writes `${TAG_PREFIX}<Version>` the

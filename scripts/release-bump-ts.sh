@@ -85,7 +85,7 @@ name=$(node -p "require('./$MANIFEST').name")
 current=$(node -p "require('./$MANIFEST').version")
 
 # ── Where the last release was ───────────────────────────────────────────────
-tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | sed -n 1p)
 if [ -z "$tag" ]; then
   echo "::error::No ${TAG_PREFIX}* tag exists, so there is no anchor to measure this release from. Seed it once at the currently-published version — see RELEASING.md, 'Release anchor tags' (and the new-package steps above it)."
   exit 1

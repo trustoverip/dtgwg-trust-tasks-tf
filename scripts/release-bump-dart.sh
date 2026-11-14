@@ -94,14 +94,14 @@ PUBSPEC="$PKG_DIR/pubspec.yaml"
 CHANGELOG="$PKG_DIR/CHANGELOG.md"
 TAG_PREFIX="$PKG_DIR-v"
 
-current=$(sed -n 's/^version: *//p' "$PUBSPEC" | head -1 | tr -d '\r')
+current=$(sed -n 's/^version: *//p' "$PUBSPEC" | sed -n 1p | tr -d '\r')
 if [ -z "$current" ]; then
   echo "::error::Could not read \`version\` from $PUBSPEC."
   exit 1
 fi
 
 # ── Where the last release was ───────────────────────────────────────────────
-tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | sed -n 1p)
 if [ -z "$tag" ]; then
   echo "::error::No ${TAG_PREFIX}* tag exists. tag-dart writes it once the package has a version with no matching tag — re-run that job rather than tagging by hand, because the tag is what pub.dev publishes from. See RELEASING.md."
   exit 1
