@@ -3,6 +3,14 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.2.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.2.1...trust-tasks-cli-v0.2.2) — 2026-11-14
+
+
+### Build & CI
+
+- **cli**: Build the release binaries for Linux and Windows only, until macOS runners are available ([#1293](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1293))
+
+
 ## [0.2.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.2.0...trust-tasks-cli-v0.2.1) — 2026-11-13
 
 
