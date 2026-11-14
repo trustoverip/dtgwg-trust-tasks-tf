@@ -75,7 +75,7 @@ TAG_PREFIX="trust-tasks-go/v"
 # The same watch set as release-bump-go.sh's core module, for the history check.
 WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs"
        ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp"
-       ":(exclude)$PKG_DIR/capabilityclient")
+       ":(exclude)$PKG_DIR/capabilityclient" ":(exclude)$PKG_DIR/specs")
 # Lines of apidiff's incompatible section that are not breaks (see above).
 EXEMPT='^- \./specs/[^ ]*\.(PayloadSchemaJSON|ResponsePayloadSchemaJSON|Deprecation|Extends): value changed from |^- \./trusttasks\.Version: value changed from '
 

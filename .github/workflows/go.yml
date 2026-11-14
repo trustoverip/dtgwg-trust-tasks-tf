@@ -99,7 +99,10 @@ jobs:
           go-version: ${{ matrix.go }}
           # The module has no dependencies, so there is no go.sum to key a cache on.
           cache: false
-      - name: Build every generated package
+      # The core module: the runtime, the generator and the smoke driver. The
+      # generated packages are the trust-tasks-go/specs module (#1112), which
+      # `./...` does not reach.
+      - name: Build the core module
         working-directory: trust-tasks-go
         run: go build ./...
       - name: Vet
@@ -176,9 +179,16 @@ jobs:
   # trust-tasks-ts/test/ — the three reference implementations must reach the
   # same verdict on the same document.
   #
-  # `./smoke` is the counterpart of `npm run smoke`: it imports a *generated*
-  # package and drives the real pipeline with it, which is the one thing neither
-  # the drift check nor the runtime tests do.
+  # `./smoke` is the counterpart of `npm run smoke`: it drives the real pipeline
+  # with *generated* packages, which is the one thing neither the drift check nor
+  # the runtime tests do. The generated packages are their own module now
+  # (trust-tasks-go/specs, #1112), so `./smoke` copies the few it uses into a
+  # throwaway copy of that module pointed at this checkout's runtime and runs
+  # the smoke test there; see trust-tasks-go/smoke/smoke_test.go.
+  #
+  # `./...` here no longer reaches trust-tasks-go/specs at all. That module is
+  # not built in CI yet: it cannot require a published core without specs/
+  # until one is released, and it gets its own job in #1112 step 3.
   test:
     name: go test (${{ matrix.go }})
     runs-on: ubuntu-24.04
@@ -238,6 +248,7 @@ jobs:
             :(exclude)trust-tasks-go/proof
             :(exclude)trust-tasks-go/didcomm
             :(exclude)trust-tasks-go/capabilityclient
+            :(exclude)trust-tasks-go/specs
             fixtures
             .github/workflows/go.yml
       - name: Setup Go
@@ -301,6 +312,7 @@ jobs:
             :(exclude)trust-tasks-go/tsp
             :(exclude)trust-tasks-go/didcomm
             :(exclude)trust-tasks-go/capabilityclient
+            :(exclude)trust-tasks-go/specs
             fixtures
             .github/workflows/go.yml
       - name: Setup Go
@@ -362,6 +374,7 @@ jobs:
             :(exclude)trust-tasks-go/tsp
             :(exclude)trust-tasks-go/proof
             :(exclude)trust-tasks-go/capabilityclient
+            :(exclude)trust-tasks-go/specs
             fixtures
             .github/workflows/go.yml
       - name: Setup Go
@@ -421,6 +434,7 @@ jobs:
             :(exclude)trust-tasks-go/tsp
             :(exclude)trust-tasks-go/proof
             :(exclude)trust-tasks-go/didcomm
+            :(exclude)trust-tasks-go/specs
             fixtures
             .github/workflows/go.yml
       - name: Setup Go
