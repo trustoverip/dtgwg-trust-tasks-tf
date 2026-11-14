@@ -58,3 +58,6 @@ infra/cloudfront/dist*.json
 trust-tasks-dart*/.dart_tool/
 trust-tasks-dart*/pubspec.lock
 trust-tasks-dart*/build/
+
+# Deployable CloudFront function, built by `npm run build:cloudfront`.
+infra/cloudfront/build/

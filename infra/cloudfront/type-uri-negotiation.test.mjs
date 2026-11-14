@@ -18,7 +18,12 @@ import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const source = readFileSync(join(here, "type-uri-negotiation.js"), "utf8");
+// `TUN_BUILT=1` runs every case against the build that is deployed
+// (build-function.mjs: comments and whitespace stripped, under CloudFront's
+// size cap) instead of the source; `npm run test:infra` runs both.
+const source = process.env.TUN_BUILT
+  ? (await import("./build-function.mjs")).buildFunction()
+  : readFileSync(join(here, "type-uri-negotiation.js"), "utf8");
 const handler = new Function(`${source}; return handler;`)();
 
 const SCHEMA = "application/schema+json";
