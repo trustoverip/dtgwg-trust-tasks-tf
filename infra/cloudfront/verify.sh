@@ -88,7 +88,11 @@ echo "Response headers — $BASE"
 check_header() {
   local uri="$1" accept="$2" header="$3" want="$4"
   local value
-  value=$(curl -sS -o /dev/null -D - -H "Accept: $accept" "$BASE$uri" \
+  # Sent as a cross-origin request: CloudFront adds a response headers policy's
+  # CORS headers only when the request carries an Origin, as a browser's fetch
+  # from another site does. Without it Access-Control-Allow-Origin is (rightly)
+  # absent and the check would fail on a correctly configured distribution.
+  value=$(curl -sS -o /dev/null -D - -H "Accept: $accept" -H "Origin: https://example.org" "$BASE$uri" \
             | tr -d '\r' | awk -v h="$(tr '[:upper:]' '[:lower:]' <<<"$header")" \
                 'BEGIN{FS=": "} tolower($1)==h {sub(/^[^:]*: /, ""); print; exit}')
   if [[ "$value" == *"$want"* ]]; then
