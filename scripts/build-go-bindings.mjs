@@ -1281,15 +1281,17 @@ async function walk(dir, pattern) {
 }
 
 /**
- * The files in `specs/` that are source, not output: the specs module's own
- * go.mod and go.sum (#1112). clean() keeps them.
+ * The entries in `specs/` that are source, not output (#1112): the specs
+ * module's go.mod and go.sum, its release files (version.go, the `const
+ * Version` publish-go reads, and CHANGELOG.md), and its smoke test. clean()
+ * keeps them, and main() refuses a generated package that would land on one.
  */
-const OUT_DIR_SOURCE_FILES = new Set(["go.mod", "go.sum"]);
+const OUT_DIR_SOURCE_FILES = new Set(["go.mod", "go.sum", "version.go", "CHANGELOG.md", "smoke"]);
 
 /**
  * Wipe the generated tree so a removed spec does not linger.
  *
- * Only `specs/` is wiped, and not its go.mod and go.sum: `trusttasks/` next to
+ * Only `specs/` is wiped, less OUT_DIR_SOURCE_FILES: `trusttasks/` next to
  * it is hand-written apart from extends_index.go, which is overwritten whole,
  * and the core's go.mod and the READMEs are source.
  */
@@ -1326,6 +1328,10 @@ async function main() {
   for (const schemaPath of filtered) {
     try {
       const result = generateOne(schemaPath, lifecycle);
+      const top = path.relative(OUT_DIR, result.dir).split(path.sep)[0];
+      if (OUT_DIR_SOURCE_FILES.has(top)) {
+        throw new Error(`would generate into trust-tasks-go/specs/${top}, which is hand-written source of the specs module`);
+      }
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
       packages.add(result.dir);

@@ -193,7 +193,7 @@ for (const name of bumpGo.keys()) {
   if (!go.has(name)) notes.push(`release-bump-go.sh has a case arm for ${name}, which is not released (no publish.yml matrix entry)`);
 }
 
-// Every nested module — released or not (tsp and specs are not) — must be excluded from
+// Every nested module — released or not (tsp is not) — must be excluded from
 // the core's watch in BOTH scripts, or a change to it releases the core.
 const nested = fs
   .readdirSync(path.join(ROOT, "trust-tasks-go"), { withFileTypes: true })
@@ -207,12 +207,8 @@ sameSet("check-go-api-compat.sh WATCH :(exclude)s", nested, excludes(read("scrip
 // A nested module CI deliberately does not build yet, with the reason. Each is
 // still excluded from the core's watch above; it needs a go.yml job, as every
 // other nested module does, before it leaves this list.
-const NOT_BUILT_YET = new Map([
-  [
-    "specs",
-    "the generated packages' module (#1112 step 2) cannot require a published core without specs/ until one is released; step 3 adds its job and its release",
-  ],
-]);
+// (trust-tasks-go/specs was listed here while it could not build, #1112.)
+const NOT_BUILT_YET = new Map([]);
 for (const [name, why] of NOT_BUILT_YET) {
   if (!nested.includes(name)) fail(`NOT_BUILT_YET names trust-tasks-go/${name}, which has no go.mod; drop it from the list`);
   else if (go.has(`trust-tasks-go/${name}`)) fail(`trust-tasks-go/${name} is released (publish.yml verify-go) but in NOT_BUILT_YET — a released module needs a go.yml job`);

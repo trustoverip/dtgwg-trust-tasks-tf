@@ -394,9 +394,9 @@ jobs:
   # go tooling derives the tag prefix from the subdirectory, so this spelling is
   # a requirement rather than a convention — unlike the `trust-tasks-ts-v*` and
   # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
-  # One matrix entry per Go module: the core, and the three nested modules that
+  # One matrix entry per Go module: the core, and the four nested modules that
   # version independently on their own `trust-tasks-go/<name>/vX.Y.Z` tags
-  # (proof, didcomm and capabilityclient). tsp is deliberately absent — it depends on the
+  # (proof, didcomm, capabilityclient and specs, the generated packages). tsp is deliberately absent — it depends on the
   # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
   #
@@ -433,6 +433,14 @@ jobs:
             versionfile: trust-tasks-go/capabilityclient/version.go
             tagprefix: trust-tasks-go/capabilityclient/v
             module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient
+          # The generated specification packages (#1112). It requires the
+          # published core, so a generator change that needs a new runtime API
+          # waits for that core's release and a move of specs/go.mod.
+          - name: trust-tasks-go/specs
+            dir: trust-tasks-go/specs
+            versionfile: trust-tasks-go/specs/version.go
+            tagprefix: trust-tasks-go/specs/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

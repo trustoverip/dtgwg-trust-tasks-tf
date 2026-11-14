@@ -2,19 +2,14 @@
 // hand-written runtime — the Go counterpart of `npm run smoke` in
 // trust-tasks-ts.
 //
-// The test itself is testdata/smoke/smoke_test.go. It imports generated
-// packages, which are no longer in this module: they are the
-// trust-tasks-go/specs module (#1112), and that module cannot yet require a
-// published core without specs/ (every published core still contains the
-// tree, so an import of a spec package would be ambiguous). So this test builds
-// a throwaway copy of the specs module holding only the packages the smoke test
-// imports, points it at this checkout's runtime with a replace — as the
-// examples do — and runs the smoke test inside it. It drives the generated
-// code exactly as before, under the same import paths, and keeps the smoke in
-// the core's `go test ./...`.
-//
-// When the specs module is released and gets its own CI job (#1112 step 3),
-// the smoke test can move into that module and this driver can go.
+// The test itself is ../specs/smoke/smoke_test.go, in the trust-tasks-go/specs
+// module (#1112), whose own `go test ./...` runs it against the core that module
+// requires: the published one. This driver runs it against THIS checkout's
+// runtime, so a runtime change is driven through real generated code before it
+// is released. It builds a throwaway copy of the specs module holding only the
+// packages the smoke test imports, points it at the checkout with a replace —
+// as the examples do — and runs the smoke test inside it, under the import
+// paths a consumer uses.
 package smoke
 
 import (
@@ -30,7 +25,7 @@ const (
 	specsModule = coreModule + "/specs"
 )
 
-// smokePackages are the generated packages testdata/smoke imports, relative to
+// smokePackages are the generated packages specs/smoke imports, relative to
 // trust-tasks-go/specs.
 var smokePackages = []string{
 	"acl/grant/v0_2",
@@ -58,7 +53,7 @@ func TestGeneratedPackagesDriveTheRuntime(t *testing.T) {
 	for _, pkg := range smokePackages {
 		copyGoFiles(t, filepath.Join(core, "specs", filepath.FromSlash(pkg)), filepath.Join(mod, filepath.FromSlash(pkg)))
 	}
-	copyGoFiles(t, filepath.Join("testdata", "smoke"), filepath.Join(mod, "smoke"))
+	copyGoFiles(t, filepath.Join(core, "specs", "smoke"), filepath.Join(mod, "smoke"))
 
 	goMod := "module " + specsModule + "\n\ngo 1.22\n\n" +
 		"require " + coreModule + " v0.0.0-00010101000000-000000000000\n\n" +
