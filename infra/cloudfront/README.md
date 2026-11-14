@@ -81,6 +81,17 @@ tree being published and this function learning about it.
 
 ## One-time setup
 
+### Deploy the build, not the source
+
+CloudFront Functions cap the code at 10,240 bytes, and `type-uri-negotiation.js`
+is over it with its comments (`update-function` fails with
+`FunctionSizeLimitExceeded`). Every command below deploys
+`build/type-uri-negotiation.min.js`, which `npm run build:cloudfront` writes from
+the source with comments and whitespace removed and nothing else changed. Run it
+from the repository root before `create-function` or `update-function`.
+`npm run test:infra` runs the routing tests against that build as well as the
+source, and fails when the build comes within 10% of the cap.
+
 The function is **inert until associated with a distribution** — deploying the
 website does not activate it, and the distribution configuration is not managed
 from this repository.
@@ -91,7 +102,7 @@ from this repository.
 aws cloudfront create-function \
   --name trust-tasks-type-uri-negotiation \
   --function-config Comment="Type URI + ceremony definition negotiation with SPA fallback (SPEC 6.2 / 6.7)",Runtime=cloudfront-js-2.0 \
-  --function-code fileb://type-uri-negotiation.js
+  --function-code fileb://build/type-uri-negotiation.min.js
 
 # The ETag comes from the create response (or `describe-function`).
 aws cloudfront publish-function \
@@ -102,13 +113,13 @@ aws cloudfront publish-function \
 
 ### Update the published function
 
-After changing `type-uri-negotiation.js` (and `npm run test:infra` passing), push the new code and publish it. The distribution picks up the published version; nothing needs re-associating.
+After changing `type-uri-negotiation.js` (and `npm run test:infra` passing), run `npm run build:cloudfront`, then push the new code and publish it. The distribution picks up the published version; nothing needs re-associating.
 
 ```sh
 aws cloudfront update-function \
   --name trust-tasks-type-uri-negotiation \
   --function-config Comment="Type URI + ceremony definition negotiation with SPA fallback (SPEC 6.2 / 6.7)",Runtime=cloudfront-js-2.0 \
-  --function-code fileb://type-uri-negotiation.js \
+  --function-code fileb://build/type-uri-negotiation.min.js \
   --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation --query 'ETag' --output text)"
 
 aws cloudfront publish-function \
@@ -285,7 +296,7 @@ etag=$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation 
 aws cloudfront update-function \
   --name trust-tasks-type-uri-negotiation \
   --function-config Comment="Type URI + ceremony definition negotiation with SPA fallback (SPEC 6.2 / 6.7)",Runtime=cloudfront-js-2.0 \
-  --function-code fileb://type-uri-negotiation.js \
+  --function-code fileb://build/type-uri-negotiation.min.js \
   --if-match "$etag"
 
 # update-function returns a fresh ETag; publish with that one.
