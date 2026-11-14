@@ -38,10 +38,10 @@ quote = "1"
 heck = "0.5"
 # Front matter (`publish` only). Safe-Rust YAML; serde_yaml pulls the
 # unmaintained unsafe-libyaml (RUSTSEC-2024-0449).
-serde-saphyr = { version = "1", optional = true }
+serde-saphyr = { version = "2", optional = true }
 
 [dev-dependencies]
-serde-saphyr = "1"
+serde-saphyr = "2"
 
 [package.metadata.docs.rs]
 all-features = true
