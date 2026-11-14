@@ -906,7 +906,10 @@ function SpecListRow({ task, dateLabel, dateValue, setRoute }) {
 /* ============================================================
    REGISTRY CARD (shared between Home featured + Registry list)
    ============================================================ */
-function RegistryCard({ task, setRoute, query, activeKw }) {
+function RegistryCard({ task, setRoute, query, activeKw, headingLevel = 3 }) {
+  // Inside a family group (#1154) the card's title sits one level below the
+  // group's heading.
+  const H = `h${headingLevel}`;
   return (
     <a
       className="tt-task-card"
@@ -915,7 +918,7 @@ function RegistryCard({ task, setRoute, query, activeKw }) {
       style={{ "--accent": catColor(task.category) }}
     >
       <div>
-        <h3 className="tt-task-card__title"><Highlight text={task.title} query={query} /></h3>
+        <H className="tt-task-card__title"><Highlight text={task.title} query={query} /></H>
         <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginBottom: "var(--tt-space-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           <span style={{ opacity: 0.6 }}>https://trusttasks.org</span>/spec/<span style={{ color: "var(--tt-text)" }}>{task.slug}</span>/<span style={{ color: catTextColor(task.category) }}>{task.version}</span>
         </div>
@@ -962,6 +965,45 @@ const STATUS_DOT = {
   retired: "var(--tt-text-muted)", withdrawn: "var(--tt-text-muted)",
 };
 
+/* Families of related slugs collapse to one row (#1154): `governance` alone is
+ * hundreds of cards otherwise. Which slugs form a family, and how many make a
+ * group, is `groupFamilies` in routes.js — at least FAMILY_MIN of the listed
+ * specifications sharing the family prefix. */
+const FAMILY_MIN = 3;
+
+function RegistryFamily({ family, tasks, open, onToggle, setRoute, query, activeKw }) {
+  const id = `tt-family-${family.replace(/[^a-z0-9]+/g, "-")}`;
+  const cats = [...new Set(tasks.map(t => t.category))];
+  const preview = tasks.slice(0, 4).map(t => t.title).join(" · ") + (tasks.length > 4 ? " …" : "");
+  return (
+    <div className={`tt-family${open ? " is-open" : ""}`} style={{ "--accent": catColor(cats[0]) }}>
+      <h3 className="tt-family__heading">
+        <button type="button" className="tt-family__toggle" aria-expanded={open} aria-controls={id} onClick={onToggle}>
+          <svg className="tt-family__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+          <span className="tt-family__name">{family}/*</span>
+          <span className="tt-family__count">{tasks.length} specifications</span>
+        </button>
+      </h3>
+      <div className="tt-family__meta">
+        {cats.map(c => (
+          <span key={c} className="pill" style={{ borderColor: catColor(c), color: catTextColor(c) }}>
+            <span className="dot" style={{ background: catColor(c) }}></span>
+            {catName(c)}
+          </span>
+        ))}
+        {!open && <span className="tt-family__preview">{preview}</span>}
+      </div>
+      <div id={id} className="tt-family__list" hidden={!open}>
+        {open && tasks.map(t => (
+          <RegistryCard key={t.id} task={t} setRoute={setRoute} query={query} activeKw={activeKw} headingLevel={4} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function RegistryPage({ route, setRoute }) {
   const activeCat = route.cat || null;
   const activeKw = route.kw || null;
@@ -983,6 +1025,22 @@ function RegistryPage({ route, setRoute }) {
     const t = setTimeout(() => update({ q: draft }), 200);
     return () => clearTimeout(t);
   }, [draft]);
+  // Families the reader has opened or closed by hand. Without a search,
+  // keyword or status filter every family starts closed; with one, every
+  // family left in the list holds a match, so they start open. A toggle
+  // flips that default for one family until the filters change.
+  // The toggles are kept with the filters they were made under, so a new
+  // filter starts every family at its default on its first render.
+  const filterKey = JSON.stringify([activeCat, activeKw, activeStatus, q]);
+  const [toggles, setToggles] = useS({ key: filterKey, set: new Set() });
+  const toggled = toggles.key === filterKey ? toggles.set : new Set();
+  const autoOpen = !!(q || activeKw || activeStatus);
+  const toggleFamily = (f) => {
+    const next = new Set(toggled);
+    if (next.has(f)) next.delete(f); else next.add(f);
+    setToggles({ key: filterKey, set: next });
+  };
+
   // A new filter starts from the first page of results.
   useE(() => { setLimit(REGISTRY_PAGE_SIZE); }, [activeCat, activeKw, activeStatus, q]);
 
@@ -1023,7 +1081,11 @@ function RegistryPage({ route, setRoute }) {
 
   const onClear = () => { setDraft(""); update({ cat: null, kw: null, status: null, q: "" }); };
   const toggleKw = (k) => update({ kw: activeKw === k ? null : k });
-  const shown = results.slice(0, limit);
+  // One row per family of FAMILY_MIN or more listed slugs, one per other slug;
+  // "Show more" pages through rows.
+  const rows = useM(() => window.ttRoutes.groupFamilies(results, FAMILY_MIN), [results]);
+  const shown = rows.slice(0, limit);
+  const familyCount = rows.filter(r => r.family).length;
 
   return (
     <React.Fragment>
@@ -1090,6 +1152,7 @@ function RegistryPage({ route, setRoute }) {
               <div className="tt-results-bar">
                 <div className="tt-results-bar__count" aria-live="polite">
                   <b>{results.length}</b> of {new Set(window.TT_TASKS.map(t => t.slug)).size} specifications
+                  {familyCount > 0 && <>, {familyCount} {familyCount === 1 ? "family" : "families"} grouped</>}
                   {activeCat && <> · category <b>{catName(activeCat)}</b></>}
                   {activeStatus && <> · status <b>{activeStatus}</b></>}
                   {activeKw && <> · keyword <b>{activeKw}</b></>}
@@ -1104,21 +1167,33 @@ function RegistryPage({ route, setRoute }) {
                 <div className="tt-empty">No specifications match these filters.</div>
               ) : (
                 <React.Fragment>
+                  <h2 className="sr-only">Specifications</h2>
                   <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)" }}>
-                    {shown.map(t => (
+                    {shown.map(r => r.family ? (
+                      <RegistryFamily
+                        key={`family:${r.family}`}
+                        family={r.family}
+                        tasks={r.tasks}
+                        open={autoOpen !== toggled.has(r.family)}
+                        onToggle={() => toggleFamily(r.family)}
+                        setRoute={setRoute}
+                        query={q}
+                        activeKw={activeKw}
+                      />
+                    ) : (
                       <RegistryCard
-                        key={t.id}
-                        task={t}
+                        key={r.task.id}
+                        task={r.task}
                         setRoute={setRoute}
                         query={q}
                         activeKw={activeKw}
                       />
                     ))}
                   </div>
-                  {results.length > shown.length && (
+                  {rows.length > shown.length && (
                     <div className="tt-show-more">
                       <button type="button" className="btn btn--ghost" onClick={() => setLimit(limit + REGISTRY_PAGE_SIZE)}>
-                        Show {Math.min(REGISTRY_PAGE_SIZE, results.length - shown.length)} more ({results.length - shown.length} not shown)
+                        Show {Math.min(REGISTRY_PAGE_SIZE, rows.length - shown.length)} more ({rows.length - shown.length} not shown)
                       </button>
                     </div>
                   )}
