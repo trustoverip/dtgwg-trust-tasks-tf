@@ -11,8 +11,8 @@ cargo install trust-tasks-cli     # or build it (Rust 1.95+)
 
 No Rust at all? Each [`trust-tasks-cli-v*` release](https://github.com/trustoverip/dtgwg-trust-tasks-tf/releases?q=trust-tasks-cli&expanded=true) carries
 prebuilt archives — `trust-tasks-cli-<version>-<target>.tar.gz` (`.zip` on
-Windows) for Linux x86_64/aarch64 (glibc 2.35+), macOS x86_64/aarch64 and
-Windows x86_64, with `.sha256` files and a `SHA256SUMS`. The archive holds the
+Windows) for Linux x86_64/aarch64 (glibc 2.35+) and Windows x86_64 (no macOS
+builds yet: use `cargo binstall` or `cargo install` there), with `.sha256` files and a `SHA256SUMS`. The archive holds the
 `trust-tasks` binary alone. See
 [GETTING-STARTED](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md#installing-the-trust-tasks-command).
 

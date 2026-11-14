@@ -67,16 +67,12 @@ jobs:
             os: ubuntu-22.04-arm
             archive: tar.gz
             run: true
-          - target: aarch64-apple-darwin
-            os: macos-14
-            archive: tar.gz
-            run: true
-          # Cross-compiled on the arm64 runner (Xcode's clang targets both);
-          # not run, since the runner has no Rosetta.
-          - target: x86_64-apple-darwin
-            os: macos-14
-            archive: tar.gz
-            run: false
+          # No macOS targets: the organisation's runners include no macOS, and
+          # a macOS leg was cancelled unassigned on the first release
+          # (trust-tasks-cli-v0.2.1), which skipped the upload for every
+          # target. macOS users run `cargo binstall` (it falls back to a source
+          # build) or `cargo install`. To add them back once macOS runners are
+          # allowed: aarch64-apple-darwin and x86_64-apple-darwin on macos-14.
           - target: x86_64-pc-windows-msvc
             os: windows-2022
             archive: zip
