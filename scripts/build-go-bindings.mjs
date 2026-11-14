@@ -2,9 +2,11 @@
 //
 // Walks specs/<slug>/<version>/payload.schema.json, plus the shared schemas
 // under _shared/ and _framework/, and emits one Go package per JSON Schema
-// into trust-tasks-go/specs/. The output ships in the
-// github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go module alongside
-// the hand-written §7.2 runtime in trust-tasks-go/trusttasks.
+// into trust-tasks-go/specs/. The output is its own module,
+// github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs
+// (trust-tasks-go/specs/go.mod, hand-written), which requires the core module
+// and its hand-written §7.2 runtime in trust-tasks-go/trusttasks (#1112). The
+// import paths are unchanged: the module path is a prefix of every package's.
 //
 // Run from the repo root:
 //   npm run build-go-bindings
@@ -1279,15 +1281,24 @@ async function walk(dir, pattern) {
 }
 
 /**
+ * The files in `specs/` that are source, not output: the specs module's own
+ * go.mod and go.sum (#1112). clean() keeps them.
+ */
+const OUT_DIR_SOURCE_FILES = new Set(["go.mod", "go.sum"]);
+
+/**
  * Wipe the generated tree so a removed spec does not linger.
  *
- * Only `specs/` is wiped: `trusttasks/` next to it is hand-written apart from
- * extends_index.go, which is overwritten whole, and go.mod and the READMEs are
- * source.
+ * Only `specs/` is wiped, and not its go.mod and go.sum: `trusttasks/` next to
+ * it is hand-written apart from extends_index.go, which is overwritten whole,
+ * and the core's go.mod and the READMEs are source.
  */
 async function clean() {
-  await fs.rm(OUT_DIR, { recursive: true, force: true });
   await fs.mkdir(OUT_DIR, { recursive: true });
+  for (const entry of await fs.readdir(OUT_DIR)) {
+    if (OUT_DIR_SOURCE_FILES.has(entry)) continue;
+    await fs.rm(path.join(OUT_DIR, entry), { recursive: true, force: true });
+  }
 }
 
 async function main() {

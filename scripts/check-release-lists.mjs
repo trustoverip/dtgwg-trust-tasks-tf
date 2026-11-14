@@ -193,7 +193,7 @@ for (const name of bumpGo.keys()) {
   if (!go.has(name)) notes.push(`release-bump-go.sh has a case arm for ${name}, which is not released (no publish.yml matrix entry)`);
 }
 
-// Every nested module — released or not (tsp is not) — must be excluded from
+// Every nested module — released or not (tsp and specs are not) — must be excluded from
 // the core's watch in BOTH scripts, or a change to it releases the core.
 const nested = fs
   .readdirSync(path.join(ROOT, "trust-tasks-go"), { withFileTypes: true })
@@ -204,8 +204,24 @@ const excludes = (text) => [...text.matchAll(/":\(exclude\)\$PKG_DIR\/([a-z0-9_-
 sameSet("release-bump-go.sh core WATCH :(exclude)s", nested, excludes(bumpGo.get("trust-tasks-go") ?? ""), "the nested go.mod files under trust-tasks-go");
 sameSet("check-go-api-compat.sh WATCH :(exclude)s", nested, excludes(read("scripts/check-go-api-compat.sh")), "the nested go.mod files under trust-tasks-go");
 
+// A nested module CI deliberately does not build yet, with the reason. Each is
+// still excluded from the core's watch above; it needs a go.yml job, as every
+// other nested module does, before it leaves this list.
+const NOT_BUILT_YET = new Map([
+  [
+    "specs",
+    "the generated packages' module (#1112 step 2) cannot require a published core without specs/ until one is released; step 3 adds its job and its release",
+  ],
+]);
+for (const [name, why] of NOT_BUILT_YET) {
+  if (!nested.includes(name)) fail(`NOT_BUILT_YET names trust-tasks-go/${name}, which has no go.mod; drop it from the list`);
+  else if (go.has(`trust-tasks-go/${name}`)) fail(`trust-tasks-go/${name} is released (publish.yml verify-go) but in NOT_BUILT_YET — a released module needs a go.yml job`);
+  else notes.push(`trust-tasks-go/${name} is not built in CI yet: ${why}`);
+}
+
 const goYml = read(".github/workflows/go.yml");
 for (const name of nested) {
+  if (NOT_BUILT_YET.has(name)) continue;
   if (!new RegExp(`working-directory:\\s*trust-tasks-go/${name}\\s*$`, "m").test(goYml)) {
     fail(`go.yml has no job running in trust-tasks-go/${name}; the core's \`./...\` does not reach a nested module`);
   }

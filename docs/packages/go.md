@@ -39,6 +39,44 @@ And the one that has no undo: **a Go release cannot be retracted.**
 vets and tests *before* `publish-go` tags for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
+### The generated packages are their own module (`trust-tasks-go/specs`)
+
+`trust-tasks-go/specs/go.mod` makes the prebuilt packages a **separate module**,
+`github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs` (#1112), so
+the core module is the runtime and the generator and no longer ships ~34 MB of
+generated code. Import paths do not change. The runtime has not imported the
+tree since #1307 (the extends index is generated into
+`trusttasks/extends_index.go`).
+
+- **The split takes three releases, and this is the awkward middle.** Every
+  published core up to v0.12.x contains `specs/`, so a `specs` module requiring
+  one sees each of its packages in two modules and the go command refuses the
+  import as ambiguous. Its `go.mod` requires v0.12.0 with a `TODO(#1112 step 3)`
+  and **does not build** until step 3 moves that requirement to the first core
+  without `specs/`. Until then it is unreleased, has no `go.yml` job (it is in
+  `NOT_BUILT_YET` in `scripts/check-release-lists.mjs`), and is excluded from
+  the core's release watch and API check like every nested module.
+- **`build-go-bindings` keeps `specs/go.mod` and `go.sum`**: its `clean()`
+  wipes everything else under `specs/`. The drift job is unchanged.
+- **The core's `./smoke` drives generated packages without importing them.**
+  `smoke/smoke_test.go` copies the packages `smoke/testdata/smoke/smoke_test.go`
+  imports into a throwaway copy of the `specs` module whose `go.mod` replaces the
+  core with the checkout, and runs the smoke test there, so it still exercises
+  real generated code through the real pipeline in the core's `go test ./...`.
+  It skips when `specs/` is not beside the core (a module-cache copy). Step 3
+  can move it into the `specs` module's own job.
+- **Importers of prebuilt packages** stay on core v0.12.x until the `specs`
+  module is published, then add it (`go get …/trust-tasks-go/specs`). A package
+  `cmd/trust-tasks-gen` generated needs only the core.
+- **Step 3**, after the first core without `specs/` is on the proxy: require it
+  in `specs/go.mod` and `go mod tidy`; drop `specs` from `NOT_BUILT_YET`; add a
+  `go.yml` job building, vetting and testing `trust-tasks-go/specs`; give it a
+  `version.go`, a `GO_MODULES` entry in `release-pr.sh`, a `release-bump-go.sh`
+  arm (watching `specs/`, `trust-tasks-go/specs` and
+  `scripts/build-go-bindings.mjs`), a `publish-go` matrix leg (tag
+  `trust-tasks-go/specs/vX.Y.Z`) and a "What gets published" row; move the smoke
+  test into it if wanted; update the docs; release it.
+
 ### `ConsumeReceived` — the inbound body every message binding shares
 
 A binding that opens an envelope and authenticates its sender ends up holding
