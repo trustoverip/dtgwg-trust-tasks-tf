@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft — proposed, not implemented |
+| **Status** | Partly implemented — the `ceremony` envelope member (framework 0.4, SPEC §4.11), the `/ceremony/` namespace and definition format (`ceremonies/`, `ceremonies/ceremony.meta.schema.json`), `trust-ceremony-receipt/0.1` and the `trust-tasks-ceremony` crate; the note's other decisions are not yet normative |
 | **Date** | 2026-08-09 |
 | **Applies to** | Any interaction composed of more than one *Trust Task* between two or more parties |
 | **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §3, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
