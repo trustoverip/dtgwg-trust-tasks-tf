@@ -253,16 +253,9 @@ func isTrustTaskDocument(raw json.RawMessage) bool {
 }
 
 // NewURNUUID returns a fresh urn:uuid: identifier (UUID version 4), for response
-// and error documents.
-func NewURNUUID() string {
-	var b [16]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		panic(err) // crypto/rand does not fail in practice; a document id needs entropy
-	}
-	b[6] = (b[6] & 0x0f) | 0x40
-	b[8] = (b[8] & 0x3f) | 0x80
-	return fmt.Sprintf("urn:uuid:%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
-}
+// and error documents. It is [tt.NewURNUUID], kept here so callers of this
+// module need not import the core for it; it panics when crypto/rand fails.
+func NewURNUUID() string { return tt.NewURNUUID() }
 
 // AsEnvelopeError reports whether err is an [EnvelopeError], and returns it.
 func AsEnvelopeError(err error) (*EnvelopeError, bool) {
