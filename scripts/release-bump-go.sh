@@ -2,7 +2,7 @@
 #
 # Applies the next release of one Go module to the working tree.
 #
-#   scripts/release-bump-go.sh [trust-tasks-go|trust-tasks-go/proof|trust-tasks-go/didcomm|trust-tasks-go/capabilityclient]
+#   scripts/release-bump-go.sh [trust-tasks-go|trust-tasks-go/proof|trust-tasks-go/didcomm|trust-tasks-go/capabilityclient|trust-tasks-go/specs]
 #
 # Called by scripts/release-pr.sh, once per module, while it assembles the ONE
 # Release PR; this script only edits files. The bump is computed the same way
@@ -46,8 +46,8 @@ set -Eeuo pipefail
 trap 'rc=$?; echo "::error file=${BASH_SOURCE[0]},line=${LINENO}::exit ${rc} from: ${BASH_COMMAND}" >&2' ERR
 
 # Which Go module to release. The core defaults; the nested modules
-# (trust-tasks-go/proof, trust-tasks-go/didcomm, trust-tasks-go/capabilityclient)
-# pass their own path. Each has
+# (trust-tasks-go/proof, trust-tasks-go/didcomm, trust-tasks-go/capabilityclient,
+# trust-tasks-go/specs) pass their own path. Each has
 # its own directory, version file, tag prefix and watch set — mirroring
 # release-bump-ts.sh and release-bump-dart.sh.
 #
@@ -66,8 +66,8 @@ case "$PKG" in
     # `specs/**` and `scripts/build-go-bindings.mjs` because the generator writes
     # the core's extends index (trusttasks/extends_index.go) from the specs. The
     # nested modules are excluded — they release on their own tags — and so is
-    # trust-tasks-go/specs, the generated packages' own module since #1112
-    # (unreleased until step 3, which gives it a watch of its own).
+    # trust-tasks-go/specs, the generated packages' own module since #1112,
+    # which has the watch below.
     WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs"
            ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp"
            ":(exclude)$PKG_DIR/capabilityclient" ":(exclude)$PKG_DIR/specs")
@@ -100,6 +100,20 @@ case "$PKG" in
     WATCH=("$PKG_DIR")
     CLIFF_PATHS=("$PKG_DIR/**")
     SCOPES="go-capabilityclient go-capability-client"
+    ;;
+  trust-tasks-go/specs)
+    # The generated (prebuilt) specification packages (#1112). Their tree is
+    # written from the repository's specs/ by scripts/build-go-bindings.mjs, so
+    # both are watched as well as the module itself. `go-bindings` is the scope
+    # generator changes have always carried; it releases the core too, whose
+    # extends index the same generator writes.
+    MODULE="$GO_ROOT/specs"
+    PKG_DIR="trust-tasks-go/specs"
+    VERSION_FILE="$PKG_DIR/version.go"
+    TAG_PREFIX="trust-tasks-go/specs/v"
+    WATCH=("$PKG_DIR" "specs" "scripts/build-go-bindings.mjs")
+    CLIFF_PATHS=("$PKG_DIR/**" "specs/**" "scripts/build-go-bindings.mjs")
+    SCOPES="go-specs go-bindings"
     ;;
   *)
     echo "::error::unknown Go module '$PKG'"

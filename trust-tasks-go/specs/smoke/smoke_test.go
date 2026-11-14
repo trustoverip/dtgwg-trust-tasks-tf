@@ -8,11 +8,16 @@
 // `npm run smoke` in trust-tasks-ts, which exists because a package can typecheck
 // and still not be importable.
 //
-// It is not built where it sits (the go command ignores testdata). The
-// generated packages are their own module now (trust-tasks-go/specs, #1112), so
+// It runs twice. Here, in the trust-tasks-go/specs module's own `go test ./...`,
+// it drives the generated packages through the core this module requires — what
+// an importer of the published module gets. And the core's
 // trust-tasks-go/smoke/smoke_test.go copies this file and the packages it
-// imports into a throwaway copy of that module, built against this checkout's
-// runtime, and runs it there under the import paths a consumer uses.
+// imports into a throwaway copy of this module pointed at the checkout's
+// runtime, so a change to the runtime is driven through generated code before
+// it is released.
+//
+// It is hand-written: scripts/build-go-bindings.mjs keeps this directory when it
+// regenerates the tree.
 package smoke
 
 import (

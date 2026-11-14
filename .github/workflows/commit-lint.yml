@@ -70,7 +70,7 @@ jobs:
               # scope nothing reads through, to be scored as a patch.
               # `npm run check-release-lists` fails when this list and those
               # disagree, so add a new package's scope in both places.
-              pkg='rs|codegen|https|proof|didcomm|didcomm-v1|tsp|capability-client|ceremony|build|cli|ts|ts-bindings|ts-proof|ts-tsp|ts-capability-client|ts-gen|go|go-bindings|go-proof|go-didcomm|go-capabilityclient|go-capability-client|dart|dart-bindings|dart-proof|dart-https|dart-didcomm|dart-capability-client'
+              pkg='rs|codegen|https|proof|didcomm|didcomm-v1|tsp|capability-client|ceremony|build|cli|ts|ts-bindings|ts-proof|ts-tsp|ts-capability-client|ts-gen|go|go-bindings|go-proof|go-didcomm|go-capabilityclient|go-capability-client|go-specs|dart|dart-bindings|dart-proof|dart-https|dart-didcomm|dart-capability-client'
               scopes=$(printf '%s' "$TITLE" | sed -nE 's/^[a-z]+\(([^)]*)\)!:.*/\1/p' | tr ',' '\n' | sed 's/^ *//; s/ *$//')
               bad=$(printf '%s\n' "$scopes" | grep -vxE "$pkg" || true)
               if [ -z "$scopes" ] || [ -n "$bad" ]; then

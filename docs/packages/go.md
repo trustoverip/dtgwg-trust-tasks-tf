@@ -26,7 +26,7 @@ the same reason). TypeScript hoists because structural typing makes it free.
    into "absent" — which `acl`'s `allowedKeys` documents at length as a
    privilege-escalation defect ("PRESENT-BUT-EMPTY means authorized on NO keys —
    the opposite of absent"). `*[]string` is ugly and it is the only spelling that
-   can say it. `trust-tasks-go/smoke` pins this, on `vta/contexts/update/1.0`'s
+   can say it. `trust-tasks-go/specs/smoke` pins this, on `vta/contexts/update/1.0`'s
    `signableKeys` ("absent: every key; present-but-empty: no keys").
 
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
@@ -48,34 +48,32 @@ generated code. Import paths do not change. The runtime has not imported the
 tree since #1307 (the extends index is generated into
 `trusttasks/extends_index.go`).
 
-- **The split takes three releases, and this is the awkward middle.** Every
-  published core up to v0.12.x contains `specs/`, so a `specs` module requiring
-  one sees each of its packages in two modules and the go command refuses the
-  import as ambiguous. Its `go.mod` requires v0.12.0 with a `TODO(#1112 step 3)`
-  and **does not build** until step 3 moves that requirement to the first core
-  without `specs/`. Until then it is unreleased, has no `go.yml` job (it is in
-  `NOT_BUILT_YET` in `scripts/check-release-lists.mjs`), and is excluded from
-  the core's release watch and API check like every nested module.
-- **`build-go-bindings` keeps `specs/go.mod` and `go.sum`**: its `clean()`
-  wipes everything else under `specs/`. The drift job is unchanged.
-- **The core's `./smoke` drives generated packages without importing them.**
-  `smoke/smoke_test.go` copies the packages `smoke/testdata/smoke/smoke_test.go`
-  imports into a throwaway copy of the `specs` module whose `go.mod` replaces the
-  core with the checkout, and runs the smoke test there, so it still exercises
-  real generated code through the real pipeline in the core's `go test ./...`.
-  It skips when `specs/` is not beside the core (a module-cache copy). Step 3
-  can move it into the `specs` module's own job.
-- **Importers of prebuilt packages** stay on core v0.12.x until the `specs`
-  module is published, then add it (`go get …/trust-tasks-go/specs`). A package
-  `cmd/trust-tasks-gen` generated needs only the core.
-- **Step 3**, after the first core without `specs/` is on the proxy: require it
-  in `specs/go.mod` and `go mod tidy`; drop `specs` from `NOT_BUILT_YET`; add a
-  `go.yml` job building, vetting and testing `trust-tasks-go/specs`; give it a
-  `version.go`, a `GO_MODULES` entry in `release-pr.sh`, a `release-bump-go.sh`
-  arm (watching `specs/`, `trust-tasks-go/specs` and
-  `scripts/build-go-bindings.mjs`), a `publish-go` matrix leg (tag
-  `trust-tasks-go/specs/vX.Y.Z`) and a "What gets published" row; move the smoke
-  test into it if wanted; update the docs; release it.
+- **It requires the published core, v0.13.0 or later** — the first without
+  `specs/`. Against an older core every package is found in two modules and the
+  go command refuses the import as ambiguous. No `replace`: like every released
+  module it builds against what an importer gets, so a generator change that
+  needs a new runtime API waits for that core's release and a move of
+  `specs/go.mod`.
+- **Released on its own `trust-tasks-go/specs/vX.Y.Z` tag**, like `proof`: a
+  `version.go` (`package specs`, beside the generated `extends.go`), a
+  `publish-go`/`verify-go` matrix leg, a `GO_MODULES` entry and a
+  `release-bump-go.sh` arm watching `trust-tasks-go/specs`, `specs/` and
+  `scripts/build-go-bindings.mjs` (scopes `go-specs`, `go-bindings`). The
+  core's watch excludes the module but still watches `specs/` and the
+  generator, which write its extends index, so a spec change can release both.
+- **`build-go-bindings` keeps the module's source files** —
+  `OUT_DIR_SOURCE_FILES`: `go.mod`, `go.sum`, `version.go`, `CHANGELOG.md` and
+  `smoke/` — and wipes everything else under `specs/`. It refuses to generate a
+  package onto one of them.
+- **The smoke test is `specs/smoke/smoke_test.go` and runs twice.** The `specs`
+  job in `go.yml` runs it in the module, against the core it requires. The
+  core's `smoke/smoke_test.go` copies it, with the packages it imports, into a
+  throwaway copy of the module whose `go.mod` replaces the core with the
+  checkout, so a runtime change is driven through real generated code before it
+  is released. That driver skips when `specs/` is not beside the core (a
+  module-cache copy).
+- **Importers of prebuilt packages** `go get …/trust-tasks-go/specs` beside the
+  core. A package `cmd/trust-tasks-gen` generated needs only the core.
 
 ### `ConsumeReceived` — the inbound body every message binding shares
 

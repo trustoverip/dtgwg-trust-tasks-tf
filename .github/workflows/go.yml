@@ -182,13 +182,14 @@ jobs:
   # `./smoke` is the counterpart of `npm run smoke`: it drives the real pipeline
   # with *generated* packages, which is the one thing neither the drift check nor
   # the runtime tests do. The generated packages are their own module now
-  # (trust-tasks-go/specs, #1112), so `./smoke` copies the few it uses into a
-  # throwaway copy of that module pointed at this checkout's runtime and runs
-  # the smoke test there; see trust-tasks-go/smoke/smoke_test.go.
+  # (trust-tasks-go/specs, #1112), so `./smoke` copies the few it uses, and
+  # that module's smoke test, into a throwaway copy of it pointed at this
+  # checkout's runtime and runs the smoke test there; see
+  # trust-tasks-go/smoke/smoke_test.go.
   #
-  # `./...` here no longer reaches trust-tasks-go/specs at all. That module is
-  # not built in CI yet: it cannot require a published core without specs/
-  # until one is released, and it gets its own job in #1112 step 3.
+  # `./...` here does not reach trust-tasks-go/specs at all; the `specs` job
+  # below builds that module against the core it requires, and runs the same
+  # smoke test there.
   test:
     name: go test (${{ matrix.go }})
     runs-on: ubuntu-24.04
@@ -464,6 +465,70 @@ jobs:
       - name: Test
         if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/capabilityclient
+        run: go test -race ./...
+
+  # The generated (prebuilt) specification packages are a SEPARATE Go module
+  # (trust-tasks-go/specs, #1112), so the core no longer ships ~34 MB of
+  # generated code; the core `./...` jobs do not reach it. Its only requirement
+  # is the published core, so this builds what an importer gets: every
+  # generated package against that core, and specs/smoke driving three of them
+  # through the real pipeline. (The core's `./smoke` drives the same test
+  # against this checkout's runtime.) Released on its own
+  # trust-tasks-go/specs/vX.Y.Z tag (publish.yml's publish-go matrix).
+  specs:
+    name: go test trust-tasks-go/specs (${{ matrix.go }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the `go` directive in specs/go.mod.
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Skips the steps below when this PR touches none of the job's inputs;
+      # see the `tsp` job. The generated tree is committed (and the drift job
+      # holds it to specs/), so trust-tasks-go/specs is the input, not specs/.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            trust-tasks-go
+            :(exclude)trust-tasks-go/tsp
+            :(exclude)trust-tasks-go/proof
+            :(exclude)trust-tasks-go/didcomm
+            :(exclude)trust-tasks-go/capabilityclient
+            .github/workflows/go.yml
+      - name: Setup Go
+        if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Build
+        if: steps.changes.outputs.run == 'true'
+        working-directory: trust-tasks-go/specs
+        run: go build ./...
+      - name: Vet
+        if: steps.changes.outputs.run == 'true'
+        working-directory: trust-tasks-go/specs
+        run: go vet ./...
+      - name: gofmt
+        if: steps.changes.outputs.run == 'true' && (matrix.go == 'stable')
+        working-directory: trust-tasks-go/specs
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Test
+        if: steps.changes.outputs.run == 'true'
+        working-directory: trust-tasks-go/specs
         run: go test -race ./...
 
   # Consumer-side generation (docs/design/consumer-side-generation.md,

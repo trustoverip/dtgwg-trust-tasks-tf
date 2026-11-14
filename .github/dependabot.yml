@@ -119,6 +119,7 @@ updates:
       - /trust-tasks-go/proof
       - /trust-tasks-go/didcomm
       - /trust-tasks-go/capabilityclient
+      - /trust-tasks-go/specs
       - /trust-tasks-go/tsp
       - /examples/consumer-app-go
       - /examples/getting-started-go
