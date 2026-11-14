@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Proposed |
+| **Status** | Accepted — the framework adopted *ceremony*: the `ceremony` envelope member (framework 0.4, SPEC §4.11), the `/ceremony/` namespace and the `trust-ceremony-*` reserved slugs (SPEC §6.1) |
 | **Date** | 2026-08-09 |
 | **Applies to** | The prospective framework layer that composes several *Trust Tasks* into one flow |
 | **Related** | `docs/design-notes/trust-ceremonies.md` (the design deferred below), SPEC §3 (bilateral model), §4.9–§4.9.2 (threading), §6.1 (slug reservation), §8.6 (reserved response types), §9.3 (`/binding/` subtree), `specs/vtc/ceremonies/list/0.1` |
