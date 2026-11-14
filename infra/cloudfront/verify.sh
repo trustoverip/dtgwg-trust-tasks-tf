@@ -80,6 +80,49 @@ check_status /spec/acl/grant 'text/html' 200
 check /robots.txt '*/*' 'text/plain' 'Sitemap:'
 check /sitemap.xml '*/*' 'xml' '<urlset'
 
+# Static pages for crawlers and link unfurlers (#1151): a crawler's request for
+# a specification, binding, shared schema or ceremony page gets that page's
+# copy under /pages/, with its own <title> and canonical link in the HTML as
+# sent. A browser still gets the shell (its <title> is the site's), and a page
+# the registry does not hold is a real 404 for a crawler but the SPA's
+# not-found page (200) for a person.
+echo
+echo "Static pages for crawlers — $BASE"
+CRAWLER='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+BROWSER='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+check_page() {
+  local uri="$1" ua="$2" want="$3"
+  local body
+  body=$(curl -sS -A "$ua" -H 'Accept: text/html' "$BASE$uri")
+  if [[ "$body" == *"$want"* ]]; then
+    printf '  ok    %-42s %s\n' "$uri" "$( [[ "$ua" == "$BROWSER" ]] && echo browser || echo crawler )"
+  else
+    printf '  FAIL  %-42s %s (no %s in the HTML)\n' "$uri" "$( [[ "$ua" == "$BROWSER" ]] && echo browser || echo crawler )" "$want"
+    fails=$((fails+1))
+  fi
+}
+check_page /spec/acl/grant/0.1 "$CRAWLER" '<title>ACL — Grant (acl/grant v0.1) · Trust Tasks</title>'
+check_page /spec/acl/grant/0.1 "$CRAWLER" '<link rel="canonical" href="https://trusttasks.org/spec/acl/grant/0.1">'
+check_page /spec/acl/grant/0.1 "$CRAWLER" '<div class="tt-static">'
+check_page /binding/https/0.3 "$CRAWLER" '<link rel="canonical" href="https://trusttasks.org/binding/https/0.3">'
+check_page /schema/acl/_shared/0.1/acl-entry "$CRAWLER" '<div class="tt-static">'
+check_page /ceremony/vtc/member-onboarding/0.1 "$CRAWLER" '<div class="tt-static">'
+check_page /spec/acl/grant/0.1 "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)" 'property="og:title" content="ACL — Grant (acl/grant v0.1)'
+check_page /spec/acl/grant/0.1 "$BROWSER" '<title>Trust Tasks — Reference registry'
+check_status_ua() {
+  local uri="$1" ua="$2" want="$3"
+  local code
+  code=$(curl -sS -o /dev/null -w '%{http_code}' -A "$ua" -H 'Accept: text/html' "$BASE$uri")
+  if [[ "$code" == "$want" ]]; then
+    printf '  ok    %-42s %s -> %s\n' "$uri" "$( [[ "$ua" == "$BROWSER" ]] && echo browser || echo crawler )" "$code"
+  else
+    printf '  FAIL  %-42s %s -> %s (want %s)\n' "$uri" "$( [[ "$ua" == "$BROWSER" ]] && echo browser || echo crawler )" "$code" "$want"
+    fails=$((fails+1))
+  fi
+}
+check_status_ua /spec/does-not-exist/0.1 "$CRAWLER" 404
+check_status_ua /spec/does-not-exist/0.1 "$BROWSER" 200
+
 # Response headers (response-headers-policy.json, applied by
 # apply-response-headers.sh). Checked on the page and on a negotiated schema,
 # since one policy covers every cache behaviour.

@@ -118,7 +118,9 @@ function routePath(r) {
 }
 
 /* Title and description for a route (#1151): every tab, history entry and
-   bookmark used to read the same site title. */
+   bookmark used to read the same site title. The static pages
+   scripts/build-website.mjs writes for specifications, bindings, shared
+   schemas and ceremonies carry the same values (staticPages() there). */
 const SITE_TITLE = "Trust Tasks — Reference registry of trust task specifications";
 const SITE_DESCRIPTION = document.querySelector('meta[name="description"]').getAttribute("content");
 function routeMeta(r) {
@@ -141,7 +143,10 @@ function routeMeta(r) {
       const c = (window.TT_CEREMONIES || []).find(x => x.slug === r.slug && (!r.version || x.version === r.version));
       return c ? { title: t(`${c.title} ceremony v${c.version}`), description: c.summary } : { title: t("Ceremony not found") };
     }
-    case "schema": return { title: t(`${r.slug} — shared schema`) };
+    case "schema": {
+      const rec = (window.TT_SHARED || []).find(x => x.slug === r.slug);
+      return { title: t(`${r.slug} — shared schema`), description: rec ? rec.description : undefined };
+    }
     case "implementation": {
       const lib = (window.TT_LIBRARIES || []).find(l => l.id === r.id);
       return { title: t(lib ? `${lib.name} (${lib.language})` : "Implementations"), description: lib ? lib.tagline : undefined };

@@ -1,8 +1,8 @@
-// CloudFront Function (viewer-request) — Type URI content negotiation, and the
-// single-page-app fallback.
+// CloudFront Function (viewer-request) — Type URI content negotiation, the
+// single-page-app fallback, and static pages for crawlers.
 //
-// Two jobs, in one function because both are URI rewrites on the way in and the
-// second depends on the first not having fired.
+// Several jobs (the sections below), in one function because all are URI
+// rewrites on the way in and each depends on the earlier ones not having fired.
 //
 // ## 1. Content negotiation (SPEC §6.2)
 //
@@ -51,6 +51,30 @@
 // Under /spec/ and /ceremony/, a request whose Accept asks only for JSON (no
 // text/html) and that neither negotiation could map is answered 404 with a
 // small JSON body, instead of the SPA shell under a 200.
+//
+// ## 4. Static pages for crawlers and link unfurlers (#1151)
+//
+// The site is a single-page app, so a client that runs no script sees the
+// shell's site-wide title for every page. scripts/build-website.mjs writes a
+// copy of the shell per specification version, binding, shared schema and
+// ceremony, with that page's title, description, canonical link and og:/
+// twitter: tags, and its summary as HTML, under /pages/<route>/index.html.
+// A request from a crawler or link unfurler (CRAWLER_UA) for one of those
+// routes is rewritten to its copy:
+//
+//   /spec/<slug…>/<M.m>     -> /pages/spec/<slug…>/<M.m>/index.html
+//   /binding/<slug…>/<M.m>  -> /pages/binding/<slug…>/<M.m>/index.html
+//   /schema/<slug…>         -> /pages/schema/<slug…>/index.html
+//   /ceremony/<slug…>/<M.m> -> /pages/ceremony/<slug…>/<M.m>/index.html
+//
+// Only for crawlers, because this function cannot see whether the copy
+// exists: a route the registry does not hold has none, and S3 answers 404.
+// That is right for a crawler (no "soft 404" under a 200), but a person
+// following a mistyped or not-yet-published Type URI should keep getting the
+// SPA's not-found page, which lists the versions that do exist. Browsers
+// therefore keep the shell; the copy and the shell load the same scripts, so
+// either one renders the same page. Runs after negotiation, so a crawler
+// asking for a schema still gets the schema.
 //
 // Runtime note: CloudFront Functions run a constrained JS engine. Keep to ES5.1
 // idioms — no optional chaining, no String.prototype.includes, no async. The
@@ -233,6 +257,56 @@ function negotiateCeremony(request) {
   return true;
 }
 
+// Routes with a static copy under /pages/ (section 4). `/pages/` itself is
+// not in ASSET_PREFIXES: the copies are reached only through this rewrite.
+var STATIC_PREFIXES = ['/spec/', '/binding/', '/schema/', '/ceremony/'];
+
+// User agents served the static copies: search crawlers and the link-preview
+// fetchers of chat and social apps (Googlebot, bingbot, Slackbot, Twitterbot,
+// LinkedInBot, Discordbot, TelegramBot, Applebot, facebookexternalhit, which
+// iMessage also sends, WhatsApp, Mastodon, Bluesky's cardyb, SkypeUriPreview …).
+var CRAWLER_UA = /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|preview|embedly|mastodon|cardyb|vkshare/i;
+
+/**
+ * Rewrite a crawler's request for a page with a static copy to that copy.
+ * Returns true if the request was rewritten.
+ */
+function staticPage(request) {
+  var headers = request.headers;
+  var ua = headers && headers['user-agent'] ? headers['user-agent'].value : '';
+  if (!CRAWLER_UA.test(ua)) {
+    return false;
+  }
+  var path = request.uri;
+  if (path.length > 1 && path.charAt(path.length - 1) === '/') {
+    path = path.substring(0, path.length - 1);
+  }
+  for (var i = 0; i < STATIC_PREFIXES.length; i++) {
+    var prefix = STATIC_PREFIXES[i];
+    if (path.indexOf(prefix) !== 0) {
+      continue;
+    }
+    var segments = path.substring(prefix.length).split('/');
+    // A shared schema's slug ends in its name; every other route in a version.
+    var versioned = prefix !== '/schema/';
+    if (segments.length < (versioned ? 2 : 1)) {
+      return false;
+    }
+    if (versioned && !/^[0-9]+\.[0-9]+$/.test(segments[segments.length - 1])) {
+      return false;
+    }
+    // No segment may start with `.`, so none is `.` or `..`.
+    for (var j = 0; j < segments.length; j++) {
+      if (!/^[a-z0-9_][a-z0-9_.-]*$/.test(segments[j])) {
+        return false;
+      }
+    }
+    request.uri = '/pages' + path + '/index.html';
+    return true;
+  }
+  return false;
+}
+
 /** Whether the URI addresses a real file on the origin. */
 function isAsset(uri) {
   for (var i = 0; i < ASSET_PREFIXES.length; i++) {
@@ -268,6 +342,11 @@ function handler(event) {
   // (the asset trees) never reach this.
   if ((request.uri.indexOf('/spec/') === 0 || request.uri.indexOf('/ceremony/') === 0) && wantsJsonOnly(request)) {
     return notFoundJson(request.uri);
+  }
+
+  // A crawler asking for a page with a static copy gets the copy.
+  if (staticPage(request)) {
+    return request;
   }
 
   // Real file: leave it alone so a missing object 404s honestly.

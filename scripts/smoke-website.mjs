@@ -14,7 +14,10 @@
  *     a page that rendered the not-found view;
  *   - a page still loading, or showing a failed fetch, once it has settled —
  *     the spec and schema pages fetch their detail on demand (#1145);
- *   - a canonical link that is not https://trusttasks.org + the route (#1151).
+ *   - a canonical link that is not https://trusttasks.org + the route (#1151);
+ *   - for CRAWLER_ROUTES, fetched again with a crawler's user agent: a
+ *     response that is not the route's static page (its own <title> and a
+ *     static summary), or a page the app then fails to render over (#1151).
  *
  * website-jsx.test.mjs already renders every route on the server; what this
  * adds is the real page: the built index.html, its hashed script URLs, the
@@ -52,6 +55,16 @@ export const ROUTES = [
   '/schema/acl/_shared/0.1/acl-entry',
   '/implementations/rust',
 ];
+
+/** Routes loaded again as a crawler (#1151): the server must answer with the
+ *  route's static page — its own <title> and summary in the HTML as sent —
+ *  and the app must still render over it in a browser with that user agent. */
+export const CRAWLER_ROUTES = [
+  '/spec/acl/grant/0.3',
+  '/binding/https/0.3',
+  '/schema/acl/_shared/0.1/acl-entry',
+];
+const CRAWLER_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 const PAGE_TIMEOUT_MS = 30_000;
 // After the <h1> appears, how long to keep listening for late failures — the
@@ -129,9 +142,23 @@ class Cdp {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Load one route in a fresh tab and return the problems found. */
-async function checkRoute(cdp, base, route) {
+/** The HTML a crawler is sent for `route`: its static page, not the shell. */
+async function checkStaticPage(base, route) {
   const problems = [];
+  const res = await fetch(base + route, { headers: { 'user-agent': CRAWLER_UA, accept: 'text/html' } });
+  const html = await res.text();
+  if (res.status !== 200) problems.push(`HTTP ${res.status} for a crawler`);
+  const title = (/<title>([^<]*)<\/title>/.exec(html) || [])[1] || '';
+  const shellTitle = (/<title>([^<]*)<\/title>/.exec(fs.readFileSync(path.join(ROOT, 'website', 'index.html'), 'utf8')) || [])[1];
+  if (!title || title === shellTitle) problems.push(`a crawler got the site-wide title "${title}", not the page's`);
+  if (!/<div class="tt-static">[\s\S]*?<h1>/.test(html)) problems.push('a crawler got no static summary');
+  if (!html.includes(`<link rel="canonical" href="${SITE_ORIGIN}${route}">`)) problems.push('a crawler got the wrong canonical link');
+  return problems;
+}
+
+/** Load one route in a fresh tab and return the problems found. */
+async function checkRoute(cdp, base, route, { userAgent } = {}) {
+  const problems = userAgent ? await checkStaticPage(base, route) : [];
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
   const urls = new Map(); // requestId → url, for loadingFailed
@@ -166,7 +193,8 @@ async function checkRoute(cdp, base, route) {
   cdp.listeners.add(listener);
   try {
     for (const domain of ['Runtime', 'Log', 'Network', 'Page']) await cdp.send(`${domain}.enable`, {}, sessionId);
-    const nav = await cdp.send('Page.navigate', { url: base + route }, sessionId);
+    if (userAgent) await cdp.send('Emulation.setUserAgentOverride', { userAgent }, sessionId);
+    const nav =await cdp.send('Page.navigate', { url: base + route }, sessionId);
     if (nav.errorText) problems.push(`navigation failed: ${nav.errorText}`);
 
     const deadline = Date.now() + PAGE_TIMEOUT_MS;
@@ -187,7 +215,9 @@ async function checkRoute(cdp, base, route) {
         returnByValue: true,
       }, sessionId);
       state = result.value || {};
-      if (state.ready === 'complete' && state.h1) break;
+      // The static page a crawler gets has an <h1> before the app runs, inside
+      // the boot message the app replaces: wait for the app's.
+      if (state.ready === 'complete' && state.h1 && !state.boot) break;
       if (Date.now() > deadline) break;
       await sleep(200);
     }
@@ -248,20 +278,24 @@ async function main() {
     const cdp = await Cdp.connect(browser.match[1]);
     let failed = 0;
     console.log(`Smoke-testing ${base} with ${chrome}`);
-    for (const route of ROUTES) {
-      const { problems, h1, title } = await checkRoute(cdp, base, route);
+    const runs = [
+      ...ROUTES.map((route) => ({ route, label: route })),
+      ...CRAWLER_ROUTES.map((route) => ({ route, label: `${route} (as a crawler)`, userAgent: CRAWLER_UA })),
+    ];
+    for (const { route, label, userAgent } of runs) {
+      const { problems, h1, title } = await checkRoute(cdp, base, route, { userAgent });
       if (problems.length) {
         failed++;
-        console.log(`✗ ${route}`);
+        console.log(`✗ ${label}`);
         for (const p of problems) console.log(`    ${p}`);
       } else {
-        console.log(`✓ ${route} — h1 "${h1}", title "${title}"`);
+        console.log(`✓ ${label} — h1 "${h1}", title "${title}"`);
       }
     }
     await cdp.send('Browser.close').catch(() => {});
     cdp.close();
     if (failed) {
-      console.error(`\n${failed} of ${ROUTES.length} routes failed the smoke test.`);
+      console.error(`\n${failed} of ${runs.length} routes failed the smoke test.`);
       process.exitCode = 1;
     }
   } finally {

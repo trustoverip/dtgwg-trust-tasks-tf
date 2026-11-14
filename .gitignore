@@ -13,6 +13,8 @@ website/ceremonies/
 website/SPEC.md
 website/robots.txt
 website/sitemap.xml
+# Static per-page copies of index.html (#1151), written by scripts/build-website.mjs.
+website/pages/
 
 # The page bundle, the content-hashed script copies and the index.html naming
 # them (scripts/build-website.mjs, run by `npm run build`). Edit

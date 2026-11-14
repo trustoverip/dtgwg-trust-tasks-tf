@@ -32,7 +32,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { compileApp, JSX_FILES, BUNDLE_RE, HASHED_DIR, LOCAL_SCRIPT_RE, contentHash } from '../build-website.mjs';
+import { compileApp, JSX_FILES, BUNDLE_RE, HASHED_DIR, LOCAL_SCRIPT_RE, contentHash, PAGES_DIR, renderStaticPage } from '../build-website.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const website = path.join(here, '..', '..', 'website');
@@ -139,6 +139,45 @@ test('the built index.html carries the link-preview and canonical tags (#1151)',
   for (const tag of ['property="og:title"', 'property="og:description"', 'property="og:url"', 'property="og:type"', 'property="og:site_name"', 'name="twitter:card"', 'name="twitter:title"', 'name="twitter:description"']) {
     assert.match(builtHtml, new RegExp(`<meta ${tag} content="[^"]+">`), tag);
   }
+});
+
+test('every spec version, binding, shared schema and ceremony has a static page with its own head (#1151)', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
+  const ctx = await pageContext();
+  const routeMeta = vm.runInContext('routeMeta', ctx);
+  const unescape = (s) => s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const routes = [
+    ...ctx.TT_TASKS.map((t) => `/spec/${t.slug}/${t.version}`),
+    ...ctx.TT_BINDINGS.map((b) => `/binding/${b.slug}/${b.version}`),
+    ...ctx.TT_SHARED.map((s) => `/schema/${s.slug}`),
+    ...ctx.TT_CEREMONIES.map((c) => `/ceremony/${c.slug}/${c.version}`),
+  ];
+  const onDisk = [];
+  (function walk(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.isDirectory()) walk(path.join(dir, e.name));
+      else onDisk.push('/' + path.relative(PAGES_DIR, dir).split(path.sep).join('/'));
+    }
+  })(PAGES_DIR);
+  assert.deepEqual(onDisk.sort(), [...routes].sort(), 'website/pages/ holds exactly one index.html per page route');
+  // The rest of each page is index.html: the same scripts, so the app renders over it.
+  const shell = (html) => html.replace(/<title>[^<]*<\/title>|<meta (name|property)="(description|og:url|og:title|og:description|twitter:title|twitter:description)" content="[^"]*">|<link rel="canonical" href="[^"]*">|<div class="tt-static">[\s\S]*?<\/div>|<!--tt-static-->/g, '');
+  for (const route of routes) {
+    const html = fs.readFileSync(path.join(PAGES_DIR, ...route.split('/').filter(Boolean), 'index.html'), 'utf8');
+    ctx.location.pathname = route;
+    const meta = routeMeta(ctx.__parsePath());
+    const head = (re) => unescape((re.exec(html) || [])[1] || '');
+    assert.equal(head(/<title>([^<]*)<\/title>/), meta.title, `${route}: the title is the app's`);
+    assert.equal(head(/<meta property="og:title" content="([^"]*)">/), meta.title, `${route}: og:title`);
+    if (meta.description) assert.equal(head(/<meta name="description" content="([^"]*)">/), meta.description, `${route}: the description is the app's`);
+    assert.equal(head(/<link rel="canonical" href="([^"]*)">/), `https://trusttasks.org${route}`, `${route}: canonical`);
+    assert.equal(head(/<meta property="og:url" content="([^"]*)">/), `https://trusttasks.org${route}`, `${route}: og:url`);
+    assert.match(html, /<div class="tt-static">[\s\S]*?<h1>[^<]+<\/h1>/, `${route}: a heading in the static body`);
+    assert.equal(shell(html), shell(builtHtml), `${route}: otherwise identical to index.html`);
+  }
+  // Text is escaped, never markup.
+  const sample = renderStaticPage(builtHtml, { route: '/spec/x/0.1', title: '<script>"a"&</script>', description: '<b>', body: '' }, 'site');
+  assert.match(sample, /<title>&lt;script&gt;&quot;a&quot;&amp;&lt;\/script&gt;<\/title>/);
+  assert.doesNotMatch(sample, /<script>"a"/);
 });
 
 /** The page's fetch cache, answered from the built website/ tree: what the
