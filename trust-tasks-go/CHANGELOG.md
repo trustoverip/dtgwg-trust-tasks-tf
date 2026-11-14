@@ -11,6 +11,23 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.13.0 — 2026-11-14
+
+
+### Added
+
+- **go**: Move the generated specification packages into their own module (#1312)
+
+trust-tasks-go/specs/go.mod makes the prebuilt packages the module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs, so the next core release ships without them (#1112 step 2). Import paths are unchanged. The specs module stays unreleased and unbuilt until step 3 points it at that core; until then it requires v0.12.0, which still contains specs/, and so does not build.
+
+
+
+### Changed
+
+- **go-tsp,go-didcomm,go-capabilityclient**: Share the core's ConsumeReceived and NewURNUUID (#1311)
+
+The TSP and DIDComm consumers' Consume is now trusttasks.ConsumeReceived with the consumer's configuration; DIDComm's binding §3.1 thread cross-check is its BindingCheck. tsp, didcomm and capabilityclient mint ids with trusttasks.NewURNUUID; tsp.NewURNUUID and didcomm.NewMessageID remain as forwarders. Every module (and proof, and the getting-started example) requires core v0.12.0.
+
 ## 0.12.0 — 2026-11-14
 
 
