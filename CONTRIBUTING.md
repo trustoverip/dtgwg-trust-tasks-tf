@@ -76,9 +76,12 @@ the ToIP community follows.
 ## Review
 
 - Touch only your own spec folder/namespace where possible. `.github/CODEOWNERS`
-  is effectively single-owner today (one maintainer on every rule but
-  `/specs/process-attestation/`), so it does not route review per slug and there
-  is no second reviewer of record (#1144); don't write prose that says otherwise.
+  requests review from the DTGWG admins team (`@trustoverip/dtgwg-admins`) for
+  the release-critical paths — `.github/`, `scripts/`, `infra/`, the release,
+  changelog and licence configuration, the workspace manifests and the toolchain
+  pin — and from one maintainer for everything else; it does not route review
+  per slug (#1144). It requests review only: the branch rules require no
+  approval, so don't write prose that says a change needs one.
   Displayed spec authors come from front matter or git history, never from
   CODEOWNERS.
 - See [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md) for the full
