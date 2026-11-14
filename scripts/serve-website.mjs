@@ -4,7 +4,8 @@
  * does. Production is S3 behind CloudFront, with a viewer-request function —
  * infra/cloudfront/type-uri-negotiation.js — deciding what each request is: a
  * Type URI or ceremony definition negotiated to its JSON, a real file, a JSON
- * request that names nothing (a generated 404), or a client-side route (the
+ * request that names nothing (a generated 404), a crawler's request for a
+ * page with a static copy under pages/ (#1151), or a client-side route (the
  * SPA shell). This server loads that same file and runs its `handler()` on
  * every request, then serves the file the handler chose — or a 404 if it does
  * not exist, as the origin would — so 404s and content negotiation behave in
@@ -86,10 +87,12 @@ const server = http.createServer((req, res) => {
     res.writeHead(400); res.end('bad request'); return;
   }
 
-  const request = {
-    uri: url.pathname,
-    headers: req.headers.accept ? { accept: { value: req.headers.accept } } : {},
-  };
+  // The headers the function reads: Accept for negotiation, User-Agent for
+  // the crawlers' static pages (#1151).
+  const headers = {};
+  if (req.headers.accept) headers.accept = { value: req.headers.accept };
+  if (req.headers['user-agent']) headers['user-agent'] = { value: req.headers['user-agent'] };
+  const request = { uri: url.pathname, headers };
   const out = handler({ request });
 
   // A response the function generated itself (the JSON 404).
@@ -126,4 +129,5 @@ server.listen(PORT, HOST, () => {
   console.log(`    ${base}/schema/did-management/_shared/0.1/did-record`);
   console.log(`    ${base}/schema`);
   console.log(`    curl -H 'Accept: application/schema+json' ${base}/spec/acl/grant/0.1`);
+  console.log(`    curl -A 'Googlebot/2.1' ${base}/spec/acl/grant/0.1   # the static page a crawler gets`);
 });

@@ -9,7 +9,9 @@
 
   <!-- Link previews and the canonical URL (#1151). These are the home page's;
        app.jsx rewrites the canonical link, og:title, og:description, og:url
-       and the twitter: pair for each route once the page runs. -->
+       and the twitter: pair for each route once the page runs, and the static
+       per-page copies scripts/build-website.mjs writes under pages/ carry
+       their own route's values from the start. -->
   <link rel="canonical" href="https://trusttasks.org/">
   <meta property="og:site_name" content="Trust Tasks">
   <meta property="og:type" content="website">
@@ -56,8 +58,12 @@
   <a class="tt-skip-link" href="#main">Skip to content</a>
   <div id="root">
     <!-- Replaced when the app renders. Left in place if a script fails to load
-         or compile, so the page says so instead of staying blank (#1153). -->
+         or compile, so the page says so instead of staying blank (#1153).
+         The static page written for each specification, binding, shared
+         schema and ceremony (#1151) puts that page's summary where the
+         marker below is. -->
     <div class="tt-boot">
+      <!--tt-static-->
       <p><b>Trust Tasks</b> — the registry of Trust Task specifications.</p>
       <p>Loading the registry… If this message stays, the page's scripts could not load or run.
         The site needs JavaScript and access to unpkg.com.</p>

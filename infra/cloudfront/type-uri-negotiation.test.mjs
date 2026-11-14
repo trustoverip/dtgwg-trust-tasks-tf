@@ -32,8 +32,9 @@ const HTML = "text/html";
 
 /** Run a request through the function and return the resulting URI, or
  *  "404" when the function answered with a generated not-found response. */
-function route(uri, accept) {
+function route(uri, accept, userAgent) {
   const headers = accept === undefined ? {} : { accept: { value: accept } };
+  if (userAgent !== undefined) headers["user-agent"] = { value: userAgent };
   const out = handler({ request: { uri, headers } });
   return out.statusCode ? String(out.statusCode) : out.uri;
 }
@@ -282,5 +283,75 @@ describe("answers JSON-only requests that name nothing with a 404", () => {
 
   it("leaves non-registry routes to the SPA", () => {
     assert.equal(route("/registry", JSON_CT), "/index.html");
+  });
+});
+
+describe("serves crawlers the static copy of a page (#1151)", () => {
+  const BROWSER_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+  const CHROME = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+  const CRAWLERS = [
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+    "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+    "Twitterbot/1.0",
+    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+    "LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)",
+    "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)",
+    "WhatsApp/2.23.20.0",
+    "TelegramBot (like TwitterBot)",
+    "http.rb/5.1.1 (Mastodon/4.2.0; +https://mastodon.social/)",
+    "Mozilla/5.0 (compatible; Bluesky Cardyb/1.1; +mailto:support@bsky.app)",
+  ];
+
+  it("maps each kind of page to its copy under /pages/", () => {
+    const ua = CRAWLERS[0];
+    assert.equal(route("/spec/acl/grant/0.1", BROWSER_ACCEPT, ua), "/pages/spec/acl/grant/0.1/index.html");
+    assert.equal(route("/spec/did-management/did/delete/0.1/", BROWSER_ACCEPT, ua), "/pages/spec/did-management/did/delete/0.1/index.html");
+    assert.equal(route("/binding/https/0.3", BROWSER_ACCEPT, ua), "/pages/binding/https/0.3/index.html");
+    assert.equal(route("/schema/acl/_shared/0.1/acl-entry", BROWSER_ACCEPT, ua), "/pages/schema/acl/_shared/0.1/acl-entry/index.html");
+    assert.equal(route("/schema/trust-task/0.5.0", BROWSER_ACCEPT, ua), "/pages/schema/trust-task/0.5.0/index.html");
+    assert.equal(route("/ceremony/vtc/member-onboarding/0.1", BROWSER_ACCEPT, ua), "/pages/ceremony/vtc/member-onboarding/0.1/index.html");
+  });
+
+  it("recognises the common crawlers and link unfurlers, with any Accept", () => {
+    for (const ua of CRAWLERS) {
+      for (const accept of [BROWSER_ACCEPT, "*/*", undefined]) {
+        assert.equal(route("/spec/acl/grant/0.1", accept, ua), "/pages/spec/acl/grant/0.1/index.html", `${ua} / ${accept}`);
+      }
+    }
+  });
+
+  it("leaves browsers on the SPA shell, so an unknown route keeps its not-found page", () => {
+    for (const uri of ["/spec/acl/grant/0.1", "/spec/does-not-exist/0.1", "/binding/https/0.3", "/schema/acl/_shared/0.1/acl-entry"]) {
+      assert.equal(route(uri, BROWSER_ACCEPT, CHROME), "/index.html", uri);
+      assert.equal(route(uri, BROWSER_ACCEPT), "/index.html", uri);
+    }
+  });
+
+  it("still negotiates a schema or definition for a crawler that asks for one", () => {
+    assert.equal(route("/spec/acl/grant/0.1", SCHEMA, CRAWLERS[0]), "/specs/acl/grant/0.1/payload.schema.json");
+    assert.equal(route("/ceremony/vtc/member-onboarding/0.1", JSON_CT, CRAWLERS[0]), "/ceremonies/vtc/member-onboarding/0.1/ceremony.json");
+    assert.equal(route("/spec/acl/grant", JSON_CT, CRAWLERS[0]), NOT_FOUND);
+  });
+
+  it("leaves routes with no static copy to the SPA", () => {
+    const ua = CRAWLERS[0];
+    for (const uri of ["/", "/registry", "/spec/acl/grant", "/spec/trust-task/0.5.0", "/binding/https", "/schema",
+      "/ceremony/vtc", "/bindings", "/specification"]) {
+      assert.equal(route(uri, BROWSER_ACCEPT, ua), "/index.html", uri);
+    }
+  });
+
+  it("refuses traversal and characters outside the slug grammar", () => {
+    const ua = CRAWLERS[0];
+    for (const uri of ["/spec/../../etc/0.1", "/spec/acl/../x/0.1", "/schema/..", "/schema/acl/./x", "/spec/AcL/0.1", "/schema/a%2f..%2fb"]) {
+      assert.equal(route(uri, BROWSER_ACCEPT, ua), "/index.html", uri);
+    }
+  });
+
+  it("leaves the asset trees alone for crawlers too", () => {
+    const ua = CRAWLERS[0];
+    assert.equal(route("/specs/acl/grant/0.1/spec.md", "*/*", ua), "/specs/acl/grant/0.1/spec.md");
+    assert.equal(route("/sitemap.xml", "*/*", ua), "/sitemap.xml");
   });
 });

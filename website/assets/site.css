@@ -933,6 +933,12 @@ pre[tabindex]:focus-visible {
   font-family: var(--tt-font-body);
   color: var(--tt-text);
 }
+/* A static page's summary inside the boot message (#1151): what a crawler,
+   a link unfurler or a reader without JavaScript sees. */
+.tt-static { margin-bottom: var(--tt-space-6); }
+.tt-static dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--tt-space-1) var(--tt-space-4); }
+.tt-static dt { color: var(--tt-text-muted); }
+.tt-static dd { margin: 0; overflow-wrap: anywhere; }
 
 /* Long unbroken values (Type URIs, slugs) must wrap at phone width rather than
    widen the page. */

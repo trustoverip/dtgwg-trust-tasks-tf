@@ -119,7 +119,9 @@ jobs:
       # home page, a spec, a binding, /schema and /implementations/rust in the
       # runner's preinstalled Chrome over the DevTools protocol — no npm
       # dependency. Fails on a console error, an uncaught exception, a failed
-      # or 4xx/5xx request, a page with no <h1>, or a wrong canonical link.
+      # or 4xx/5xx request, a page with no <h1>, or a wrong canonical link;
+      # and loads a spec, a binding and a shared schema again as a crawler,
+      # which must get the page's static copy (#1151) and still render.
       - name: Smoke-test the built site in headless Chrome
         run: npm run smoke:website
 
@@ -311,6 +313,15 @@ jobs:
       #    deploys uploaded (nothing names it now, and uploading it here would
       #    store it unencoded); likewise the bundles #1257 kept at
       #    assets/app.<hash>.js, which now live under assets/hashed/.
+      #
+      #    pages/ — the static per-page copies of index.html crawlers get
+      #    (#1151, scripts/build-website.mjs) — goes up in this sync on
+      #    purpose: each names the same content-hashed scripts as index.html,
+      #    so it needs index.html's `no-cache`, must follow steps 3 and 4 as
+      #    index.html does, and is deleted by this `--delete` when its route
+      #    leaves the registry (the build empties pages/ first). Do not give it
+      #    a slice of its own with a longer max-age: a cached copy would name
+      #    scripts step 6 has since removed.
       - name: Deploy to S3
         if: steps.fresh.outputs.current == 'true'
         run: |

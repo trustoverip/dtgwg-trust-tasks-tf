@@ -54,7 +54,7 @@ npm run serve                     # serve ./website on :8765, routed as CloudFro
 ```
 
 The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push to
-`main`. Generated website outputs (`website/assets/tasks.generated.js`, `website/robots.txt`, `website/sitemap.xml`,
+`main`. Generated website outputs (`website/assets/tasks.generated.js`, `website/robots.txt`, `website/sitemap.xml`, `website/pages/`,
 `website/specs/` including its `bundle.json`s, `index.json` and `detail.json`s,
 `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
@@ -79,6 +79,16 @@ components.jsx's functions), so they are compiled one by one and concatenated,
 never bundled as modules; a new `.jsx` file must be added to `JSX_FILES`
 there, and the build fails until it is. React and `marked` stay UMD globals
 from unpkg, pinned by `integrity` in the template.
+
+**So are the static per-page copies under `website/pages/`** (#1151). In the
+same run, `build-website.mjs` writes one copy of `index.html` per
+specification version, binding, shared schema and ceremony, with that route's
+title, description, canonical link and `og:`/`twitter:` tags and an escaped
+HTML summary in place of `<!--tt-static-->`. The CloudFront function serves
+these to crawlers and link unfurlers (`infra/cloudfront/README.md`). The titles
+and descriptions are `routeMeta()` in `app.jsx` for the same route:
+`website-jsx.test.mjs` compares every page against it, so change the two
+together.
 
 The libraries publish via `.github/workflows/publish.yml`, but **not on merge** —
 that workflow keeps a Release PR up to date, and merging the Release PR is the
@@ -373,9 +383,9 @@ defects three times.
 | `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; no withdrawn version is generated and every other one carries the same deprecation note in all four; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
-| `test:infra` | the CloudFront negotiation function's routing decisions; that `response-headers-policy.json` sets every security header and its Content-Security-Policy allows each script, stylesheet and `fetch` the page makes, with no inline script | whether the deployed site actually serves them — the policy is applied by hand (`infra/cloudfront/apply-response-headers.sh`), and `verify.sh` checks the live headers |
+| `test:infra` | the CloudFront negotiation function's routing decisions (including which user agents get the static pages); that `response-headers-policy.json` sets every security header and its Content-Security-Policy allows each script, stylesheet and `fetch` the page makes, with no inline script | whether the deployed site actually serves them — the policy is applied by hand (`infra/cloudfront/apply-response-headers.sh`), and `verify.sh` checks the live headers |
 | `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.template.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; the page code compiles through the build's esbuild step, the template's production React pins match their files, and (after `npm run build`) the built bundle `index.html` names renders a set of routes through React's development server renderer against the real registry (the spec and schema pages' fetched detail read from `website/specs/`, and their loading state with none) (`REACT_JS`, `REACT_DOM_SERVER_JS`, `REACT_PROD_JS`, `REACT_DOM_PROD_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
-| `npm run smoke:website` (in `deploy.yml`, after `npm run build`) | the built site, served through the CloudFront routing function, loads `/`, a spec, a binding, `/schema`, a shared schema and `/implementations/rust` in headless Chrome (over the DevTools protocol, no npm dependency; `CHROME_PATH` to choose the browser) with no console error, uncaught exception or failed/4xx request — under the response headers policy's Content-Security-Policy, which `serve-website.mjs` sends — an `<h1>`, no loading state or failed fetch once settled, and a canonical link naming the route | any other route, and the deployed CloudFront and S3 metadata (`immutable`, gzip encoding) |
+| `npm run smoke:website` (in `deploy.yml`, after `npm run build`) | the built site, served through the CloudFront routing function, loads `/`, a spec, a binding, `/schema`, a shared schema and `/implementations/rust` in headless Chrome (over the DevTools protocol, no npm dependency; `CHROME_PATH` to choose the browser) with no console error, uncaught exception or failed/4xx request — under the response headers policy's Content-Security-Policy, which `serve-website.mjs` sends — an `<h1>`, no loading state or failed fetch once settled, and a canonical link naming the route; and a spec, a binding and a shared schema again with a crawler's user agent, which must get the static page (its own `<title>`, summary and canonical link) and still render | any other route, and the deployed CloudFront and S3 metadata (`immutable`, gzip encoding) |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `checkPayloadSchema` | every spec version has a `payload.schema.json` that parses, whose `$id` is its own URL and `$schema` is JSON Schema 2020-12, and whose `$defs.Response` (if any) declares `$anchor: "response"`; warns when the payload or response declares neither `additionalProperties` nor `unevaluatedProperties` (SPEC §7.3 item 7.4) | whether the schema says what the prose means |
