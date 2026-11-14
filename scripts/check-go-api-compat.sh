@@ -84,7 +84,7 @@ if [ -z "${PR_TITLE+x}" ]; then
   exit 2
 fi
 
-tag="${GO_API_BASELINE:-$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)}"
+tag="${GO_API_BASELINE:-$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | sed -n 1p)}"
 if [ -z "$tag" ]; then
   echo "::error::No ${TAG_PREFIX}* tag found — fetch tags (fetch-depth: 0)."
   exit 2
