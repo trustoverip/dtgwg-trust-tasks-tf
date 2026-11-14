@@ -3,7 +3,7 @@ module example.com/trust-tasks-getting-started-go
 go 1.22
 
 require (
-	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.10.23
+	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.10.26
 	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/proof v0.0.0-00010101000000-000000000000
 )
 

@@ -382,6 +382,12 @@ export import BackupInitiateImport_v0_1 = _BackupInitiateImport_v0_1;
 import * as _BackupPutChunk_v0_1 from "./backup/put-chunk/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import BackupPutChunk_v0_1 = _BackupPutChunk_v0_1;
+import * as _DirectShared_v0_1 from "./chat/direct/_shared/0.1/direct.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DirectShared_v0_1 = _DirectShared_v0_1;
+import * as _ChatDirectMessage_v0_1 from "./chat/direct/message/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import ChatDirectMessage_v0_1 = _ChatDirectMessage_v0_1;
 import * as _ChatMessage_v0_1 from "./chat/message/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import ChatMessage_v0_1 = _ChatMessage_v0_1;

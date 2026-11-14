@@ -86,6 +86,7 @@ import {
   type ReplayGuard,
   type ReplayPolicy,
 } from "./replay.js";
+import { checkCriticalExtensions } from "./critical.js";
 import {
   identityMismatchReason,
   reject,
@@ -115,6 +116,12 @@ export interface ConsumeChecks {
   readonly freshness: FreshnessPolicy;
   /** Applies (or knowingly disapplies) SPEC §7.2 item 11. */
   readonly replay: ReplayPolicy;
+  /**
+   * The `ext` namespaces this consumer implements (SPEC §4.5.2). A document
+   * that marks any other namespace critical in an `extCritical` member is
+   * refused `unsupportedExtension`. None when absent.
+   */
+  readonly recognizedExtensions?: readonly string[];
 }
 
 /**
@@ -514,6 +521,19 @@ export async function consumeInbound<P, R>(
   // this pipeline and any binding-specific one cannot diverge on the check set.
   const policy = enforceSpecPolicy(doc, spec);
   if (policy !== null) return route(policy);
+
+  // SPEC §4.5.2 — namespaces marked critical. After the proof and the
+  // per-spec checks, so a sender nobody has authenticated learns nothing about
+  // which namespaces this consumer implements, and before the record, so a
+  // refused document never burns its `id`. Read from the document as received:
+  // a forward reading's payload has been pruned, and the marking may be among
+  // the members pruning dropped.
+  const critical = checkCriticalExtensions(
+    (received as { payload?: unknown }).payload,
+    spec.payloadSchema,
+    checks.recognizedExtensions ?? [],
+  );
+  if (critical !== null) return route(critical);
 
   // §7.2 item 11 — the duplicate-execution record. Deliberately **last**:
   // claiming the `id` marks the document as accepted for execution, and a

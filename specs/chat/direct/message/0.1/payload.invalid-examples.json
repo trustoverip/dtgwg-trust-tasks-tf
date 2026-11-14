@@ -1,0 +1,122 @@
+[
+  {
+    "note": "Revision 1 MUST NOT carry `editedAt`: a first revision was never edited.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 1,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T09:14:02Z",
+      "editedAt": "2026-11-08T09:15:40Z"
+    }
+  },
+  {
+    "note": "Revision 1 MUST NOT have an empty `body`: only a rewrite can withdraw.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 1,
+      "kind": "message",
+      "body": "",
+      "writtenAt": "2026-11-08T09:14:02Z"
+    }
+  },
+  {
+    "note": "Every revision after the first MUST carry `editedAt`.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 2,
+      "kind": "message",
+      "body": "See you at four.",
+      "writtenAt": "2026-11-08T09:14:02Z"
+    }
+  },
+  {
+    "note": "A reaction MUST name its target in `inReplyTo`.",
+    "payload": {
+      "messageId": "Hk2pW8nQ4cZt6YvR1mLs9BxE3fJa7GuD5oTi0wKeN8M",
+      "revision": 1,
+      "kind": "reaction",
+      "body": "👍",
+      "writtenAt": "2026-11-08T09:16:10Z"
+    }
+  },
+  {
+    "note": "A rewrite of a reaction MUST still name its target in `inReplyTo`, even when it withdraws the reaction.",
+    "payload": {
+      "messageId": "Hk2pW8nQ4cZt6YvR1mLs9BxE3fJa7GuD5oTi0wKeN8M",
+      "revision": 2,
+      "kind": "reaction",
+      "body": "",
+      "writtenAt": "2026-11-08T09:16:10Z",
+      "editedAt": "2026-11-08T09:17:45Z"
+    }
+  },
+  {
+    "note": "`messageId` is exactly 43 base64url characters (32 random bytes).",
+    "payload": {
+      "messageId": "msg-1",
+      "revision": 1,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T09:14:02Z"
+    }
+  },
+  {
+    "note": "Unknown member: a direct message carries no rooms library members such as `title`.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 1,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T09:14:02Z",
+      "title": "Meeting"
+    }
+  },
+  {
+    "note": "`inReplyTo` names a message by `messageId` alone; there is no host `version` to name.",
+    "payload": {
+      "messageId": "Zr5tN1vB8kQw3HxM6cLp2YdS9gFa4JeU7oRi0nWqT1A",
+      "revision": 1,
+      "kind": "message",
+      "body": "Yes, three works.",
+      "writtenAt": "2026-11-08T09:15:00Z",
+      "inReplyTo": {
+        "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+        "version": 1
+      }
+    }
+  },
+  {
+    "note": "`writtenAt` is UTC with a `Z` designator, never an offset.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 1,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T10:14:02+01:00"
+    }
+  },
+  {
+    "note": "`revision` starts at 1.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 0,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T09:14:02Z"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "messageId": "q3Xv9LbT2mWc7RkN4sYh1PdZ8uFa6JeG0oVi5xQnB2E",
+      "revision": 1,
+      "kind": "message",
+      "body": "See you at three.",
+      "writtenAt": "2026-11-08T09:14:02Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

@@ -2812,3 +2812,102 @@ async fn client_errors_do_not_quote_the_response_body() {
     assert!(matches!(err, ClientError::ResponseDecode(_)), "{err:?}");
     assert!(!err.to_string().contains(marker), "{err}");
 }
+
+/// A payload type whose schema allows `ext` and `extCritical` at its root,
+/// from the shared SPEC §4.5.2 vectors. The type models only `subject`.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Marked {
+    subject: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct MarkedResponse {
+    ok: bool,
+}
+
+const MARKED: &str = "https://trusttasks.org/spec/conformance/marked/0.1";
+
+impl Payload for Marked {
+    const TYPE_URI: &'static str = MARKED;
+    const PAYLOAD_SCHEMA: Option<&'static str> = Some(include_str!(
+        "../../fixtures/consume/ext-critical.schema.json"
+    ));
+}
+
+impl Payload for MarkedResponse {
+    const TYPE_URI: &'static str = "https://trusttasks.org/spec/conformance/marked/0.1#response";
+}
+
+impl trust_tasks_rs::RequestPayload for Marked {
+    type Response = MarkedResponse;
+}
+
+async fn spawn_marked_server(
+    recognized: &'static [&'static str],
+    runs: Arc<AtomicUsize>,
+) -> SocketAddr {
+    let server = HttpsServer::builder()
+        .local_vid(SERVER_VID)
+        .with_auth(BearerAuth::from_pairs([("alice", "did:web:alice.example")]))
+        .recognized_extensions(recognized)
+        .on::<Marked, _>(move |_req, _ctx| {
+            runs.fetch_add(1, AtomicOrdering::SeqCst);
+            Ok(MarkedResponse { ok: true })
+        })
+        .build();
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let app = server.into_router();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    addr
+}
+
+async fn post_marked(addr: SocketAddr, id: &str) -> (reqwest::StatusCode, serde_json::Value) {
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .header("authorization", "Bearer alice")
+        .header("content-type", "application/json")
+        .body(
+            serde_json::json!({
+                "id": id,
+                "type": MARKED,
+                "issuer": "did:web:alice.example",
+                "recipient": SERVER_VID,
+                "issuedAt": Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+                "payload": {
+                    "subject": "s",
+                    "ext": { "org.example.a": 1 },
+                    "extCritical": ["org.example.a"]
+                }
+            })
+            .to_string(),
+        )
+        .send()
+        .await
+        .unwrap();
+    let status = resp.status();
+    (status, resp.json().await.unwrap())
+}
+
+/// SPEC §4.5.2: a namespace marked critical that the server does not
+/// implement is refused before the handler; one it implements is processed.
+#[tokio::test]
+async fn a_critical_namespace_is_understood_or_refused() {
+    let runs = Arc::new(AtomicUsize::new(0));
+    let addr = spawn_marked_server(&[], Arc::clone(&runs)).await;
+    let (status, body) = post_marked(addr, "urn:uuid:00000000-0000-4000-8000-0000000000c1").await;
+    assert_eq!(status, reqwest::StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(body["payload"]["code"], "unsupportedExtension");
+    assert_eq!(
+        runs.load(AtomicOrdering::SeqCst),
+        0,
+        "the handler must not run"
+    );
+
+    let addr = spawn_marked_server(&["org.example.a"], Arc::clone(&runs)).await;
+    let (status, body) = post_marked(addr, "urn:uuid:00000000-0000-4000-8000-0000000000c2").await;
+    assert_eq!(status, reqwest::StatusCode::OK, "{body}");
+    assert_eq!(runs.load(AtomicOrdering::SeqCst), 1);
+}
