@@ -3,6 +3,15 @@
 All notable changes to `trust-tasks-go/didcomm` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.3.3 — 2026-11-14
+
+
+### Changed
+
+- **go-tsp,go-didcomm,go-capabilityclient**: Share the core's ConsumeReceived and NewURNUUID (#1311)
+
+The TSP and DIDComm consumers' Consume is now trusttasks.ConsumeReceived with the consumer's configuration; DIDComm's binding §3.1 thread cross-check is its BindingCheck. tsp, didcomm and capabilityclient mint ids with trusttasks.NewURNUUID; tsp.NewURNUUID and didcomm.NewMessageID remain as forwarders. Every module (and proof, and the getting-started example) requires core v0.12.0.
+
 ## 0.3.2 — 2026-11-14
 
 
