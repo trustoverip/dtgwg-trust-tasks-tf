@@ -1,0 +1,291 @@
+{
+  "description": "SPEC §4.5.2 criticality vectors. Check each case's `payload` against `ext-critical.schema.json` (no schema when `schemaless` is true) with the case's `recognized` namespaces. `expect` is `ok` or the refusal's error code.",
+  "cases": [
+    {
+      "name": "no marking",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        }
+      },
+      "recognized": [],
+      "expect": "ok"
+    },
+    {
+      "name": "unrecognized critical namespace at the root",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": [
+          "org.example.a"
+        ]
+      },
+      "recognized": [],
+      "expect": "unsupportedExtension"
+    },
+    {
+      "name": "recognized critical namespace",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1,
+          "org.example.b": 2
+        },
+        "extCritical": [
+          "org.example.a"
+        ]
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "ok"
+    },
+    {
+      "name": "one of two critical namespaces unrecognized",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1,
+          "org.example.b": 2
+        },
+        "extCritical": [
+          "org.example.a",
+          "org.example.b"
+        ]
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "unsupportedExtension"
+    },
+    {
+      "name": "nested level through $ref and oneOf",
+      "payload": {
+        "subject": "s",
+        "item": {
+          "ext": {
+            "org.example.a": 1
+          },
+          "extCritical": [
+            "org.example.a"
+          ]
+        }
+      },
+      "recognized": [],
+      "expect": "unsupportedExtension"
+    },
+    {
+      "name": "array element",
+      "payload": {
+        "subject": "s",
+        "list": [
+          "x",
+          {
+            "ext": {
+              "org.example.a": 1
+            },
+            "extCritical": [
+              "org.example.a"
+            ]
+          }
+        ]
+      },
+      "recognized": [],
+      "expect": "unsupportedExtension"
+    },
+    {
+      "name": "not an array",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": "org.example.a"
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "empty array",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": []
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "no sibling ext",
+      "payload": {
+        "subject": "s",
+        "extCritical": [
+          "org.example.a"
+        ]
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "names a namespace absent from ext",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": [
+          "org.example.b"
+        ]
+      },
+      "recognized": [
+        "org.example.b"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "duplicate entries",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": [
+          "org.example.a",
+          "org.example.a"
+        ]
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "entry outside the namespace grammar",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "Example": 1
+        },
+        "extCritical": [
+          "Example"
+        ]
+      },
+      "recognized": [
+        "Example"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "non-string entry",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": 1
+        },
+        "extCritical": [
+          7
+        ]
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "marking at a closed level that does not declare it",
+      "payload": {
+        "subject": "s",
+        "other": {
+          "a": "x",
+          "ext": {
+            "org.example.a": 1
+          },
+          "extCritical": [
+            "org.example.a"
+          ]
+        }
+      },
+      "recognized": [
+        "org.example.a"
+      ],
+      "expect": "malformedRequest"
+    },
+    {
+      "name": "member of that name inside open data is not a marking",
+      "payload": {
+        "subject": "s",
+        "data": {
+          "payload": {
+            "ext": {
+              "org.example.a": 1
+            },
+            "extCritical": [
+              "org.example.a"
+            ]
+          }
+        }
+      },
+      "recognized": [],
+      "expect": "ok"
+    },
+    {
+      "name": "member of that name inside an ext namespace is not a marking",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": {
+            "extCritical": [
+              "org.example.z"
+            ]
+          }
+        }
+      },
+      "recognized": [],
+      "expect": "ok"
+    },
+    {
+      "name": "without a schema every level is read",
+      "payload": {
+        "subject": "s",
+        "data": {
+          "ext": {
+            "org.example.a": 1
+          },
+          "extCritical": [
+            "org.example.a"
+          ]
+        }
+      },
+      "recognized": [],
+      "expect": "unsupportedExtension",
+      "schemaless": true
+    },
+    {
+      "name": "without a schema ext content is still opaque",
+      "payload": {
+        "subject": "s",
+        "ext": {
+          "org.example.a": {
+            "extCritical": [
+              "x"
+            ]
+          }
+        }
+      },
+      "recognized": [],
+      "expect": "ok",
+      "schemaless": true
+    }
+  ]
+}

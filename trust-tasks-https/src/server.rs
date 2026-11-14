@@ -57,7 +57,9 @@
 //!     configured and no explicit choice, only `did:key` passes.
 //! 11. Proof verification, over the body as received (the only step that may
 //!     egress).
-//! 12. Per-spec policy (§7.2 items 5b, 7A, 8; §7.3 item 17).
+//! 12. Per-spec policy (§7.2 items 5b, 7A, 8; §7.3 item 17), then the
+//!     `extCritical` check (SPEC §4.5.2) — see
+//!     [`HttpsServerBuilder::recognized_extensions`].
 //! 13. **Duplicate-execution claim** (§7.2 item 11) — see
 //!     [`HttpsServerBuilder::replay_protection`].
 //! 14. The registered handler.
@@ -218,6 +220,7 @@ struct ServerState {
     freshness: FreshnessPolicy,
     /// The bound for a document whose specification declares none.
     default_document_bound: usize,
+    recognized_extensions: &'static [&'static str],
 }
 
 /// Which DID methods `proof.verificationMethod` may name, as configured.
@@ -263,6 +266,7 @@ pub struct HttpsServerBuilder {
     applied_freshness: Arc<OnceLock<FreshnessPolicy>>,
     request_timeout: Option<Duration>,
     max_concurrent_requests: Option<usize>,
+    recognized_extensions: &'static [&'static str],
 }
 
 impl HttpsServerBuilder {
@@ -553,6 +557,17 @@ impl HttpsServerBuilder {
         self
     }
 
+    /// The `ext` namespaces this server's handlers implement. SPEC §4.5.2:
+    /// a document that names any other namespace in an `extCritical` member
+    /// is refused `unsupportedExtension` before the replay claim and the
+    /// handler. None by default. The check is the pipeline's
+    /// ([`ConsumeChecks::with_recognized_extensions`]), read over the body as
+    /// received against the registered type's payload schema.
+    pub fn recognized_extensions(mut self, namespaces: &'static [&'static str]) -> Self {
+        self.recognized_extensions = namespaces;
+        self
+    }
+
     /// Keep the SPEC §7.2 item 11 duplicate-execution record. Defaults to
     /// `true`.
     ///
@@ -838,6 +853,7 @@ impl HttpsServerBuilder {
                 }),
                 freshness: self.freshness,
                 default_document_bound: self.max_body_bytes.unwrap_or(MAX_BODY_BYTES),
+                recognized_extensions: self.recognized_extensions,
             }),
             body_limit,
             request_timeout: self.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
@@ -882,6 +898,7 @@ impl HttpsServer {
             applied_freshness: Arc::new(OnceLock::new()),
             request_timeout: None,
             max_concurrent_requests: None,
+            recognized_extensions: &[],
         }
     }
 
@@ -1021,7 +1038,8 @@ async fn dispatch_handler(
         ..ConsumeChecks::not_consequential()
     }
     .require_attribution(state.require_attribution)
-    .with_received_bytes(body.len(), Some(state.default_document_bound));
+    .with_received_bytes(body.len(), Some(state.default_document_bound))
+    .with_recognized_extensions(state.recognized_extensions);
     checks.proof_did_methods = state.allowed_did_methods.clone();
 
     let proof_policy: ProofPolicy<'_, dyn DynProofVerifier> = match &state.verifier {

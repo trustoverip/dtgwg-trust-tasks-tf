@@ -48,6 +48,7 @@ mod async_dispatch;
 mod canonical;
 mod ceremony;
 mod consume;
+mod critical;
 mod dispatcher;
 mod document;
 mod error;
@@ -84,6 +85,7 @@ pub use consume::{
     ConsumeOutcome, NoValidator, PayloadPolicy, PayloadValidator, ProofPolicy,
     PROOF_NOT_ACCEPTED_BY_POLICY,
 };
+pub use critical::check_critical_extensions;
 pub use dispatcher::Dispatcher;
 pub use document::{
     issued_at_now, trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask,
