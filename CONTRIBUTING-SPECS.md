@@ -29,7 +29,7 @@ specs/<slug>/<version>/
 3. Fill in the prose: Abstract, Definitions, Request/Response, and the Security & Privacy sub-headings. Every `TODO` in the scaffold marks something only you can write.
 4. Check `payload.schema.json` describes your `payload` member. Its `$id` **MUST** equal `https://trusttasks.org/spec/<your-slug>/<your-version>` — note that the slug's `/` separators appear literally in the URL.
 5. Run `npm install` then `npm run build` from the repo root to validate.
-6. Open a PR. `.github/CODEOWNERS` requests review from the maintainers; today that is one person for nearly every path.
+6. Open a PR. `.github/CODEOWNERS` requests review from the maintainers: the DTGWG admins team for the release-critical paths (CI, scripts, release configuration), one maintainer for specs and everything else.
 
 You don't touch `website/` — the build copies your folder into the website tree automatically.
 

@@ -3,13 +3,17 @@
 # Each Trust Task specification lives in specs/<slug>/<version>/.
 # Slugs may be hierarchical (multiple path segments separated by /),
 # in which case the on-disk folder matches the slug (e.g. specs/acl/grant/).
-# Today one maintainer owns every rule here except /specs/process-attestation/,
-# so this file requests that maintainer's review rather than routing review per
-# namespace, and the release-critical paths have a single reviewer of record
-# (#1144). The per-namespace rules below are where a namespace's own editors go
-# once they exist: give a namespace an owner by appending a rule for its slug
-# or slug prefix naming that team or individual. Replace @stormer78 with
-# @org/<team> when a maintainers team is set up.
+# The release-critical paths — CI and the publish workflows, the release and
+# bump scripts, the release and changelog configuration, the workspace manifest
+# and the toolchain pin — are owned by the DTGWG admins team (#1144), so a change
+# to what ships, or how, requests review from more than one person. Everything
+# else requests one maintainer's review rather than routing review per
+# namespace. The per-namespace rules below are where a namespace's own editors
+# go once they exist: give a namespace an owner by appending a rule for its slug
+# or slug prefix naming that team or individual.
+#
+# This file only requests review. The branch rules require none (approvals 0,
+# code-owner review off), so a request here does not block a merge.
 #
 # Nothing else reads this file: the website's spec authors come from each
 # spec's front matter or its folder's git history, not from here.
@@ -25,10 +29,20 @@
 /SOURCE_CODE.md                    @stormer78
 /README.md                         @stormer78
 
-# Build / deploy / tooling
-/scripts/                          @stormer78
-/.github/                          @stormer78
-/package.json                      @stormer78
+# Release-critical: CI and the publish workflows, release and bump scripts,
+# release/changelog/licence configuration, the workspace manifest and lockfile,
+# the toolchain pin. A team, so review is not one person's.
+/.github/                          @trustoverip/dtgwg-admins
+/scripts/                          @trustoverip/dtgwg-admins
+/release-plz.toml                  @trustoverip/dtgwg-admins
+/cliff.toml                        @trustoverip/dtgwg-admins
+/deny.toml                         @trustoverip/dtgwg-admins
+/Cargo.toml                        @trustoverip/dtgwg-admins
+/Cargo.lock                        @trustoverip/dtgwg-admins
+/rust-toolchain.toml               @trustoverip/dtgwg-admins
+/package.json                      @trustoverip/dtgwg-admins
+/package-lock.json                 @trustoverip/dtgwg-admins
+/infra/                            @trustoverip/dtgwg-admins
 /specs/spec.meta.schema.json       @stormer78
 
 # Website chrome (everything except the auto-synced specs/ tree)
