@@ -53,6 +53,8 @@ export {
 
 export { MAX_NESTING_DEPTH, validateEnvelope } from "./envelope.js";
 
+export { checkCriticalExtensions } from "./critical.js";
+
 export {
   ID_CONFLICT_WIRE_MESSAGE,
   PROOF_INVALID_WIRE_MESSAGE,

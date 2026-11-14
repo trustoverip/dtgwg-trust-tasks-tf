@@ -78,6 +78,10 @@ type ConsumeChecks struct {
 	Freshness FreshnessPolicy
 	// Replay applies (or knowingly disapplies) SPEC §7.2 item 11.
 	Replay ReplayPolicy
+	// RecognizedExtensions names the ext namespaces this consumer implements
+	// (SPEC §4.5.2). A document that marks any other namespace critical in an
+	// extCritical member is refused unsupportedExtension. None when nil.
+	RecognizedExtensions []string
 }
 
 // ConsequentialChecks is the posture for a consequential Trust Task (§2): item 11
@@ -563,6 +567,32 @@ func ConsumeInbound[P, R any](
 	// §7.2 items 5b + 7 clause A + 8 — the policy-driven checks, in one place so
 	// this pipeline and any binding-specific one cannot diverge on the check set.
 	if reason := EnforceSpecPolicy(doc, opts.Spec); reason != nil {
+		return route(reason), nil
+	}
+
+	// SPEC §4.5.2 — namespaces marked critical. After the proof and the per-spec
+	// checks, so a sender nobody has authenticated learns nothing about which
+	// namespaces this consumer implements, and before the record, so a refused
+	// document never burns its id. Read from the document as received where the
+	// caller has it: Doc's type drops every member it does not model, and the
+	// marking is exactly such a member when the payload was not validated.
+	var criticalPayload json.RawMessage
+	if len(opts.Received) > 0 && isReadingOf(doc, opts.Received) {
+		var envelope struct {
+			Payload json.RawMessage `json:"payload"`
+		}
+		if err := json.Unmarshal(opts.Received, &envelope); err == nil {
+			criticalPayload = envelope.Payload
+		}
+	}
+	if criticalPayload == nil {
+		encoded, err := json.Marshal(doc.Payload)
+		if err != nil {
+			return zero, fmt.Errorf("trusttasks: marshal payload for SPEC §4.5.2: %w", err)
+		}
+		criticalPayload = encoded
+	}
+	if reason := CheckCriticalExtensions(criticalPayload, opts.Spec.PayloadSchema, opts.Checks.RecognizedExtensions); reason != nil {
 		return route(reason), nil
 	}
 
