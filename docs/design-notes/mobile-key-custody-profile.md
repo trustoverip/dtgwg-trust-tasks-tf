@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Draft, partly implemented — the `keyCustody` declaration ships in `device/_shared/0.1` and `0.2` (`device-binding`); `device/register` 0.1 and 0.2 carry the §6 guidance as SHOULDs (populate `keyCustody`; P-256 for mobile holders once the libraries support it; warn on the `software` tier) |
 | **Date** | 2026-05-30 |
 | **Applies to** | Mobile holders/agents (iOS, Android) participating in `auth/*` (step-up, passkey) and DIDComm-carried Trust Tasks |
 | **Related** | `specs/device/_shared/0.1/device-binding` (`keyCustody`), `specs/auth/step-up/*`, `bindings/didcomm/0.1`, `bindings/push/0.1` |
