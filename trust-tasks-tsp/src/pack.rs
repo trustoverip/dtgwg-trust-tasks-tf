@@ -2,7 +2,7 @@
 //! and out of a TSP-sealed envelope.
 //!
 //! The TSP message payload is the JSON envelope object `{ "type":
-//! ENVELOPE_TYPE, "document": <TrustTask<P>> }`; TSP seals it with HPKE
+//! ENVELOPE_TYPE, "document": <TrustTask<P>> }` ([`Envelope`]); TSP seals it with HPKE
 //! authenticated encryption and signs it from the sender's VID. On unwrap the
 //! authenticated `VID_sndr` is surfaced verbatim as the binding's
 //! transport-authenticated peer (a TSP VID is a framework VID — no
@@ -13,17 +13,11 @@ use affinidi_tsp::message::routed;
 use affinidi_tsp::{MessageType, PrivateVid, ResolvedVid};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde_json::json;
 use trust_tasks_rs::TrustTask;
 
+use crate::envelope::Envelope;
 use crate::error::TspError;
 use crate::handler::TspHandler;
-
-/// Envelope `type` URI for Trust Tasks carried over TSP.
-///
-/// Conforming consumers reject payloads with any other `type` via
-/// [`TspError::WrongEnvelopeType`].
-pub const ENVELOPE_TYPE: &str = "https://trusttasks.org/binding/tsp/0.1/envelope";
 
 /// Wrap a Trust Task document in the binding envelope and TSP-seal it
 /// (`Direct`) from `sender` to `recipient`.
@@ -120,9 +114,7 @@ fn pack_inner_direct<P>(
 where
     P: Serialize,
 {
-    let document = serde_json::to_value(doc).map_err(TspError::SerialiseBody)?;
-    let envelope = json!({ "type": ENVELOPE_TYPE, "document": document });
-    let payload = serde_json::to_vec(&envelope).map_err(TspError::SerialiseBody)?;
+    let payload = Envelope::new(doc)?.to_bytes();
 
     Ok(direct::pack(
         &payload,
@@ -200,21 +192,9 @@ pub(crate) fn open(
         )));
     }
 
-    let envelope: Envelope =
-        serde_json::from_slice(&unpacked.payload).map_err(TspError::InvalidBody)?;
-    if envelope.type_ != ENVELOPE_TYPE {
-        return Err(TspError::WrongEnvelopeType(envelope.type_));
-    }
+    let envelope = Envelope::from_bytes(&unpacked.payload)?;
 
     // A TSP VID is a framework VID verbatim — no normalisation.
     let handler = TspHandler::new(Some(recipient.id.clone()), Some(sender.id.clone()));
-    Ok((envelope.document, handler))
-}
-
-/// The binding envelope object: a `type` tag plus the carried Trust Task.
-#[derive(serde::Deserialize)]
-struct Envelope {
-    #[serde(rename = "type")]
-    type_: String,
-    document: serde_json::Value,
+    Ok((envelope.into_document(), handler))
 }

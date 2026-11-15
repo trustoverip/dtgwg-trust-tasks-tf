@@ -39,6 +39,18 @@
 //! job on the wire; the **consumer always opens the innermost Direct message**, which
 //! [`unpack_trust_task`] handles regardless of how it was carried.
 //!
+//! ## Sealing through your own TSP stack
+//!
+//! The pack and unpack functions take raw VID keys and do the TSP seal
+//! themselves. An application whose own TSP stack seals and opens messages —
+//! a messaging SDK holding the keys and relationships — uses [`Envelope`]
+//! instead: [`Envelope::new`] + [`Envelope::to_bytes`] give the plaintext to
+//! seal, and [`Envelope::from_bytes`] checks the envelope `type` of the
+//! plaintext its stack opened and yields the `document` as received. That
+//! skips the checks [`unpack_trust_task`] makes on the TSP message itself
+//! (Direct carriage, cleartext sender and receiver VIDs), which are then the
+//! application's stack's to make, and every SPEC §7.2 consumer check.
+//!
 //! ## The guarded inbound path
 //!
 //! [`unpack_trust_task`] opens the seal and stops there. The consumer
@@ -91,15 +103,16 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+mod envelope;
 mod error;
 mod handler;
 pub mod inbound;
 mod pack;
 
+pub use envelope::{Envelope, ENVELOPE_TYPE};
 pub use error::TspError;
 pub use handler::{TspHandler, BINDING_URI};
 pub use inbound::TspConsumer;
 pub use pack::{
     pack_trust_task, pack_trust_task_nested, pack_trust_task_routed, unpack_trust_task,
-    ENVELOPE_TYPE,
 };
