@@ -741,7 +741,7 @@ pub mod error_codes {
     };
     /// `vtc/community/logo/update:rateLimited`
     ///
-    /// The signer has sent as many logos as the community allows in its current window. Nothing was stored.
+    /// The administrator the signer resolves to has sent as many updates as the community allows in its current window. Nothing was stored.
     ///
     /// Declared `retryable: true`.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

@@ -50,9 +50,10 @@ errorCodes:
     meaning: '`data` does not decode as an image of `mediaType`, or as an image the community can re-encode. Nothing was stored.'
     retryable: false
   - code: vtc/community/logo/update:rateLimited
-    meaning: The signer has sent as many logos as the community allows in its current window. Nothing was stored.
+    meaning: The administrator the signer resolves to has sent as many updates as the community allows in its current window. Nothing was stored.
     retryable: true
 related:
+  - vtc/community/branding/update
   - vtc/community/profile/update
   - vtc/community/theme/update
   - vtc/directory/images/upload
@@ -64,7 +65,7 @@ The **VTC Community — Logo — Update** Trust Task is how a community gets a l
 
 A community's pages are commonly served under a content security policy that admits images from their own origin only. A logo held at some other address then cannot be drawn on them at all, and a community that has no other place on its own origin to put a file has no logo. The community serving the logo it stored is what this task exists for. How a community serves it — at which path, and how its pages learn that path — is its own; the requirements on serving are in [item 8](#conformance).
 
-This task stores an image. It does not change the profile's `logoUrl` ([`vtc/community/profile/update`](../../../profile/update/0.1/spec.md)), which remains an address a community may publish for readers that fetch from anywhere. A community that holds both decides which its own pages draw.
+This task stores an image. It does not change the profile's `logoUrl` ([`vtc/community/profile/update`](../../../profile/update/0.1/spec.md)), which remains an address a community may publish for readers that fetch from anywhere, nor the `logoUrl` in the join manifest ([`vtc/community/branding/update`](../../../branding/update/0.1/spec.md)), which a prospective applicant's client fetches. A community that holds a stored logo and either address decides which its own pages draw; a page served under a policy that admits images from its own origin only can draw the stored logo and no other.
 
 ## Status of this Document
 
@@ -81,10 +82,10 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **community** (`recipient`):
 
 1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the identity it acts for — to its access-control entry at execution time. It **MUST** make this check before decoding `data`: decoding is the expensive step, and is not a service for anyone who asks.
-2. **MUST** refuse `data` that decodes to more than 262144 bytes with `vtc/community/logo/update:tooLarge` before decoding it as an image; and **MUST** bound what it decodes — the pixels a picture may claim and the memory its decoding may take — refusing a picture beyond either with `tooLarge`. A few kilobytes can claim tens of thousands of pixels across, and the byte bound alone does not stop them.
+2. **MUST** refuse `data` that decodes to more than 262144 bytes with `vtc/community/logo/update:tooLarge` before decoding it as an image; and **MUST** bound what it decodes — the pixels a picture may claim and the memory its decoding may take — refusing a picture beyond either with `tooLarge`. A few kilobytes can claim tens of thousands of pixels across, and the byte bound alone does not stop them. The payload schema already bounds `data` to 262144 bytes, so a longer `data` fails validation with `malformedRequest`, and in practice it is the decoding bound that refuses with `tooLarge`.
 3. **MUST** decode `data` as an image of `mediaType` and no other type, never by sniffing its content, refusing with `vtc/community/logo/update:notAnImage` what does not decode as that type.
-4. **MUST** re-encode the image: every metadata block removed (EXIF, XMP, ICC profiles, text chunks, comments) and anything after the image's end discarded, the longer side capped at a bound of the community's choosing no larger than 512 pixels, and stored as one of the `LogoMediaType`s. It **MUST NOT** store or serve the bytes it received. A community **SHOULD** store a logo in a lossless format: logos are mostly flat color and sharp edges, which lossy compression visibly degrades.
-5. **MUST** bound how many updates one signer may send in a window, refusing beyond it with `vtc/community/logo/update:rateLimited`.
+4. **MUST** re-encode the image: every metadata block removed (EXIF, XMP, ICC profiles, text chunks, comments) and anything after the image's end discarded, the longer side capped at a bound of the community's choosing no larger than 512 pixels, and stored as one of the `LogoMediaType`s. It **MUST** re-encode deterministically — the same decoded picture always yields the same stored bytes, with no timestamp or other varying content written into them — so that sending the same image twice is recognizably a no-op (item 6). It **MUST NOT** store or serve the bytes it received. A community **SHOULD** store a logo in a lossless format: logos are mostly flat color and sharp edges, which lossy compression visibly degrades.
+5. **MUST** bound how many updates one administrator may send in a window, refusing beyond it with `vtc/community/logo/update:rateLimited`. The bound **MUST** be counted against the identity item 1 resolves the signer to, not the signing key, so that enrolling more delegated keys does not raise it; it counts every request that passes item 1, including one that changes nothing; and it **MUST** be applied before decoding `data`, for the reason item 1 gives.
 6. **MUST** record each change in its audit trail, naming the administrator and the digest of the stored image (never the image), or that the logo was removed, and **MUST** refuse with `unavailable` rather than make an unaudited change when it cannot write the audit record. An update that stores the image already stored, or removes a logo the community does not hold, changes nothing, is not audited, and answers `stored: false`.
 7. **MUST** answer with the logo it now holds — `stored: true` when this request changed it.
 8. Where it serves the stored logo over HTTP, **MUST** serve exactly the stored bytes with the stored media type, **MUST** send `X-Content-Type-Options: nosniff`, and **MUST NOT** require a session or credential or set a cookie to do so: the logo is drawn on pages a visitor sees before signing in. It **SHOULD** send a validator (an `ETag` derived from the digest) and a content security policy that lets the response run nothing if opened directly.
@@ -217,7 +218,7 @@ The community maintainer answers with a document of type `https://trusttasks.org
 ```json
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000306",
-  "type": "https://trusttasks.org/spec/trust-task-error/0.5#response",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6",
   "issuer": "did:example:community",
   "recipient": "did:example:administrator",
   "issuedAt": "2026-11-16T10:05:01Z",
@@ -225,7 +226,11 @@ The community maintainer answers with a document of type `https://trusttasks.org
   "payload": {
     "code": "vtc/community/logo/update:tooLarge",
     "message": "the picture is larger than the community decodes",
-    "retryable": false
+    "retryable": false,
+    "inResponseTo": {
+      "typeUri": "https://trusttasks.org/spec/vtc/community/logo/update/0.1#request",
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000305"
+    }
   }
 }
 ```
@@ -248,7 +253,7 @@ The community is declared with identifier scope `public`: it is the one DID ever
 
 ### Retention
 
-The stored image lives until the next update. The audit record of a change is durable and names the administrator and the digest. A community **MUST NOT** keep the bytes it received after re-encoding.
+The stored image lives until the next update. The audit record of a change is durable and names the administrator and the digest. A community **MUST NOT** keep the bytes it received, or a digest of them, after re-encoding, since either would link the upload to the same file elsewhere — the property [Correlation](#correlation) relies on.
 
 ### Consent/purpose
 
