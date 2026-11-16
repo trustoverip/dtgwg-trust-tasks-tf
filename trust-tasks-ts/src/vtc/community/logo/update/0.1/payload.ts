@@ -7,13 +7,9 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
- * The media type of `data` as sent. The community decodes `data` as this type only, and may store another: it re-encodes.
+ * The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.
  */
 export type LogoMediaType = "image/png" | "image/jpeg" | "image/webp";
-/**
- * The media type of the stored bytes.
- */
-export type LogoMediaType1 = "image/png" | "image/jpeg" | "image/webp";
 
 /**
  * The community's new logo, which the community re-encodes and stores in place of the one it holds — or `null` to remove it. The outer document members are owned by the framework — SPEC §6.3.
@@ -26,7 +22,7 @@ export interface VTCCommunityLogoUpdatePayload {
   ext?: Ext;
 }
 /**
- * An image as the administrator sends it.
+ * An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.
  */
 export interface LogoImage {
   mediaType: LogoMediaType;
@@ -54,14 +50,14 @@ export interface VTCCommunityLogoUpdateResponsePayload {
   ext?: Ext;
 }
 /**
- * The logo as the community stores it: its own re-encoding, never the bytes it received.
+ * The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.
  */
 export interface LogoRef {
   /**
    * Lowercase hex SHA-256 of the stored, re-encoded bytes.
    */
   sha256: string;
-  mediaType: LogoMediaType1;
+  mediaType: LogoMediaType;
   /**
    * The length of the stored bytes.
    */
@@ -160,7 +156,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "LogoImage": {
       "title": "LogoImage",
-      "description": "An image as the administrator sends it.",
+      "description": "An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -169,8 +165,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       ],
       "properties": {
         "mediaType": {
-          "$ref": "#/$defs/LogoMediaType",
-          "description": "The media type of `data` as sent. The community decodes `data` as this type only, and may store another: it re-encodes."
+          "$ref": "#/$defs/LogoMediaType"
         },
         "data": {
           "type": "string",
@@ -211,7 +206,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "LogoRef": {
       "title": "LogoRef",
-      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received.",
+      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -228,8 +223,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
         },
         "mediaType": {
-          "$ref": "#/$defs/LogoMediaType",
-          "description": "The media type of the stored bytes."
+          "$ref": "#/$defs/LogoMediaType"
         },
         "size": {
           "type": "integer",

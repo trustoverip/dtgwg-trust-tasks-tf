@@ -37,7 +37,7 @@
     },
     "LogoImage": {
       "title": "LogoImage",
-      "description": "An image as the administrator sends it.",
+      "description": "An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -46,8 +46,7 @@
       ],
       "properties": {
         "mediaType": {
-          "$ref": "#/$defs/LogoMediaType",
-          "description": "The media type of `data` as sent. The community decodes `data` as this type only, and may store another: it re-encodes."
+          "$ref": "#/$defs/LogoMediaType"
         },
         "data": {
           "type": "string",
@@ -60,7 +59,7 @@
     },
     "LogoRef": {
       "title": "LogoRef",
-      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received.",
+      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -77,8 +76,7 @@
           "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
         },
         "mediaType": {
-          "$ref": "#/$defs/LogoMediaType",
-          "description": "The media type of the stored bytes."
+          "$ref": "#/$defs/LogoMediaType"
         },
         "size": {
           "type": "integer",
