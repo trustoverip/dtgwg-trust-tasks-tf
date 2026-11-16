@@ -27,7 +27,7 @@ issuedAtRequirement:
 maxDocumentBytes:
   request: 360448
   rationale: >-
-    An image is at most 262144 bytes, which base64url-encodes to 349526 characters; the remaining 10 KiB covers the envelope, the media type and a proof — the same derivation as vtc/directory/images/upload, so a logo never needs a chunked transfer over a 1 MiB mediator message. The response carries a digest and four small members, and stays within the framework default.
+    An image is at most 262144 bytes, which base64url-encodes to 349526 characters; the remaining 10 KiB covers the envelope, the media type and a proof — the same derivation as vtc/directory/images/upload, so a logo never needs a chunked transfer over a 1 MiB mediator message. The response carries a digest, four small members and a URL, and stays within the framework default.
 sideEffects:
   level: mutating
   rationale: >-
@@ -37,7 +37,7 @@ exposure:
   ingests: metadata
   actsAsSubject: false
   rationale: >-
-    The request carries an image the administrator chose to represent the community; the response is its digest, media type, size and dimensions. No personal data is expected — a logo is the community's own mark.
+    The request carries an image the administrator chose to represent the community; the response is its digest, media type, size, dimensions and the URL the community serves it at. No personal data is expected — a logo is the community's own mark.
 retention:
   class: durable
   rationale: >-
@@ -53,6 +53,7 @@ errorCodes:
     meaning: The administrator the signer resolves to has sent as many updates as the community allows in its current window. Nothing was stored.
     retryable: true
 related:
+  - vtc/community/logo/show
   - vtc/community/branding/update
   - vtc/community/profile/update
   - vtc/community/theme/update
@@ -61,9 +62,9 @@ related:
 
 ## Abstract
 
-The **VTC Community — Logo — Update** Trust Task is how a community gets a logo it serves itself. An administrator sends an image; the community **re-encodes** it — dropping every metadata block, capping its dimensions and choosing the stored format — stores it in place of the logo it held, and answers the stored image's digest, media type, size and dimensions. Sending `image: null` removes the stored logo.
+The **VTC Community — Logo — Update** Trust Task is how a community gets a logo it serves itself. An administrator sends an image; the community **re-encodes** it — dropping every metadata block, capping its dimensions and choosing the stored format — stores it in place of the logo it held, and answers the stored image's digest, media type, size, dimensions and the URL it serves it at. Sending `remove: true` instead of an image removes the stored logo.
 
-A community's pages are commonly served under a content security policy that admits images from their own origin only. A logo held at some other address then cannot be drawn on them at all, and a community that has no other place on its own origin to put a file has no logo. The community serving the logo it stored is what this task exists for. How a community serves it — at which path, and how its pages learn that path — is its own; the requirements on serving are in [item 8](#conformance).
+A community's pages are commonly served under a content security policy that admits images from their own origin only. A logo held at some other address then cannot be drawn on them at all, and a community that has no other place on its own origin to put a file has no logo. The community serving the logo it stored is what this task exists for. Which path a community serves it at is its own choice, but it is never something a client has to know in advance: the community names it as the logo's `url` in this task's response and in [`vtc/community/logo/show`](../../show/0.1/spec.md), which anyone may send to learn the logo the community holds. The requirements on serving are in [item 9](#conformance).
 
 This task stores an image. It does not change the profile's `logoUrl` ([`vtc/community/profile/update`](../../../profile/update/0.1/spec.md)), which remains an address a community may publish for readers that fetch from anywhere, nor the `logoUrl` in the join manifest ([`vtc/community/branding/update`](../../../branding/update/0.1/spec.md)), which a prospective applicant's client fetches. A community that holds a stored logo and either address decides which its own pages draw; a page served under a policy that admits images from its own origin only can draw the stored logo and no other.
 
@@ -84,11 +85,12 @@ A conforming **community** (`recipient`):
 1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the identity it acts for — to its access-control entry at execution time. It **MUST** make this check before decoding `data`: decoding is the expensive step, and is not a service for anyone who asks.
 2. **MUST** refuse `data` that decodes to more than 262144 bytes with `vtc/community/logo/update:tooLarge` before decoding it as an image; and **MUST** bound what it decodes — the pixels a picture may claim and the memory its decoding may take — refusing a picture beyond either with `tooLarge`. A few kilobytes can claim tens of thousands of pixels across, and the byte bound alone does not stop them. The payload schema already bounds `data` to 262144 bytes, so a longer `data` fails validation with `malformedRequest`, and in practice it is the decoding bound that refuses with `tooLarge`.
 3. **MUST** decode `data` as an image of `mediaType` and no other type, never by sniffing its content, refusing with `vtc/community/logo/update:notAnImage` what does not decode as that type.
-4. **MUST** re-encode the image: every metadata block removed (EXIF, XMP, ICC profiles, text chunks, comments) and anything after the image's end discarded, the longer side capped at a bound of the community's choosing no larger than 512 pixels, and stored as one of the `LogoMediaType`s. It **MUST** re-encode deterministically — the same decoded picture always yields the same stored bytes, with no timestamp or other varying content written into them — so that sending the same image twice is recognizably a no-op (item 6). It **MUST NOT** store or serve the bytes it received. A community **SHOULD** store a logo in a lossless format: logos are mostly flat color and sharp edges, which lossy compression visibly degrades.
+4. **MUST** re-encode the image: every metadata block removed (EXIF, XMP, ICC profiles, text chunks, comments) and anything after the image's end discarded, the longer side capped at a bound of the community's choosing no larger than 512 pixels, and stored as one of the `LogoMediaType`s. It **MUST** re-encode deterministically — the same decoded picture always yields the same stored bytes, with no timestamp or other varying content written into them — so that sending the same image twice is recognizably a no-op (item 7). It **MUST NOT** store or serve the bytes it received. A community **SHOULD** store a logo in a lossless format: logos are mostly flat color and sharp edges, which lossy compression visibly degrades.
 5. **MUST** bound how many updates one administrator may send in a window, refusing beyond it with `vtc/community/logo/update:rateLimited`. The bound **MUST** be counted against the identity item 1 resolves the signer to, not the signing key, so that enrolling more delegated keys does not raise it; it counts every request that passes item 1, including one that changes nothing; and it **MUST** be applied before decoding `data`, for the reason item 1 gives.
-6. **MUST** record each change in its audit trail, naming the administrator and the digest of the stored image (never the image), or that the logo was removed, and **MUST** refuse with `unavailable` rather than make an unaudited change when it cannot write the audit record. An update that stores the image already stored, or removes a logo the community does not hold, changes nothing, is not audited, and answers `stored: false`.
-7. **MUST** answer with the logo it now holds — `stored: true` when this request changed it.
-8. Where it serves the stored logo over HTTP, **MUST** serve exactly the stored bytes with the stored media type, **MUST** send `X-Content-Type-Options: nosniff`, and **MUST NOT** require a session or credential or set a cookie to do so: the logo is drawn on pages a visitor sees before signing in. It **SHOULD** send a validator (an `ETag` derived from the digest) and a content security policy that lets the response run nothing if opened directly.
+6. **MUST** refuse a request that carries neither `image` nor `remove: true`, or both, as `malformedRequest` — the payload schema does — and **MUST NOT** read a missing or `null` image as removal.
+7. **MUST** record each change in its audit trail, naming the administrator and the digest of the stored image (never the image), or that the logo was removed, and **MUST** refuse with `unavailable` rather than make an unaudited change when it cannot write the audit record. An update that stores the image already stored, or removes a logo the community does not hold, changes nothing, is not audited, and answers `stored: false`.
+8. **MUST** answer with the logo it now holds — `stored: true` when this request changed it.
+9. Where it serves the stored logo over HTTP, **MUST** name the address as the logo's `url` — an absolute `https` URL — in every `LogoRef` it answers, here and in `vtc/community/logo/show`; **SHOULD** keep that URL the same across updates, so a page can embed it once; **MUST** serve exactly the stored bytes there with the stored media type, **MUST** send `X-Content-Type-Options: nosniff`, and **MUST NOT** require a session or credential or set a cookie to do so: the logo is drawn on pages a visitor sees before signing in. It **SHOULD** send a validator (an `ETag` derived from the digest) and a content security policy that lets the response run nothing if opened directly.
 
 A conforming **client** — an editor that sends this task:
 
@@ -103,10 +105,12 @@ A logo confers no authority and needs no other administrator's consent. The same
 
 ## Definitions
 
-- **`image`** — the new logo: a `LogoImage` of `mediaType` and `data`, or `null` to remove the stored one.
+- **`image`** — the new logo: a `LogoImage` of `mediaType` and `data`. Absent when the request removes the logo.
+- **`remove`** — `true` to remove the stored logo. A request carries exactly one of `image` and `remove`; removal is never an absent or `null` image, so a request whose image was never filled in fails validation rather than deleting the logo.
 - **`mediaType`** — the media type of `data` as sent, one of the `LogoMediaType`s. The community decodes `data` as this type only.
 - **`data`** — the image, base64url without padding, at most 262144 bytes decoded.
-- **`logo`** — the `LogoRef` the community holds after the request, or `null`: the SHA-256, media type, size and pixel dimensions of the stored re-encoding.
+- **`logo`** — the `LogoRef` the community holds after the request, or `null`: the SHA-256, media type, size and pixel dimensions of the stored re-encoding, and the `url` it serves it at.
+- **`url`** — the absolute `https` URL at which the community serves the stored bytes to anyone, without a credential. Present whenever it serves the logo over HTTP. A client draws the logo from it and compares `sha256` to tell whether the logo changed.
 - **`stored`** — whether this request changed the stored logo.
 - **`updatedAt`** — when the stored logo was last replaced or removed.
 
@@ -154,7 +158,7 @@ The image is abbreviated; a real one is up to 349526 characters.
   "issuedAt": "2026-11-16T11:00:00Z",
   "threadId": "urn:uuid:00000000-0000-4000-8000-0000000303ff",
   "payload": {
-    "image": null
+    "remove": true
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -187,7 +191,8 @@ The community maintainer answers with a document of type `https://trusttasks.org
       "mediaType": "image/png",
       "size": 18342,
       "width": 512,
-      "height": 256
+      "height": 256,
+      "url": "https://community.example/logo"
     },
     "stored": true,
     "updatedAt": "2026-11-16T10:00:01Z"
@@ -243,7 +248,7 @@ The request carries an image the administrator chose as the community's mark. It
 
 - **Only raster types.** SVG is excluded by the schema, not by a check a consumer might skip: an SVG is a document that can carry script, styles and references to other resources, and served from the community's origin and opened directly it would run there. A client rasterizes one before sending it (client item 2).
 - **Decode bounds before decoding** (item 2). A small file can claim enormous dimensions, so the byte bound alone does not bound the memory decoding takes.
-- **Re-encoding** (items 3 and 4). The stored bytes are the community's own output from decoded pixels, so a file that is valid as an image and as something else — a polyglot with HTML or script after the image data — does not survive, nor does metadata an editor or camera embedded. Decoding strictly as the declared type, and serving with the stored type and `nosniff` (item 8), keep any client from reading the bytes as something else.
+- **Re-encoding** (items 3 and 4). The stored bytes are the community's own output from decoded pixels, so a file that is valid as an image and as something else — a polyglot with HTML or script after the image data — does not survive, nor does metadata an editor or camera embedded. Decoding strictly as the declared type, and serving with the stored type and `nosniff` (item 9), keep any client from reading the bytes as something else.
 
 The response carries a digest, a media type, a size and dimensions. The audit record carries the digest, not the image, so the audit trail does not grow by up to 256 KiB a change and still identifies exactly what was stored.
 

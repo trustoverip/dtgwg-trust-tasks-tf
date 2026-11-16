@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn request_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000303\",\n  \"type\": \"https://trusttasks.org/spec/vtc/community/logo/update/0.1#request\",\n  \"issuer\": \"did:example:administrator\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-11-16T11:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000303ff\",\n  \"payload\": {\n    \"image\": null\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:administrator#key-1\",\n    \"created\": \"2026-11-16T11:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000303\",\n  \"type\": \"https://trusttasks.org/spec/vtc/community/logo/update/0.1#request\",\n  \"issuer\": \"did:example:administrator\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-11-16T11:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000303ff\",\n  \"payload\": {\n    \"remove\": true\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:administrator#key-1\",\n    \"created\": \"2026-11-16T11:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -26,7 +26,7 @@ fn request_example_2() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000302\",\n  \"type\": \"https://trusttasks.org/spec/vtc/community/logo/update/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:administrator\",\n  \"issuedAt\": \"2026-11-16T10:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000301ff\",\n  \"payload\": {\n    \"logo\": {\n      \"sha256\": \"3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b\",\n      \"mediaType\": \"image/png\",\n      \"size\": 18342,\n      \"width\": 512,\n      \"height\": 256\n    },\n    \"stored\": true,\n    \"updatedAt\": \"2026-11-16T10:00:01Z\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000302\",\n  \"type\": \"https://trusttasks.org/spec/vtc/community/logo/update/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:administrator\",\n  \"issuedAt\": \"2026-11-16T10:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000301ff\",\n  \"payload\": {\n    \"logo\": {\n      \"sha256\": \"3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b\",\n      \"mediaType\": \"image/png\",\n      \"size\": 18342,\n      \"width\": 512,\n      \"height\": 256,\n      \"url\": \"https://community.example/logo\"\n    },\n    \"stored\": true,\n    \"updatedAt\": \"2026-11-16T10:00:01Z\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,12 +53,24 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `image` — removing the logo is an explicit `null`, never an omitted member.",
+            "Neither `image` nor `remove` — a request either sets a logo or removes it; an empty payload, such as a Go `Payload{}` whose `Image` was never set, deletes nothing.",
             "{}",
         ),
         (
+            "`image: null` — removal is `remove: true`, never a null image.",
+            "{\n  \"image\": null\n}",
+        ),
+        (
+            "Both `image` and `remove` — a request does one or the other.",
+            "{\n  \"image\": {\n    \"data\": \"iVBORw0KGgo\",\n    \"mediaType\": \"image/png\"\n  },\n  \"remove\": true\n}",
+        ),
+        (
+            "`remove: false` — only `true` is meaningful; a request that sets a logo omits `remove`.",
+            "{\n  \"image\": {\n    \"data\": \"iVBORw0KGgo\",\n    \"mediaType\": \"image/png\"\n  },\n  \"remove\": false\n}",
+        ),
+        (
             "Unknown top-level member — the logo is the only thing this task sets; a URL goes through vtc/community/profile/update.",
-            "{\n  \"image\": null,\n  \"logoUrl\": \"https://example.com/logo.png\"\n}",
+            "{\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"remove\": true\n}",
         ),
         (
             "SVG is not a logo media type — it is a document that can carry script and fetch resources, so a client rasterizes it before sending.",
@@ -77,7 +89,7 @@ fn rejects_invalid_examples() {
             "{\n  \"image\": {\n    \"data\": \"iVBORw0KGgo\",\n    \"mediaType\": \"image/png\",\n    \"width\": 4096\n  }\n}",
         ),
         (
-            "Empty `data` — an image has at least one byte; removal is `image: null`.",
+            "Empty `data` — an image has at least one byte; removal is `remove: true`.",
             "{\n  \"image\": {\n    \"data\": \"\",\n    \"mediaType\": \"image/png\"\n  }\n}",
         ),
     ];
@@ -115,6 +127,10 @@ fn rejects_invalid_response_examples() {
         (
             "A stored logo larger than the 512-pixel bound — the community caps the longer side when it re-encodes.",
             "{\n  \"logo\": {\n    \"height\": 256,\n    \"mediaType\": \"image/png\",\n    \"sha256\": \"3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b\",\n    \"size\": 18342,\n    \"width\": 1024\n  },\n  \"stored\": true\n}",
+        ),
+        (
+            "A logo `url` that is not `https` — the logo is drawn on pages served over https, and a plain-http address would be blocked as mixed content.",
+            "{\n  \"logo\": {\n    \"height\": 256,\n    \"mediaType\": \"image/png\",\n    \"sha256\": \"3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b\",\n    \"size\": 18342,\n    \"url\": \"http://community.example/logo\",\n    \"width\": 512\n  },\n  \"stored\": true\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

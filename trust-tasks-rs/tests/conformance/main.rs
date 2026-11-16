@@ -2551,6 +2551,9 @@ mod vtc {
             }
         }
         mod logo {
+            mod show {
+                mod v0_1;
+            }
             mod update {
                 mod v0_1;
             }

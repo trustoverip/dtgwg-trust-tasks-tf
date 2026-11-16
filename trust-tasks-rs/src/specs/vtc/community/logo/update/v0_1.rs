@@ -278,6 +278,9 @@ pub struct LogoRef {
     pub sha256: LogoRefSha256,
     ///The length of the stored bytes.
     pub size: ::std::num::NonZeroU64,
+    ///The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub url: ::std::option::Option<::std::string::String>,
     ///The stored image's width in pixels.
     pub width: ::std::num::NonZeroU64,
 }
@@ -347,21 +350,24 @@ impl<'de> ::serde::Deserialize<'de> for LogoRefSha256 {
             })
     }
 }
-///The community's new logo, which the community re-encodes and stores in place of the one it holds — or `null` to remove it. The outer document members are owned by the framework — SPEC §6.3.
+///The community's new logo, which the community re-encodes and stores in place of the one it holds — or `remove: true` to remove it. Exactly one of `image` and `remove` is present. The outer document members are owned by the framework — SPEC §6.3.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
-pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    ///The new logo as sent, or `null` to remove the stored one. Removing is an explicit `null`, never an omitted member.
-    pub image: ::std::option::Option<LogoImage>,
-}
-impl Payload {
-    pub fn builder() -> builder::Payload {
-        Default::default()
-    }
+pub enum Payload {
+    Variant0 {
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        ///The new logo as sent. Absent when the request removes the stored logo.
+        image: LogoImage,
+    },
+    Variant1 {
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        ///Remove the stored logo. Only `true` is meaningful, so only `true` is accepted; a request that sets a logo omits the member. Removal is a member of its own rather than `image: null`, so that a request whose `image` was never set fails validation instead of deleting the logo.
+        remove: bool,
+    },
 }
 ///The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.
 ///
@@ -450,6 +456,10 @@ pub mod builder {
         media_type: ::std::result::Result<super::LogoMediaType, ::std::string::String>,
         sha256: ::std::result::Result<super::LogoRefSha256, ::std::string::String>,
         size: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+        url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
         width: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
     }
     impl ::std::default::Default for LogoRef {
@@ -459,6 +469,7 @@ pub mod builder {
                 media_type: Err("no value supplied for media_type".to_string()),
                 sha256: Err("no value supplied for sha256".to_string()),
                 size: Err("no value supplied for size".to_string()),
+                url: Ok(Default::default()),
                 width: Err("no value supplied for width".to_string()),
             }
         }
@@ -504,6 +515,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for size: {e}"));
             self
         }
+        pub fn url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for url: {e}"));
+            self
+        }
         pub fn width<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::num::NonZeroU64>,
@@ -523,6 +544,7 @@ pub mod builder {
                 media_type: value.media_type?,
                 sha256: value.sha256?,
                 size: value.size?,
+                url: value.url?,
                 width: value.width?,
             })
         }
@@ -534,60 +556,8 @@ pub mod builder {
                 media_type: Ok(value.media_type),
                 sha256: Ok(value.sha256),
                 size: Ok(value.size),
+                url: Ok(value.url),
                 width: Ok(value.width),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct Payload {
-        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        image:
-            ::std::result::Result<::std::option::Option<super::LogoImage>, ::std::string::String>,
-    }
-    impl ::std::default::Default for Payload {
-        fn default() -> Self {
-            Self {
-                ext: Ok(Default::default()),
-                image: Err("no value supplied for image".to_string()),
-            }
-        }
-    }
-    impl Payload {
-        pub fn ext<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ext = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ext: {e}"));
-            self
-        }
-        pub fn image<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::LogoImage>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.image = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for image: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Payload> for super::Payload {
-        type Error = super::error::ConversionError;
-        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                ext: value.ext?,
-                image: value.image?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Payload> for Payload {
-        fn from(value: super::Payload) -> Self {
-            Self {
-                ext: Ok(value.ext),
-                image: Ok(value.image),
             }
         }
     }
@@ -684,7 +654,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(360448usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LogoImage\":{\"additionalProperties\":false,\"description\":\"An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.\",\"properties\":{\"data\":{\"description\":\"The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded.\",\"maxLength\":349526,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"mediaType\":{\"$ref\":\"#/$defs/LogoMediaType\"}},\"required\":[\"mediaType\",\"data\"],\"title\":\"LogoImage\",\"type\":\"object\"},\"LogoMediaType\":{\"description\":\"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\"],\"title\":\"LogoMediaType\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/community/logo/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The community's new logo, which the community re-encodes and stores in place of the one it holds — or `null` to remove it. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"image\":{\"description\":\"The new logo as sent, or `null` to remove the stored one. Removing is an explicit `null`, never an omitted member.\",\"oneOf\":[{\"$ref\":\"#/$defs/LogoImage\"},{\"type\":\"null\"}]}},\"required\":[\"image\"],\"title\":\"VTC Community — Logo — Update — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LogoImage\":{\"additionalProperties\":false,\"description\":\"An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.\",\"properties\":{\"data\":{\"description\":\"The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded.\",\"maxLength\":349526,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"mediaType\":{\"$ref\":\"#/$defs/LogoMediaType\"}},\"required\":[\"mediaType\",\"data\"],\"title\":\"LogoImage\",\"type\":\"object\"},\"LogoMediaType\":{\"description\":\"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\"],\"title\":\"LogoMediaType\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/community/logo/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The community's new logo, which the community re-encodes and stores in place of the one it holds — or `remove: true` to remove it. Exactly one of `image` and `remove` is present. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"required\":[\"image\"]},{\"required\":[\"remove\"]}],\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"image\":{\"$ref\":\"#/$defs/LogoImage\",\"description\":\"The new logo as sent. Absent when the request removes the stored logo.\"},\"remove\":{\"const\":true,\"description\":\"Remove the stored logo. Only `true` is meaningful, so only `true` is accepted; a request that sets a logo omits the member. Removal is a member of its own rather than `image: null`, so that a request whose `image` was never set fails validation instead of deleting the logo.\",\"type\":\"boolean\"}},\"title\":\"VTC Community — Logo — Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -694,7 +664,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LogoMediaType\":{\"description\":\"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\"],\"title\":\"LogoMediaType\",\"type\":\"string\"},\"LogoRef\":{\"additionalProperties\":false,\"description\":\"The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.\",\"properties\":{\"height\":{\"description\":\"The stored image's height in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"},\"mediaType\":{\"$ref\":\"#/$defs/LogoMediaType\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"The length of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"width\":{\"description\":\"The stored image's width in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sha256\",\"mediaType\",\"size\",\"width\",\"height\"],\"title\":\"LogoRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logo\":{\"description\":\"The logo the community now holds, or `null` when it holds none.\",\"oneOf\":[{\"$ref\":\"#/$defs/LogoRef\"},{\"type\":\"null\"}]},\"stored\":{\"description\":\"True when this request changed the stored logo; false when it equals the one already stored, or removed a logo the community did not hold.\",\"type\":\"boolean\"},\"updatedAt\":{\"description\":\"When the stored logo was last replaced or removed. Absent when the community has never held one.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"logo\",\"stored\"],\"title\":\"VTC Community — Logo — Update — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LogoMediaType\":{\"description\":\"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\"],\"title\":\"LogoMediaType\",\"type\":\"string\"},\"LogoRef\":{\"additionalProperties\":false,\"description\":\"The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.\",\"properties\":{\"height\":{\"description\":\"The stored image's height in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"},\"mediaType\":{\"$ref\":\"#/$defs/LogoMediaType\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"The length of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"width\":{\"description\":\"The stored image's width in pixels.\",\"maximum\":512,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sha256\",\"mediaType\",\"size\",\"width\",\"height\"],\"title\":\"LogoRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logo\":{\"description\":\"The logo the community now holds, or `null` when it holds none.\",\"oneOf\":[{\"$ref\":\"#/$defs/LogoRef\"},{\"type\":\"null\"}]},\"stored\":{\"description\":\"True when this request changed the stored logo; false when it equals the one already stored, or removed a logo the community did not hold.\",\"type\":\"boolean\"},\"updatedAt\":{\"description\":\"When the stored logo was last replaced or removed. Absent when the community has never held one.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"logo\",\"stored\"],\"title\":\"VTC Community — Logo — Update — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

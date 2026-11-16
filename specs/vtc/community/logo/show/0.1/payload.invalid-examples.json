@@ -1,0 +1,50 @@
+[
+  {
+    "note": "`includeData` as a string — it is a boolean.",
+    "payload": {
+      "includeData": "yes"
+    }
+  },
+  {
+    "note": "Unknown member — the community holds one logo, so there is nothing to select.",
+    "payload": {
+      "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with no `logo` — a community that holds none answers `logo: null`, so a caller can tell no logo from a malformed answer.",
+    "payload": {
+      "updatedAt": "2026-11-16T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Padded or standard base64 in `data` — it is base64url without padding.",
+    "payload": {
+      "logo": {
+        "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        "mediaType": "image/png",
+        "size": 18342,
+        "width": 512,
+        "height": 256,
+        "url": "https://community.example/logo"
+      },
+      "data": "iVBORw0KGgo+/A=="
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A logo `url` that is not `https` — the logo is drawn on pages served over https, and a plain-http address would be blocked as mixed content.",
+    "payload": {
+      "logo": {
+        "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        "mediaType": "image/png",
+        "size": 18342,
+        "width": 512,
+        "height": 256,
+        "url": "http://community.example/logo"
+      }
+    }
+  }
+]

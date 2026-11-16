@@ -3585,6 +3585,9 @@ export import VtcCommunityJoinDiscoveryShow_v0_1 = _VtcCommunityJoinDiscoverySho
 import * as _VtcCommunityJoinDiscoveryUpdate_v0_1 from "./vtc/community/join-discovery/update/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcCommunityJoinDiscoveryUpdate_v0_1 = _VtcCommunityJoinDiscoveryUpdate_v0_1;
+import * as _VtcCommunityLogoShow_v0_1 from "./vtc/community/logo/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcCommunityLogoShow_v0_1 = _VtcCommunityLogoShow_v0_1;
 import * as _VtcCommunityLogoUpdate_v0_1 from "./vtc/community/logo/update/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcCommunityLogoUpdate_v0_1 = _VtcCommunityLogoUpdate_v0_1;

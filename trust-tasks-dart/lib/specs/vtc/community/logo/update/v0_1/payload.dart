@@ -63,6 +63,7 @@ class LogoRef {
     required this.size,
     required this.width,
     required this.height,
+    this.url,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -72,6 +73,7 @@ class LogoRef {
         size: json['size'] as int,
         width: json['width'] as int,
         height: json['height'] as int,
+        url: json['url'] as String?,
       );
 
   /// Lowercase hex SHA-256 of the stored, re-encoded bytes.
@@ -87,6 +89,13 @@ class LogoRef {
   /// The stored image's height in pixels.
   final int height;
 
+  /// The absolute `https` URL at which the community serves exactly these bytes, with
+  /// this media type, to anyone and without a credential. Present whenever the community
+  /// serves the stored logo over HTTP; absent when it serves it no other way than
+  /// vtc/community/logo/show with `includeData`. A client draws the logo from here and
+  /// compares `sha256`, not the URL, to tell whether it changed.
+  final String? url;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'sha256': sha256,
@@ -94,6 +103,7 @@ class LogoRef {
         'size': size,
         'width': width,
         'height': height,
+        if (url != null) 'url': url!,
       };
 }
 
@@ -142,28 +152,38 @@ class Response {
 }
 
 /// The community's new logo, which the community re-encodes and stores in place of the
-/// one it holds — or `null` to remove it. The outer document members are owned by the
-/// framework — SPEC §6.3.
+/// one it holds — or `remove: true` to remove it. Exactly one of `image` and `remove`
+/// is present. The outer document members are owned by the framework — SPEC §6.3.
 class Payload {
   const Payload({
-    required this.image,
+    this.image,
+    this.remove,
     this.ext,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Payload.fromJson(Map<String, dynamic> json) => Payload(
-        image: json['image'],
+        image: json['image'] == null
+            ? null
+            : LogoImage.fromJson(json['image'] as Map<String, dynamic>),
+        remove: json['remove'] as bool?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
-  /// The new logo as sent, or `null` to remove the stored one. Removing is an explicit
-  /// `null`, never an omitted member.
-  final Object? image;
+  /// The new logo as sent. Absent when the request removes the stored logo.
+  final LogoImage? image;
+
+  /// Remove the stored logo. Only `true` is meaningful, so only `true` is accepted; a
+  /// request that sets a logo omits the member. Removal is a member of its own rather
+  /// than `image: null`, so that a request whose `image` was never set fails validation
+  /// instead of deleting the logo.
+  final bool? remove;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'image': image,
+        if (image != null) 'image': image!.toJson(),
+        if (remove != null) 'remove': remove!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -202,11 +222,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/logo/update/0.1","title":"VTC Community — Logo — Update — payload","description":"The community\'s new logo, which the community re-encodes and stores in place of the one it holds — or `null` to remove it. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["image"],"properties":{"image":{"description":"The new logo as sent, or `null` to remove the stored one. Removing is an explicit `null`, never an omitted member.","oneOf":[{"\$ref":"#/\$defs/LogoImage"},{"type":"null"}]},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"LogoMediaType":{"title":"LogoMediaType","description":"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.","type":"string","enum":["image/png","image/jpeg","image/webp"]},"LogoImage":{"title":"LogoImage","description":"An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.","type":"object","additionalProperties":false,"required":["mediaType","data"],"properties":{"mediaType":{"\$ref":"#/\$defs/LogoMediaType"},"data":{"type":"string","minLength":1,"maxLength":349526,"pattern":"^[A-Za-z0-9_-]+\$","description":"The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/logo/update/0.1","title":"VTC Community — Logo — Update — payload","description":"The community\'s new logo, which the community re-encodes and stores in place of the one it holds — or `remove: true` to remove it. Exactly one of `image` and `remove` is present. The outer document members are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"properties":{"image":{"\$ref":"#/\$defs/LogoImage","description":"The new logo as sent. Absent when the request removes the stored logo."},"remove":{"type":"boolean","const":true,"description":"Remove the stored logo. Only `true` is meaningful, so only `true` is accepted; a request that sets a logo omits the member. Removal is a member of its own rather than `image: null`, so that a request whose `image` was never set fails validation instead of deleting the logo."},"ext":{"\$ref":"#/\$defs/Ext"}},"oneOf":[{"required":["image"]},{"required":["remove"]}],"\$defs":{"LogoMediaType":{"title":"LogoMediaType","description":"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.","type":"string","enum":["image/png","image/jpeg","image/webp"]},"LogoImage":{"title":"LogoImage","description":"An image as the administrator sends it. `mediaType` is the type of `data` as sent: the community decodes `data` as that type only, and may store another, since it re-encodes.","type":"object","additionalProperties":false,"required":["mediaType","data"],"properties":{"mediaType":{"\$ref":"#/\$defs/LogoMediaType"},"data":{"type":"string","minLength":1,"maxLength":349526,"pattern":"^[A-Za-z0-9_-]+\$","description":"The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"LogoMediaType":{"title":"LogoMediaType","description":"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.","type":"string","enum":["image/png","image/jpeg","image/webp"]},"LogoRef":{"title":"LogoRef","description":"The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.","type":"object","additionalProperties":false,"required":["sha256","mediaType","size","width","height"],"properties":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}\$","description":"Lowercase hex SHA-256 of the stored, re-encoded bytes."},"mediaType":{"\$ref":"#/\$defs/LogoMediaType"},"size":{"type":"integer","minimum":1,"maximum":262144,"description":"The length of the stored bytes."},"width":{"type":"integer","minimum":1,"maximum":512,"description":"The stored image\'s width in pixels."},"height":{"type":"integer","minimum":1,"maximum":512,"description":"The stored image\'s height in pixels."}}},"Response":{"\$anchor":"response","title":"VTC Community — Logo — Update — response payload","description":"The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.","type":"object","additionalProperties":false,"required":["logo","stored"],"properties":{"logo":{"description":"The logo the community now holds, or `null` when it holds none.","oneOf":[{"\$ref":"#/\$defs/LogoRef"},{"type":"null"}]},"stored":{"type":"boolean","description":"True when this request changed the stored logo; false when it equals the one already stored, or removed a logo the community did not hold."},"updatedAt":{"type":"string","format":"date-time","description":"When the stored logo was last replaced or removed. Absent when the community has never held one."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"LogoMediaType":{"title":"LogoMediaType","description":"The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.","type":"string","enum":["image/png","image/jpeg","image/webp"]},"LogoRef":{"title":"LogoRef","description":"The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.","type":"object","additionalProperties":false,"required":["sha256","mediaType","size","width","height"],"properties":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}\$","description":"Lowercase hex SHA-256 of the stored, re-encoded bytes."},"mediaType":{"\$ref":"#/\$defs/LogoMediaType"},"size":{"type":"integer","minimum":1,"maximum":262144,"description":"The length of the stored bytes."},"width":{"type":"integer","minimum":1,"maximum":512,"description":"The stored image\'s width in pixels."},"height":{"type":"integer","minimum":1,"maximum":512,"description":"The stored image\'s height in pixels."},"url":{"type":"string","format":"uri","pattern":"^https://","maxLength":2048,"description":"The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed."}}},"Response":{"\$anchor":"response","title":"VTC Community — Logo — Update — response payload","description":"The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.","type":"object","additionalProperties":false,"required":["logo","stored"],"properties":{"logo":{"description":"The logo the community now holds, or `null` when it holds none.","oneOf":[{"\$ref":"#/\$defs/LogoRef"},{"type":"null"}]},"stored":{"type":"boolean","description":"True when this request changed the stored logo; false when it equals the one already stored, or removed a logo the community did not hold."},"updatedAt":{"type":"string","format":"date-time","description":"When the stored logo was last replaced or removed. Absent when the community has never held one."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

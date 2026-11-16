@@ -1,12 +1,38 @@
 [
   {
-    "note": "Missing `image` — removing the logo is an explicit `null`, never an omitted member.",
+    "note": "Neither `image` nor `remove` — a request either sets a logo or removes it; an empty payload, such as a Go `Payload{}` whose `Image` was never set, deletes nothing.",
     "payload": {}
+  },
+  {
+    "note": "`image: null` — removal is `remove: true`, never a null image.",
+    "payload": {
+      "image": null
+    }
+  },
+  {
+    "note": "Both `image` and `remove` — a request does one or the other.",
+    "payload": {
+      "image": {
+        "mediaType": "image/png",
+        "data": "iVBORw0KGgo"
+      },
+      "remove": true
+    }
+  },
+  {
+    "note": "`remove: false` — only `true` is meaningful; a request that sets a logo omits `remove`.",
+    "payload": {
+      "image": {
+        "mediaType": "image/png",
+        "data": "iVBORw0KGgo"
+      },
+      "remove": false
+    }
   },
   {
     "note": "Unknown top-level member — the logo is the only thing this task sets; a URL goes through vtc/community/profile/update.",
     "payload": {
-      "image": null,
+      "remove": true,
       "logoUrl": "https://example.com/logo.png"
     }
   },
@@ -48,7 +74,7 @@
     }
   },
   {
-    "note": "Empty `data` — an image has at least one byte; removal is `image: null`.",
+    "note": "Empty `data` — an image has at least one byte; removal is `remove: true`.",
     "payload": {
       "image": {
         "mediaType": "image/png",
@@ -73,6 +99,21 @@
         "size": 18342,
         "width": 1024,
         "height": 256
+      },
+      "stored": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A logo `url` that is not `https` — the logo is drawn on pages served over https, and a plain-http address would be blocked as mixed content.",
+    "payload": {
+      "logo": {
+        "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        "mediaType": "image/png",
+        "size": 18342,
+        "width": 512,
+        "height": 256,
+        "url": "http://community.example/logo"
       },
       "stored": true
     }
