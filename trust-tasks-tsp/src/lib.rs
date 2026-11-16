@@ -46,7 +46,9 @@
 //! a messaging SDK holding the keys and relationships — uses [`Envelope`]
 //! instead: [`Envelope::new`] + [`Envelope::to_bytes`] give the plaintext to
 //! seal, and [`Envelope::from_bytes`] checks the envelope `type` of the
-//! plaintext its stack opened and yields the `document` as received. That
+//! plaintext its stack opened and yields the `document` as received. Binding
+//! `tsp/0.2` §2.1's `deliveryId`, by which a producer requests a delivery
+//! receipt, is [`Envelope::with_delivery_id`] / [`Envelope::delivery_id`]. That
 //! skips the checks [`unpack_trust_task`] makes on the TSP message itself
 //! (Direct carriage, cleartext sender and receiver VIDs), which are then the
 //! application's stack's to make, and every SPEC §7.2 consumer check.
@@ -109,7 +111,7 @@ mod handler;
 pub mod inbound;
 mod pack;
 
-pub use envelope::{Envelope, ENVELOPE_TYPE};
+pub use envelope::{Envelope, InvalidDeliveryId, ENVELOPE_TYPE, MAX_DELIVERY_ID_LEN};
 pub use error::TspError;
 pub use handler::{TspHandler, BINDING_URI};
 pub use inbound::TspConsumer;
