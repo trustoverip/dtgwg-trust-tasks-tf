@@ -1,0 +1,80 @@
+[
+  {
+    "note": "Missing `image` — removing the logo is an explicit `null`, never an omitted member.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member — the logo is the only thing this task sets; a URL goes through vtc/community/profile/update.",
+    "payload": {
+      "image": null,
+      "logoUrl": "https://example.com/logo.png"
+    }
+  },
+  {
+    "note": "SVG is not a logo media type — it is a document that can carry script and fetch resources, so a client rasterizes it before sending.",
+    "payload": {
+      "image": {
+        "mediaType": "image/svg+xml",
+        "data": "PHN2Zz48L3N2Zz4"
+      }
+    }
+  },
+  {
+    "note": "AVIF is a directory image type, not a logo one — the logo enum is its own, not ImageMediaType.",
+    "payload": {
+      "image": {
+        "mediaType": "image/avif",
+        "data": "AAAAHGZ0eXBhdmlm"
+      }
+    }
+  },
+  {
+    "note": "Padded or standard base64 — `data` is base64url without padding (RFC 4648 §5).",
+    "payload": {
+      "image": {
+        "mediaType": "image/png",
+        "data": "iVBORw0KGgo+/A=="
+      }
+    }
+  },
+  {
+    "note": "Unknown member inside `image` — dimensions are the community's to choose when it re-encodes, never the sender's.",
+    "payload": {
+      "image": {
+        "mediaType": "image/png",
+        "data": "iVBORw0KGgo",
+        "width": 4096
+      }
+    }
+  },
+  {
+    "note": "Empty `data` — an image has at least one byte; removal is `image: null`.",
+    "payload": {
+      "image": {
+        "mediaType": "image/png",
+        "data": ""
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with no `stored` — a caller must be able to tell a no-op from a change.",
+    "payload": {
+      "logo": null
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A stored logo larger than the 512-pixel bound — the community caps the longer side when it re-encodes.",
+    "payload": {
+      "logo": {
+        "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        "mediaType": "image/png",
+        "size": 18342,
+        "width": 1024,
+        "height": 256
+      },
+      "stored": true
+    }
+  }
+]

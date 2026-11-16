@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/logo/update/0.1",
+  "title": "VTC Community — Logo — Update — payload",
+  "description": "The community's new logo, which the community re-encodes and stores in place of the one it holds — or `null` to remove it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "image"
+  ],
+  "properties": {
+    "image": {
+      "description": "The new logo as sent, or `null` to remove the stored one. Removing is an explicit `null`, never an omitted member.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/LogoImage"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "LogoMediaType": {
+      "title": "LogoMediaType",
+      "description": "The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.",
+      "type": "string",
+      "enum": [
+        "image/png",
+        "image/jpeg",
+        "image/webp"
+      ]
+    },
+    "LogoImage": {
+      "title": "LogoImage",
+      "description": "An image as the administrator sends it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mediaType",
+        "data"
+      ],
+      "properties": {
+        "mediaType": {
+          "$ref": "#/$defs/LogoMediaType",
+          "description": "The media type of `data` as sent. The community decodes `data` as this type only, and may store another: it re-encodes."
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 349526,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded."
+        }
+      }
+    },
+    "LogoRef": {
+      "title": "LogoRef",
+      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "mediaType",
+        "size",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
+        },
+        "mediaType": {
+          "$ref": "#/$defs/LogoMediaType",
+          "description": "The media type of the stored bytes."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 262144,
+          "description": "The length of the stored bytes."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "description": "The stored image's width in pixels."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "description": "The stored image's height in pixels."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community — Logo — Update — response payload",
+      "description": "The success response to a vtc/community/logo/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logo",
+        "stored"
+      ],
+      "properties": {
+        "logo": {
+          "description": "The logo the community now holds, or `null` when it holds none.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LogoRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stored": {
+          "type": "boolean",
+          "description": "True when this request changed the stored logo; false when it equals the one already stored, or removed a logo the community did not hold."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the stored logo was last replaced or removed. Absent when the community has never held one."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

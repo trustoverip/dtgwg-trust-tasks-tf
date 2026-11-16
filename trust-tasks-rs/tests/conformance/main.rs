@@ -2550,6 +2550,11 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod logo {
+            mod update {
+                mod v0_1;
+            }
+        }
         mod profile {
             mod show {
                 mod v0_1;
