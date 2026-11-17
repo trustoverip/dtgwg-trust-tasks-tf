@@ -48,7 +48,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Check every released spec changed only additively
         env:
-          PUBLISHED_BASE_REF: ${{ github.event.pull_request.base.sha }}
+          PUBLISHED_BASE_REF: HEAD^1 # the base the merge commit was built on; pull_request.base.sha stays at the commit the PR branched from
         run: node scripts/check-published-schemas.mjs
 
   # Every publish job releases a version that is not on its registry yet, so a
@@ -77,7 +77,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Refuse a changed version declaration
         env:
-          VERSION_BASE_REF: ${{ github.event.pull_request.base.sha }}
+          VERSION_BASE_REF: HEAD^1 # the base the merge commit was built on; pull_request.base.sha stays at the commit the PR branched from
         run: npm run check-version-edits
 
   # #1132: a spec version the PR adds targets the current framework version,
@@ -103,7 +103,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: New versions target the current framework; only the latest version is promoted
         env:
-          VERSION_BASE_REF: ${{ github.event.pull_request.base.sha }}
+          VERSION_BASE_REF: HEAD^1 # the base the merge commit was built on; pull_request.base.sha stays at the commit the PR branched from
         run: npm run check-spec-lifecycle
 
   # #1123: the facts the docs still state in prose — RELEASING.md's package
