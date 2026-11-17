@@ -13,6 +13,8 @@ import (
 
 // Response Success response to vta/webvh/dids/list. Type
 // https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response.
+//
+// Deprecated: retired; use vta/dids/list/0.1
 type Response struct {
 	// Matching DIDs the caller may see. An empty array is a successful answer and does not
 	// imply the VTA holds none.
@@ -68,6 +70,8 @@ type WebvhDIDRecord struct {
 }
 
 // Payload VTA WebVH DIDs List — payload
+//
+// Deprecated: retired; use vta/dids/list/0.1
 type Payload struct {
 	// Only DIDs in this context.
 	ContextID *string `json:"contextId,omitempty"`
@@ -92,7 +96,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "retired; use vta/dids/list/0.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response"

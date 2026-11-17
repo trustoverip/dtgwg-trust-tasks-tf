@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/contexts/delete/1.1");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/contexts/delete/1.2");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/contexts/delete/1.1")]
+#[deprecated(note = "superseded by vta/contexts/delete/1.2")]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -201,7 +201,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/contexts/delete/1.1")]
+#[deprecated(note = "superseded by vta/contexts/delete/1.2")]
 pub struct Response {
     ///One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.
     #[serde(

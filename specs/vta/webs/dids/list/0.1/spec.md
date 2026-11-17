@@ -3,7 +3,8 @@ slug: vta/webs/dids/list
 version: "0.1"
 title: "VTA did:webs DIDs — List"
 summary: "Enumerate the did:webs DIDs a VTA holds that the caller may see, optionally narrowed to a context or hosting server. Alpha."
-status: draft
+status: retired
+supersededBy: vta/dids/list/0.1
 targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:

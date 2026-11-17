@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/contexts/update-did/1.1");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/contexts/update-did/1.2");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -338,7 +338,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/contexts/update-did/1.1")]
+#[deprecated(note = "superseded by vta/contexts/update-did/1.2")]
 pub struct Payload {
     ///The DID this context acts as from now on. Anything that authenticated or signed as the previous DID keeps referring to it; this task does not migrate those references, and a consumer MUST NOT imply that it does.
     pub did: PayloadDid,
@@ -474,7 +474,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
-#[deprecated(note = "superseded by vta/contexts/update-did/1.1")]
+#[deprecated(note = "superseded by vta/contexts/update-did/1.2")]
 pub struct Response(pub ContextRecord);
 impl ::std::ops::Deref for Response {
     type Target = ContextRecord;

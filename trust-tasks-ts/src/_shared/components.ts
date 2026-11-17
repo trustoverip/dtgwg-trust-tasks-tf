@@ -791,6 +791,10 @@ export type DeviceAttestation_DeviceV0_2 =
  */
 export type DeviceLabel = string;
 /**
+ * The DID class an identity was created in (VTI specification, DID classes, VTI-KEY-190 – 193), fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context. `persona`: a person's own identity. `service`: the durable identity of a node or a service.
+ */
+export type DidClass = "relationship" | "persona" | "service";
+/**
  * The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.
  */
 export type DidMethodName = string;
@@ -8525,6 +8529,74 @@ export interface DidRecord {
   ext?: Ext;
 }
 /**
+ * One identity the VTA holds, as every method has it, with what only its method has under `methodDetails`. CONVENTIONS.md §20.3.
+ */
+export interface DidSummary {
+  /**
+   * The identity, in the form it is presented in. A did:scid:vh:1 identity is presented in its did:scid form or its did:webvh form, and the other is in `alsoKnownAs`.
+   */
+  did: string;
+  /**
+   * The method profile that governs the identity: `webvh`, `scid:vh`, `webs`, `key`.
+   */
+  method: DidMethodName;
+  /**
+   * The context the identity belongs to. Absent for an identity in no context, which only an unrestricted caller sees.
+   */
+  contextId?: string;
+  /**
+   * The DID class the identity was created in. Absent where none was recorded; a VTA never infers one.
+   */
+  class?: DidClass;
+  /**
+   * The identity's key assurance level. `1` for every identity that is not a key-role identity.
+   */
+  level: KeyAssuranceLevel;
+  /**
+   * Whether the identity is its context's own DID.
+   */
+  primary: boolean;
+  /**
+   * Whether the identity has been ended. It still resolves, as deactivated.
+   */
+  deactivated: boolean;
+  /**
+   * The VTA's id for the hosting server the identity is published through. Absent where it is published through none: a serverless did:webvh, a did:key.
+   */
+  serverId?: string;
+  /**
+   * The VTA's own label for the identity. Not published.
+   */
+  label?: string;
+  /**
+   * The VTA's id for the key the identity currently signs with — what a caller names to have the VTA sign as it. Absent where it has none.
+   */
+  signingKeyId?: string;
+  /**
+   * The VTA's id for the identity's current key agreement key. Absent where it has none.
+   */
+  keyAgreementKeyId?: string;
+  /**
+   * Other identifiers the identity is published as: a did:scid identity's other form, a did:webs identity's did:web and did:keri forms. Empty where there are none.
+   */
+  alsoKnownAs: string[];
+  /**
+   * When the VTA created or adopted the identity.
+   */
+  createdAt: string;
+  /**
+   * When the VTA last changed its record of the identity.
+   */
+  updatedAt: string;
+  /**
+   * What only the identity's method has, as one member named by its `method`, defined by that method profile's Summary details (CONVENTIONS.md §18). Absent where the profile defines none. A consumer ignores a member it does not recognise.
+   */
+  methodDetails?: {
+    [k: string]: {} | undefined;
+  };
+  ext?: Ext;
+}
+/**
  * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
  */
 export interface DidTemplateRecord_VtaV0_1 {
@@ -12141,6 +12213,32 @@ export interface MessageMeta {
  */
 export interface MessageReference {
   messageId: MessageId;
+}
+/**
+ * One DID method a VTA holds a profile for, as it supports it now. CONVENTIONS.md §20.4.
+ */
+export interface MethodInfo {
+  /**
+   * The method's profile name.
+   */
+  method: DidMethodName;
+  /**
+   * Whether `vta/dids/list` summarises the method's identities (CONVENTIONS.md §20.1).
+   */
+  listed: boolean;
+  /**
+   * Whether the VTA will create an identity of this method now: its build supports the method and its configuration has it switched on.
+   */
+  creatable: boolean;
+  /**
+   * The DID classes a creation may state now. Empty where the method's creation states none, or where it is not `creatable`.
+   */
+  classes: DidClass[];
+  /**
+   * The Trust Task type URIs the VTA serves for the method's identities, beyond this family's.
+   */
+  operations: string[];
+  ext?: Ext;
 }
 /**
  * One counter or gauge reading.

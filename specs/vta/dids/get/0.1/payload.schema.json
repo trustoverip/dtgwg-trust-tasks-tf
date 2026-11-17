@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/get/0.1",
+  "title": "VTA DIDs Get — payload",
+  "description": "Fetch one identity a VTA holds, whatever its DID method or key assurance level. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^did:[a-z0-9]+:",
+      "description": "The identity to summarise. Either form of a did:scid:vh:1 identity."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DIDs Get — response payload",
+      "description": "Success response to vta/dids/get. Type https://trusttasks.org/spec/vta/dids/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "../../_shared/0.2/did-summary.schema.json#/$defs/DidSummary",
+          "description": "The identity's summary."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
