@@ -14,6 +14,20 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.12.1 — 2026-11-17
+
+
+### Added
+
+- **vtc/community/logo**: Add vtc/community/logo/update/0.1 and vtc/community/logo/show/0.1 (#1324)
+
+* feat(vtc/community/logo): add vtc/community/logo/update/0.1
+
+  An administrator hands the community a new logo, which the community
+  re-encodes, strips of metadata and stores in place of the one it holds;
+  `image: null` removes it. The answer is the stored re-encoding's digest,
+  media type, size and dimensions.
+
 ## 0.12.0 — 2026-11-14
 
 

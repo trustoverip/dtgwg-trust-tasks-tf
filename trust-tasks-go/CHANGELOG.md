@@ -11,6 +11,20 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.13.2 — 2026-11-17
+
+
+### Added
+
+- **vtc/community/logo**: Add vtc/community/logo/update/0.1 and vtc/community/logo/show/0.1 (#1324)
+
+* feat(vtc/community/logo): add vtc/community/logo/update/0.1
+
+  An administrator hands the community a new logo, which the community
+  re-encodes, strips of metadata and stores in place of the one it holds;
+  `image: null` removes it. The answer is the stored re-encoding's digest,
+  media type, size and dimensions.
+
 ## 0.13.1 — 2026-11-16
 
 ## 0.13.0 — 2026-11-14
