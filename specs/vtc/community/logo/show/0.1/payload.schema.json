@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/logo/show/0.1",
+  "title": "VTC Community — Logo — Show — payload",
+  "description": "Read the logo the community holds: its digest, media type, size, dimensions and the URL it is served at — and, when asked, the bytes themselves. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "includeData": {
+      "type": "boolean",
+      "description": "Return the stored bytes in `data` as well as the reference. Absent or `false` returns the reference only, which is all a caller that can fetch `logo.url` needs."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "LogoMediaType": {
+      "title": "LogoMediaType",
+      "description": "The raster media types a logo may be sent and stored as. No vector format: an SVG is a document that can carry script and fetch resources, so a client rasterizes one before sending it.",
+      "type": "string",
+      "enum": [
+        "image/png",
+        "image/jpeg",
+        "image/webp"
+      ]
+    },
+    "LogoRef": {
+      "title": "LogoRef",
+      "description": "The logo as the community stores it: its own re-encoding, never the bytes it received. `mediaType` is the type of the stored bytes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "mediaType",
+        "size",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
+        },
+        "mediaType": {
+          "$ref": "#/$defs/LogoMediaType"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 262144,
+          "description": "The length of the stored bytes."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "description": "The stored image's width in pixels."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512,
+          "description": "The stored image's height in pixels."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community — Logo — Show — response payload",
+      "description": "The success response to a vtc/community/logo/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/community/logo/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logo"
+      ],
+      "properties": {
+        "logo": {
+          "description": "The logo the community holds, or `null` when it holds none.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LogoRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 349526,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The stored bytes, base64url without padding (RFC 4648 §5); their SHA-256 is `logo.sha256`. Present exactly when the request set `includeData: true` and the community holds a logo."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the stored logo was last replaced or removed. Absent when the community has never held one."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
