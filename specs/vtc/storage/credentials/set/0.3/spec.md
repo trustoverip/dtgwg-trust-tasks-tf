@@ -59,6 +59,7 @@ related:
   - vtc/storage/configs/update
   - vtc/storage/configs/probe
   - vtc/admin/actions/show
+  - vtc/storage/credentials/recipient
 ---
 
 ## Abstract
@@ -111,7 +112,7 @@ This is the **host's** authority, not a room's. Like [`vtc/rooms/list`](../../..
 
 ## Definitions
 
-- **Sealed block** — an ASCII-armored `sealed_transfer` envelope (HPKE base mode, X25519-HKDF-SHA256, HKDF-SHA256, ChaCha20-Poly1305, info string `vta-sealed-transfer/v1`) whose recipient is the X25519 derivation of the community DID's Ed25519 key, the same format [`provision/integration`](../../../../../provision/integration/0.3/spec.md) delivers bundles in.
+- **Sealed block** — an ASCII-armored `sealed_transfer` envelope (HPKE base mode, X25519-HKDF-SHA256, HKDF-SHA256, ChaCha20-Poly1305, info string `vta-sealed-transfer/v1`) whose recipient is the X25519 derivation of the community DID's Ed25519 key — read from the community's resolved DID document, or, by a client that cannot resolve it, asked of the community with [`vtc/storage/credentials/recipient`](../../../../../vtc/storage/credentials/recipient/0.1/spec.md) — the same format [`provision/integration`](../../../../../provision/integration/0.3/spec.md) delivers bundles in.
 - **Credential, by kind** — the sealed block's cleartext carries a `SealedStorageCredential` from [`vtc/_shared/0.2/room-storage.schema.json`](../../../../../vtc/_shared/0.2/room-storage.schema.json): for `s3`, `accessKeyId`, `secretAccessKey` and, for a temporary pair, `sessionToken`; for `gcs`, `serviceAccountKey`, Google's JSON key file as an object, member names verbatim; for `walrus`, `suiPrivateKey`, the Sui private key that pays for storage in its Bech32 `suiprivkey` form. Each names `kind` and `configId`. A `local` config has none. Its members are as the schema states whatever serialisation the sealed-transfer format frames them in; shown as JSON, before sealing:
 
   ```json
