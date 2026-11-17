@@ -309,7 +309,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_TITLE: ${{ github.event.pull_request.title }}
-          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: HEAD^1 # the base the merge commit was built on; pull_request.base.sha stays at the commit the PR branched from
         run: |
           PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title) || PR_TITLE=$EVENT_TITLE
           export PR_TITLE

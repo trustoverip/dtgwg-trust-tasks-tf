@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-proof"
-version = "0.40.0"
+version = "0.40.2"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -43,12 +43,22 @@ thiserror = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 # `affinidi` backend deps — gated by the `affinidi` feature.
-affinidi-data-integrity = { version = "0.8.7", optional = true }
-affinidi-crypto = { version = "0.3", optional = true }
-affinidi-encoding = { version = "0.1", optional = true }
-affinidi-did-resolver-cache-sdk = { version = "0.8.53", optional = true }
+#
+# Ranges, not single minors: the affinidi TDK is about to take a coordinated
+# breaking release (affinidi-crypto 0.4, affinidi-encoding 0.2,
+# affinidi-did-common 0.5, affinidi-did-resolver-cache-sdk 0.9,
+# affinidi-data-integrity 0.9) and its messaging SDK depends on this crate.
+# None of the APIs used here (`KeyType`, `DIDCacheClient`, `Document`,
+# `VerificationMethod`, the data-integrity proof/signer/resolver types,
+# `encode_base`/`decode_base`) change in that release, so this crate builds
+# against either generation, and a single-minor pin would split the TDK's
+# graph into two copies of each crate.
+affinidi-data-integrity = { version = ">=0.8.7, <0.10", optional = true }
+affinidi-crypto = { version = ">=0.3, <0.5", optional = true }
+affinidi-encoding = { version = ">=0.1, <0.3", optional = true }
+affinidi-did-resolver-cache-sdk = { version = ">=0.8.53, <0.10", optional = true }
 # 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
-affinidi-did-common = { version = "0.4.7", optional = true }
+affinidi-did-common = { version = ">=0.4.7, <0.6", optional = true }
 # `CachedDidResolver`'s per-resolution deadline. Already in every graph that
 # enables `affinidi`, through the resolver cache SDK.
 tokio = { version = "1", default-features = false, features = ["time"], optional = true }
@@ -57,7 +67,7 @@ tokio = { version = "1", default-features = false, features = ["time"], optional
 # The tests, examples and doc examples build real tasks.
 trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
 affinidi-secrets-resolver = "0.5.18"
-affinidi-did-common = "0.4.7"
+affinidi-did-common = ">=0.4.7, <0.6"
 base64 = "0.23"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }

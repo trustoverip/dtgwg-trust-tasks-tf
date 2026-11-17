@@ -6,6 +6,30 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.40.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.40.1...trust-tasks-tsp-v0.40.2) — 2026-11-16
+
+
+## [0.40.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.40.0...trust-tasks-tsp-v0.40.1) — 2026-11-16
+
+
+### Added
+
+- **tsp**: Carry the binding 0.2 deliveryId on Envelope; refuse duplicated envelope members again ([#1323](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1323))
+
+Envelope gains binding tsp/0.2 section 2.1's optional deliveryId, by which a
+  producer requests an end-to-end delivery receipt: with_delivery_id(id) sets it
+  (1 to MAX_DELIVERY_ID_LEN = 256 characters, else InvalidDeliveryId) and
+  delivery_id() reads it. from_bytes keeps a valid one and drops an invalid one
+  rather than refusing the envelope, since section 2.1 keeps the id out of the
+  framework pipeline. to_bytes writes deliveryId only when one is set, so an
+  envelope without one is still byte-for-byte the tsp/0.1 envelope; with one it
+  is the same bytes the Affinidi messaging SDK's tsp_envelope builds. Without
+  this, an application moving from its own envelope code to Envelope would lose
+  its delivery receipts.
+
+- **tsp**: Expose the binding envelope for applications that seal through their own TSP stack ([#1322](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1322))
+
+
 ## [0.40.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-tsp-v0.39.0...trust-tasks-tsp-v0.40.0) — 2026-11-14
 
 
