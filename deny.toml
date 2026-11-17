@@ -22,7 +22,18 @@ all-features = true
 version = 2
 yanked = "deny"
 unused-ignored-advisory = "deny"
-ignore = []
+ignore = [
+  { id = "RUSTSEC-2026-0543", reason = """
+  chrono is unmaintained (chronotope/chrono#1768): all versions, no fixed
+  release, and no vulnerability reported, only the status. It is part of the
+  libraries' public API (`issuedAt` / `expiresAt` are `chrono::DateTime<Utc>`
+  in trust-tasks-rs and its transport crates), and it arrives again through
+  affinidi-data-integrity and didwebvh-rs, so it cannot leave the graph here
+  without a breaking release of every library and a matching move upstream.
+  Drop when the libraries and the affinidi-tdk-rs stack have migrated to
+  `jiff` or `time`.
+  """ },
+]
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
 # The crate is Apache-2.0; transitive deps should be permissively licensed
