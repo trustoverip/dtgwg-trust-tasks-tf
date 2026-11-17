@@ -4428,6 +4428,9 @@ export import VtcStorageConfigsUpdate_v0_2 = _VtcStorageConfigsUpdate_v0_2;
 import * as _VtcStorageConfigsUpdate_v0_3 from "./vtc/storage/configs/update/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcStorageConfigsUpdate_v0_3 = _VtcStorageConfigsUpdate_v0_3;
+import * as _VtcStorageCredentialsRecipient_v0_1 from "./vtc/storage/credentials/recipient/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcStorageCredentialsRecipient_v0_1 = _VtcStorageCredentialsRecipient_v0_1;
 import * as _VtcStorageCredentialsSet_v0_1 from "./vtc/storage/credentials/set/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcStorageCredentialsSet_v0_1 = _VtcStorageCredentialsSet_v0_1;

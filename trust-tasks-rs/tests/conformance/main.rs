@@ -3311,6 +3311,9 @@ mod vtc {
             }
         }
         mod credentials {
+            mod recipient {
+                mod v0_1;
+            }
             mod set {
                 mod v0_1;
                 mod v0_2;
