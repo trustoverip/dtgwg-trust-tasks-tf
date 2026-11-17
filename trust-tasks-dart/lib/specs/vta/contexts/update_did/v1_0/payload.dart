@@ -87,11 +87,11 @@ class ContextRecord {
 
 /// Success response to vta/contexts/update-did: the context as it now stands. Type
 /// https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.
-@Deprecated('superseded by vta/contexts/update-did/1.1')
+@Deprecated('superseded by vta/contexts/update-did/1.2')
 typedef Response = ContextRecord;
 
 /// VTA Contexts Update-DID — payload
-@Deprecated('superseded by vta/contexts/update-did/1.1')
+@Deprecated('superseded by vta/contexts/update-did/1.2')
 class Payload {
   const Payload({
     required this.id,
@@ -130,7 +130,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/contexts/update-did/1.1';
+const String? deprecation = 'superseded by vta/contexts/update-did/1.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

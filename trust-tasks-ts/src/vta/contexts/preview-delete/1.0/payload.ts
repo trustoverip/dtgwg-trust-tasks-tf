@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.
+ *
+ * @deprecated superseded by vta/contexts/preview-delete/2.0
  */
 export interface VTAContextsPreviewDeletePayload {
   /**
@@ -18,6 +20,8 @@ export interface VTAContextsPreviewDeletePayload {
 }
 /**
  * Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.
+ *
+ * @deprecated superseded by vta/contexts/preview-delete/2.0
  */
 export interface VTAContextsPreviewDeleteResponsePayload {
   /**
@@ -71,15 +75,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/contexts/preview-delete/2.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/contexts/preview-delete/2.0
+ */
 export type Payload = VTAContextsPreviewDeletePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/contexts/preview-delete/2.0
+ */
 export type Response = VTAContextsPreviewDeleteResponsePayload;
 
 /**

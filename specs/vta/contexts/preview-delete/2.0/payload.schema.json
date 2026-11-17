@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/contexts/preview-delete/2.0",
+  "title": "VTA Contexts Preview-Delete — payload",
+  "description": "Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context to preview the deletion of."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Contexts Preview-Delete — response payload",
+      "description": "Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/2.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "keys",
+        "dids",
+        "aclEntriesRemoved",
+        "aclEntriesUpdated"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The context previewed."
+        },
+        "subContexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice."
+        },
+        "dids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every identity the deletion would delete, of every method — did:webvh and did:scid:vh:1 logs that stop being served, did:webs DIDs whose key event logs are ended, did:key identities forgotten — as vta/dids/list summarises them. Anything that recorded one as an issuer or subject is left pointing at nothing, or at a deactivated identity."
+        },
+        "aclEntriesRemoved": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subjects whose ACL entry would be removed outright, because this context was its only scope."
+        },
+        "aclEntriesUpdated": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subjects whose ACL entry would be narrowed — they hold other scopes and keep them."
+        },
+        "didTemplates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DID templates scoped to this context that would be removed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

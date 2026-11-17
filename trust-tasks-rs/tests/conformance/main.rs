@@ -1786,6 +1786,7 @@ mod vta {
         mod delete {
             mod v1_0;
             mod v1_1;
+            mod v1_2;
         }
         mod did_templates {
             mod create {
@@ -1815,6 +1816,7 @@ mod vta {
         }
         mod preview_delete {
             mod v1_0;
+            mod v2_0;
         }
         mod secrets {
             mod v1_0;
@@ -1825,6 +1827,7 @@ mod vta {
         mod update_did {
             mod v1_0;
             mod v1_1;
+            mod v1_2;
         }
     }
     mod credentials {
@@ -1878,6 +1881,9 @@ mod vta {
             mod v1_0;
             mod v1_1;
         }
+        mod get {
+            mod v0_1;
+        }
         mod keys {
             mod add {
                 mod v1_0;
@@ -1893,6 +1899,14 @@ mod vta {
             }
             mod rotate {
                 mod v1_0;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod methods {
+            mod list {
+                mod v0_1;
             }
         }
         mod recover {

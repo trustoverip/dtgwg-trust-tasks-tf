@@ -14,6 +14,8 @@ import (
 // Response Success response to vta/contexts/preview-delete. Every array is what WOULD be
 // affected; nothing has been. Type
 // https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.
+//
+// Deprecated: superseded by vta/contexts/preview-delete/2.0
 type Response struct {
 	// The context previewed.
 	ID string `json:"id"`
@@ -54,6 +56,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Request payload for vta/contexts/preview-delete: what deleting this context
 // would destroy, computed without destroying it.
+//
+// Deprecated: superseded by vta/contexts/preview-delete/2.0
 type Payload struct {
 	// Context to preview the deletion of.
 	ID  string `json:"id"`
@@ -75,7 +79,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/contexts/preview-delete/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response"

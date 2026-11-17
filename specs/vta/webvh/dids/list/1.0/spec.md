@@ -3,7 +3,8 @@ slug: vta/webvh/dids/list
 version: "1.0"
 title: "VTA WebVH DIDs — List"
 summary: "Enumerate the did:webvh DIDs a VTA holds, optionally narrowed to a context or hosting server."
-status: draft
+status: retired
+supersededBy: vta/dids/list/0.1
 targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:

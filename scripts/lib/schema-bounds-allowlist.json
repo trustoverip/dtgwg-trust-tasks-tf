@@ -301,9 +301,6 @@
       "url-scheme /$defs/Response/properties/didJsonUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
       "url-scheme /$defs/Response/properties/keriCesrUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
     },
-    "vta/webs/dids/list/0.1": {
-      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
-    },
     "vta/webvh/dids/create/1.2": {
       "array-max-items /properties/additionalServices": "Baseline: no maxItems when the lint landed; the next version declares one.",
       "url-scheme /$defs/Response/properties/scidDidUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",

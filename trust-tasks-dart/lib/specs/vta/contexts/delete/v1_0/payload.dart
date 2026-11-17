@@ -14,7 +14,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to vta/contexts/delete. Type
 /// https://trusttasks.org/spec/vta/contexts/delete/1.0#response.
-@Deprecated('superseded by vta/contexts/delete/1.1')
+@Deprecated('superseded by vta/contexts/delete/1.2')
 class Response {
   const Response({
     required this.id,
@@ -62,7 +62,7 @@ class Response {
 }
 
 /// VTA Contexts Delete — payload
-@Deprecated('superseded by vta/contexts/delete/1.1')
+@Deprecated('superseded by vta/contexts/delete/1.2')
 class Payload {
   const Payload({
     required this.id,
@@ -101,7 +101,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/contexts/delete/1.1';
+const String? deprecation = 'superseded by vta/contexts/delete/1.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/contexts/delete/1.0';

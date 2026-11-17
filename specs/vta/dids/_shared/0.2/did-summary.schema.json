@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/_shared/0.2/did-summary",
+  "title": "DID summaries — shared definitions for vta/dids/list, get and methods/list",
+  "description": "What a VTA tells a caller about an identity it holds, whatever the identity's DID method or key assurance level, and about the methods it supports. The normative rules are CONVENTIONS.md §20 beside this file. Shared because `list` and `get` return the same summary.",
+  "$defs": {
+    "DidClass": {
+      "title": "DidClass",
+      "description": "The DID class an identity was created in (VTI specification, DID classes, VTI-KEY-190 – 193), fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context. `persona`: a person's own identity. `service`: the durable identity of a node or a service.",
+      "type": "string",
+      "enum": [
+        "relationship",
+        "persona",
+        "service"
+      ]
+    },
+    "DidSummary": {
+      "title": "DidSummary",
+      "description": "One identity the VTA holds, as every method has it, with what only its method has under `methodDetails`. CONVENTIONS.md §20.3.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "method",
+        "level",
+        "primary",
+        "deactivated",
+        "alsoKnownAs",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "pattern": "^did:[a-z0-9]+:",
+          "description": "The identity, in the form it is presented in. A did:scid:vh:1 identity is presented in its did:scid form or its did:webvh form, and the other is in `alsoKnownAs`."
+        },
+        "method": {
+          "$ref": "key-roles.schema.json#/$defs/DidMethodName",
+          "description": "The method profile that governs the identity: `webvh`, `scid:vh`, `webs`, `key`."
+        },
+        "contextId": {
+          "type": "string",
+          "description": "The context the identity belongs to. Absent for an identity in no context, which only an unrestricted caller sees."
+        },
+        "class": {
+          "$ref": "#/$defs/DidClass",
+          "description": "The DID class the identity was created in. Absent where none was recorded; a VTA never infers one."
+        },
+        "level": {
+          "$ref": "key-roles.schema.json#/$defs/KeyAssuranceLevel",
+          "description": "The identity's key assurance level. `1` for every identity that is not a key-role identity."
+        },
+        "primary": {
+          "type": "boolean",
+          "description": "Whether the identity is its context's own DID."
+        },
+        "deactivated": {
+          "type": "boolean",
+          "description": "Whether the identity has been ended. It still resolves, as deactivated."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The VTA's id for the hosting server the identity is published through. Absent where it is published through none: a serverless did:webvh, a did:key."
+        },
+        "label": {
+          "type": "string",
+          "description": "The VTA's own label for the identity. Not published."
+        },
+        "signingKeyId": {
+          "type": "string",
+          "description": "The VTA's id for the key the identity currently signs with — what a caller names to have the VTA sign as it. Absent where it has none."
+        },
+        "keyAgreementKeyId": {
+          "type": "string",
+          "description": "The VTA's id for the identity's current key agreement key. Absent where it has none."
+        },
+        "alsoKnownAs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Other identifiers the identity is published as: a did:scid identity's other form, a did:webs identity's did:web and did:keri forms. Empty where there are none."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTA created or adopted the identity."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTA last changed its record of the identity."
+        },
+        "methodDetails": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "propertyNames": {
+            "$ref": "key-roles.schema.json#/$defs/DidMethodName"
+          },
+          "additionalProperties": {
+            "type": "object"
+          },
+          "description": "What only the identity's method has, as one member named by its `method`, defined by that method profile's Summary details (CONVENTIONS.md §18). Absent where the profile defines none. A consumer ignores a member it does not recognise."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "MethodInfo": {
+      "title": "MethodInfo",
+      "description": "One DID method a VTA holds a profile for, as it supports it now. CONVENTIONS.md §20.4.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "listed",
+        "creatable",
+        "classes",
+        "operations"
+      ],
+      "properties": {
+        "method": {
+          "$ref": "key-roles.schema.json#/$defs/DidMethodName",
+          "description": "The method's profile name."
+        },
+        "listed": {
+          "type": "boolean",
+          "description": "Whether `vta/dids/list` summarises the method's identities (CONVENTIONS.md §20.1)."
+        },
+        "creatable": {
+          "type": "boolean",
+          "description": "Whether the VTA will create an identity of this method now: its build supports the method and its configuration has it switched on."
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DidClass"
+          },
+          "description": "The DID classes a creation may state now. Empty where the method's creation states none, or where it is not `creatable`."
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "The Trust Task type URIs the VTA serves for the method's identities, beyond this family's."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
