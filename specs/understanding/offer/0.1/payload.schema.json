@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/understanding/offer/0.1",
+  "title": "Understanding — Offer — payload",
+  "description": "A joining party asks a host to begin an engagement; the host answers with a resolvable, versioned reference to the terms that would govern it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["purpose"],
+  "properties": {
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "A short, host-defined category naming the kind of engagement sought (e.g. \"membership\", \"conversation\", \"transaction\"). Opaque to the framework — the host's accepted values are stated out of band."
+    },
+    "proposedIdentifier": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "A DID the joining party is willing to be reached at if the engagement proceeds, distinct from `issuer`. OPTIONAL — absent means the joining party proposes continuing under `issuer` itself. It does not take over the thread: the host's response is addressed to `issuer`, and understanding/exchange accepts only `issuer` against this offer (understanding/exchange:issuerMismatch), because control of this identifier is not proven here. It governs only the identity recorded at understanding/seal."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Understanding — Offer — response payload",
+      "description": "The host's terms reference. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["termsRef"],
+      "properties": {
+        "termsRef": {
+          "$ref": "../../_shared/0.1/agreement.schema.json#/$defs/RegisterRef",
+          "description": "A resolvable, version-identified, hash-pinned pointer to the terms that would govern the engagement. Where the host's DID document carries a `GovernanceFramework` service (VTI-KEY-052), this MUST name the same document (see spec.md Response)."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
