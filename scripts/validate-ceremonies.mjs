@@ -11,6 +11,7 @@
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
@@ -18,11 +19,11 @@ import addFormats from 'ajv-formats';
 // a validator that has never been shown to fail is not evidence of anything.
 const ROOT = process.env.CEREMONY_ROOT
   ? process.env.CEREMONY_ROOT.replace(/\/$/, '')
-  : new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+  : fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
 const CEREMONIES = join(ROOT, 'ceremonies');
 // Specs always resolve against the real repo: a fixture tree exercises ceremony
 // checks, not a parallel copy of the registry.
-const SPECS = join(new URL('..', import.meta.url).pathname.replace(/\/$/, ''), 'specs');
+const SPECS = join(fileURLToPath(new URL('..', import.meta.url)), 'specs');
 
 const EXPOSURE_RANK = { none: 0, metadata: 1, secret: 2 };
 const SIDE_EFFECT_RANK = { none: 0, mutating: 1, destructive: 2 };

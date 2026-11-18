@@ -56,7 +56,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const RULES = ['array-max-items', 'limit-maximum', 'cursor-max-length', 'url-scheme'];
 
@@ -321,7 +321,7 @@ export function baselineFor(specsDir) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href && process.argv.includes('--baseline')) {
-  const specsDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..', 'specs');
+  const specsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'specs');
   const out = {
     $comment:
       'The schema-bounds baseline, read by scripts/lib/schema-bounds.mjs: request-side arrays without maxItems, `limit` ' +
