@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vtc/rooms/community/update/0.3");
+pub const DEPRECATION: Option<&str> = Some("superseded by vtc/rooms/community/update/0.4");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -606,7 +606,7 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomRoomId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/rooms/community/update/0.3")]
+#[deprecated(note = "superseded by vtc/rooms/community/update/0.4")]
 pub struct Payload {
     ///The room's new description, replacing any it has. Absent: unchanged.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -765,7 +765,7 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/rooms/community/update/0.3")]
+#[deprecated(note = "superseded by vtc/rooms/community/update/0.4")]
 pub struct Response {
     ///`false` when every value given already matched what the room had: nothing was written, `detailsUpdatedAt` and `detailsUpdatedBy` did not move, and no change was audited.
     pub changed: bool,

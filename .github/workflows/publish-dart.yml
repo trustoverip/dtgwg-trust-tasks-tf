@@ -115,6 +115,6 @@ jobs:
     # tag against pubspec.yaml, and runs a dry run before the real publish.
     permissions:
       id-token: write # required for OIDC; no long-lived pub.dev credential exists
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
     with:
       working-directory: ${{ needs.resolve.outputs.directory }}
