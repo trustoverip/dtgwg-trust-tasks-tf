@@ -54,16 +54,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "affinidi-cesr"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e986f772f1639a7de3bf1ba1cf9b99aa87175fa28463d289a4afa5fc1c274266"
-dependencies = [
- "base64ct",
- "thiserror",
-]
-
-[[package]]
 name = "affinidi-crypto"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -296,11 +286,10 @@ dependencies = [
 
 [[package]]
 name = "affinidi-tsp"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1252b085fb12a2dd4e62221821f334689eeb27ba28359744ea7ff43012a67fac"
+checksum = "2986af4f5008a7c23f12fc667d443426cb82ed04893f644bb0b448e155bb9446"
 dependencies = [
- "affinidi-cesr",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
  "affinidi-encoding",

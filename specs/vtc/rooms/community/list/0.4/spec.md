@@ -49,7 +49,7 @@ related:
 
 ## Abstract
 
-**VTC Rooms — Community — List** returns the rooms the community owns ([`vtc/rooms/community/create`](../../../../../vtc/rooms/community/create/0.4/spec.md)), a page at a time: each room's state in its owner's lifecycle, its host record, the label, description and tags its administrators gave it, its storage config, and how many members are admitted and how many offers are open. It is the owner's view, and is distinct from [`vtc/rooms/list`](../../../../../vtc/rooms/list/0.2/spec.md), the host's view of every room the community stores, most of which it does not own.
+**VTC Rooms — Community — List** returns the rooms the community owns ([`vtc/rooms/community/create`](../../../../../vtc/rooms/community/create/0.5/spec.md)), a page at a time: each room's state in its owner's lifecycle, its host record, the label, description and tags its administrators gave it, its storage config, and how many members are admitted and how many offers are open. It is the owner's view, and is distinct from [`vtc/rooms/list`](../../../../../vtc/rooms/list/0.2/spec.md), the host's view of every room the community stores, most of which it does not own.
 
 ## Status of this Document
 
