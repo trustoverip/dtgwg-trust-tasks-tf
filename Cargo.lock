@@ -4109,7 +4109,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "trust-tasks-capability-client",
  "trust-tasks-ceremony",
@@ -4142,7 +4142,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "chrono",
  "serde",
@@ -4200,7 +4200,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "affinidi-crypto",
  "affinidi-messaging-didcomm",
@@ -4218,7 +4218,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "async-trait",
@@ -4254,7 +4254,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
@@ -4274,7 +4274,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -4294,7 +4294,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4310,7 +4310,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.40.4"
+version = "0.40.5"
 dependencies = [
  "affinidi-tsp",
  "async-trait",

@@ -4,6 +4,35 @@ All notable changes to `trust-tasks-go/specs` (the generated specification
 packages) are documented here. Entries are generated from conventional commits
 by the release automation (see RELEASING.md).
 
+## 0.1.3 — 2026-11-19
+
+
+### Specifications
+
+- **vtc/rooms/community**: A community-owned room states and changes its signal delay (create 0.5, update 0.4, get 0.5) (#1336)
+
+A room a member owns states its signal delay at rooms/create 0.3 and its
+  administrators change it at the host with rooms/signal-delay/set 0.1. A
+  room the community owns could do neither: the community is both the
+  holder of `admin` and the host, and vtc/rooms/community/create and
+  update carried no such member, so every community room waited a
+  randomised few seconds before each rooms/changed signal however its
+  members used it.
+
+  - create 0.5 takes an optional `signalDelay` (absent = randomised),
+    records it in the room's host record and always echoes it. A `none`
+    create is audited with the create.
+  - update 0.4 takes an optional `signalDelay`, applied to the host record
+    with the other details, together or not at all; a change of the delay
+    alone is a change (audited, details timestamps move) that needs no
+    profile write. It touches no watch.
+  - get 0.5 always serves the room's `signalDelay`.
+  - Both writes refuse `signalDelayNotPermitted` when the community's
+    governance as host keeps the delay everywhere, applying nothing.
+  - A surface offering `none` SHOULD say what it gives up.
+
+  Links to create 0.4, update 0.3 and get 0.4 move to the new versions.
+
 ## 0.1.2 — 2026-11-17
 
 
