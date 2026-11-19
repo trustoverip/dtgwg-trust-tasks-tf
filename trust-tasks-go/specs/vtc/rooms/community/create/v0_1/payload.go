@@ -15,7 +15,7 @@ import (
 // https://trusttasks.org/spec/vtc/rooms/community/create/0.1#response. The room as
 // created, owned by the community.
 //
-// Deprecated: superseded by vtc/rooms/community/create/0.4
+// Deprecated: superseded by vtc/rooms/community/create/0.5
 type Response struct {
 	Room CommunityRoom `json:"room"`
 	Ext  *Ext          `json:"ext,omitempty"`
@@ -135,7 +135,7 @@ type Reason = string
 
 // Payload VTC Rooms Community Create — payload
 //
-// Deprecated: superseded by vtc/rooms/community/create/0.4
+// Deprecated: superseded by vtc/rooms/community/create/0.5
 type Payload struct {
 	Label RoomLabel `json:"label"`
 
@@ -172,7 +172,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/rooms/community/create/0.4"
+const Deprecation = "superseded by vtc/rooms/community/create/0.5"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/rooms/community/create/0.1#response"
