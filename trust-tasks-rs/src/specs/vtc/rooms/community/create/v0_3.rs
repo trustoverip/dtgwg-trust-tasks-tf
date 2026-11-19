@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vtc/rooms/community/create/0.4");
+pub const DEPRECATION: Option<&str> = Some("superseded by vtc/rooms/community/create/0.5");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -606,7 +606,7 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomRoomId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/rooms/community/create/0.4")]
+#[deprecated(note = "superseded by vtc/rooms/community/create/0.5")]
 pub struct Payload {
     ///What the room is for, shown beside its label. Absent: the room has none until an administrator gives it one with vtc/rooms/community/update.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -714,7 +714,7 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/rooms/community/create/0.4")]
+#[deprecated(note = "superseded by vtc/rooms/community/create/0.5")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
