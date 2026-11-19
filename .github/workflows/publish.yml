@@ -663,7 +663,7 @@ jobs:
             echo "should_tag=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
         if: steps.decide.outputs.should_tag == 'true'
         with:
           sdk: stable
@@ -839,7 +839,7 @@ jobs:
       # changes. (The publish job is unaffected — release-plz/action installs
       # its own default, 0.3.160.)
       - name: Install release-plz and git-cliff
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: release-plz@0.3.171,git-cliff@2.14.2
 
