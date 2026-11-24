@@ -32,7 +32,7 @@ legacy-basic-message = []
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.40", default-features = false }
-affinidi-messaging-didcomm-v1 = "0.2"
+affinidi-messaging-didcomm-v1 = "0.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
