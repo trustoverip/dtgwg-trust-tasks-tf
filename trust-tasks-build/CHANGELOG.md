@@ -3,6 +3,30 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.2.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.2.1...trust-tasks-build-v0.2.2) — 2026-11-24
+
+
+### Fixed
+
+- **build,rs,ts,ts-gen,go,dart**: Keep the free-standing $defs a specification declares in the request schema constant ([#1353](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1353))
+
+#1243 pruned every root $defs entry the request root does not reach. That also
+  dropped definitions a specification declares for clients and references from
+  nowhere, such as vtc/storage/credentials/set's SealedCredentialCleartext, which
+  travels only inside a seal. VTI reads it, and the OpenAPI components its console
+  uses, out of PAYLOAD_SCHEMA, and so stayed on trust-tasks-build 0.1.
+
+  The request constant now also keeps each free-standing definition (one other
+  than Response that no #/$defs/<name> reference anywhere in the schema names)
+  and what it references. A shared definition spliced in from another document is
+  always referenced, so it is still pruned when only the response uses it. The
+  response document keeps only what it reaches.
+
+  Applied in all seven generator copies and re-derived in check-bundles from
+  defOrigins; regenerated, five specifications change in all four languages.
+
+
+
 ## [0.2.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.2.0...trust-tasks-build-v0.2.1) — 2026-11-16
 
 
