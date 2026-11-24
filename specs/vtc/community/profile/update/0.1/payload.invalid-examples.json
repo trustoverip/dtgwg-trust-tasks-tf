@@ -1,4 +1,5 @@
 [
   { "note": "Unknown top-level member is rejected.", "payload": { "name": "Acme", "__x__": true } },
-  { "note": "registryStatus is read-only, not settable.", "payload": { "registryStatus": "active" } }
+  { "note": "registryStatus is read-only, not settable.", "payload": { "registryStatus": "active" } },
+  { "note": "correlationScope cannot be pairwise — a community has more than one member, so DTG Credentials allows it only directed or public.", "payload": { "correlationScope": "pairwise" } }
 ]

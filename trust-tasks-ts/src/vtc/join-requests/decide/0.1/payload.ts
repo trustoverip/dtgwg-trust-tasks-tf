@@ -37,7 +37,7 @@ export interface VTCJoinRequestsDecideResponsePayload {
    */
   vmc?: {} | null;
   /**
-   * The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements.
+   * The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements.
    */
   roleVac?: {} | null;
   ext?: Ext;
@@ -175,7 +175,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "object",
             "null"
           ],
-          "description": "The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."
+          "description": "The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

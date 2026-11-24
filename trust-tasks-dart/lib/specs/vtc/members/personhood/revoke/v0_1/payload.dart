@@ -41,9 +41,11 @@ class Response {
 
   /// Newly-minted role credential (opaque here): a Verifiable Authority Credential
   /// (`type` including `AuthorityCredential`) issued by the community with `issuerScope`
-  /// `public`, whose `credentialSubject.authority` is `{ scope: &lt;community DID&gt;,
-  /// actions: \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
-  /// Omitted on an idempotent no-op.
+  /// `directed` or `public` (the community's own correlation scope: `directed` at
+  /// minimum, `public` where it is open to outsiders), whose
+  /// `credentialSubject.authority` is `{ scope: &lt;community DID&gt;, actions:
+  /// \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an
+  /// idempotent no-op.
   final Map<String, dynamic>? roleVac;
   final Ext? ext;
 
@@ -119,7 +121,7 @@ const String payloadSchemaJson =
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Personhood-Revoke — response payload","type":"object","additionalProperties":false,"required":["did","personhood"],"properties":{"did":{"type":"string","minLength":1},"personhood":{"type":"boolean","const":false,"description":"Always false on success."},"vmc":{"type":"object","description":"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op."},"roleVac":{"type":"object","description":"Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Personhood-Revoke — response payload","type":"object","additionalProperties":false,"required":["did","personhood"],"properties":{"did":{"type":"string","minLength":1},"personhood":{"type":"boolean","const":false,"description":"Always false on success."},"vmc":{"type":"object","description":"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op."},"roleVac":{"type":"object","description":"Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community\'s own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

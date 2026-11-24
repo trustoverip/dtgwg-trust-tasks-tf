@@ -70,7 +70,7 @@ where a role was granted — rather than only saying that it admitted.
 `roleVac` is a DTG **Verifiable Authority Credential**, not an endorsement:
 granting a role is a decision by the party that governs the community, and the
 DTG Credentials Core Specification carries such a decision only in a VAC. It is
-issued by the community with `issuerScope` `public`, `type`
+issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), `type`
 `["VerifiableCredential", "DTGCredential", "AuthorityCredential"]`, a
 `validUntil`, and `credentialSubject.authority` equal to
 `{ "scope": <community DID>, "actions": ["role:<name>"] }` — the same shape

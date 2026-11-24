@@ -24,6 +24,10 @@ fn rejects_invalid_examples() {
             "registryStatus is read-only, not settable.",
             "{\n  \"registryStatus\": \"active\"\n}",
         ),
+        (
+            "correlationScope cannot be pairwise — a community has more than one member, so DTG Credentials allows it only directed or public.",
+            "{\n  \"correlationScope\": \"pairwise\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

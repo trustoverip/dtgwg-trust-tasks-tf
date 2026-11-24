@@ -94,6 +94,30 @@ extension type const CommunityProfileViewRelationshipIdentifierDefault(
       <CommunityProfileViewRelationshipIdentifierDefault>[attributed, pairwise];
 }
 
+/// The correlation scope the community declares for its own identifier, carried as
+/// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+/// statements). Per the DTG Credentials Core Specification, a community's identifier
+/// is `directed` at minimum — every party that verifies its members' credentials must
+/// be able to resolve it — and `public` where the community is open to outsiders; it
+/// can never truthfully be `pairwise`, since a community has more than one member.
+/// Absent means the community has not declared one; implementations issue `public`,
+/// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+/// community's credentials do not change.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const CommunityProfileViewCorrelationScope(String value) {
+  static const CommunityProfileViewCorrelationScope directed =
+      CommunityProfileViewCorrelationScope('directed');
+  static const CommunityProfileViewCorrelationScope public =
+      CommunityProfileViewCorrelationScope('public');
+
+  /// Every value this specification's schema permits.
+  static const List<CommunityProfileViewCorrelationScope> values =
+      <CommunityProfileViewCorrelationScope>[directed, public];
+}
+
 /// Trust-registry reachability. Populated on reads; not settable.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
@@ -131,6 +155,7 @@ class CommunityProfileView {
     this.contactEmail,
     required this.language,
     this.relationshipIdentifierDefault,
+    this.correlationScope,
     this.extensions,
     this.registryStatus,
     this.personhood,
@@ -152,6 +177,10 @@ class CommunityProfileView {
                 ? null
                 : CommunityProfileViewRelationshipIdentifierDefault(
                     json['relationshipIdentifierDefault'] as String),
+        correlationScope: json['correlationScope'] == null
+            ? null
+            : CommunityProfileViewCorrelationScope(
+                json['correlationScope'] as String),
         extensions: json['extensions'] as Map<String, dynamic>?,
         registryStatus: json['registryStatus'] == null
             ? null
@@ -187,6 +216,17 @@ class CommunityProfileView {
   final CommunityProfileViewRelationshipIdentifierDefault?
       relationshipIdentifierDefault;
 
+  /// The correlation scope the community declares for its own identifier, carried as
+  /// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+  /// statements). Per the DTG Credentials Core Specification, a community's identifier
+  /// is `directed` at minimum — every party that verifies its members' credentials must
+  /// be able to resolve it — and `public` where the community is open to outsiders; it
+  /// can never truthfully be `pairwise`, since a community has more than one member.
+  /// Absent means the community has not declared one; implementations issue `public`,
+  /// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+  /// community's credentials do not change.
+  final CommunityProfileViewCorrelationScope? correlationScope;
+
   /// Opaque community-defined extension bag.
   final Map<String, dynamic>? extensions;
 
@@ -208,6 +248,8 @@ class CommunityProfileView {
         'language': language,
         if (relationshipIdentifierDefault != null)
           'relationshipIdentifierDefault': relationshipIdentifierDefault!.value,
+        if (correlationScope != null)
+          'correlationScope': correlationScope!.value,
         if (extensions != null) 'extensions': extensions!,
         if (registryStatus != null) 'registryStatus': registryStatus!.value,
         if (personhood != null) 'personhood': personhood!.toJson(),
@@ -275,6 +317,27 @@ extension type const PayloadRelationshipIdentifierDefault(String value) {
       <PayloadRelationshipIdentifierDefault>[attributed, pairwise];
 }
 
+/// Set the community's declared correlation scope. See
+/// `CommunityProfile.correlationScope` in the `vtc/_shared/0.1/community` schema.
+/// Takes effect for credentials issued after the update; credentials already issued
+/// keep the `issuerScope` they declared. Omit to leave it unchanged.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const PayloadCorrelationScope(String value) {
+  static const PayloadCorrelationScope directed =
+      PayloadCorrelationScope('directed');
+  static const PayloadCorrelationScope public =
+      PayloadCorrelationScope('public');
+
+  /// Every value this specification's schema permits.
+  static const List<PayloadCorrelationScope> values = <PayloadCorrelationScope>[
+    directed,
+    public
+  ];
+}
+
 /// VTC Community Profile Update — payload
 class Payload {
   const Payload({
@@ -285,6 +348,7 @@ class Payload {
     this.contactEmail,
     this.language,
     this.relationshipIdentifierDefault,
+    this.correlationScope,
     this.personhood,
     this.extensions,
     this.ext,
@@ -303,6 +367,9 @@ class Payload {
                 ? null
                 : PayloadRelationshipIdentifierDefault(
                     json['relationshipIdentifierDefault'] as String),
+        correlationScope: json['correlationScope'] == null
+            ? null
+            : PayloadCorrelationScope(json['correlationScope'] as String),
         personhood: json['personhood'] == null
             ? null
             : PersonhoodGovernance.fromJson(
@@ -322,6 +389,12 @@ class Payload {
   /// `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community`
   /// schema. Omit to leave it unchanged.
   final PayloadRelationshipIdentifierDefault? relationshipIdentifierDefault;
+
+  /// Set the community's declared correlation scope. See
+  /// `CommunityProfile.correlationScope` in the `vtc/_shared/0.1/community` schema.
+  /// Takes effect for credentials issued after the update; credentials already issued
+  /// keep the `issuerScope` they declared. Omit to leave it unchanged.
+  final PayloadCorrelationScope? correlationScope;
 
   /// Set the community's published personhood position. See
   /// `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces
@@ -343,6 +416,8 @@ class Payload {
         if (language != null) 'language': language!,
         if (relationshipIdentifierDefault != null)
           'relationshipIdentifierDefault': relationshipIdentifierDefault!.value,
+        if (correlationScope != null)
+          'correlationScope': correlationScope!.value,
         if (personhood != null) 'personhood': personhood!.toJson(),
         if (extensions != null) 'extensions': extensions!,
         if (ext != null) 'ext': ext!,
@@ -383,11 +458,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/profile/update/0.1","title":"VTC Community Profile Update — payload","type":"object","additionalProperties":false,"properties":{"name":{"type":"string","minLength":1,"maxLength":256},"description":{"type":"string","maxLength":1024},"logoUrl":{"type":["string","null"]},"publicUrl":{"type":["string","null"]},"contactEmail":{"type":["string","null"]},"language":{"type":"string","minLength":1},"relationshipIdentifierDefault":{"type":"string","enum":["attributed","pairwise"],"description":"Set the community\'s declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."},"personhood":{"\$ref":"#/\$defs/PersonhoodGovernance","description":"Set the community\'s published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged."},"extensions":{"type":"object","description":"Opaque community-defined extension bag (maintainer-capped)."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"PersonhoodGovernance":{"\$anchor":"personhoodGovernance","title":"PersonhoodGovernance","type":"object","additionalProperties":false,"description":"A community\'s published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\"PHC status is determined by governance and trust registries, not by credential structure\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential\'s type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community\'s to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.","properties":{"realHuman":{"type":"boolean","description":"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."},"singleMembership":{"type":"boolean","description":"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\"exactly one membership in that VTC\\" — so a single community can satisfy it without any network above it."},"acceptedIdvps":{"type":"array","items":{"type":"string","minLength":1},"description":"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community\'s identity-proofing requirements. A community that checks its members\' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community\'s decision, recorded on the member\'s VMC. An empty list means no list has been published, not that everything is accepted."},"governanceFrameworkUrl":{"type":["string","null"],"description":"Where the governance framework these assertions refer to can be read."}}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/community/profile/update/0.1","title":"VTC Community Profile Update — payload","type":"object","additionalProperties":false,"properties":{"name":{"type":"string","minLength":1,"maxLength":256},"description":{"type":"string","maxLength":1024},"logoUrl":{"type":["string","null"]},"publicUrl":{"type":["string","null"]},"contactEmail":{"type":["string","null"]},"language":{"type":"string","minLength":1},"relationshipIdentifierDefault":{"type":"string","enum":["attributed","pairwise"],"description":"Set the community\'s declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."},"correlationScope":{"type":"string","enum":["directed","public"],"description":"Set the community\'s declared correlation scope. See `CommunityProfile.correlationScope` in the `vtc/_shared/0.1/community` schema. Takes effect for credentials issued after the update; credentials already issued keep the `issuerScope` they declared. Omit to leave it unchanged."},"personhood":{"\$ref":"#/\$defs/PersonhoodGovernance","description":"Set the community\'s published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged."},"extensions":{"type":"object","description":"Opaque community-defined extension bag (maintainer-capped)."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"PersonhoodGovernance":{"\$anchor":"personhoodGovernance","title":"PersonhoodGovernance","type":"object","additionalProperties":false,"description":"A community\'s published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\"PHC status is determined by governance and trust registries, not by credential structure\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential\'s type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community\'s to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.","properties":{"realHuman":{"type":"boolean","description":"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."},"singleMembership":{"type":"boolean","description":"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\"exactly one membership in that VTC\\" — so a single community can satisfy it without any network above it."},"acceptedIdvps":{"type":"array","items":{"type":"string","minLength":1},"description":"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community\'s identity-proofing requirements. A community that checks its members\' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community\'s decision, recorded on the member\'s VMC. An empty list means no list has been published, not that everything is accepted."},"governanceFrameworkUrl":{"type":["string","null"],"description":"Where the governance framework these assertions refer to can be read."}}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Community Profile Update — response payload","type":"object","additionalProperties":false,"required":["profile"],"properties":{"profile":{"\$ref":"#/\$defs/CommunityProfileView","description":"The community\'s profile as read, including the immutable `communityDid` an update cannot set."},"fieldsChanged":{"type":"array","items":{"type":"string"},"description":"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"CommunityProfileView":{"\$anchor":"communityProfileView","title":"CommunityProfileView","type":"object","additionalProperties":false,"description":"A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\\n\\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community\'s identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community\'s credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\\n\\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.","required":["communityDid","name","language"],"properties":{"communityDid":{"type":"string","minLength":1,"description":"The community\'s own DID — the identifier every credential it issues names as `issuer`, and the one a member\'s credential binds them to. Immutable: set when the community is created and not settable through an update."},"createdAt":{"type":"string","format":"date-time","description":"When the community was created. Immutable, like `communityDid`."},"name":{"type":"string","minLength":1,"maxLength":256},"description":{"type":"string","maxLength":1024},"logoUrl":{"type":["string","null"]},"publicUrl":{"type":["string","null"]},"contactEmail":{"type":["string","null"]},"language":{"type":"string","minLength":1},"relationshipIdentifierDefault":{"type":"string","enum":["attributed","pairwise"],"description":"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member\'s membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."},"extensions":{"type":"object","description":"Opaque community-defined extension bag."},"registryStatus":{"type":"string","enum":["active","degraded"],"description":"Trust-registry reachability. Populated on reads; not settable."},"personhood":{"\$ref":"#/\$defs/PersonhoodGovernance","description":"What this community\'s governance asserts about the personhood of its members."}}},"PersonhoodGovernance":{"\$anchor":"personhoodGovernance","title":"PersonhoodGovernance","type":"object","additionalProperties":false,"description":"A community\'s published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\"PHC status is determined by governance and trust registries, not by credential structure\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential\'s type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community\'s to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.","properties":{"realHuman":{"type":"boolean","description":"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."},"singleMembership":{"type":"boolean","description":"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\"exactly one membership in that VTC\\" — so a single community can satisfy it without any network above it."},"acceptedIdvps":{"type":"array","items":{"type":"string","minLength":1},"description":"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community\'s identity-proofing requirements. A community that checks its members\' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community\'s decision, recorded on the member\'s VMC. An empty list means no list has been published, not that everything is accepted."},"governanceFrameworkUrl":{"type":["string","null"],"description":"Where the governance framework these assertions refer to can be read."}}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Community Profile Update — response payload","type":"object","additionalProperties":false,"required":["profile"],"properties":{"profile":{"\$ref":"#/\$defs/CommunityProfileView","description":"The community\'s profile as read, including the immutable `communityDid` an update cannot set."},"fieldsChanged":{"type":"array","items":{"type":"string"},"description":"Names of the profile members this update actually changed, in the wire spelling. Empty when the submitted values all matched what was already stored. Lets a caller distinguish a no-op from an applied change without diffing the returned profile against the one it sent."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"CommunityProfileView":{"\$anchor":"communityProfileView","title":"CommunityProfileView","type":"object","additionalProperties":false,"description":"A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\\n\\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community\'s identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community\'s credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\\n\\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.","required":["communityDid","name","language"],"properties":{"communityDid":{"type":"string","minLength":1,"description":"The community\'s own DID — the identifier every credential it issues names as `issuer`, and the one a member\'s credential binds them to. Immutable: set when the community is created and not settable through an update."},"createdAt":{"type":"string","format":"date-time","description":"When the community was created. Immutable, like `communityDid`."},"name":{"type":"string","minLength":1,"maxLength":256},"description":{"type":"string","maxLength":1024},"logoUrl":{"type":["string","null"]},"publicUrl":{"type":["string","null"]},"contactEmail":{"type":["string","null"]},"language":{"type":"string","minLength":1},"relationshipIdentifierDefault":{"type":"string","enum":["attributed","pairwise"],"description":"Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member\'s membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."},"correlationScope":{"type":"string","enum":["directed","public"],"description":"The correlation scope the community declares for its own identifier, carried as `issuerScope` on every credential it issues (its VMC grants, role VACs and statements). Per the DTG Credentials Core Specification, a community\'s identifier is `directed` at minimum — every party that verifies its members\' credentials must be able to resolve it — and `public` where the community is open to outsiders; it can never truthfully be `pairwise`, since a community has more than one member. Absent means the community has not declared one; implementations issue `public`, the scope this registry required before DTG Credentials 0.7.0, so that an existing community\'s credentials do not change."},"extensions":{"type":"object","description":"Opaque community-defined extension bag."},"registryStatus":{"type":"string","enum":["active","degraded"],"description":"Trust-registry reachability. Populated on reads; not settable."},"personhood":{"\$ref":"#/\$defs/PersonhoodGovernance","description":"What this community\'s governance asserts about the personhood of its members."}}},"PersonhoodGovernance":{"\$anchor":"personhoodGovernance","title":"PersonhoodGovernance","type":"object","additionalProperties":false,"description":"A community\'s published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\"PHC status is determined by governance and trust registries, not by credential structure\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential\'s type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community\'s to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.","properties":{"realHuman":{"type":"boolean","description":"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on."},"singleMembership":{"type":"boolean","description":"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\"exactly one membership in that VTC\\" — so a single community can satisfy it without any network above it."},"acceptedIdvps":{"type":"array","items":{"type":"string","minLength":1},"description":"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community\'s identity-proofing requirements. A community that checks its members\' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community\'s decision, recorded on the member\'s VMC. An empty list means no list has been published, not that everything is accepted."},"governanceFrameworkUrl":{"type":["string","null"],"description":"Where the governance framework these assertions refer to can be read."}}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

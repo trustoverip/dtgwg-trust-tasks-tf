@@ -44,6 +44,14 @@
       ],
       "description": "Set the community's declared relationship-identifier default. See `CommunityProfile.relationshipIdentifierDefault` in the `vtc/_shared/0.1/community` schema. Omit to leave it unchanged."
     },
+    "correlationScope": {
+      "type": "string",
+      "enum": [
+        "directed",
+        "public"
+      ],
+      "description": "Set the community's declared correlation scope. See `CommunityProfile.correlationScope` in the `vtc/_shared/0.1/community` schema. Takes effect for credentials issued after the update; credentials already issued keep the `issuerScope` they declared. Omit to leave it unchanged."
+    },
     "personhood": {
       "$ref": "../../../../_shared/0.1/community.schema.json#/$defs/PersonhoodGovernance",
       "description": "Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged."

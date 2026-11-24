@@ -181,6 +181,14 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           ],
           "description": "Which identifier form the community expects members to issue relationship credentials under. `attributed` means the member's membership DID, so an edge names them; `pairwise` means a relationship DID unique to each counterparty. A declaration, not an enforcement: the member still chooses per relationship, and a community that wants to require one form does so in its own policy. Absent means the community has not declared one; implementations default to `pairwise`, matching the DTG Credentials recommendation."
         },
+        "correlationScope": {
+          "type": "string",
+          "enum": [
+            "directed",
+            "public"
+          ],
+          "description": "The correlation scope the community declares for its own identifier, carried as `issuerScope` on every credential it issues (its VMC grants, role VACs and statements). Per the DTG Credentials Core Specification, a community's identifier is `directed` at minimum — every party that verifies its members' credentials must be able to resolve it — and `public` where the community is open to outsiders; it can never truthfully be `pairwise`, since a community has more than one member. Absent means the community has not declared one; implementations issue `public`, the scope this registry required before DTG Credentials 0.7.0, so that an existing community's credentials do not change."
+        },
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag."

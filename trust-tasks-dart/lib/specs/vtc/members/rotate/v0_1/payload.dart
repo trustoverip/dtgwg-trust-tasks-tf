@@ -62,8 +62,10 @@ class Response {
 
   /// Role credential re-issued to the new DID (opaque here): a Verifiable Authority
   /// Credential (`type` including `AuthorityCredential`) issued by the community with
-  /// `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: &lt;community
-  /// DID&gt;, actions: \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
+  /// `issuerScope` `directed` or `public` (the community's own correlation scope:
+  /// `directed` at minimum, `public` where it is open to outsiders), whose
+  /// `credentialSubject.authority` is `{ scope: &lt;community DID&gt;, actions:
+  /// \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
   final Map<String, dynamic> roleVac;
   final Ext? ext;
 
@@ -158,7 +160,7 @@ const String payloadSchemaJson =
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","description":"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.","enum":["did:key","did:webvh","did:scid","did:webs"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","description":"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.","enum":["did:key","did:webvh","did:scid","did:webs"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community\'s own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.
