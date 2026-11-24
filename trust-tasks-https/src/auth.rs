@@ -252,9 +252,11 @@ mod jwt {
             let mut v = Validation::new(Algorithm::HS256);
             v.validate_exp = true;
             v.required_spec_claims.clear();
-            JwtBearerAuth::new(DecodingKey::from_secret(secret).unwrap(), v, |c: &Claims| {
-                c.vid.clone().or_else(|| Some(c.sub.clone()))
-            })
+            JwtBearerAuth::new(
+                DecodingKey::from_secret(secret).unwrap(),
+                v,
+                |c: &Claims| c.vid.clone().or_else(|| Some(c.sub.clone())),
+            )
         }
 
         #[test]
