@@ -18,27 +18,62 @@ use serde_json::{json, Value};
 /// which is all a response document has — then from each reached definition
 /// in full. A local `$ref` of any other form (`#`, an anchor) keeps every
 /// definition, so a reference this walk cannot read never loses its target.
-pub(crate) fn prune_unreachable_defs(doc: &Value) -> Value {
+///
+/// `request` marks the request schema, which also keeps each *free-standing*
+/// definition (since #1243 dropped them): one other than `Response` that no `#/$defs/<name>`
+/// reference anywhere in the document names. Only the specification itself
+/// can declare one — a definition spliced in from a shared component is there
+/// because something references it — and it does so for clients, such as a
+/// cleartext that travels only inside a seal
+/// (`vtc/storage/credentials/set`'s `SealedCredentialCleartext`), so a client
+/// reading `PAYLOAD_SCHEMA` finds it, with what it references. The response
+/// document carries a copy of the request's `$defs` without the request root,
+/// so it cannot tell the two apart and keeps only what `Response` reaches.
+pub(crate) fn prune_unreachable_defs(doc: &Value, request: bool) -> Value {
     let (Value::Object(root), Some(Value::Object(defs))) = (doc, doc.get("$defs")) else {
         return doc.clone();
+    };
+    let def_name = |r: &str| -> Option<String> {
+        r.strip_prefix("#/$defs/").map(|rest| {
+            rest.split('/')
+                .next()
+                .unwrap_or_default()
+                .replace("~1", "/")
+                .replace("~0", "~")
+        })
     };
     let mut root_view = root.clone();
     root_view.remove("$defs");
     let root_view = Value::Object(root_view);
     let mut reached: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
     let mut frontier: Vec<&Value> = vec![&root_view];
+    if request {
+        let mut named = std::collections::BTreeSet::new();
+        let mut scan: Vec<&Value> = vec![doc];
+        while let Some(node) = scan.pop() {
+            match node {
+                Value::Object(map) => {
+                    if let Some(name) = map.get("$ref").and_then(Value::as_str).and_then(def_name) {
+                        named.insert(name);
+                    }
+                    scan.extend(map.values());
+                }
+                Value::Array(items) => scan.extend(items.iter()),
+                _ => {}
+            }
+        }
+        for (name, def) in defs {
+            if name != "Response" && !named.contains(name) && reached.insert(name.clone()) {
+                frontier.push(def);
+            }
+        }
+    }
     let mut opaque = false;
     while let Some(node) = frontier.pop() {
         match node {
             Value::Object(map) => {
                 if let Some(Value::String(r)) = map.get("$ref") {
-                    if let Some(rest) = r.strip_prefix("#/$defs/") {
-                        let name = rest
-                            .split('/')
-                            .next()
-                            .unwrap_or_default()
-                            .replace("~1", "/")
-                            .replace("~0", "~");
+                    if let Some(name) = def_name(r) {
                         if let Some(def) = defs.get(&name) {
                             if reached.insert(name) {
                                 frontier.push(def);
@@ -804,9 +839,13 @@ mod prune_tests {
                 "B": { "properties": { "x": { "type": "string" } } },
                 "Response": {
                     "$anchor": "response",
-                    "properties": { "c": { "$ref": "#/$defs/C" } }
+                    "properties": {
+                        "c": { "$ref": "#/$defs/C" },
+                        "s": { "$ref": "#/$defs/Shared" }
+                    }
                 },
                 "C": { "type": "integer" },
+                "Shared": { "type": "boolean" },
                 "Unused": { "type": "null" }
             }
         })
@@ -824,26 +863,63 @@ mod prune_tests {
 
     #[test]
     fn the_request_keeps_what_its_root_reaches() {
-        assert_eq!(def_names(&prune_unreachable_defs(&request())), ["A", "B"]);
+        assert_eq!(
+            def_names(&prune_unreachable_defs(&request(), false)),
+            ["A", "B"]
+        );
     }
 
     #[test]
     fn the_response_keeps_what_response_reaches() {
         let doc = json!({ "$ref": "#/$defs/Response", "$defs": request()["$defs"] });
-        assert_eq!(def_names(&prune_unreachable_defs(&doc)), ["C", "Response"]);
+        assert_eq!(
+            def_names(&prune_unreachable_defs(&doc, false)),
+            ["C", "Response", "Shared"]
+        );
+    }
+
+    #[test]
+    fn the_request_keeps_a_free_standing_declaration() {
+        // `Unused` is named by no `$ref`: the specification declared it for
+        // clients. `C` and `Shared` are named, by `Response` only, so they go
+        // with it — as a shared definition spliced in for the response would.
+        assert_eq!(
+            def_names(&prune_unreachable_defs(&request(), true)),
+            ["A", "B", "Unused"]
+        );
+    }
+
+    #[test]
+    fn a_free_standing_declaration_keeps_what_it_references() {
+        let doc = json!({
+            "type": "object",
+            "$defs": {
+                "Cleartext": { "$ref": "#/$defs/Inner" },
+                "Inner": { "type": "string" },
+                "OnlyResponse": { "type": "integer" },
+                "Response": { "$ref": "#/$defs/OnlyResponse" }
+            }
+        });
+        assert_eq!(
+            def_names(&prune_unreachable_defs(&doc, true)),
+            ["Cleartext", "Inner"]
+        );
     }
 
     #[test]
     fn nothing_reached_drops_defs() {
         let doc = json!({ "type": "object", "$defs": { "Response": { "type": "object" } } });
-        assert_eq!(prune_unreachable_defs(&doc), json!({ "type": "object" }));
+        assert_eq!(
+            prune_unreachable_defs(&doc, true),
+            json!({ "type": "object" })
+        );
     }
 
     #[test]
     fn an_unreadable_local_ref_keeps_everything() {
         let mut doc = request();
         doc["properties"]["self"] = json!({ "$ref": "#" });
-        assert_eq!(prune_unreachable_defs(&doc), doc);
+        assert_eq!(prune_unreachable_defs(&doc, true), doc);
     }
 
     #[test]
@@ -852,6 +928,6 @@ mod prune_tests {
             "$ref": "#/$defs/a~1b",
             "$defs": { "a/b": { "type": "string" }, "c": {} }
         });
-        assert_eq!(def_names(&prune_unreachable_defs(&doc)), ["a/b"]);
+        assert_eq!(def_names(&prune_unreachable_defs(&doc, false)), ["a/b"]);
     }
 }

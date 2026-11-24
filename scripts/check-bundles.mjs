@@ -17,7 +17,9 @@
 //   3. the index lists exactly the bundles on disk, and each entry's slug,
 //      version, status, deprecation and extends match the bundle;
 //   4. every non-withdrawn bundle's `schema` / `responseSchema`, pruned to the
-//      `$defs` its root reaches, equal, as parsed JSON, the TypeScript
+//      `$defs` its root reaches (the request also keeping each definition the
+//      payload schema declares itself, other than `Response`, that nothing
+//      references), equal, as parsed JSON, the TypeScript
 //      generated module's `PAYLOAD_SCHEMA` / `RESPONSE_PAYLOAD_SCHEMA` — an
 //      independent generator's inlining of the same `$ref`s
 //      (scripts/build-ts-bindings.mjs). The bundle carries each side's full
@@ -117,7 +119,7 @@ function tsConst(src, name) {
  * references, or null when it holds a local `$ref` of another form (`#`, an
  * anchor), which the generators answer by keeping every definition.
  */
-function reachedDefs(doc) {
+function reachedDefs(doc, seeds = []) {
   const defs = doc.$defs ?? {};
   const seen = new Set();
   let other = false;
@@ -140,13 +142,41 @@ function reachedDefs(doc) {
   };
   const { $defs: _ignored, ...root } = doc;
   visit(root);
+  for (const name of seeds) {
+    if (!seen.has(name)) {
+      seen.add(name);
+      visit(defs[name]);
+    }
+  }
   return other ? null : seen;
 }
 
-/** `doc` as a generator emits it: only the `$defs` its root reaches (#1098). */
-function pruned(doc) {
+/**
+ * The definitions a specification declares for clients rather than for its
+ * payload: its own (no `defOrigins` entry), other than `Response`, and named
+ * by no `#/$defs/` reference anywhere in `doc` (`vtc/storage/credentials/set`'s
+ * `SealedCredentialCleartext`). The request schema keeps them.
+ */
+function freeStanding(doc, origins) {
+  const named = new Set();
+  JSON.stringify(doc, (key, value) => {
+    if (key === "$ref" && typeof value === "string" && value.startsWith("#/$defs/")) {
+      named.add(value.slice(8).split("/")[0].split("~1").join("/").split("~0").join("~"));
+    }
+    return value;
+  });
+  return Object.keys(doc.$defs).filter(
+    (name) => name !== "Response" && !Object.hasOwn(origins, name) && !named.has(name),
+  );
+}
+
+/**
+ * `doc` as a generator emits it: only the `$defs` its root reaches (#1098),
+ * and for the request schema (`origins` given) its free-standing declarations.
+ */
+function pruned(doc, origins = null) {
   if (!doc || !doc.$defs || typeof doc.$defs !== "object") return doc;
-  const keep = reachedDefs(doc);
+  const keep = reachedDefs(doc, origins === null ? [] : freeStanding(doc, origins));
   if (keep === null) return doc;
   const { $defs, ...rest } = doc;
   const kept = Object.fromEntries(Object.entries($defs).filter(([name]) => keep.has(name)));
@@ -240,7 +270,7 @@ for (const [rel, entry] of listed) {
   const src = fs.readFileSync(tsPath, "utf8");
   const tsRequest = tsConst(src, "PAYLOAD_SCHEMA");
   const tsResponse = tsConst(src, "RESPONSE_PAYLOAD_SCHEMA") ?? null;
-  const request = pruned(bundle.schema);
+  const request = pruned(bundle.schema, bundle.defOrigins ?? {});
   const response = pruned(bundle.responseSchema);
   if (canonical(tsRequest) !== canonical(request)) {
     fail(`${rel}: schema, pruned to the $defs it reaches, differs from the TypeScript PAYLOAD_SCHEMA`);

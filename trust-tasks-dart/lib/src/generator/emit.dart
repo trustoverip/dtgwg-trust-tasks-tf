@@ -335,9 +335,14 @@ const List<String> _takenTypeNames = [
 /// object without its `$defs` (its own `$ref` included — all a response
 /// document has), then each reached definition whole. Any other local `$ref`
 /// (`#`, an anchor) keeps every definition, and the text is returned as given.
-/// The other generators each implement the same rule independently;
-/// check-bindings compares the results.
-String pruneUnreachableDefs(String schemaText) {
+/// With [request], the request schema also keeps each free-standing definition:
+/// one other than `Response` that no `#/$defs/<name>` reference anywhere in the
+/// document names — which only the specification itself can declare, for
+/// clients (`vtc/storage/credentials/set`'s `SealedCredentialCleartext`) — and
+/// what it reaches. The response document has no request root to tell those
+/// apart, so it keeps only what it reaches. The other generators each implement
+/// the same rule independently; check-bindings compares the results.
+String pruneUnreachableDefs(String schemaText, {required bool request}) {
   final doc = jsonDecode(schemaText);
   if (doc is! Map<String, dynamic>) return schemaText;
   final defs = doc[r'$defs'];
@@ -350,6 +355,32 @@ String pruneUnreachableDefs(String schemaText) {
         if (e.key != r'$defs') e.key: e.value,
     },
   ];
+  if (request) {
+    final named = <String>{};
+    final scan = <Object?>[doc];
+    while (scan.isNotEmpty) {
+      final node = scan.removeLast();
+      if (node is List) {
+        scan.addAll(node);
+      } else if (node is Map<String, dynamic>) {
+        final ref = node[r'$ref'];
+        if (ref is String && ref.startsWith(r'#/$defs/')) {
+          named.add(ref
+              .substring(8)
+              .split('/')
+              .first
+              .replaceAll('~1', '/')
+              .replaceAll('~0', '~'));
+        }
+        scan.addAll(node.values);
+      }
+    }
+    for (final d in defs.entries) {
+      if (d.key != 'Response' && !named.contains(d.key) && reached.add(d.key)) {
+        frontier.add(d.value);
+      }
+    }
+  }
   while (frontier.isNotEmpty) {
     final node = frontier.removeLast();
     if (node is List) {
@@ -936,12 +967,12 @@ List<String> _emitTail(Bundle b, bool hasResponse) {
     "/// schema's constraints — not minLength, not pattern, not the oneOf mutual",
     r'/// exclusion — so without it every such rule is unenforced. Cross-file \$refs are',
     '/// already inlined, so it needs no resolver.',
-    'const String payloadSchemaJson = ${dartString(pruneUnreachableDefs(b.schemaText))};',
+    'const String payloadSchemaJson = ${dartString(pruneUnreachableDefs(b.schemaText, request: true))};',
   ].join('\n'));
   if (b.responseSchemaText != null) {
     out.add([
       '/// As [payloadSchemaJson], for the success-response variant.',
-      'const String responsePayloadSchemaJson = ${dartString(pruneUnreachableDefs(b.responseSchemaText!))};',
+      'const String responsePayloadSchemaJson = ${dartString(pruneUnreachableDefs(b.responseSchemaText!, request: false))};',
     ].join('\n'));
   }
 

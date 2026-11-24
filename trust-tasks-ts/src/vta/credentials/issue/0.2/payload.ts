@@ -127,6 +127,44 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
+    "GovernancePolicyClaims": {
+      "$anchor": "governancePolicyClaims",
+      "title": "GovernancePolicyClaims",
+      "description": "Claims profile activated by credentialType \"GovernancePolicyCredential\": the issuing authority attests the complete governing parameter document for a domain, so that enforcement components load policy out of the credential and attestations cite a policyHash whose issuance chain a verifier can check. When the request's credentialType is GovernancePolicyCredential, payload.claims MUST validate against this definition; the consumer refuses a mismatch with vta/credentials/issue:profileViolation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "policy",
+        "policyHash"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The domain (scope of enforcement) the policy governs — the identifier attestations bind to. Opaque to the framework; typically a DID or a deployment-scoped domain name."
+        },
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trust context the domain belongs to, when the issuing VTA partitions per context."
+        },
+        "policy": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The complete governing parameter document (for an LLM gateway: model allowlist, budget caps, upstream pin, privacy tier, …). Opaque to the framework. The enforcing component MUST load its runtime policy from this object — citing the credential while enforcing locally-held configuration defeats the profile's purpose."
+        },
+        "policyHash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multibase-encoded multihash over the JCS (RFC 8785) canonicalization of `policy`. This is the value attestations cite; the consumer MUST verify it matches `policy` before minting and refuse a mismatch with profileViolation."
+        },
+        "policyMediaType": {
+          "type": "string",
+          "description": "Media type of the `policy` document. Default application/json."
+        }
+      }
+    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

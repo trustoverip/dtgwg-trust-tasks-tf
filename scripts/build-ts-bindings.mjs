@@ -213,10 +213,16 @@ function inlineCrossFileRefs(schema, baseDir) {
  * segment, pointer-unescaped) from the root object without its `$defs` (its
  * own `$ref` included — all a response document has), then each reached
  * definition whole. Any other local `$ref` (`#`, an anchor) keeps
- * every definition. Written independently of the other generators' copies
+ * every definition. With `request`, the request schema also keeps each
+ * free-standing definition: one other than `Response` that no `#/$defs/<name>`
+ * reference anywhere in the document names — which only the specification
+ * itself can declare, for clients (`vtc/storage/credentials/set`'s
+ * `SealedCredentialCleartext`) — and what it reaches. The response document
+ * has no request root to tell those apart, so it keeps only what it reaches.
+ * Written independently of the other generators' copies
  * (see the file header); `check-bindings` compares the results.
  */
-function pruneUnreachableDefs(doc) {
+function pruneUnreachableDefs(doc, request) {
   if (doc === null) return null;
   const defs = doc.$defs;
   if (!defs || typeof defs !== "object" || Array.isArray(defs)) return doc;
@@ -225,6 +231,26 @@ function pruneUnreachableDefs(doc) {
   const rootView = { ...doc };
   delete rootView.$defs;
   const frontier = [rootView];
+  if (request) {
+    const named = new Set();
+    const scan = [doc];
+    while (scan.length > 0) {
+      const node = scan.pop();
+      if (Array.isArray(node)) scan.push(...node);
+      else if (node && typeof node === "object") {
+        if (typeof node.$ref === "string" && node.$ref.startsWith("#/$defs/")) {
+          named.add(node.$ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~"));
+        }
+        scan.push(...Object.values(node));
+      }
+    }
+    for (const [name, def] of Object.entries(defs)) {
+      if (name !== "Response" && !named.has(name)) {
+        reached.add(name);
+        frontier.push(def);
+      }
+    }
+  }
   while (frontier.length > 0) {
     const node = frontier.pop();
     if (Array.isArray(node)) {
@@ -1164,13 +1190,13 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
       ` * reads it at the type level. (An index signature, not \`Readonly<Record<…>>\`:`,
       ` * a schema may itself define a type named \`Record\`.)`,
       ` */`,
-      `export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.request), null, 2)};`,
+      `export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.request, true), null, 2)};`,
       "",
     );
     if (schemas.response) {
       lines.push(
         `/** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */`,
-        `export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.response), null, 2)};`,
+        `export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = ${JSON.stringify(pruneUnreachableDefs(schemas.response, false), null, 2)};`,
         "",
       );
     }
