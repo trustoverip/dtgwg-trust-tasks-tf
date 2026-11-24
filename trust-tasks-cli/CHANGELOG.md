@@ -3,6 +3,9 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.2.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.2.3...trust-tasks-cli-v0.2.4) — 2026-11-24
+
+
 ## [0.2.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.2.2...trust-tasks-cli-v0.2.3) — 2026-11-16
 
 
