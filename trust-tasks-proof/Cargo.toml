@@ -66,7 +66,7 @@ tokio = { version = "1", default-features = false, features = ["time"], optional
 [dev-dependencies]
 # The tests, examples and doc examples build real tasks.
 trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
-affinidi-secrets-resolver = "0.5.18"
+affinidi-secrets-resolver = "0.6.0"
 affinidi-did-common = ">=0.4.7, <0.6"
 base64 = "0.23"
 tokio = { version = "1", features = ["macros", "rt"] }

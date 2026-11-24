@@ -15,7 +15,7 @@ publish = true
 # default features would switch on every one of them for every application
 # that depends on it, including one that generates only the tasks it pins.
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.40", default-features = false }
-affinidi-messaging-didcomm = "0.15.14"
+affinidi-messaging-didcomm = "0.16.0"
 base64 = "0.23"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
@@ -37,9 +37,9 @@ uuid = { version = "1", features = ["v4"] }
 # 0.2 and pass its key types to affinidi-messaging-didcomm and
 # affinidi-secrets-resolver, which now build on 0.3. They return with a
 # test-mediator release on affinidi-crypto 0.3.
-affinidi-messaging-didcomm = "0.15.14"
-affinidi-secrets-resolver = "0.5.18"
+affinidi-messaging-didcomm = "0.16.0"
+affinidi-secrets-resolver = "0.6.0"
 # For the Go-interop test: construct affinidi key-agreement types from raw
 # X25519 bytes and call the low-level jwe::decrypt_bound on a Go-produced JWE.
-affinidi-crypto = "0.3"
+affinidi-crypto = "0.4"
 serde_json = "1"

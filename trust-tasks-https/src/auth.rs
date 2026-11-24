@@ -243,7 +243,7 @@ mod jwt {
             encode(
                 &Header::new(Algorithm::HS256),
                 claims,
-                &EncodingKey::from_secret(secret),
+                &EncodingKey::from_secret(secret).unwrap(),
             )
             .unwrap()
         }
@@ -252,9 +252,11 @@ mod jwt {
             let mut v = Validation::new(Algorithm::HS256);
             v.validate_exp = true;
             v.required_spec_claims.clear();
-            JwtBearerAuth::new(DecodingKey::from_secret(secret), v, |c: &Claims| {
-                c.vid.clone().or_else(|| Some(c.sub.clone()))
-            })
+            JwtBearerAuth::new(
+                DecodingKey::from_secret(secret).unwrap(),
+                v,
+                |c: &Claims| c.vid.clone().or_else(|| Some(c.sub.clone())),
+            )
         }
 
         #[test]
@@ -280,7 +282,7 @@ mod jwt {
         fn empty_validation_algorithms_is_rejected_at_construction() {
             let mut v = Validation::new(Algorithm::HS256);
             v.algorithms.clear(); // pins nothing — must not be constructible
-            let _ = JwtBearerAuth::new(DecodingKey::from_secret(b"x"), v, |c: &Claims| {
+            let _ = JwtBearerAuth::new(DecodingKey::from_secret(b"x").unwrap(), v, |c: &Claims| {
                 Some(c.sub.clone())
             });
         }
@@ -296,7 +298,7 @@ mod jwt {
                     vid: None,
                     exp: 10_000_000_000,
                 },
-                &EncodingKey::from_secret(secret),
+                &EncodingKey::from_secret(secret).unwrap(),
             )
             .unwrap();
             assert_eq!(auth(secret).resolve(&token), None);

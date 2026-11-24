@@ -64,7 +64,7 @@ reqwest = { version = "0.13", optional = true, default-features = false, feature
 # carries the open Marvin-Attack advisory RUSTSEC-2023-0071 with no
 # patch available. `aws-lc-rs` is already in the workspace dep graph
 # via rustls, so reusing it here costs nothing extra.
-jsonwebtoken = { version = "11", optional = true, default-features = false, features = [
+jsonwebtoken = { version = "12", optional = true, default-features = false, features = [
   "aws_lc_rs",
 ] }
 
@@ -96,4 +96,4 @@ async-trait = "0.1"
 trust-tasks-proof = { path = "../trust-tasks-proof", features = [
   "affinidi",
 ] }
-affinidi-secrets-resolver = "0.5.18"
+affinidi-secrets-resolver = "0.6.0"
