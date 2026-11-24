@@ -3,6 +3,19 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.41.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.40.5...trust-tasks-didcomm-v1-v0.41.0) — 2026-11-24
+
+
+### Build & CI
+
+- **rs**: Move to the affinidi-tdk 0.49 generation and jsonwebtoken 12 ([#1352](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1352))
+
+* test(https): unwrap the fallible HMAC key constructors of jsonwebtoken 12
+
+  jsonwebtoken 12 returns a Result from EncodingKey::from_secret and DecodingKey::from_secret, because it rejects empty HMAC keys. Test code only.
+
+
+
 ## [0.40.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.40.4...trust-tasks-didcomm-v1-v0.40.5) — 2026-11-19
 
 

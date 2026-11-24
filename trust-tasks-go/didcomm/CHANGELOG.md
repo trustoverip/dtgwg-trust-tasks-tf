@@ -3,6 +3,8 @@
 All notable changes to `trust-tasks-go/didcomm` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.3.4 — 2026-11-24
+
 ## 0.3.3 — 2026-11-14
 
 

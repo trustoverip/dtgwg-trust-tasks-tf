@@ -6,6 +6,19 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.41.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.40.5...trust-tasks-https-v0.41.0) — 2026-11-24
+
+
+### Build & CI
+
+- **rs**: Move to the affinidi-tdk 0.49 generation and jsonwebtoken 12 ([#1352](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1352))
+
+* test(https): unwrap the fallible HMAC key constructors of jsonwebtoken 12
+
+  jsonwebtoken 12 returns a Result from EncodingKey::from_secret and DecodingKey::from_secret, because it rejects empty HMAC keys. Test code only.
+
+
+
 ## [0.40.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.40.4...trust-tasks-https-v0.40.5) — 2026-11-19
 
 
