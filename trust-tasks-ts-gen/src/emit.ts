@@ -131,11 +131,17 @@ interface TailInput {
  * form `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the
  * root object without its `$defs` (its own `$ref` included — all a response
  * document has), then each reached definition whole. Any
- * other local `$ref` (`#`, an anchor) keeps every definition. Kept in step with
+ * other local `$ref` (`#`, an anchor) keeps every definition. With `request`,
+ * the request schema also keeps each free-standing definition: one other than
+ * `Response` that no `#/$defs/<name>` reference anywhere in the document names
+ * — which only the specification itself can declare, for clients
+ * (`vtc/storage/credentials/set`'s `SealedCredentialCleartext`) — and what it
+ * reaches. The response document has no request root to tell those apart, so
+ * it keeps only what it reaches. Kept in step with
  * `prune_unreachable_defs` in trust-tasks-build and the other generators'
  * copies; `check-bindings` compares the results.
  */
-function pruneUnreachableDefs(doc: JsonObject): JsonObject {
+function pruneUnreachableDefs(doc: JsonObject, request: boolean): JsonObject {
   if (!isObject(doc.$defs)) return doc;
   const defs = doc.$defs;
   const reached = new Set<string>();
@@ -143,6 +149,27 @@ function pruneUnreachableDefs(doc: JsonObject): JsonObject {
   const rootView: JsonObject = { ...doc };
   delete rootView.$defs;
   const frontier: Json[] = [rootView];
+  if (request) {
+    const named = new Set<string>();
+    const scan: Json[] = [doc];
+    while (scan.length > 0) {
+      const node = scan.pop();
+      if (Array.isArray(node)) scan.push(...node);
+      else if (isObject(node)) {
+        const ref = node.$ref;
+        if (typeof ref === "string" && ref.startsWith("#/$defs/")) {
+          named.add(ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~"));
+        }
+        scan.push(...Object.values(node));
+      }
+    }
+    for (const [name, def] of Object.entries(defs)) {
+      if (name !== "Response" && !named.has(name)) {
+        reached.add(name);
+        frontier.push(def);
+      }
+    }
+  }
   while (frontier.length > 0) {
     const node = frontier.pop();
     if (Array.isArray(node)) frontier.push(...node);
@@ -179,8 +206,8 @@ function pruneUnreachableDefs(doc: JsonObject): JsonObject {
 function emitTail(ts: string, rootType: string, responseType: string | null, where: string, t: TailInput): string {
   const { typeUri, deprecation, bundle } = t;
   const schemas = {
-    request: pruneUnreachableDefs(t.schemas.request),
-    response: t.schemas.response === null ? null : pruneUnreachableDefs(t.schemas.response),
+    request: pruneUnreachableDefs(t.schemas.request, true),
+    response: t.schemas.response === null ? null : pruneUnreachableDefs(t.schemas.response, false),
   };
   const policy = bundle.policy;
   const aliasDoc = (what: string): string[] =>

@@ -287,13 +287,13 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 		}
 	}
 
-	requestJSON, err := compactPruned(b.Schema)
+	requestJSON, err := compactPruned(b.Schema, true)
 	if err != nil {
 		return generated{}, err
 	}
 	responseJSON := ""
 	if hasResponse {
-		if responseJSON, err = compactPruned(b.ResponseSchema); err != nil {
+		if responseJSON, err = compactPruned(b.ResponseSchema, false); err != nil {
 			return generated{}, err
 		}
 	}
@@ -341,8 +341,8 @@ func sourceLabel(source string) string {
 
 // compactPruned is compact over pruneUnreachableDefs: the text of a schema
 // constant.
-func compactPruned(raw json.RawMessage) (string, error) {
-	pruned, err := pruneUnreachableDefs(raw)
+func compactPruned(raw json.RawMessage, request bool) (string, error) {
+	pruned, err := pruneUnreachableDefs(raw, request)
 	if err != nil {
 		return "", err
 	}
@@ -359,13 +359,19 @@ func compactPruned(raw json.RawMessage) (string, error) {
 // `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the root
 // object without its `$defs` (its own `$ref` included — all a response
 // document has), then each reached definition whole. Any other
-// local `$ref` (`#`, an anchor) keeps every definition. The other generators
+// local `$ref` (`#`, an anchor) keeps every definition. With request, the
+// request schema also keeps each free-standing definition: one other than
+// `Response` that no `#/$defs/<name>` reference anywhere in the document names
+// — which only the specification itself can declare, for clients
+// (`vtc/storage/credentials/set`'s `SealedCredentialCleartext`) — and what it
+// reaches. The response document has no request root to tell those apart, so
+// it keeps only what it reaches. The other generators
 // each implement the same rule independently; check-bindings compares the
 // results.
 //
 // The bundle is canonical (key-sorted), so re-encoding the root and `$defs` as
 // maps keeps their order.
-func pruneUnreachableDefs(raw json.RawMessage) (json.RawMessage, error) {
+func pruneUnreachableDefs(raw json.RawMessage, request bool) (json.RawMessage, error) {
 	var root map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &root); err != nil {
 		return nil, err
@@ -395,6 +401,40 @@ func pruneUnreachableDefs(raw json.RawMessage) (json.RawMessage, error) {
 		return nil, err
 	} else if err := push(view); err != nil {
 		return nil, err
+	}
+	if request {
+		var whole any
+		if err := json.Unmarshal(raw, &whole); err != nil {
+			return nil, err
+		}
+		named := map[string]bool{}
+		scan := []any{whole}
+		for len(scan) > 0 {
+			node := scan[len(scan)-1]
+			scan = scan[:len(scan)-1]
+			switch t := node.(type) {
+			case []any:
+				scan = append(scan, t...)
+			case map[string]any:
+				if ref, ok := t["$ref"].(string); ok {
+					if rest, ok := strings.CutPrefix(ref, "#/$defs/"); ok {
+						name, _, _ := strings.Cut(rest, "/")
+						named[strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")] = true
+					}
+				}
+				for _, v := range t {
+					scan = append(scan, v)
+				}
+			}
+		}
+		for name, def := range defs {
+			if name != "Response" && !named[name] {
+				reached[name] = true
+				if err := push(def); err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 	for len(frontier) > 0 {
 		node := frontier[len(frontier)-1]

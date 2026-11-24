@@ -130,6 +130,134 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
+    "SealedCredentialCleartext": {
+      "$ref": "#/$defs/SealedStorageCredential",
+      "description": "Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal."
+    },
+    "SealedStorageCredential": {
+      "title": "SealedStorageCredential",
+      "description": "The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "configId",
+            "accessKeyId",
+            "secretAccessKey"
+          ],
+          "description": "An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).",
+          "properties": {
+            "kind": {
+              "const": "s3"
+            },
+            "configId": {
+              "$ref": "#/$defs/StorageConfigId"
+            },
+            "accessKeyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9]+$",
+              "description": "The access key's identifier."
+            },
+            "secretAccessKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^[!-~]+$",
+              "description": "The secret half."
+            },
+            "sessionToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192,
+              "pattern": "^[!-~]+$",
+              "description": "Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "configId",
+            "serviceAccountKey"
+          ],
+          "description": "A Google Cloud service-account key.",
+          "properties": {
+            "kind": {
+              "const": "gcs"
+            },
+            "configId": {
+              "$ref": "#/$defs/StorageConfigId"
+            },
+            "serviceAccountKey": {
+              "type": "object",
+              "additionalProperties": true,
+              "required": [
+                "type",
+                "client_email",
+                "private_key_id",
+                "private_key"
+              ],
+              "description": "The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.",
+              "properties": {
+                "type": {
+                  "const": "service_account"
+                },
+                "client_email": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 320,
+                  "pattern": "^[^@\\s]+@[^@\\s]+$"
+                },
+                "private_key_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9]+$"
+                },
+                "private_key": {
+                  "type": "string",
+                  "minLength": 64,
+                  "maxLength": 8192,
+                  "pattern": "^-----BEGIN PRIVATE KEY-----",
+                  "description": "The PKCS #8 PEM private key."
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "configId",
+            "suiPrivateKey"
+          ],
+          "description": "The Sui key that pays for a `walrus` config's storage.",
+          "properties": {
+            "kind": {
+              "const": "walrus"
+            },
+            "configId": {
+              "$ref": "#/$defs/StorageConfigId"
+            },
+            "suiPrivateKey": {
+              "type": "string",
+              "minLength": 20,
+              "maxLength": 256,
+              "pattern": "^suiprivkey1[02-9ac-hj-np-z]+$",
+              "description": "The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme."
+            }
+          }
+        }
+      ]
+    },
     "StorageConfigId": {
       "title": "StorageConfigId",
       "type": "string",

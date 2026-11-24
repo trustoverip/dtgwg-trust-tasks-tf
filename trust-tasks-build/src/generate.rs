@@ -133,11 +133,11 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     // Each side keeps only the `$defs` its root reaches (#1098): the request
     // drops `Response` and what only it uses, the response what only the
     // request uses. The bundle itself is untouched.
-    let raw = serde_json::to_string(&prune_unreachable_defs(&schema))? + "\n";
+    let raw = serde_json::to_string(&prune_unreachable_defs(&schema, true))? + "\n";
     let response_raw = bundle
         .response_schema
         .as_ref()
-        .map(|doc| serde_json::to_string(&prune_unreachable_defs(doc)).map(|s| s + "\n"))
+        .map(|doc| serde_json::to_string(&prune_unreachable_defs(doc, false)).map(|s| s + "\n"))
         .transpose()?;
 
     let has_response = normalize_titles(&mut schema)?;

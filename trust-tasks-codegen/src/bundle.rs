@@ -317,6 +317,8 @@ mod tests {
             ("vault/upsert", "0.4"),         // errorCodes with detailsSchema $refs
             ("chat/message", "0.1"),         // no $defs.Response
             ("provision/vta/redeem", "0.1"), // maxDocumentBytes
+            // A free-standing definition, declared for clients
+            ("vtc/storage/credentials/set", "0.3"),
         ];
         let out_root = std::env::temp_dir().join("tt-bundle-test-unused");
         for (slug, version) in cases {
@@ -337,6 +339,12 @@ mod tests {
                 !names.iter().any(|n| n == "Response"),
                 "{ctx}: the request schema still carries $defs.Response"
             );
+            if slug == "vtc/storage/credentials/set" {
+                assert!(
+                    names.iter().any(|n| n == "SealedCredentialCleartext"),
+                    "{ctx}: the request schema dropped the cleartext it declares for clients"
+                );
+            }
             let policy = &bundle["policy"];
             assert_eq!(policy["bearer"], json!(request.bearer), "{ctx} bearer");
             assert_eq!(

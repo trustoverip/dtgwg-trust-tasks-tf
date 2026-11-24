@@ -185,6 +185,11 @@ Both carry every root `$defs` entry: the request schema keeps `$defs.Response`,
 and the response document a copy of the request's definitions. A generator
 emits each one pruned to the definitions its root reaches (#1098), dropping
 `$defs` when none are left, and still generates types from the whole schema.
+The request schema also keeps each *free-standing* definition — one other than
+`Response` that no `#/$defs/<name>` reference anywhere in it names, which only
+the specification itself can declare, for clients (a cleartext that travels only
+inside a seal) — and what it references. The response document, which has the
+request's `$defs` but not its root, keeps only what it reaches.
 The bundle is not pruned, because that would change every published digest.
 
 The policy is per variant rather than the single `recipient` the sketch above

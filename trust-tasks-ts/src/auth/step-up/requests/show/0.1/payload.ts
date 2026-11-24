@@ -113,6 +113,32 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^[A-Za-z0-9_-]{22,86}$"
     },
+    "Handoff": {
+      "title": "Handoff",
+      "description": "What a relying party MAY carry as `details.stepUpHandoff` beside an inline `details.stepUpRequest` (auth/step-up/approve-request/0.5, Inline delivery), so that a producer which cannot obtain the evidence itself can hand the step-up to the subject's approver agent. Not a payload of this task: defined here so producers and consumers share one shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handle",
+        "expiresAt",
+        "show"
+      ],
+      "properties": {
+        "handle": {
+          "$ref": "#/$defs/Handle"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The instant after which the relying party answers the handle with `notFound`: no later than the pending step-up's own expiry."
+        },
+        "show": {
+          "type": "string",
+          "const": "https://trusttasks.org/spec/auth/step-up/requests/show/0.1",
+          "description": "The Type URI the approver's agent sends with the handle."
+        }
+      }
+    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

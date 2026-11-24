@@ -455,7 +455,15 @@ and `/specs/index.json`; the bundles are not committed.
   they emit** (#1098). Every schema constant in all four languages — prebuilt
   and consumer-side — keeps only the root `$defs` its root reaches (the request
   drops `Response` and what only it uses; the response document drops what
-  only the request uses), and drops `$defs` when nothing is left. Pruning the
+  only the request uses), and drops `$defs` when nothing is left. The request
+  constant also keeps every *free-standing* definition — one other than
+  `Response` that no `#/$defs/<name>` reference anywhere in the schema names,
+  with what it references. Only a specification declares one (a spliced shared
+  definition is there because something references it), and it does so for
+  clients: `vtc/storage/credentials/set`'s `SealedCredentialCleartext` travels
+  only inside a seal, and VTI reads it, and its OpenAPI components, out of
+  `PAYLOAD_SCHEMA`. The response document has the request's `$defs` without its
+  root, so it cannot tell them apart and keeps only what it reaches. Pruning the
   bundle instead would change every digest a `trust-tasks.lock` pins. Seven
   independent copies of the rule (`prune_unreachable_defs` in
   `trust-tasks-build`, `pruneUnreachableDefs` in the three `build-*-bindings`
