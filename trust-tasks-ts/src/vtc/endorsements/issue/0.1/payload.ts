@@ -28,7 +28,7 @@ export interface VTCEndorsementsIssuePayload {
 export interface VTCEndorsementsIssueResponsePayload {
   endorsement: Endorsement;
   /**
-   * The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
+   * The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
    */
   credential: {};
   ext?: Ext;
@@ -150,7 +150,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "credential": {
           "type": "object",
-          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
+          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

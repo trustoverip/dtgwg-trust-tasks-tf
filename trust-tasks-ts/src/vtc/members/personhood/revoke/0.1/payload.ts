@@ -24,7 +24,7 @@ export interface VTCMembersPersonhoodRevokeResponsePayload {
    */
   vmc?: {};
   /**
-   * Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.
+   * Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.
    */
   roleVac?: {};
   ext?: Ext;
@@ -138,7 +138,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "roleVac": {
           "type": "object",
-          "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."
+          "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

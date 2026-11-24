@@ -176,7 +176,7 @@ export interface VTCMembersPersonhoodAssertResponsePayload {
    */
   vmc: {};
   /**
-   * Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
+   * Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
    */
   roleVac: {};
   ext?: Ext;
@@ -332,7 +332,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "roleVac": {
           "type": "object",
-          "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
+          "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

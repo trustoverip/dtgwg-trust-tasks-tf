@@ -7574,6 +7574,10 @@ export interface CommunityProfileView {
    */
   relationshipIdentifierDefault?: "attributed" | "pairwise";
   /**
+   * The correlation scope the community declares for its own identifier, carried as `issuerScope` on every credential it issues (its VMC grants, role VACs and statements). Per the DTG Credentials Core Specification, a community's identifier is `directed` at minimum — every party that verifies its members' credentials must be able to resolve it — and `public` where the community is open to outsiders; it can never truthfully be `pairwise`, since a community has more than one member. Absent means the community has not declared one; implementations issue `public`, the scope this registry required before DTG Credentials 0.7.0, so that an existing community's credentials do not change.
+   */
+  correlationScope?: "directed" | "public";
+  /**
    * Opaque community-defined extension bag.
    */
   extensions?: {};

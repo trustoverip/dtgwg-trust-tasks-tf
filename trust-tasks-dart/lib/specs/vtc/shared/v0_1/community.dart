@@ -92,6 +92,30 @@ extension type const CommunityProfileRelationshipIdentifierDefault(
       <CommunityProfileRelationshipIdentifierDefault>[attributed, pairwise];
 }
 
+/// The correlation scope the community declares for its own identifier, carried as
+/// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+/// statements). Per the DTG Credentials Core Specification, a community's identifier
+/// is `directed` at minimum — every party that verifies its members' credentials must
+/// be able to resolve it — and `public` where the community is open to outsiders; it
+/// can never truthfully be `pairwise`, since a community has more than one member.
+/// Absent means the community has not declared one; implementations issue `public`,
+/// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+/// community's credentials do not change.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const CommunityProfileCorrelationScope(String value) {
+  static const CommunityProfileCorrelationScope directed =
+      CommunityProfileCorrelationScope('directed');
+  static const CommunityProfileCorrelationScope public =
+      CommunityProfileCorrelationScope('public');
+
+  /// Every value this specification's schema permits.
+  static const List<CommunityProfileCorrelationScope> values =
+      <CommunityProfileCorrelationScope>[directed, public];
+}
+
 /// Trust-registry reachability. Populated on reads; not settable.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
@@ -118,6 +142,7 @@ class CommunityProfile {
     this.contactEmail,
     required this.language,
     this.relationshipIdentifierDefault,
+    this.correlationScope,
     this.extensions,
     this.registryStatus,
     this.personhood,
@@ -137,6 +162,10 @@ class CommunityProfile {
                 ? null
                 : CommunityProfileRelationshipIdentifierDefault(
                     json['relationshipIdentifierDefault'] as String),
+        correlationScope: json['correlationScope'] == null
+            ? null
+            : CommunityProfileCorrelationScope(
+                json['correlationScope'] as String),
         extensions: json['extensions'] as Map<String, dynamic>?,
         registryStatus: json['registryStatus'] == null
             ? null
@@ -164,6 +193,17 @@ class CommunityProfile {
   final CommunityProfileRelationshipIdentifierDefault?
       relationshipIdentifierDefault;
 
+  /// The correlation scope the community declares for its own identifier, carried as
+  /// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+  /// statements). Per the DTG Credentials Core Specification, a community's identifier
+  /// is `directed` at minimum — every party that verifies its members' credentials must
+  /// be able to resolve it — and `public` where the community is open to outsiders; it
+  /// can never truthfully be `pairwise`, since a community has more than one member.
+  /// Absent means the community has not declared one; implementations issue `public`,
+  /// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+  /// community's credentials do not change.
+  final CommunityProfileCorrelationScope? correlationScope;
+
   /// Opaque community-defined extension bag.
   final Map<String, dynamic>? extensions;
 
@@ -183,6 +223,8 @@ class CommunityProfile {
         'language': language,
         if (relationshipIdentifierDefault != null)
           'relationshipIdentifierDefault': relationshipIdentifierDefault!.value,
+        if (correlationScope != null)
+          'correlationScope': correlationScope!.value,
         if (extensions != null) 'extensions': extensions!,
         if (registryStatus != null) 'registryStatus': registryStatus!.value,
         if (personhood != null) 'personhood': personhood!.toJson(),
@@ -210,6 +252,30 @@ extension type const CommunityProfileViewRelationshipIdentifierDefault(
   /// Every value this specification's schema permits.
   static const List<CommunityProfileViewRelationshipIdentifierDefault> values =
       <CommunityProfileViewRelationshipIdentifierDefault>[attributed, pairwise];
+}
+
+/// The correlation scope the community declares for its own identifier, carried as
+/// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+/// statements). Per the DTG Credentials Core Specification, a community's identifier
+/// is `directed` at minimum — every party that verifies its members' credentials must
+/// be able to resolve it — and `public` where the community is open to outsiders; it
+/// can never truthfully be `pairwise`, since a community has more than one member.
+/// Absent means the community has not declared one; implementations issue `public`,
+/// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+/// community's credentials do not change.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const CommunityProfileViewCorrelationScope(String value) {
+  static const CommunityProfileViewCorrelationScope directed =
+      CommunityProfileViewCorrelationScope('directed');
+  static const CommunityProfileViewCorrelationScope public =
+      CommunityProfileViewCorrelationScope('public');
+
+  /// Every value this specification's schema permits.
+  static const List<CommunityProfileViewCorrelationScope> values =
+      <CommunityProfileViewCorrelationScope>[directed, public];
 }
 
 /// Trust-registry reachability. Populated on reads; not settable.
@@ -249,6 +315,7 @@ class CommunityProfileView {
     this.contactEmail,
     required this.language,
     this.relationshipIdentifierDefault,
+    this.correlationScope,
     this.extensions,
     this.registryStatus,
     this.personhood,
@@ -270,6 +337,10 @@ class CommunityProfileView {
                 ? null
                 : CommunityProfileViewRelationshipIdentifierDefault(
                     json['relationshipIdentifierDefault'] as String),
+        correlationScope: json['correlationScope'] == null
+            ? null
+            : CommunityProfileViewCorrelationScope(
+                json['correlationScope'] as String),
         extensions: json['extensions'] as Map<String, dynamic>?,
         registryStatus: json['registryStatus'] == null
             ? null
@@ -305,6 +376,17 @@ class CommunityProfileView {
   final CommunityProfileViewRelationshipIdentifierDefault?
       relationshipIdentifierDefault;
 
+  /// The correlation scope the community declares for its own identifier, carried as
+  /// `issuerScope` on every credential it issues (its VMC grants, role VACs and
+  /// statements). Per the DTG Credentials Core Specification, a community's identifier
+  /// is `directed` at minimum — every party that verifies its members' credentials must
+  /// be able to resolve it — and `public` where the community is open to outsiders; it
+  /// can never truthfully be `pairwise`, since a community has more than one member.
+  /// Absent means the community has not declared one; implementations issue `public`,
+  /// the scope this registry required before DTG Credentials 0.7.0, so that an existing
+  /// community's credentials do not change.
+  final CommunityProfileViewCorrelationScope? correlationScope;
+
   /// Opaque community-defined extension bag.
   final Map<String, dynamic>? extensions;
 
@@ -326,6 +408,8 @@ class CommunityProfileView {
         'language': language,
         if (relationshipIdentifierDefault != null)
           'relationshipIdentifierDefault': relationshipIdentifierDefault!.value,
+        if (correlationScope != null)
+          'correlationScope': correlationScope!.value,
         if (extensions != null) 'extensions': extensions!,
         if (registryStatus != null) 'registryStatus': registryStatus!.value,
         if (personhood != null) 'personhood': personhood!.toJson(),

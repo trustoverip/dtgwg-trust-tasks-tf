@@ -109,7 +109,7 @@ its predicate, never a type string. The credential this task mints is:
 
 - `@context` `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]`,
   and `type` `["VerifiableCredential", "DTGCredential", "StatementCredential"]`;
-- `issuer` the community's DID, with `issuerScope` `public`;
+- `issuer` the community's DID, with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders);
 - `credentialSubject.id` = `subjectDid`, `credentialSubject.predicate` =
   `typeUri`, and `credentialSubject.object.value` = `claim`;
 - under `vetted/1` only, `taskContext` and `taskDigestMultibase` citing this
@@ -174,7 +174,7 @@ vetter-only members only it carries.
 When `typeUri` is `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the
 credential is the statement described above, with these particulars:
 
-- `issuer` is the community's DID, and `issuerScope` is `public`;
+- `issuer` is the community's DID, and `issuerScope` is `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders);
 - `credentialSubject` is `{ "id": subjectDid, "predicate": "https://registry.trustoverip.org/dtg/vsc/vetted/1", "object": { "value": claim } }`;
 - `claim` **MUST** validate against the registry's vetting schema,
   `https://registry.trustoverip.org/dtg/vsc/vetted/1/vetting.schema.json`,

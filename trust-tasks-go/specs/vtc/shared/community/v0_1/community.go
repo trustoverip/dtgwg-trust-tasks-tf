@@ -23,6 +23,23 @@ const (
 	CommunityProfileRelationshipIdentifierDefaultPairwise   CommunityProfileRelationshipIdentifierDefault = "pairwise"
 )
 
+// CommunityProfileCorrelationScope The correlation scope the community declares for its
+// own identifier, carried as `issuerScope` on every credential it issues (its VMC grants,
+// role VACs and statements). Per the DTG Credentials Core Specification, a community's
+// identifier is `directed` at minimum — every party that verifies its members'
+// credentials must be able to resolve it — and `public` where the community is open to
+// outsiders; it can never truthfully be `pairwise`, since a community has more than one
+// member. Absent means the community has not declared one; implementations issue
+// `public`, the scope this registry required before DTG Credentials 0.7.0, so that an
+// existing community's credentials do not change.
+type CommunityProfileCorrelationScope string
+
+// Values CommunityProfileCorrelationScope may take, per this specification's schema.
+const (
+	CommunityProfileCorrelationScopeDirected CommunityProfileCorrelationScope = "directed"
+	CommunityProfileCorrelationScopePublic   CommunityProfileCorrelationScope = "public"
+)
+
 // CommunityProfileRegistryStatus Trust-registry reachability. Populated on reads; not
 // settable.
 type CommunityProfileRegistryStatus string
@@ -50,6 +67,17 @@ type CommunityProfile struct {
 	// one; implementations default to `pairwise`, matching the DTG Credentials
 	// recommendation.
 	RelationshipIdentifierDefault *CommunityProfileRelationshipIdentifierDefault `json:"relationshipIdentifierDefault,omitempty"`
+
+	// The correlation scope the community declares for its own identifier, carried as
+	// `issuerScope` on every credential it issues (its VMC grants, role VACs and statements).
+	// Per the DTG Credentials Core Specification, a community's identifier is `directed` at
+	// minimum — every party that verifies its members' credentials must be able to resolve it
+	// — and `public` where the community is open to outsiders; it can never truthfully be
+	// `pairwise`, since a community has more than one member. Absent means the community has
+	// not declared one; implementations issue `public`, the scope this registry required
+	// before DTG Credentials 0.7.0, so that an existing community's credentials do not
+	// change.
+	CorrelationScope *CommunityProfileCorrelationScope `json:"correlationScope,omitempty"`
 
 	// Opaque community-defined extension bag.
 	Extensions *map[string]json.RawMessage `json:"extensions,omitempty"`
@@ -111,6 +139,23 @@ const (
 	CommunityProfileViewRelationshipIdentifierDefaultPairwise   CommunityProfileViewRelationshipIdentifierDefault = "pairwise"
 )
 
+// CommunityProfileViewCorrelationScope The correlation scope the community declares for
+// its own identifier, carried as `issuerScope` on every credential it issues (its VMC
+// grants, role VACs and statements). Per the DTG Credentials Core Specification, a
+// community's identifier is `directed` at minimum — every party that verifies its
+// members' credentials must be able to resolve it — and `public` where the community is
+// open to outsiders; it can never truthfully be `pairwise`, since a community has more
+// than one member. Absent means the community has not declared one; implementations issue
+// `public`, the scope this registry required before DTG Credentials 0.7.0, so that an
+// existing community's credentials do not change.
+type CommunityProfileViewCorrelationScope string
+
+// Values CommunityProfileViewCorrelationScope may take, per this specification's schema.
+const (
+	CommunityProfileViewCorrelationScopeDirected CommunityProfileViewCorrelationScope = "directed"
+	CommunityProfileViewCorrelationScopePublic   CommunityProfileViewCorrelationScope = "public"
+)
+
 // CommunityProfileViewRegistryStatus Trust-registry reachability. Populated on reads; not
 // settable.
 type CommunityProfileViewRegistryStatus string
@@ -154,6 +199,17 @@ type CommunityProfileView struct {
 	// one; implementations default to `pairwise`, matching the DTG Credentials
 	// recommendation.
 	RelationshipIdentifierDefault *CommunityProfileViewRelationshipIdentifierDefault `json:"relationshipIdentifierDefault,omitempty"`
+
+	// The correlation scope the community declares for its own identifier, carried as
+	// `issuerScope` on every credential it issues (its VMC grants, role VACs and statements).
+	// Per the DTG Credentials Core Specification, a community's identifier is `directed` at
+	// minimum — every party that verifies its members' credentials must be able to resolve it
+	// — and `public` where the community is open to outsiders; it can never truthfully be
+	// `pairwise`, since a community has more than one member. Absent means the community has
+	// not declared one; implementations issue `public`, the scope this registry required
+	// before DTG Credentials 0.7.0, so that an existing community's credentials do not
+	// change.
+	CorrelationScope *CommunityProfileViewCorrelationScope `json:"correlationScope,omitempty"`
 
 	// Opaque community-defined extension bag.
 	Extensions *map[string]json.RawMessage `json:"extensions,omitempty"`

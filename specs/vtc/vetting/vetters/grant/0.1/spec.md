@@ -81,7 +81,7 @@ A conforming **community** (`recipient`):
 3. Where the member already holds a **live grant** — a vetter role credential issued by this community that is neither expired nor revoked — **MUST** return that grant's `endorsementId`, `credentialId`, `validFrom` and `validUntil` unchanged, issue nothing, and ignore `validitySeconds`. Repeated execution is therefore safe and intended ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11): a second grant is indistinguishable from the first.
 4. Otherwise **MUST** issue a role credential and record it, with its status-list slot, under an `endorsementId` [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md) accepts. The credential is a Verifiable Authority Credential with:
    - `@context` `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]` and `type` `["VerifiableCredential", "DTGCredential", "AuthorityCredential"]`;
-   - `issuer` set to the community DID, with `issuerScope` `public`, and `credentialSubject.id` set to `memberDid`;
+   - `issuer` set to the community DID, with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), and `credentialSubject.id` set to `memberDid`;
    - `credentialSubject.authority` exactly `{ "scope": <community DID>, "actions": ["role:vetter"], "maxAttenuation": 0 }`. `maxAttenuation` `0` keeps the grant unattenuable: who may vet is the community's to decide personally, and a statement counts only from the member the community named;
    - a `credentialStatus` entry for revocation on the community's published status list;
    - `validFrom` at issuance, and `validUntil` equal to `validFrom` plus `validitySeconds`, or 365 days where it is absent. A VAC always carries `validUntil`;
@@ -214,7 +214,7 @@ The request names one member and a validity period. The response returns identif
 
 ### Correlation
 
-The community declares `identifierScope: public`, and the credential declares `issuerScope: public` for the same reason. The role credential is worth something only because an applicant who has never met the community can verify that its issuer is the community named in the manifest and in the credential's `authority.scope`. A pairwise community identifier would make the credential unverifiable to exactly the applicants it is shown to.
+The community declares `identifierScope: public`, and the credential declares an `issuerScope` of `directed` or `public` for the same reason. The role credential is worth something only because an applicant who has never met the community can verify that its issuer is the community named in the manifest and in the credential's `authority.scope`. A pairwise community identifier would make the credential unverifiable to exactly the applicants it is shown to. Every applicant the credential is shown to is a party the community's identifier is directed at, so `directed` is the minimum; a community open to outsiders declares `public`.
 
 The administrator declares `identifierScope: pairwise`, because only this community needs to recognise it, against its own access control.
 

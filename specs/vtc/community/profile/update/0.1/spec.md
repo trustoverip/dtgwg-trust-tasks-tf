@@ -61,6 +61,15 @@ the member still chooses per relationship, and a community that wants to
 require one form does so in its own policy. A client reads it before minting so
 it can follow the community's expectation without being told twice.
 
+`correlationScope` declares the correlation scope of the community's own
+identifier — the `issuerScope` every credential the community issues carries.
+It is `directed` (resolvable by every party that verifies its members'
+credentials, which is the minimum the DTG Credentials Core Specification
+allows a community) or `public` (open to outsiders). It cannot be `pairwise`:
+a community has more than one member, so that declaration could never be true.
+A change applies to credentials issued afterwards; credentials already issued
+keep the `issuerScope` they declared. Absent, the community issues `public`.
+
 `fieldsChanged` names the members this update actually changed, in their wire
 spelling, and is empty when the submitted values all matched what was stored.
 It lets a caller tell a no-op from an applied change without diffing the
@@ -76,7 +85,9 @@ apply the patch, and return the full updated `CommunityProfile` (with live
 `registryStatus`) together with `fieldsChanged`. Reject a
 `relationshipIdentifierDefault` outside the two defined values rather than
 storing it: the value is published to clients, and one they cannot interpret is
-worse than no declaration at all.
+worse than no declaration at all. Reject a `correlationScope` other than `directed` or
+`public` the same way; `pairwise` in particular is refused, since no community
+can truthfully declare it.
 
 ## Security & Privacy
 
