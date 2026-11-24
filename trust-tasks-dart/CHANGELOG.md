@@ -14,6 +14,33 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.12.5 — 2026-11-24
+
+
+### Specifications
+
+- **vtc,vetting**: A community's correlation scope is directed or public, and its profile declares it (#1356)
+
+DTG Credentials Working Draft 0.7.0 makes a community's own correlation
+  scope `directed` at minimum and `public` where the community is open to
+  outsiders; it is no longer always `public`.
+
+  - vtc/_shared/0.1 community: CommunityProfile and CommunityProfileView
+    gain an optional `correlationScope` (`directed` | `public`), the
+    `issuerScope` the community's credentials carry. Absent, implementations
+    issue `public`, as before.
+  - vtc/community/profile/update 0.1 accepts it (and refuses `pairwise`);
+    profile/show 0.1 returns it through the shared view.
+  - vetting/request 0.1, vtc/join-requests/decide 0.1, vtc/endorsements/issue
+    0.1, vtc/vetting/vetters/grant 0.1, vtc/members/{credentials,rotate,renew}
+    0.1, vtc/members/personhood/{assert 0.2,revoke 0.1} and the shared
+    endorsement schema: the community-issued credential's `issuerScope` is
+    `directed` or `public`, not `public` only.
+
+  All changes are in place: an optional member and descriptions/prose on
+  draft versions, which CONTRIBUTING-SPECS allows for a released version
+  (check-published-schemas: additive only).
+
 ## 0.12.4 — 2026-11-24
 
 
