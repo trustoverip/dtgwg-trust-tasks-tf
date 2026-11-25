@@ -49,6 +49,13 @@
 //! back off the field's doc comment and removes it. The wire schema
 //! (`PAYLOAD_SCHEMA`) is captured before, and never carries the tag.
 //!
+//! Each tag carries its own id, and generation fails if one is never read
+//! back, so a description typify drops cannot silently turn a member that
+//! admits `null` into one that refuses it. A tagged member typify renders as
+//! anything but an `Option` (a bare `Vec` or map skipped when empty) fails
+//! generation too: no rewrite of that field can both keep `[]` and `null`
+//! apart and admit `null`.
+//!
 //! A member with a declared JSON Schema `default` is left as typify renders it
 //! (`#[serde(default = "…")]`), so an absent member reads as that default.
 //! typify treats a default equal to the type's intrinsic one (`[]`, `{}`,
@@ -56,17 +63,28 @@
 //! rewritten like any other optional member, and an absent one reads as
 //! `None`.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::{anyhow, Result};
 use proc_macro2::TokenStream;
 use serde_json::Value;
 use syn::visit_mut::VisitMut;
 
-/// Appended to the `description` of a nullable optional member in the schema
-/// typify sees. Never in the output: [`apply_presence`] removes every
+/// Start of the tag appended to the `description` of a nullable optional
+/// member in the schema typify sees: `{NULLABLE_MARKER}{id}]]`, one id per
+/// tagged member. Never in the output: [`apply_presence`] removes every
 /// occurrence and [`assert_no_marker`] fails generation if one survives.
-pub(crate) const NULLABLE_MARKER: &str = "[[trust-tasks-build:nullable-optional-member]]";
+pub(crate) const NULLABLE_MARKER: &str = "[[trust-tasks-build:nullable-optional-member:";
+
+/// End of the tag.
+const MARKER_END: &str = "]]";
+
+/// The tagged members of one schema: tag id to JSON member name.
+pub(crate) type NullableTags = BTreeMap<usize, String>;
+
+fn marker(id: usize) -> String {
+    format!("{NULLABLE_MARKER}{id}{MARKER_END}")
+}
 
 /// Name of the per-module helper module.
 const HELPER_MODULE: &str = "presence";
@@ -87,15 +105,16 @@ const ANNOTATIONS: &[&str] = &[
 
 /// Tag every optional member whose schema admits `null` (see the module
 /// docs). Runs on the typify copy, after `migrate_defs_to_definitions`, so
-/// local references read `#/definitions/…`. Returns the JSON names tagged.
-pub(crate) fn mark_nullable_optional_members(schema: &mut Value) -> BTreeSet<String> {
+/// local references read `#/definitions/…`. Returns each tag's id and the
+/// JSON name of the member it is on.
+pub(crate) fn mark_nullable_optional_members(schema: &mut Value) -> NullableTags {
     let root = schema.clone();
-    let mut tagged = BTreeSet::new();
+    let mut tagged = NullableTags::new();
     mark(schema, &root, &mut tagged);
     tagged
 }
 
-fn mark(node: &mut Value, root: &Value, tagged: &mut BTreeSet<String>) {
+fn mark(node: &mut Value, root: &Value, tagged: &mut NullableTags) {
     match node {
         Value::Object(map) => {
             let required: BTreeSet<String> = map
@@ -122,12 +141,14 @@ fn mark(node: &mut Value, root: &Value, tagged: &mut BTreeSet<String>) {
                     if is_null_only(p) {
                         continue;
                     }
+                    let id = tagged.len();
+                    let tag = marker(id);
                     let description = match p.get("description").and_then(Value::as_str) {
-                        Some(d) => format!("{d}\n\n{NULLABLE_MARKER}"),
-                        None => NULLABLE_MARKER.to_string(),
+                        Some(d) => format!("{d}\n\n{tag}"),
+                        None => tag,
                     };
                     p.insert("description".into(), Value::String(description));
-                    tagged.insert(name.clone());
+                    tagged.insert(id, name.clone());
                 }
             }
             for value in map.values_mut() {
@@ -148,7 +169,14 @@ fn is_null_only(p: &serde_json::Map<String, Value>) -> bool {
 }
 
 /// Whether `schema` accepts JSON `null`. `$ref`s into the document are
-/// followed; `depth` bounds a reference cycle.
+/// followed; `depth` bounds a reference cycle, and a schema nested past it
+/// counts as admitting `null`.
+///
+/// `$ref` follows JSON Schema 2020-12: it is one keyword among its siblings,
+/// so a `$ref` with a `type` beside it must satisfy both. (Under Draft-07 and
+/// earlier, a `$ref`'s siblings are ignored.) Every schema in the registry is
+/// 2020-12; an application's schema in an earlier draft whose `$ref` has
+/// constraining siblings gets the 2020-12 reading.
 ///
 /// A schema admits `null` only when every keyword that can restrict a value's
 /// type does: `type`, `const`, `enum`, `oneOf` / `anyOf` (some branch),
@@ -160,7 +188,8 @@ fn is_null_only(p: &serde_json::Map<String, Value>) -> bool {
 /// document the schema accepts.
 fn admits_null(schema: &Value, root: &Value, depth: usize) -> bool {
     if depth > 64 {
-        return false;
+        // The safe direction: keep a `null` rather than refuse one.
+        return true;
     }
     let map = match schema {
         Value::Bool(b) => return *b,
@@ -236,17 +265,23 @@ type Rewrites = BTreeSet<(String, String)>;
 /// struct's builder, and emit the helpers the fields use. `serde` is the path
 /// generated code names serde by. `shared` is the path of a module that
 /// already defines the helpers (`crate::specs::presence` inside
-/// `trust-tasks-rs`), or `None` to emit them into this module. `tagged` is
-/// what [`mark_nullable_optional_members`] returned. A tag goes unread where
-/// typify made the member required (a `oneOf` branch requiring it), which
-/// needs no rewrite, or put it in an enum variant, whose fields carry no docs;
-/// that case is refused when the variant's field could be either.
+/// `trust-tasks-rs`), or `None` to emit them into this module. `tags` is
+/// what [`mark_nullable_optional_members`] returned.
+///
+/// Every tag must be read back off a field. A field typify made required (a
+/// `oneOf` branch requiring the member) reads its tag and needs no rewrite.
+/// An enum variant's fields carry no docs, so a tag on a member typify put in
+/// a variant cannot come back: it is accounted for by the variant's field of
+/// that name when that field is required, and refused when the field is
+/// optional (it could be either). Any other tag left unread fails generation.
 pub(crate) fn apply_presence(
     file: &mut syn::File,
     serde: &TokenStream,
     shared: Option<&str>,
-    tagged: &BTreeSet<String>,
+    tags: &NullableTags,
 ) -> Result<()> {
+    let tagged: BTreeSet<String> = tags.values().cloned().collect();
+    let tagged = &tagged;
     let mut rewriter = Rewriter {
         helpers: shared.unwrap_or(HELPER_MODULE).to_string(),
         ..Rewriter::default()
@@ -281,6 +316,31 @@ pub(crate) fn apply_presence(
              in the schema admits null, and typify writes no doc on a variant's fields, so \
              whether this one admits null cannot be read back; no field rewrite can be chosen \
              safely (rename one of the members, or make the variant a `$defs` type)"
+        ));
+    }
+    if let Some(name) = rewriter.not_option.first() {
+        return Err(anyhow!(
+            "optional member {name:?} admits null, but typify rendered it as a bare collection \
+             (skipped when empty) rather than an `Option`: no field rewrite can keep `[]` / `{{}}` \
+             apart from absent and still admit null (give the member an explicit `type` that \
+             includes \"null\", or one that excludes it)"
+        ));
+    }
+    let unread: Vec<String> = tags
+        .iter()
+        .filter(|(id, name)| {
+            !rewriter.read_back.contains(id) && !rewriter.in_variant.contains(*name)
+        })
+        .map(|(id, name)| format!("{name:?} (tag {id})"))
+        .collect();
+    if !unread.is_empty() {
+        // typify dropped the member's description, so whether its field
+        // admits `null` cannot be read back; guessing "no" would refuse a
+        // document the schema accepts.
+        return Err(anyhow!(
+            "optional member(s) {} admit null, but the tag marking them was not found on any \
+             field typify generated, so the field's null handling cannot be chosen safely",
+            unread.join(", ")
         ));
     }
     // Every doc comment, not only the fields': typify also copies a member's
@@ -366,13 +426,31 @@ struct Rewriter {
     /// Optional enum-variant fields whose JSON name was tagged somewhere in
     /// the schema: their own nullability cannot be read back.
     ambiguous: Vec<String>,
+    /// Tagged members typify rendered as something other than an `Option`.
+    not_option: Vec<String>,
+    /// Tag ids read back off a field.
+    read_back: BTreeSet<usize>,
+    /// JSON names of required enum-variant fields, which account for a tag
+    /// on a member of that name (see [`apply_presence`]).
+    in_variant: BTreeSet<String>,
     used_present: bool,
     used_not_null: bool,
 }
 
 impl Rewriter {
     fn field(&mut self, owner: Option<&str>, field: &mut syn::Field, tagged: &BTreeSet<String>) {
+        // First, so a field without a `#[serde(…)]` (a required member typify
+        // gave no rename) still reads its tag back.
+        let ids = take_marker(&mut field.attrs);
+        let has_tag = !ids.is_empty();
+        self.read_back.extend(ids);
         let Some(serde) = SerdeAttr::read(&field.attrs) else {
+            if owner.is_none() {
+                if let Some(ident) = &field.ident {
+                    self.in_variant
+                        .insert(ident.to_string().trim_start_matches("r#").to_string());
+                }
+            }
             return;
         };
         let json_name = serde.rename.clone().unwrap_or_else(|| {
@@ -382,12 +460,26 @@ impl Rewriter {
                 .map(|i| i.to_string().trim_start_matches("r#").to_string())
                 .unwrap_or_default()
         });
-        let has_tag = take_marker(&mut field.attrs);
         let ty = &field.ty;
         // Optional as typify rendered it: `Option<T>`, `default`, skipped
         // when `None`. A tagged member typify made required (a `oneOf` branch
         // that requires it) is already written whenever it is present.
         let optional_option = serde.default && serde.skip_if_none() && is_option(ty);
+        // Optional through an intrinsic default, but not as an `Option`.
+        let optional_other = !optional_option && serde.default && !is_unit(ty);
+        if has_tag && optional_other {
+            self.not_option.push(json_name);
+            return;
+        }
+        if owner.is_none() && !has_tag && tagged.contains(&json_name) {
+            if optional_other {
+                self.ambiguous.push(json_name);
+                return;
+            }
+            if !optional_option {
+                self.in_variant.insert(json_name.clone());
+            }
+        }
         // (wrap the type in one more `Option`, the schema admits `null`)
         let (wrap, nullable) = if optional_option {
             if has_tag {
@@ -514,13 +606,13 @@ fn is_unit(ty: &syn::Type) -> bool {
     matches!(ty, syn::Type::Tuple(t) if t.elems.is_empty())
 }
 
-/// Remove the marker from a field's doc comment; whether it was there.
-fn take_marker(attrs: &mut Vec<syn::Attribute>) -> bool {
-    let mut found = false;
+/// Remove the tags from a field's doc comment; the ids it carried.
+fn take_marker(attrs: &mut Vec<syn::Attribute>) -> Vec<usize> {
+    let mut found = Vec::new();
     attrs.retain_mut(|attr| match strip_doc(attr) {
         DocStrip::Untouched => true,
-        DocStrip::Stripped { now_empty } => {
-            found = true;
+        DocStrip::Stripped { now_empty, ids } => {
+            found.extend(ids);
             !now_empty
         }
     });
@@ -529,7 +621,30 @@ fn take_marker(attrs: &mut Vec<syn::Attribute>) -> bool {
 
 enum DocStrip {
     Untouched,
-    Stripped { now_empty: bool },
+    Stripped { now_empty: bool, ids: Vec<usize> },
+}
+
+/// `text` without its tags (and the blank line before each), and the ids.
+fn strip_tags(text: &str) -> (String, Vec<usize>) {
+    let mut out = String::with_capacity(text.len());
+    let mut ids = Vec::new();
+    let mut rest = text;
+    while let Some(start) = rest.find(NULLABLE_MARKER) {
+        let after = &rest[start + NULLABLE_MARKER.len()..];
+        let digits = after.bytes().take_while(u8::is_ascii_digit).count();
+        let Some(tail) = after[digits..].strip_prefix(MARKER_END) else {
+            // Not one of ours; keep it, and let `assert_no_marker` refuse it.
+            out.push_str(&rest[..start + NULLABLE_MARKER.len()]);
+            rest = after;
+            continue;
+        };
+        let head = &rest[..start];
+        out.push_str(head.strip_suffix("\n\n").unwrap_or(head));
+        ids.extend(after[..digits].parse::<usize>().ok());
+        rest = tail;
+    }
+    out.push_str(rest);
+    (out, ids)
 }
 
 fn strip_doc(attr: &mut syn::Attribute) -> DocStrip {
@@ -546,16 +661,13 @@ fn strip_doc(attr: &mut syn::Attribute) -> DocStrip {
     else {
         return DocStrip::Untouched;
     };
-    let value = text.value();
-    if !value.contains(NULLABLE_MARKER) {
+    let (stripped, ids) = strip_tags(&text.value());
+    if ids.is_empty() {
         return DocStrip::Untouched;
     }
-    let stripped = value
-        .replace(&format!("\n\n{NULLABLE_MARKER}"), "")
-        .replace(NULLABLE_MARKER, "");
     let now_empty = stripped.trim().is_empty();
     *text = syn::LitStr::new(&stripped, text.span());
-    DocStrip::Stripped { now_empty }
+    DocStrip::Stripped { now_empty, ids }
 }
 
 /// Removes the marker from every remaining doc comment (a newtype typify made
@@ -568,7 +680,10 @@ impl StripMarker {
         // description held only the marker, the heading takes its place.
         let heading = format!("`{name}`");
         for attr in attrs.iter_mut() {
-            if let DocStrip::Stripped { now_empty: true } = strip_doc(attr) {
+            if let DocStrip::Stripped {
+                now_empty: true, ..
+            } = strip_doc(attr)
+            {
                 *attr = syn::parse_quote!(#[doc = #heading]);
             }
         }
@@ -678,6 +793,8 @@ mod tests {
     fn tagged(schema: Value) -> BTreeSet<String> {
         let mut s = schema;
         mark_nullable_optional_members(&mut s)
+            .into_values()
+            .collect()
     }
 
     #[test]
@@ -700,16 +817,27 @@ mod tests {
                 "nullOnly": {"type": "null"},
                 "plain": {"type": "string"},
                 "list": {"type": "array", "items": {"type": "string"}},
-                "thing": {"$ref": "#/definitions/Thing"}
+                "thing": {"$ref": "#/definitions/Thing"},
+                "allOfOneRefuses": {"allOf": [{"type": ["string", "null"]}, {"type": "string"}]},
+                "allOfBothAdmit": {"allOf": [{"type": ["string", "null"]}, {"maxLength": 3}]},
+                "constString": {"const": "a"},
+                "enumNoNull": {"enum": ["a", "b"]},
+                "typeArrayNoNull": {"type": ["string", "integer"]},
+                "oneOfNoNull": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+                "refCycle": {"$ref": "#/definitions/Loop"}
             },
             "definitions": {
                 "Thing": {"type": "object", "properties": {"inner": {"type": ["integer", "null"]}}},
-                "MaybeThing": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/Thing"}]}
+                "MaybeThing": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/Thing"}]},
+                "Loop": {"$ref": "#/definitions/Loop"}
             }
         }));
         // `unconstrained` and `notString` cannot be shown to refuse `null`, so
         // they keep it; `refAndType` must satisfy both, and `object` refuses it.
+        // `refCycle` never resolves within the depth bound, which keeps `null`.
         let want: BTreeSet<String> = [
+            "allOfBothAdmit",
+            "refCycle",
             "union",
             "branch",
             "viaRef",
@@ -724,5 +852,32 @@ mod tests {
         .map(String::from)
         .collect();
         assert_eq!(names, want);
+    }
+
+    #[test]
+    fn each_tag_has_its_own_id_and_strips_cleanly() {
+        let mut schema = json!({
+            "type": "object",
+            "properties": {
+                "a": {"type": ["string", "null"], "description": "First."},
+                "b": {"type": "object", "properties": {"a": {"type": ["integer", "null"]}}}
+            }
+        });
+        let tags = mark_nullable_optional_members(&mut schema);
+        assert_eq!(tags.len(), 2);
+        assert!(tags.values().all(|name| name == "a"));
+        let first = schema["properties"]["a"]["description"].as_str().unwrap();
+        let (text, ids) = strip_tags(first);
+        assert_eq!(text, "First.");
+        assert_eq!(ids.len(), 1);
+        let nested = schema["properties"]["b"]["properties"]["a"]["description"]
+            .as_str()
+            .unwrap();
+        let (text, other) = strip_tags(nested);
+        assert_eq!(text, "");
+        assert_ne!(ids, other);
+        // Something that only looks like a tag is left for `assert_no_marker`.
+        let (text, ids) = strip_tags(&format!("x {NULLABLE_MARKER}y]]"));
+        assert!(ids.is_empty() && text.contains(NULLABLE_MARKER));
     }
 }

@@ -52,6 +52,10 @@ fn fixture_bundle() -> Bundle {
             }
         }
     });
+    bundle_of(schema)
+}
+
+fn bundle_of(schema: serde_json::Value) -> Bundle {
     let bundle = json!({
         "bundleVersion": 1,
         "typeUri": "https://trusttasks.org/spec/example/presence/0.1",
@@ -329,4 +333,52 @@ fn the_tag_never_reaches_the_output_and_descriptions_survive() {
     assert!(app.contains("::trust_tasks_rs::__private::serde::Deserializer<'de>"));
     let own = generate_module(&fixture_bundle(), &Target::runtime_crate()).unwrap();
     assert!(!own.contains("mod presence"));
+}
+
+#[test]
+fn a_nullable_member_rendered_as_a_bare_collection_fails_generation() {
+    // No `type`, so `null` is admitted; typify still renders the member as a
+    // map skipped when empty, which no rewrite can make admit `null`.
+    let schema = json!({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://trusttasks.org/spec/example/presence/0.1",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "loose": {"additionalProperties": {"type": "string"}}
+        }
+    });
+    for (target, _) in targets() {
+        let err = generate_module(&bundle_of(schema.clone()), &target)
+            .expect_err("a nullable member typify renders as a bare map");
+        let message = format!("{err:#}");
+        assert!(
+            message.contains("\"loose\"") && message.contains("bare collection"),
+            "{message}"
+        );
+    }
+}
+
+/// The text of the `not_null` refusal in `source`.
+fn refusal(source: &str) -> String {
+    let start = source
+        .find("&\"a value")
+        .expect("the not_null refusal message")
+        + 2;
+    let end = start + source[start..].find('"').unwrap();
+    source[start..end].to_string()
+}
+
+#[test]
+fn the_emitted_and_hand_written_refusals_say_the_same() {
+    let app = generate_module(&fixture_bundle(), &Target::application()).unwrap();
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../trust-tasks-rs/src/specs/mod.rs"
+    );
+    // Only in the repository: a packaged crate has no sibling to compare with.
+    let Ok(hand_written) = std::fs::read_to_string(path) else {
+        return;
+    };
+    assert_eq!(refusal(&app), refusal(&hand_written));
 }
