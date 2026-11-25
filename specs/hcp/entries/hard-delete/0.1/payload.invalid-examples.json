@@ -29,5 +29,21 @@
     "variant": "response",
     "note": "HCP's `timestamp` instead of `respondedAt` — the carriage renames it.",
     "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "hardDeleted": true, "timestamp": "2026-11-25T09:00:01Z" }
+  },
+  {
+    "note": "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
+    "payload": {
+      "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293",
+      "accessToken": "hcp_mt_x",
+      "ref": "hcp-ref-c73e19"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `entryId` — the result names the entry removed (HCP 9.4.5).",
+    "payload": {
+      "hardDeleted": true,
+      "respondedAt": "2026-11-25T09:00:01Z"
+    }
   }
 ]

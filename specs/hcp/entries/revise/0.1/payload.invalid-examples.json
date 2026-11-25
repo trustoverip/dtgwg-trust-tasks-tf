@@ -133,5 +133,48 @@
         "version": 2
       }
     }
+  },
+  {
+    "note": "Non-urn `entryId` — HCP entry identifiers are urn:uuid.",
+    "payload": {
+      "expectedVersion": 1,
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "reason": "Correction.",
+      "accessToken": "hcp_at_x",
+      "entryId": "entry-42"
+    }
+  },
+  {
+    "note": "Empty `ref` — the `ref` names the entry to revise, and an empty one names none (HCP 5.2.4, 7.4).",
+    "payload": {
+      "ref": "",
+      "expectedVersion": 1,
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "reason": "Correction.",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "A revised `confidence` HCP does not define — HCP defines high, medium and low (HCP 4.2, 5.2.4).",
+    "payload": {
+      "ref": "hcp-ref-c73e19",
+      "expectedVersion": 1,
+      "content": {
+        "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+        "value": "Prefers a window table."
+      },
+      "reason": "Correction.",
+      "accessToken": "hcp_at_x",
+      "assertion": {
+        "declarationType": "model-inferred",
+        "confidence": "certain"
+      }
+    }
   }
 ]

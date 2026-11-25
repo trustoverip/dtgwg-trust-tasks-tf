@@ -59,5 +59,17 @@
         }
       }
     }
+  },
+  {
+    "note": "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
+    "payload": {
+      "entryId": "urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357",
+      "categories": [
+        "work_context"
+      ],
+      "expectedVersion": 1,
+      "accessToken": "hcp_mt_x",
+      "ref": "hcp-ref-c73e19"
+    }
   }
 ]

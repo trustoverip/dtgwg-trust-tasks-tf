@@ -25,5 +25,116 @@
     "variant": "response",
     "note": "A member in the response besides `delegations` — the list is not paginated, so there is no `nextCursor` (HCP 9.4.13).",
     "payload": { "delegations": [], "nextCursor": "abc" }
+  },
+  {
+    "variant": "response",
+    "note": "A delegation whose `scope.actions` holds `provenance` — a delegate may authorize only read and write (HCP 17.2, 6.1.5).",
+    "payload": {
+      "delegations": [
+        {
+          "delegationId": "urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20",
+          "subject": {
+            "id": "subject-7f2c"
+          },
+          "delegate": {
+            "id": "person-a91",
+            "name": "Dana Rivera"
+          },
+          "relationship": "caregiver",
+          "basis": {
+            "method": "appointed",
+            "description": "Appointed by the person.",
+            "establishedBy": "https://auth.provider.example",
+            "establishedAt": "2026-02-01T10:00:00Z"
+          },
+          "scope": {
+            "categories": [
+              "general_preferences"
+            ],
+            "actions": [
+              "read",
+              "provenance"
+            ]
+          },
+          "term": {
+            "endsAt": "2027-02-01T10:00:00Z",
+            "atMajority": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A delegation `basis.method` HCP does not define — HCP defines appointed, attested, evidence, delegated and unspecified (HCP 17.3).",
+    "payload": {
+      "delegations": [
+        {
+          "delegationId": "urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20",
+          "subject": {
+            "id": "subject-7f2c"
+          },
+          "delegate": {
+            "id": "person-a91",
+            "name": "Dana Rivera"
+          },
+          "relationship": "caregiver",
+          "basis": {
+            "method": "court-order",
+            "description": "Appointed by the person.",
+            "establishedBy": "https://auth.provider.example",
+            "establishedAt": "2026-02-01T10:00:00Z"
+          },
+          "scope": {
+            "categories": [
+              "general_preferences"
+            ],
+            "actions": [
+              "read"
+            ]
+          },
+          "term": {
+            "endsAt": "2027-02-01T10:00:00Z",
+            "atMajority": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A `term` without `atMajority` — a delegation states whether it ends at the age of majority (HCP 17.2).",
+    "payload": {
+      "delegations": [
+        {
+          "delegationId": "urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20",
+          "subject": {
+            "id": "subject-7f2c"
+          },
+          "delegate": {
+            "id": "person-a91",
+            "name": "Dana Rivera"
+          },
+          "relationship": "caregiver",
+          "basis": {
+            "method": "appointed",
+            "description": "Appointed by the person.",
+            "establishedBy": "https://auth.provider.example",
+            "establishedAt": "2026-02-01T10:00:00Z"
+          },
+          "scope": {
+            "categories": [
+              "general_preferences"
+            ],
+            "actions": [
+              "read"
+            ]
+          },
+          "term": {
+            "endsAt": "2027-02-01T10:00:00Z"
+          }
+        }
+      ]
+    }
   }
 ]
