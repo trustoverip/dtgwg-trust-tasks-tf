@@ -54,6 +54,12 @@
 // step with the schema member it sets, which is the one property the builder
 // has to keep.
 #![allow(clippy::should_implement_trait)]
+// A builder keeps each field as `Result<FieldType, String>`, so an optional
+// map member whose presence is kept (`Option<HashMap<K, Map<…>>>`, e.g.
+// `vta/dids/get/0.1`'s `methodDetails`) nests deeply enough to trip this lint.
+// The type is the member's own shape; naming it would add a public alias per
+// such member for no reader's benefit.
+#![allow(clippy::type_complexity)]
 
 // trust-tasks-codegen:begin
 #[cfg(feature = "acl")]
