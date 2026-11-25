@@ -66,8 +66,9 @@
 /specs/trust-task-ok/              @stormer78
 /specs/trust-task-next-step/       @stormer78
 
-# Process Attestation
-
-# Human Context Protocol (HCP) carriage: the hcp/* family carries HCP operations
-# (SPEC §9.4). Domain review from the family's editor plus a maintainer.
+# Human Context Protocol (HCP) carriage
+# The hcp/* family carries HCP operations (SPEC §9.4). Domain review from the
+# family's editor plus a maintainer.
 /specs/hcp/                        @bmiller59 @stormer78
+
+# Process Attestation
