@@ -72,7 +72,7 @@ The consequence is deliberate and worth stating plainly: a query carrying no typ
 
 A matched query is gated by the holder's consent policy:
 
-- A **pre-trusted** verifier is auto-consented; the holder answers immediately with [`present`](../../present/0.1/) on the same thread.
+- A **pre-trusted** verifier is auto-consented; the holder answers immediately with [`present`](../../present/0.2/) on the same thread.
 - Any other verifier is **deferred**: the query is persisted, the verifier is told `consentRequired`, and the decision moves out of band to [`pending/list`](../../pending/list/0.1/) → [`pending/approve`](../../pending/approve/0.1/) or [`pending/deny`](../../pending/deny/0.1/). If approved, the holder presents on the original thread.
 
 `consentRequired` is `retryable: true` in the narrow sense that the exchange may still complete — but a verifier MUST NOT read it as an invitation to re-send. Re-querying does not advance a decision that is waiting on a human, and each attempt persists more state at the holder.
@@ -92,7 +92,7 @@ names credential types — through the `meta` discriminator, `vct_values` for SD
 or `type_values` for W3C — and the claim paths the verifier wants. That is descriptive
 data about *credentials sought*, not attributes of the person holding them: the query
 asks, it does not tell, and there is no response payload carrying claims. Disclosure is
-[`present`](../../present/0.1/)'s job, and every rule here exists to keep the two
+[`present`](../../present/0.2/)'s job, and every rule here exists to keep the two
 separate.
 
 The one path by which a verifier can push personal data *into* a holder is DCQL's

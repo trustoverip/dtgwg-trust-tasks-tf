@@ -355,6 +355,7 @@ mod credential_exchange {
     }
     mod present {
         mod v0_1;
+        mod v0_2;
     }
     mod query {
         mod v0_1;

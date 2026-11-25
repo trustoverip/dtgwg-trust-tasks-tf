@@ -460,6 +460,9 @@ export import CredentialExchangePendingList_v0_1 = _CredentialExchangePendingLis
 import * as _CredentialExchangePresent_v0_1 from "./credential-exchange/present/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import CredentialExchangePresent_v0_1 = _CredentialExchangePresent_v0_1;
+import * as _CredentialExchangePresent_v0_2 from "./credential-exchange/present/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import CredentialExchangePresent_v0_2 = _CredentialExchangePresent_v0_2;
 import * as _CredentialExchangeQuery_v0_1 from "./credential-exchange/query/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import CredentialExchangeQuery_v0_1 = _CredentialExchangeQuery_v0_1;

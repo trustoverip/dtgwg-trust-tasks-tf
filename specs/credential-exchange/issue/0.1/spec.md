@@ -132,7 +132,7 @@ up inside the credential as `credentialSubject.id` or as the `cnf` key stops bei
 pairwise the moment the credential is presented: it travels to every verifier the
 credential is shown to, and becomes a join key across all of them. The choice is made
 here, at issuance, and cannot be repaired at
-[`present`](../../present/0.1/) — a holder that wants unlinkable presentations needs
+[`present`](../../present/0.2/) — a holder that wants unlinkable presentations needs
 either a credential format that supports it or a separately-issued credential per
 relationship.
 

@@ -92,7 +92,7 @@ related:
 
 The **Vault Credentials — Present** Trust Task asks the maintainer — the agent that holds the credential and its subject's keys — to make a presentation of one stored credential **for a verifier the consumer names**, bound to a nonce the consumer supplies, disclosing only the claims the consumer names. The maintainer returns the presentation; the consumer carries it to the verifier inside whatever task the verifier defines.
 
-[`credential-exchange/present`](../../../../credential-exchange/present/0.1/spec.md) covers the other direction, where the verifier asks the agent and the agent answers the verifier. This task is for a verifier that never talks to the agent: a task whose request document carries the presentation, such as [`vtc/directory/card/present`](../../../../vtc/directory/card/present/0.1/spec.md), where the presentation's nonce is that document's `id` and its audience the community's DID. A consumer that holds no holder key — a browser wallet, a phone — can then present through the agent that does.
+[`credential-exchange/present`](../../../../credential-exchange/present/0.2/spec.md) covers the other direction, where the verifier asks the agent and the agent answers the verifier. This task is for a verifier that never talks to the agent: a task whose request document carries the presentation, such as [`vtc/directory/card/present`](../../../../vtc/directory/card/present/0.1/spec.md), where the presentation's nonce is that document's `id` and its audience the community's DID. A consumer that holds no holder key — a browser wallet, a phone — can then present through the agent that does.
 
 ## Status of this Document
 

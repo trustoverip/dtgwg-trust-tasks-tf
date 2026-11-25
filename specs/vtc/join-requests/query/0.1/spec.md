@@ -52,7 +52,7 @@ related:
 
 A community admits members on evidence: a holder presents credentials satisfying one of its Accepts criteria. Usually the applicant starts the exchange. Sometimes the community does — an administrator wants a particular prospective member to present against a particular criterion — and the community, as the verifier, has to build the query itself: only it can issue a presentation challenge bound to its own DID and a thread it will recognise when the presentation arrives.
 
-The **VTC Join Requests — Query** Trust Task is the administrator's instruction to do that. The community loads the criterion, issues the challenge, builds a [`credential-exchange/query/0.1`](../../../../credential-exchange/query/0.1/spec.md), queues it to the holder over whichever transport the holder speaks, and returns it — so a relayer can deliver it where the community cannot. The holder answers with [`credential-exchange/present`](../../../../credential-exchange/present/0.1/spec.md) on the returned thread.
+The **VTC Join Requests — Query** Trust Task is the administrator's instruction to do that. The community loads the criterion, issues the challenge, builds a [`credential-exchange/query/0.1`](../../../../credential-exchange/query/0.1/spec.md), queues it to the holder over whichever transport the holder speaks, and returns it — so a relayer can deliver it where the community cannot. The holder answers with [`credential-exchange/present`](../../../../credential-exchange/present/0.2/spec.md) on the returned thread.
 
 ## Status of this Document
 
