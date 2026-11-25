@@ -211,21 +211,21 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Lower bound, RFC 3339. Absent means as far back as the agent's telemetry goes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Upper bound, RFC 3339. Absent means now.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -253,7 +253,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -264,7 +264,7 @@ pub struct Response {
     ///The lower bound applied, when the request gave one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -292,7 +292,7 @@ pub struct SenderLastSeen {
     #[serde(
         rename = "lastSeenTransport",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_seen_transport: ::std::option::Option<SenderLastSeenLastSeenTransport>,

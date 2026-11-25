@@ -41,7 +41,7 @@ pub struct CeremonyManifest {
     ///One-line explanation shown beside the label.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub blurb: ::std::option::Option<CeremonyManifestBlurb>,
@@ -52,7 +52,7 @@ pub struct CeremonyManifest {
     #[serde(
         rename = "factsTemplate",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub facts_template:
@@ -60,7 +60,7 @@ pub struct CeremonyManifest {
     ///Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fields: ::std::option::Option<
@@ -73,7 +73,7 @@ pub struct CeremonyManifest {
     ///Policy package backing the decision.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pkg: ::std::option::Option<CeremonyManifestPkg>,
@@ -82,7 +82,7 @@ pub struct CeremonyManifest {
     ///Whether the ceremony is actually reachable in this deployment.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub wired: ::std::option::Option<CeremonyManifestWired>,
@@ -544,7 +544,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -571,7 +571,7 @@ pub struct Response {
     pub ceremonies: ::std::vec::Vec<CeremonyManifest>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

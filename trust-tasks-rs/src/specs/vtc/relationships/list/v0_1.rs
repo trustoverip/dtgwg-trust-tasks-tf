@@ -126,7 +126,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
@@ -134,13 +134,13 @@ pub struct Payload {
     pub did: PayloadDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
@@ -218,7 +218,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -226,14 +226,14 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(
         rename = "totalEstimate",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub total_estimate: ::std::option::Option<::std::option::Option<i64>>,

@@ -41,7 +41,7 @@ pub struct BroadcastRecord {
     ///For a sent message, the administrator that sent it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actor: ::std::option::Option<Did>,
@@ -50,7 +50,7 @@ pub struct BroadcastRecord {
     ///For a received message, the network that delivered it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from: ::std::option::Option<Did>,
@@ -450,13 +450,13 @@ pub struct Payload {
     ///What kind of message it is, for the receiving group to sort on: `notice` (the default), `request-for-action`, `room-invite`, or another the network's framework names.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub class: ::std::option::Option<PayloadClass>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -464,7 +464,7 @@ pub struct Payload {
     #[serde(
         rename = "replyTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reply_to: ::std::option::Option<PayloadReplyTo>,
@@ -734,7 +734,7 @@ pub struct Receipt {
     ///Why, for anything but `delivered`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<ReceiptDetail>,
@@ -745,14 +745,14 @@ pub struct Receipt {
     ///Whether the group is a network group, which relays further.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
@@ -890,7 +890,7 @@ pub struct Response {
     pub broadcast: BroadcastRecord,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

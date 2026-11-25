@@ -189,7 +189,7 @@ pub struct Payload {
     pub board_id: BoardId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -276,7 +276,7 @@ pub struct Response {
     pub elections_removed: u64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -303,7 +303,7 @@ pub struct ResponseTombstones {
     #[serde(
         rename = "removeAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

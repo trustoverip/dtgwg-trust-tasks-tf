@@ -129,7 +129,7 @@ pub struct Payload {
     pub authority_id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<QueryContext>,
@@ -138,7 +138,7 @@ pub struct Payload {
     pub entity_id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -158,14 +158,14 @@ pub struct QueryContext {
     ///Optional hint for systems that need extra information to locate the records in question (authorization queries).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub locator: ::std::option::Option<::std::string::String>,
     ///Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub time: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -188,7 +188,7 @@ pub struct Response {
     #[serde(
         rename = "asOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub as_of: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -198,7 +198,7 @@ pub struct Response {
     pub authorized: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<QueryContext>,
@@ -209,14 +209,14 @@ pub struct Response {
     pub evaluated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Additional human-readable detail about the authorization response.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<ResponseMessage>,

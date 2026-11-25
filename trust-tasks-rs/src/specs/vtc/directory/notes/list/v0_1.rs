@@ -49,7 +49,7 @@ pub struct AdminNote {
     #[serde(
         rename = "followUp",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -59,21 +59,21 @@ pub struct AdminNote {
     #[serde(
         rename = "redactedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacted_by: ::std::option::Option<NoteId>,
     ///Present on a redaction: the earlier note this one withdraws.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacts: ::std::option::Option<NoteId>,
     ///The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub text: ::std::option::Option<NoteText>,
@@ -428,7 +428,7 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
@@ -436,14 +436,14 @@ pub struct Payload {
     pub entry_id: EntryId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size; clamped to 1..=100 (default 50).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
@@ -524,7 +524,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -533,7 +533,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<ResponseNextCursor>>,

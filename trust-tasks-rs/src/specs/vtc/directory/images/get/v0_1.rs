@@ -46,14 +46,14 @@ pub struct CardBlobRef {
     ///Size in bytes of the stored bytes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -61,7 +61,7 @@ pub struct CardBlobRef {
     #[serde(
         rename = "urlExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -429,7 +429,7 @@ pub struct Payload {
     pub entry_id: EntryId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -438,7 +438,7 @@ pub struct Payload {
     ///The image the caller expects, from the `CardBlobRef` it was shown. Where the field now holds another, the answer is `notFound`, so a reader never shows a picture under a card it did not come from.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sha256: ::std::option::Option<PayloadSha256>,
@@ -519,7 +519,7 @@ pub struct Response {
     pub data: ResponseData,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

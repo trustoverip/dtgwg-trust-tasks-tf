@@ -44,7 +44,7 @@ pub struct DomainEntry {
     #[serde(
         rename = "defaultDomain",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub default_domain: ::std::option::Option<bool>,
@@ -52,21 +52,21 @@ pub struct DomainEntry {
     #[serde(
         rename = "disabledAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub disabled_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable label.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<::std::string::String>,
@@ -76,7 +76,7 @@ pub struct DomainEntry {
     #[serde(
         rename = "purgeAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -242,7 +242,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -323,7 +323,7 @@ pub struct Response {
     ///The domain used when a request names none — the caller's own default where the server records one, else the server's system default. Producers SHOULD omit it when there is neither; `null` is accepted as the same answer, and consumers MUST NOT read a difference between the two.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub default: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -331,7 +331,7 @@ pub struct Response {
     pub domains: ::std::vec::Vec<DomainEntry>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

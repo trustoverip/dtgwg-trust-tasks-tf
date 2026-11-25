@@ -127,7 +127,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -148,13 +148,13 @@ pub struct Response {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -259,13 +259,13 @@ pub struct UnsignedRoomRequest {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -276,7 +276,7 @@ pub struct UnsignedRoomRequest {
     ///The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1 and 0.2), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issuer: ::std::option::Option<UnsignedRoomRequestIssuer>,
@@ -287,7 +287,7 @@ pub struct UnsignedRoomRequest {
     #[serde(
         rename = "threadId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub thread_id: ::std::option::Option<UnsignedRoomRequestThreadId>,

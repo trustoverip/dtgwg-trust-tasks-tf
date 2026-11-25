@@ -54,7 +54,7 @@ pub struct BackupEnvelope {
     #[serde(
         rename = "sourceDid",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -615,7 +615,7 @@ impl<'de> ::serde::Deserialize<'de> for KdfParamsSalt {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -699,7 +699,7 @@ pub struct Response {
     pub envelope: BackupEnvelope,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

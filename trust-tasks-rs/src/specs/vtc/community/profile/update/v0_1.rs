@@ -49,7 +49,7 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "contactEmail",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_email: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -57,7 +57,7 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "correlationScope",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub correlation_scope: ::std::option::Option<CommunityProfileViewCorrelationScope>,
@@ -65,20 +65,20 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<CommunityProfileViewDescription>,
     ///Opaque community-defined extension bag.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -87,7 +87,7 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "logoUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub logo_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -95,14 +95,14 @@ pub struct CommunityProfileView {
     ///What this community's governance asserts about the personhood of its members.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub personhood: ::std::option::Option<PersonhoodGovernance>,
     #[serde(
         rename = "publicUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -110,7 +110,7 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "registryStatus",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_status: ::std::option::Option<CommunityProfileViewRegistryStatus>,
@@ -118,7 +118,7 @@ pub struct CommunityProfileView {
     #[serde(
         rename = "relationshipIdentifierDefault",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationship_identifier_default:
@@ -648,7 +648,7 @@ pub struct Payload {
     #[serde(
         rename = "contactEmail",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_email: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -656,60 +656,60 @@ pub struct Payload {
     #[serde(
         rename = "correlationScope",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub correlation_scope: ::std::option::Option<PayloadCorrelationScope>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PayloadDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque community-defined extension bag (maintainer-capped).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub language: ::std::option::Option<PayloadLanguage>,
     #[serde(
         rename = "logoUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub logo_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub name: ::std::option::Option<PayloadName>,
     ///Set the community's published personhood position. See `CommunityProfile.personhood` in the `vtc/_shared/0.1/community` schema. Replaces the whole object — a partial update would leave a verifier unable to tell an unset member from a cleared one. Omit to leave it unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub personhood: ::std::option::Option<PersonhoodGovernance>,
     #[serde(
         rename = "publicUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -717,7 +717,7 @@ pub struct Payload {
     #[serde(
         rename = "relationshipIdentifierDefault",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationship_identifier_default:
@@ -1062,7 +1062,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "acceptedIdvps",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepted_idvps:
@@ -1071,7 +1071,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "governanceFrameworkUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub governance_framework_url:
@@ -1080,7 +1080,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "realHuman",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub real_human: ::std::option::Option<bool>,
@@ -1088,7 +1088,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "singleMembership",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub single_membership: ::std::option::Option<bool>,
@@ -1175,7 +1175,7 @@ impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1183,7 +1183,7 @@ pub struct Response {
     #[serde(
         rename = "fieldsChanged",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fields_changed: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

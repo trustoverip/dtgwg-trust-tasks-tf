@@ -136,7 +136,7 @@ pub struct InviteSummary {
     ///The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role: ::std::option::Option<::std::string::String>,
@@ -340,13 +340,13 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -354,7 +354,7 @@ pub struct Payload {
     #[serde(
         rename = "extendBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extend_by: ::std::option::Option<::std::num::NonZeroU64>,
@@ -363,7 +363,7 @@ pub struct Payload {
     ///The role the invitee will receive. Absent leaves the role unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role: ::std::option::Option<PayloadRole>,
@@ -502,7 +502,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRole {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -127,13 +127,13 @@ pub struct Payload {
     #[serde(
         rename = "enabledMethods",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enabled_methods: ::std::option::Option<::std::vec::Vec<PayloadEnabledMethodsItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -141,7 +141,7 @@ pub struct Payload {
     pub instance_id: PayloadInstanceId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
@@ -149,7 +149,7 @@ pub struct Payload {
     #[serde(
         rename = "protocolVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub protocol_version: ::std::option::Option<PayloadProtocolVersion>,
@@ -467,7 +467,7 @@ pub struct Response {
     pub accepted: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

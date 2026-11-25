@@ -106,14 +106,14 @@ pub struct CommunityRoomV3 {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<CommunityRoomV3CreatedBy>,
     ///Absent when the room has none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RoomDescription>,
@@ -121,7 +121,7 @@ pub struct CommunityRoomV3 {
     #[serde(
         rename = "detailsUpdatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub details_updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -129,7 +129,7 @@ pub struct CommunityRoomV3 {
     #[serde(
         rename = "detailsUpdatedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub details_updated_by: ::std::option::Option<CommunityRoomV3DetailsUpdatedBy>,
@@ -140,7 +140,7 @@ pub struct CommunityRoomV3 {
     #[serde(
         rename = "ownerAuthorityValidUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_authority_valid_until:
@@ -151,21 +151,21 @@ pub struct CommunityRoomV3 {
     #[serde(
         rename = "storageConfig",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub storage_config: ::std::option::Option<StorageConfigId>,
     ///Admissions in state `suspended`: withdrawn while the room was archived with `noAccess`, and restored when it leaves that state. Absent when zero.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub suspended: ::std::option::Option<u64>,
     ///Absent or empty when the room has none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<RoomTags>,
@@ -399,7 +399,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "epochExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -407,7 +407,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "mirrorOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mirror_of: ::std::option::Option<HostedRoomMirrorOf>,
@@ -694,7 +694,7 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomRoomId {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -778,7 +778,7 @@ pub struct PendingChange {
     ///The access it leads to, where `state` has one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub access: ::std::option::Option<ArchiveAccess>,
@@ -788,7 +788,7 @@ pub struct PendingChange {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<PendingChangeLastError>,
@@ -873,7 +873,7 @@ pub struct PurgeProgress {
     #[serde(
         rename = "lastAttemptAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_attempt_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -881,7 +881,7 @@ pub struct PurgeProgress {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<PurgeProgressLastError>,
@@ -889,7 +889,7 @@ pub struct PurgeProgress {
     #[serde(
         rename = "nextAttemptAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_attempt_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -970,7 +970,7 @@ impl<'de> ::serde::Deserialize<'de> for PurgeProgressLastError {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1248,7 +1248,7 @@ pub struct RoomStatus {
     ///Present exactly when `state` is `archived` or `removalScheduled`; always `noAccess` for `removalScheduled`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub access: ::std::option::Option<ArchiveAccess>,
@@ -1256,7 +1256,7 @@ pub struct RoomStatus {
     #[serde(
         rename = "changedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1264,7 +1264,7 @@ pub struct RoomStatus {
     #[serde(
         rename = "changedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_by: ::std::option::Option<RoomStatusChangedBy>,
@@ -1272,14 +1272,14 @@ pub struct RoomStatus {
     #[serde(
         rename = "pendingChange",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pending_change: ::std::option::Option<PendingChange>,
     ///Present exactly when `state` is `purging`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge: ::std::option::Option<PurgeProgress>,
@@ -1287,7 +1287,7 @@ pub struct RoomStatus {
     #[serde(
         rename = "purgeAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1295,14 +1295,14 @@ pub struct RoomStatus {
     #[serde(
         rename = "removedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Admissions still `suspended` that the community is restoring, after the room left `noAccess` — the room re-issues each member's credentials and the member collects them as a renewal. Absent when there are none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub restoring: ::std::option::Option<::std::num::NonZeroU64>,

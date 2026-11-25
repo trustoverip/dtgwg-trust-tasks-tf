@@ -42,7 +42,7 @@ pub struct ChainBreak {
     #[serde(
         rename = "eventId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub event_id: ::std::option::Option<::std::string::String>,
@@ -284,7 +284,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -311,7 +311,7 @@ pub struct Response {
     #[serde(
         rename = "chainBreak",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub chain_break: ::std::option::Option<ChainBreak>,
@@ -323,14 +323,14 @@ pub struct Response {
     pub entries_verified: u64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head: ::std::option::Option<DigestMultibase>,

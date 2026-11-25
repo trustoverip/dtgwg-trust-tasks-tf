@@ -126,14 +126,14 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -142,7 +142,7 @@ pub struct Payload {
     ///Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vars: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -281,7 +281,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

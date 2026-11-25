@@ -129,7 +129,7 @@ pub struct PasskeyVerificationMethod {
     ///Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PasskeyVerificationMethodLabel>,
@@ -146,7 +146,7 @@ pub struct PasskeyVerificationMethod {
     #[serde(
         rename = "webauthnTransports",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webauthn_transports: ::std::option::Option<Vec<::std::string::String>>,
@@ -491,14 +491,14 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional operator-supplied label (e.g. "MacBook Touch ID"), carried through to the published verificationMethod.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
@@ -508,7 +508,7 @@ pub struct Payload {
     ///Transport hints reported by the authenticator (e.g. `internal`, `hybrid`). Advisory; carried through to the published verificationMethod's `webauthnTransports`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<Vec<::std::string::String>>,
@@ -1002,7 +1002,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -52,7 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -156,7 +156,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -211,7 +211,7 @@ pub struct RecordRetention {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -219,7 +219,7 @@ pub struct RecordRetention {
     #[serde(
         rename = "recordDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -227,7 +227,7 @@ pub struct RecordRetention {
     #[serde(
         rename = "tombstoneDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -257,7 +257,7 @@ pub struct Response {
     pub epoch: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -265,7 +265,7 @@ pub struct Response {
     #[serde(
         rename = "lastPrune",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_prune: ::std::option::Option<RecordPrune>,
@@ -275,7 +275,7 @@ pub struct Response {
     #[serde(
         rename = "recordRetention",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_retention: ::std::option::Option<RecordRetention>,
@@ -283,7 +283,7 @@ pub struct Response {
     #[serde(
         rename = "retentionPolicy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -306,7 +306,7 @@ impl Response {
 pub struct ResponseUsage {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member: ::std::option::Option<ResponseUsageMember>,
@@ -406,14 +406,14 @@ pub struct RoomLimits {
     ///Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member: ::std::option::Option<ScopeLimits>,
     ///Limits on the room as a whole.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room: ::std::option::Option<ScopeLimits>,
@@ -433,7 +433,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes: ::std::option::Option<u64>,
@@ -441,7 +441,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFileBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_file_bytes: ::std::option::Option<i64>,
@@ -449,7 +449,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFiles",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_files: ::std::option::Option<u64>,
@@ -485,7 +485,7 @@ pub struct Usage {
     #[serde(
         rename = "reservedFiles",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reserved_files: ::std::option::Option<u64>,

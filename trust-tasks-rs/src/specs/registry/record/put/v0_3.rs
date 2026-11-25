@@ -126,13 +126,13 @@ pub struct Payload {
     #[serde(
         rename = "expectedExisting",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_existing: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -212,14 +212,14 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable detail.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<ResponseMessage>,
@@ -305,14 +305,14 @@ pub struct TrustRecord {
     ///Present on authorization records: whether the action+resource authorization is confirmed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authorized: ::std::option::Option<bool>,
     ///Opaque governance context attached to the record.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context:
@@ -322,7 +322,7 @@ pub struct TrustRecord {
     ///Present on recognition records: whether the action+resource is recognised.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub recognized: ::std::option::Option<bool>,
@@ -333,7 +333,7 @@ pub struct TrustRecord {
     #[serde(
         rename = "validFrom",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -341,7 +341,7 @@ pub struct TrustRecord {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

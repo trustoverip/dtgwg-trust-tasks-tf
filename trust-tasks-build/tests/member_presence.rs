@@ -11,7 +11,7 @@
 //! back as `null`), and reads a `null` on any other optional member as `None`.
 //! These tests read the field declarations off a fixture module, for both
 //! targets; `trust-tasks-rs/tests/member_presence.rs` holds the same property
-//! on generated types at run time, and `trust-tasks-rs`'s `specs::presence`
+//! on generated types at run time, and `trust-tasks-rs`'s `specs::__presence`
 //! tests run the helpers on each field shape.
 
 use serde_json::json;
@@ -142,7 +142,7 @@ const OPTION: &str = "::std::option::Option";
 /// in `trust-tasks-rs`, an application's carry their own.
 fn targets() -> [(Target, &'static str); 2] {
     [
-        (Target::runtime_crate(), "crate::specs::presence"),
+        (Target::runtime_crate(), "crate::specs::__presence"),
         (Target::application(), "presence"),
     ]
 }
@@ -326,7 +326,7 @@ fn the_tag_never_reaches_the_output_and_descriptions_survive() {
         assert!(source.contains("///Explicit null clears it; absent leaves it."));
     }
     // Only an application's module carries the helpers, naming serde through
-    // the target's path; the runtime crate's share `crate::specs::presence`.
+    // the target's path; the runtime crate's share `crate::specs::__presence`.
     let app = generate_module(&fixture_bundle(), &Target::application()).unwrap();
     assert!(app.contains("mod presence"));
     assert!(app.contains("fn present<") && app.contains("fn not_null<"));

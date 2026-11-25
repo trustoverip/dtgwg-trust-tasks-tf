@@ -125,14 +125,14 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The invitation credential (VIC) the room issued to the joining party, serialized per the governing profile. This is what makes the Welcome acceptable: joining is a two-party act, and a recipient with no matching invitation MUST refuse.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub invitation: ::std::option::Option<::std::string::String>,
@@ -140,7 +140,7 @@ pub struct Payload {
     #[serde(
         rename = "ratchetTree",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratchet_tree: ::std::option::Option<::std::string::String>,
@@ -165,7 +165,7 @@ pub struct Response {
     pub epoch: u64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

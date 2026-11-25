@@ -362,7 +362,7 @@ pub struct Payload {
     #[serde(
         rename = "changedSince",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -370,7 +370,7 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
@@ -378,13 +378,13 @@ pub struct Payload {
     #[serde(
         rename = "directoryVtcDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub directory_vtc_did: ::std::option::Option<PayloadDirectoryVtcDid>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -392,7 +392,7 @@ pub struct Payload {
     #[serde(
         rename = "knownByPersona",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub known_by_persona: ::std::option::Option<PayloadKnownByPersona>,
@@ -402,14 +402,14 @@ pub struct Payload {
     #[serde(
         rename = "listId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub list_id: ::std::option::Option<ListId>,
     ///`true`: only starred contacts. `false`: only unstarred ones. Absent: both.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub starred: ::std::option::Option<bool>,
@@ -741,14 +741,14 @@ pub struct Response {
     pub contacts: ::std::vec::Vec<ResponseContactsItem>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -767,7 +767,7 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "claimCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_count: ::std::option::Option<u64>,
@@ -776,7 +776,7 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "directoryRef",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub directory_ref: ::std::option::Option<DirectoryRef>,
@@ -784,7 +784,7 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "displayName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<ResponseContactsItemDisplayName>,
@@ -792,7 +792,7 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "hasUnreviewedChange",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub has_unreviewed_change: ::std::option::Option<bool>,
@@ -800,13 +800,13 @@ pub struct ResponseContactsItem {
     pub known_by_persona: ResponseContactsItemKnownByPersona,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lists: ::std::option::Option<ListIds>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub petname: ::std::option::Option<Petname>,
@@ -819,7 +819,7 @@ pub struct ResponseContactsItem {
     #[serde(
         rename = "subjectDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_did: ::std::option::Option<ResponseContactsItemSubjectDid>,

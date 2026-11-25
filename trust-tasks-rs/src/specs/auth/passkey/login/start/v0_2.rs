@@ -42,7 +42,7 @@ pub struct CredentialDescriptor {
     pub id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
@@ -136,7 +136,7 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -150,7 +150,7 @@ pub struct CredentialRequestOptions {
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -158,20 +158,20 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "rpId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "userVerification",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
@@ -398,21 +398,21 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Producer-declared intent. `login` issues a new session; `stepUp` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<PayloadPurpose>,
     ///The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<PayloadSubject>,
@@ -563,7 +563,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

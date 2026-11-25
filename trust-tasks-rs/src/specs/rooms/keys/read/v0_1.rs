@@ -321,7 +321,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -423,7 +423,7 @@ pub struct ReadVerification {
       - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor: ::std::option::Option<ReadVerificationAnchor>,
@@ -435,13 +435,13 @@ pub struct ReadVerification {
     `short` is a host contradicting itself inside one exchange: it committed to a tree of N records and served fewer, with no filter to explain the difference. That is the omission the commitment exists to make detectable, caught without a second party and without an anchor.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<ReadVerificationCount>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head: ::std::option::Option<ReadVerificationHead>,
@@ -464,7 +464,7 @@ pub struct ReadVerification {
     `verified` says the record is under the root the host asserted — and **nothing about whether that root is the room's**, which is what `priorRoots` and an anchor are for. `notOffered` is a host that maintains no tree, which is legal and informative. `failed` is arithmetic that does not close: the host served a path that does not reach its own root, which is either a defect or a fabrication and is not distinguishable from here.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trace: ::std::option::Option<ReadVerificationTrace>,
@@ -861,21 +861,21 @@ pub struct Response {
     ///The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<::std::string::String>,
     ///The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cleartext:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -883,7 +883,7 @@ pub struct Response {
     ///The opened record, base64url — the sealed tiers. **Never the key**, which is the whole reason this task exists rather than the record being handed to the member to open. Spelled as `rooms/keys/open` spells it, because it is the same bytes by the same route.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub plaintext: ::std::option::Option<::std::string::String>,
@@ -892,14 +892,14 @@ pub struct Response {
     ///Curation state, passed through. A `retracted` record has no body: the tombstone is the answer, not a failure.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<ResponseStatus>,
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

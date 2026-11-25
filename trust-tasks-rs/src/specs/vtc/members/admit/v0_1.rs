@@ -41,14 +41,14 @@ pub struct AdmittedMembership {
     pub approval: Approval,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<AdmittedMembershipLabel>,
@@ -476,21 +476,21 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///A human-readable label for the new access-control entry, as `acl/grant` carries one. Confers nothing. Not blank.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Why, for the community's audit trail and for the administrators asked to approve it if the admission is referred. Never published to the subject or beyond the community.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,

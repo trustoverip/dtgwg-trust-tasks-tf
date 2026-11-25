@@ -186,7 +186,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -194,7 +194,7 @@ pub struct Payload {
     #[serde(
         rename = "fromEpoch",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from_epoch: ::std::option::Option<::std::num::NonZeroU64>,
@@ -203,7 +203,7 @@ pub struct Payload {
     ///Maximum rungs to request in one pass, highest `epoch` first. A host MAY return fewer. A caller walking a long history calls again with `fromEpoch` set below what it has.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
@@ -229,20 +229,20 @@ pub struct Response {
     #[serde(
         rename = "epochFloor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_floor: ::std::option::Option<EpochFloor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///How many rungs the host served. Reported separately from `stored` and from the reach so a caller can tell the three ways this ends: nothing served (the host has no more), served and stored but the reach did not move (a gap), or served and the reach moved.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fetched: ::std::option::Option<u64>,
@@ -251,7 +251,7 @@ pub struct Response {
     ///How many of them the recipient did not already hold and kept. Rungs numbered at or below the room's epoch floor are never kept or counted. Zero alongside a positive `fetched` means the chain was already delivered, which is what a retry looks like.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stored: ::std::option::Option<u64>,

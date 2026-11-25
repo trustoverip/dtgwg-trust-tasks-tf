@@ -137,14 +137,14 @@ pub struct Payload {
     pub event: PayloadEvent,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The acting administrator's stated reason, verbatim, when one was given. Absent rather than empty when none was: a community that chose not to explain is itself information. Never populated for a member acting on their own credential — they already know why.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,

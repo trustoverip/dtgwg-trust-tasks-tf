@@ -337,7 +337,7 @@ pub struct Group {
     #[serde(
         rename = "badgeId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub badge_id: ::std::option::Option<BadgeId>,
@@ -350,7 +350,7 @@ pub struct Group {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<EntryId>,
@@ -358,21 +358,21 @@ pub struct Group {
     #[serde(
         rename = "credentialAuthorityValidUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_authority_valid_until:
         ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<GroupDescription>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -388,7 +388,7 @@ pub struct Group {
     #[serde(
         rename = "joinPolicy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub join_policy: ::std::option::Option<JoinPolicy>,
@@ -396,7 +396,7 @@ pub struct Group {
     ///Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub managers: ::std::option::Option<Vec<EntryId>>,
@@ -404,7 +404,7 @@ pub struct Group {
     #[serde(
         rename = "memberCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_count: ::std::option::Option<u64>,
@@ -412,7 +412,7 @@ pub struct Group {
     ///Present exactly when `kind` is `dynamic`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rule: ::std::option::Option<DynamicRule>,
@@ -422,7 +422,7 @@ pub struct Group {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -885,34 +885,34 @@ impl ::std::convert::TryFrom<::std::string::String> for JoinPolicy {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Only static groups with `joinPolicy` `open` or `request` the caller does not belong to.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub joinable: ::std::option::Option<bool>,
     ///Page size; clamped to 1..=200 (default 50).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only groups the caller belongs to.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mine: ::std::option::Option<bool>,
@@ -1004,7 +1004,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1012,7 +1012,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<ResponseNextCursor>>,
@@ -1179,7 +1179,7 @@ pub struct RuleCondition {
     ///With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1187,7 +1187,7 @@ pub struct RuleCondition {
     ///Present exactly when `fact` is `field`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub field: ::std::option::Option<FieldKey>,
@@ -1195,13 +1195,13 @@ pub struct RuleCondition {
     pub op: RuleConditionOp,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value: ::std::option::Option<RuleConditionValue>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub values: ::std::option::Option<::std::vec::Vec<RuleConditionValuesItem>>,

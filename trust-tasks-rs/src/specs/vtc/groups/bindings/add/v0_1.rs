@@ -199,7 +199,7 @@ pub struct CapabilityRef {
     ///Optional qualifier. Absent covers every resource of the capability's kind.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<ResourceQualifier>,
@@ -321,7 +321,7 @@ pub struct GroupBinding {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<GroupBindingCreatedBy>,
@@ -620,7 +620,7 @@ pub struct Payload {
     pub binding: BindingSpec,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -767,7 +767,7 @@ pub struct Response {
     pub binding: GroupBinding,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

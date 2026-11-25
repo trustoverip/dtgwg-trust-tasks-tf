@@ -116,21 +116,21 @@ pub struct Effect {
     ///OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub after: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub before: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///OPTIONAL kind-specific structured extras (e.g. `{ "commitments": 2 }` for `preRotationRefresh`).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail:
@@ -140,7 +140,7 @@ pub struct Effect {
     ///OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path: ::std::option::Option<::std::string::String>,
@@ -455,7 +455,7 @@ pub struct Payload {
     ///Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consequences: ::std::option::Option<::std::vec::Vec<PayloadConsequencesItem>>,
@@ -470,7 +470,7 @@ pub struct Payload {
     pub exposure: Exposure,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -480,14 +480,14 @@ pub struct Payload {
     ///OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub note: ::std::option::Option<PayloadNote>,
     ///OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub origin: ::std::option::Option<::std::string::String>,
@@ -500,7 +500,7 @@ pub struct Payload {
     #[serde(
         rename = "requesterDeviceId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requester_device_id: ::std::option::Option<::std::string::String>,
@@ -510,14 +510,14 @@ pub struct Payload {
     #[serde(
         rename = "statePin",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub state_pin: ::std::option::Option<StatePin>,
     ///OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<::std::string::String>,
@@ -786,14 +786,14 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadSideEffects {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///REQUIRED when status is `refused`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<ResponseReason>,

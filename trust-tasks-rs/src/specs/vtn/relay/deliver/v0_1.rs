@@ -303,7 +303,7 @@ pub struct Payload {
     pub envelope: Envelope,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -324,7 +324,7 @@ pub struct Receipt {
     ///Why, for anything but `delivered`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<ReceiptDetail>,
@@ -335,14 +335,14 @@ pub struct Receipt {
     ///Whether the group is a network group, which relays further.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
@@ -479,7 +479,7 @@ impl<'de> ::serde::Deserialize<'de> for ReceiptGroup {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

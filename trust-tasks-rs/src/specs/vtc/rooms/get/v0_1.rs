@@ -59,7 +59,7 @@ pub struct EffectiveLimits {
     #[serde(
         rename = "hostCeilingBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub host_ceiling_bytes: ::std::option::Option<i64>,
@@ -170,7 +170,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "epochExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_expires_at: ::std::option::Option<u64>,
@@ -178,7 +178,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "mirrorOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mirror_of: ::std::option::Option<HostedRoomMirrorOf>,
@@ -692,7 +692,7 @@ impl ::std::convert::TryFrom<::std::string::String> for MigrationProgressState {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -776,7 +776,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -784,7 +784,7 @@ pub struct Response {
     #[serde(
         rename = "largestBlobs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub largest_blobs: ::std::option::Option<::std::vec::Vec<ResponseLargestBlobsItem>>,
@@ -793,7 +793,7 @@ pub struct Response {
     #[serde(
         rename = "membersWithUsage",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub members_with_usage: ::std::option::Option<u64>,
@@ -835,7 +835,7 @@ pub struct ResponseStorage {
     pub earlier_configs: ::std::vec::Vec<ConfigHoldings>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub migration: ::std::option::Option<MigrationProgress>,
@@ -870,7 +870,7 @@ pub struct ResponseUsageOrphans {
     #[serde(
         rename = "oldestOrphanedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_orphaned_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -953,14 +953,14 @@ pub struct RoomLimits {
     ///Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member: ::std::option::Option<ScopeLimits>,
     ///Limits on the room as a whole.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room: ::std::option::Option<ScopeLimits>,
@@ -980,7 +980,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes: ::std::option::Option<u64>,
@@ -988,7 +988,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFileBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_file_bytes: ::std::option::Option<i64>,
@@ -996,7 +996,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFiles",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_files: ::std::option::Option<u64>,
@@ -1101,7 +1101,7 @@ pub struct Usage {
     #[serde(
         rename = "reservedFiles",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reserved_files: ::std::option::Option<u64>,

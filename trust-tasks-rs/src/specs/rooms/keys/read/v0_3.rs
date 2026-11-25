@@ -321,7 +321,7 @@ pub struct KeyError {
     ///As that code defines its `details`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub details:
@@ -329,7 +329,7 @@ pub struct KeyError {
     ///Human-readable. Not normative: a consumer acts on `code` and `details`, never on this.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<KeyErrorMessage>,
@@ -470,7 +470,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -479,21 +479,21 @@ pub struct Payload {
     ///The record to read, alone. Exactly one of `key` and `keys` is present.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key: ::std::option::Option<PayloadKey>,
     ///Several records to read in one request, at most 32, each answered on its own in `results`, in this order. Exactly one of `key` and `keys` is present.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub keys: ::std::option::Option<Vec<PayloadKeysItem>>,
     ///OPTIONAL. The one purpose the caller will use the content this request discloses for (VTI-ACL-103), as `RecordPurpose` defines it. A purpose not granted is refused with `purposeNotGranted`. May be omitted where exactly one purpose is granted, or `any`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<RecordPurpose>,
@@ -829,7 +829,7 @@ pub struct ReadResult {
     ///The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<::std::string::String>,
@@ -837,14 +837,14 @@ pub struct ReadResult {
     #[serde(
         rename = "bodyStoredAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cleartext:
@@ -853,7 +853,7 @@ pub struct ReadResult {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -861,13 +861,13 @@ pub struct ReadResult {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<ReadResultCreatedBy>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub error: ::std::option::Option<KeyError>,
@@ -875,35 +875,35 @@ pub struct ReadResult {
     ///The opened record, base64url — the sealed tiers. **Never the key**, which is the whole reason this task exists rather than the record being handed to the member to open. Spelled as `rooms/keys/open` spells it, because it is the same bytes by the same route.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub plaintext: ::std::option::Option<::std::string::String>,
     ///Curation state, passed through. A `retracted` record has no body: the tombstone is the answer, not a failure.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<ReadResultStatus>,
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///What the recipient checked and what it found. REQUIRED: an agent that returns a record without saying what it checked has made the member's decision for them.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verification: ::std::option::Option<ReadVerification>,
     ///The record's version at the host.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1068,7 +1068,7 @@ pub struct ReadVerification {
       - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor: ::std::option::Option<ReadVerificationAnchor>,
@@ -1080,13 +1080,13 @@ pub struct ReadVerification {
     `short` is a host contradicting itself inside one exchange: it committed to a tree of N records and served fewer, with no filter to explain the difference. That is the omission the commitment exists to make detectable, caught without a second party and without an anchor.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<ReadVerificationCount>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head: ::std::option::Option<ReadVerificationHead>,
@@ -1109,7 +1109,7 @@ pub struct ReadVerification {
     `verified` says the record is under the root the host asserted — and **nothing about whether that root is the room's**, which is what `priorRoots` and an anchor are for. `notOffered` is a host that maintains no tree, which is legal and informative. `failed` is arithmetic that does not close: the host served a path that does not reach its own root, which is either a defect or a fabrication and is not distinguishable from here.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trace: ::std::option::Option<ReadVerificationTrace>,
@@ -1549,7 +1549,7 @@ pub struct Response {
     ///The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<::std::string::String>,
@@ -1557,14 +1557,14 @@ pub struct Response {
     #[serde(
         rename = "bodyStoredAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cleartext:
@@ -1573,7 +1573,7 @@ pub struct Response {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1581,33 +1581,33 @@ pub struct Response {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<ResponseCreatedBy>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key: ::std::option::Option<::std::string::String>,
     ///The opened record, base64url — the sealed tiers. **Never the key**, which is the whole reason this task exists rather than the record being handed to the member to open. Spelled as `rooms/keys/open` spells it, because it is the same bytes by the same route.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub plaintext: ::std::option::Option<::std::string::String>,
     ///Present, and only present, when the request named `keys`: one entry per key, in the request's order. Each entry is that key's own answer — a record or an error — and one key's failure never fails another's.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub results: ::std::option::Option<::std::vec::Vec<ReadResult>>,
@@ -1616,28 +1616,28 @@ pub struct Response {
     ///Curation state, passed through. A `retracted` record has no body: the tombstone is the answer, not a failure.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<ResponseStatus>,
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///What the recipient checked and what it found. REQUIRED: an agent that returns a record without saying what it checked has made the member's decision for them.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verification: ::std::option::Option<ReadVerification>,
     ///The record's version at the host.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,

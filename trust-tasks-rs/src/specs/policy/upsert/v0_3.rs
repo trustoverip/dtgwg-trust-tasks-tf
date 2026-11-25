@@ -125,13 +125,13 @@ pub struct Payload {
     #[serde(
         rename = "appliesTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub applies_to: ::std::option::Option<Vec<::std::string::String>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PayloadDescription>,
@@ -140,19 +140,19 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub id: ::std::option::Option<PayloadId>,
@@ -161,7 +161,7 @@ pub struct Payload {
     pub name: PayloadName,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub priority: ::std::option::Option<i64>,
@@ -420,7 +420,7 @@ pub struct PolicyModule {
     #[serde(
         rename = "appliesTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub applies_to: ::std::option::Option<Vec<::std::string::String>>,
@@ -428,7 +428,7 @@ pub struct PolicyModule {
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PolicyModuleDescription>,
@@ -436,7 +436,7 @@ pub struct PolicyModule {
     pub enabled: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -448,7 +448,7 @@ pub struct PolicyModule {
     ///When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub priority: ::std::option::Option<i64>,
@@ -708,7 +708,7 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleName {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -14,7 +14,7 @@
 //! helper that refuses a `null` the schema has no form for, instead of reading
 //! it as absent. Its own tests cover the field shapes on a fixture schema
 //! (a `{"type": "null"}` member, an intrinsic `default`, `true`), and
-//! `specs::presence`'s unit tests run the helpers on each shape.
+//! `specs::__presence`'s unit tests run the helpers on each shape.
 #![cfg(feature = "acl")]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).

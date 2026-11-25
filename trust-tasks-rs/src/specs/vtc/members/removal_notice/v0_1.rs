@@ -136,14 +136,14 @@ pub struct Payload {
     pub disposition: PayloadDisposition,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,

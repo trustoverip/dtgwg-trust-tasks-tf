@@ -193,7 +193,7 @@ impl ::std::convert::TryFrom<::std::string::String> for GrantStatus {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -281,7 +281,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVetterDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -289,14 +289,14 @@ pub struct Response {
     #[serde(
         rename = "grantId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_id: ::std::option::Option<ResponseGrantId>,
     ///Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listed: ::std::option::Option<bool>,
@@ -304,7 +304,7 @@ pub struct Response {
     #[serde(
         rename = "revokedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -313,7 +313,7 @@ pub struct Response {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

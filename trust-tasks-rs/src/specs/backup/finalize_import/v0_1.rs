@@ -128,14 +128,14 @@ pub struct Payload {
     ///True commits and replaces the node's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub confirm: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -292,14 +292,14 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<ResponseMessage>,
@@ -307,7 +307,7 @@ pub struct Response {
     #[serde(
         rename = "sourceDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_did: ::std::option::Option<ResponseSourceDid>,

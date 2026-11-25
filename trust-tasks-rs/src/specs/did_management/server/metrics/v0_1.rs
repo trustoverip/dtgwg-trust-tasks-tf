@@ -129,7 +129,7 @@ pub struct Histogram {
     ///Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub labels: ::std::option::Option<
@@ -229,7 +229,7 @@ pub struct Metric {
     ///Dimensions the value is broken down by (e.g. `{"method": "resolve"}`). Absent or empty when the metric carries none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub labels: ::std::option::Option<
@@ -314,7 +314,7 @@ pub struct MetricsSnapshot {
     pub counters: ::std::vec::Vec<Metric>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -339,7 +339,7 @@ impl MetricsSnapshot {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -364,7 +364,7 @@ impl Payload {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

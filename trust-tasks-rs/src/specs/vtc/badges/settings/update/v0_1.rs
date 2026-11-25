@@ -42,7 +42,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "kudosBadgesPerMakerPerMonth",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kudos_badges_per_maker_per_month: ::std::option::Option<i64>,
@@ -50,7 +50,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "kudosPerGiverPerDay",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kudos_per_giver_per_day: ::std::option::Option<::std::num::NonZeroU64>,
@@ -58,7 +58,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "maxPinned",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_pinned: ::std::option::Option<i64>,
@@ -66,7 +66,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "minTenureDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_tenure_days: ::std::option::Option<i64>,
@@ -74,7 +74,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "offerExpiresAfterDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub offer_expires_after_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -82,7 +82,7 @@ pub struct BadgeLimits {
     #[serde(
         rename = "sameGiverSameMember",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub same_giver_same_member: ::std::option::Option<BadgeLimitsSameGiverSameMember>,
@@ -182,14 +182,14 @@ pub struct BadgeSettings {
     #[serde(
         rename = "credentialValidDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_valid_days: ::std::option::Option<i64>,
     pub enabled: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -197,7 +197,7 @@ pub struct BadgeSettings {
     pub kudos_makers: KudosMakers,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limits: ::std::option::Option<BadgeLimits>,
@@ -210,7 +210,7 @@ pub struct BadgeSettings {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -376,7 +376,7 @@ pub struct KudosMakers {
     ///Read exactly when `policy` is `roles`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub groups: ::std::option::Option<Vec<GroupId>>,
@@ -384,7 +384,7 @@ pub struct KudosMakers {
     ///Community role names. Read exactly when `policy` is `roles`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub roles: ::std::option::Option<Vec<KudosMakersRolesItem>>,
@@ -529,7 +529,7 @@ impl<'de> ::serde::Deserialize<'de> for KudosMakersRolesItem {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -617,14 +617,14 @@ pub struct PayloadSettings {
     #[serde(
         rename = "credentialValidDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_valid_days: ::std::option::Option<i64>,
     pub enabled: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -632,7 +632,7 @@ pub struct PayloadSettings {
     pub kudos_makers: KudosMakers,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limits: ::std::option::Option<BadgeLimits>,
@@ -656,7 +656,7 @@ impl PayloadSettings {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -125,7 +125,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -137,7 +137,7 @@ pub struct Payload {
     #[serde(
         rename = "subjectAltNames",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_alt_names: ::std::option::Option<PayloadSubjectAltNames>,
@@ -215,21 +215,21 @@ pub struct PayloadSubjectAltNames {
     ///dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dns: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesDnsItem>>,
     ///rfc822Name entries: ASCII mailbox addresses.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub email: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesEmailItem>>,
     ///uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub uri: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesUriItem>>,
@@ -637,7 +637,7 @@ pub struct Response {
     pub csr: ResponseCsr,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

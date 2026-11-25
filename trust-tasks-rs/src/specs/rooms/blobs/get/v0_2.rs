@@ -51,7 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -496,13 +496,13 @@ pub struct Payload {
     ///True when the producer accepts a storage URL for the object. Absent or false: the host answers in proxied mode.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub direct: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -586,7 +586,7 @@ pub struct Response {
     #[serde(
         rename = "downloadId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub download_id: ::std::option::Option<TransferId>,
@@ -595,7 +595,7 @@ pub struct Response {
     pub expires_at: ExpiresAt,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -606,7 +606,7 @@ pub struct Response {
     ///Direct mode only: a GET for the one object holding this blob, expiring within minutes. Ranged requests MAY be permitted. Absent in proxied mode.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target: ::std::option::Option<TransferTarget>,
@@ -758,7 +758,7 @@ pub struct TransferTarget {
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub headers: ::std::option::Option<

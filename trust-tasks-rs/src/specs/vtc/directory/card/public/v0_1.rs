@@ -264,7 +264,7 @@ pub struct Payload {
     #[serde(
         rename = "cardDigest",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub card_digest: ::std::option::Option<DigestMultibase>,
@@ -272,7 +272,7 @@ pub struct Payload {
     pub entry_id: EntryId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -322,7 +322,7 @@ pub struct Response {
     pub card_digest: DigestMultibase,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

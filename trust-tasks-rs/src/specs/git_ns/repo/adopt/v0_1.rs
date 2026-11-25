@@ -127,21 +127,21 @@ pub struct DriftItem {
     ///Whose role differs, for the three role types.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub observed: ::std::option::Option<DriftItemObserved>,
@@ -658,7 +658,7 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -756,7 +756,7 @@ pub struct RepoSummary {
     #[serde(
         rename = "forgeId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_id: ::std::option::Option<ForgeId>,
@@ -920,7 +920,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoVisibility {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -942,7 +942,7 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

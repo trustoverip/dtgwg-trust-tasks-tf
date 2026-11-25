@@ -127,14 +127,14 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. What the subject may use the content it reads under this grant for (VTI-ACL-110): `{"scope": "any"}` or a non-empty list. Stated in the credential exactly as given; absent, the credential states none, which grants `any` — never `modelTraining`, which a grant must name.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purposes: ::std::option::Option<PurposeScope>,
@@ -536,7 +536,7 @@ pub struct Response {
     pub credential_id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

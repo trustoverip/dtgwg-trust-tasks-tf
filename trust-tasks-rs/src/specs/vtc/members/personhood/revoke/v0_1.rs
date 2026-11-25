@@ -126,7 +126,7 @@ pub struct Payload {
     pub did: PayloadDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -204,7 +204,7 @@ pub struct Response {
     pub did: ResponseDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -214,7 +214,7 @@ pub struct Response {
     #[serde(
         rename = "roleVac",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role_vac:
@@ -222,7 +222,7 @@ pub struct Response {
     ///Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vmc: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,

@@ -221,7 +221,7 @@ pub struct HeldClaim {
     pub attribute_id: Ulid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub slot: ::std::option::Option<Slot>,
@@ -240,7 +240,7 @@ pub struct NewClaim {
     ///The holder's note to self for this value. Never disclosed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<NewClaimLabel>,
@@ -249,7 +249,7 @@ pub struct NewClaim {
     pub share: NewClaimShare,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub slot: ::std::option::Option<Slot>,
@@ -402,14 +402,14 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///What the context may call the face, as on persona/binding/set. Meaningful only when the face is worn (`personaDid` or `wear`); a maintainer MUST refuse it otherwise rather than drop it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
@@ -419,14 +419,14 @@ pub struct Payload {
     #[serde(
         rename = "personaDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub persona_did: ::std::option::Option<PayloadPersonaDid>,
     ///When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only when the face is worn (`personaDid` or `wear`), and refused otherwise or in the past (`untilNotFuture`).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -692,26 +692,26 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPersonaDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub binding: ::std::option::Option<ResponseBinding>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///For each `share: pool` claim, in request order, the pool attribute the face now references and whether this compose created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it. Absent when no claim was pooled.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pooled: ::std::option::Option<::std::vec::Vec<ResponsePooledItem>>,
@@ -736,7 +736,7 @@ pub struct ResponseBinding {
     #[serde(
         rename = "alsoBoundPersonaCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub also_bound_persona_count: ::std::option::Option<u64>,
@@ -818,7 +818,7 @@ pub struct ResponseCorrelation {
     #[serde(
         rename = "sharedAttributeCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_attribute_count: ::std::option::Option<u64>,

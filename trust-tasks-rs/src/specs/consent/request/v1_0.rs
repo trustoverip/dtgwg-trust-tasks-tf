@@ -465,7 +465,7 @@ pub struct Payload {
     #[serde(
         rename = "contextHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_hint: ::std::option::Option<::std::string::String>,
@@ -473,13 +473,13 @@ pub struct Payload {
     #[serde(
         rename = "displayHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_hint: ::std::option::Option<PayloadDisplayHint>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -487,7 +487,7 @@ pub struct Payload {
     #[serde(
         rename = "firstMessageDigest",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub first_message_digest: ::std::option::Option<DigestMultibase>,
@@ -626,14 +626,14 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDisplayHint {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Required when status is `refused`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<ResponseReason>,
@@ -641,7 +641,7 @@ pub struct Response {
     #[serde(
         rename = "requestId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<::std::string::String>,

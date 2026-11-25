@@ -125,13 +125,13 @@ pub struct Payload {
     ///Optional explicit hosting domain to probe against. Availability is domain-scoped — the same name may be free on one domain and taken on another. When omitted, resolves via caller ACL default → system default. See category CONVENTIONS §1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -214,7 +214,7 @@ pub struct Response {
     pub domain: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

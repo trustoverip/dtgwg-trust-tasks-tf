@@ -124,7 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -132,7 +132,7 @@ pub struct Payload {
     #[serde(
         rename = "keyPackage",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_package: ::std::option::Option<PayloadKeyPackage>,
@@ -284,7 +284,7 @@ pub struct Response {
     pub epoch: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -292,7 +292,7 @@ pub struct Response {
     #[serde(
         rename = "ratchetTree",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratchet_tree: ::std::option::Option<ResponseRatchetTree>,
@@ -303,7 +303,7 @@ pub struct Response {
     ///On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub welcome: ::std::option::Option<ResponseWelcome>,

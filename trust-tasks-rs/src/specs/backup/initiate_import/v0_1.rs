@@ -627,14 +627,14 @@ pub struct Payload {
     ///Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub algorithm: ::std::option::Option<PayloadAlgorithm>,
     ///The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub chunks: ::std::option::Option<ChunkManifest>,
@@ -647,7 +647,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -729,7 +729,7 @@ pub struct Response {
     #[serde(
         rename = "completionHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub completion_hint: ::std::option::Option<ResponseCompletionHint>,
@@ -738,7 +738,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

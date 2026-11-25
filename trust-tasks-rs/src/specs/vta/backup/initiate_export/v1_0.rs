@@ -413,14 +413,14 @@ pub struct Payload {
     ///Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum: a recipient offering more must be askable for it without a specification revision, and one that does not implement the request refuses with unsupportedAlgorithm.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub algorithm: ::std::option::Option<PayloadAlgorithm>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -428,7 +428,7 @@ pub struct Payload {
     #[serde(
         rename = "includeAudit",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_audit: ::std::option::Option<bool>,
@@ -575,7 +575,7 @@ pub struct Response {
     #[serde(
         rename = "completionHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub completion_hint: ::std::option::Option<ResponseCompletionHint>,
@@ -584,7 +584,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

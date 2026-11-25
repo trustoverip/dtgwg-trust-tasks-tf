@@ -125,21 +125,21 @@ pub struct Payload {
     ///When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub all: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -147,14 +147,14 @@ pub struct Payload {
     #[serde(
         rename = "sessionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<PayloadSessionId>,
     ///Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<PayloadSubject>,
@@ -366,7 +366,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

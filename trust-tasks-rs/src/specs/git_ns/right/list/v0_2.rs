@@ -43,7 +43,7 @@ pub struct AdminRightRow {
     #[serde(
         rename = "breakGlass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub break_glass: ::std::option::Option<BreakGlass>,
@@ -51,7 +51,7 @@ pub struct AdminRightRow {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -59,7 +59,7 @@ pub struct AdminRightRow {
     #[serde(
         rename = "grantedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -67,7 +67,7 @@ pub struct AdminRightRow {
     #[serde(
         rename = "grantedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_by: ::std::option::Option<Did>,
@@ -78,7 +78,7 @@ pub struct AdminRightRow {
     ///The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<AdminRightRowReason>,
@@ -168,7 +168,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "effectiveAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -178,7 +178,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -186,7 +186,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_by: ::std::option::Option<Did>,
@@ -430,34 +430,34 @@ pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `resource` or `subject` from the request that produced it — start a fresh query instead.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum rows to return in this page. A VTC clamps to 1..=500 (default 100).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only rights on this resource or inside it. Absent: every resource.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<Resource>,
     ///Only rights held by this DID. Absent: every subject.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<Did>,
@@ -560,7 +560,7 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -568,7 +568,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,

@@ -124,7 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -211,7 +211,7 @@ pub struct Response {
     #[serde(
         rename = "didTemplates",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_templates: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -219,7 +219,7 @@ pub struct Response {
     pub dids: ::std::vec::Vec<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -231,7 +231,7 @@ pub struct Response {
     #[serde(
         rename = "subContexts",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sub_contexts: ::std::option::Option<::std::vec::Vec<::std::string::String>>,

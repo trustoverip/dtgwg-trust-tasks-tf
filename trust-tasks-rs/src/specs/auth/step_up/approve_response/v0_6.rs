@@ -42,14 +42,14 @@ pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
     #[serde(
         rename = "clientExtensionResults",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_extension_results:
@@ -141,7 +141,7 @@ pub struct AssertionResponseResponse {
     #[serde(
         rename = "userHandle",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -296,20 +296,20 @@ pub struct Payload {
     #[serde(
         rename = "deniedReason",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub denied_reason: ::std::option::Option<PayloadDeniedReason>,
     ///How the approver demonstrated the factor backing this approval. A tagged union on `kind`; absent is equivalent to `didSigned`. Whatever the kind, the document's framework `proof` is REQUIRED — evidence is in addition to it, never instead.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub evidence: ::std::option::Option<Evidence>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -317,7 +317,7 @@ pub struct Payload {
     #[serde(
         rename = "grantedAcr",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_acr: ::std::option::Option<::std::string::String>,
@@ -325,7 +325,7 @@ pub struct Payload {
     #[serde(
         rename = "sessionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<PayloadSessionId>,
@@ -645,27 +645,27 @@ pub struct Response {
     #[serde(
         rename = "boundTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bound_to: ::std::option::Option<ResponseBoundTo>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Present when status is `rejected`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<ResponseReason>,
     ///Present when status is `elevated`. Absent for `recorded`, which changes no session.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session: ::std::option::Option<Session>,
@@ -869,14 +869,14 @@ pub struct Session {
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acr: ::std::option::Option<::std::string::String>,
     ///Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub amr: ::std::option::Option<::std::vec::Vec<SessionAmrItem>>,
@@ -886,7 +886,7 @@ pub struct Session {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

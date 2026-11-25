@@ -126,7 +126,7 @@ pub struct Payload {
     #[serde(
         rename = "allFailed",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub all_failed: ::std::option::Option<bool>,
@@ -134,13 +134,13 @@ pub struct Payload {
     #[serde(
         rename = "allWaiting",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub all_waiting: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -148,7 +148,7 @@ pub struct Payload {
     #[serde(
         rename = "jobId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub job_id: ::std::option::Option<PayloadJobId>,
@@ -235,7 +235,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJobId {
 pub struct Requeued {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -247,7 +247,7 @@ pub struct Requeued {
     #[serde(
         rename = "memberDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<RequeuedMemberDid>,
@@ -444,7 +444,7 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedMemberDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -466,7 +466,7 @@ impl Response {
 pub struct Skipped {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -197,7 +197,7 @@ pub struct MemoryRecord {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -207,7 +207,7 @@ pub struct MemoryRecord {
     #[serde(
         rename = "deletedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -218,7 +218,7 @@ pub struct MemoryRecord {
     ///The remembered text. Absent when this is a tombstone or a metadata-only view.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value: ::std::option::Option<MemoryValue>,
@@ -226,7 +226,7 @@ pub struct MemoryRecord {
     #[serde(
         rename = "valueBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,
@@ -388,7 +388,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -396,7 +396,7 @@ pub struct Payload {
     #[serde(
         rename = "includeDeleted",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -477,14 +477,14 @@ pub struct Response {
     ///Requested keys the maintainer did not evaluate because the response had reached its size budget. The caller re-requests exactly these. A deferred key was not read, and a maintainer MUST NOT record it as read.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deferred: ::std::option::Option<::std::vec::Vec<MemoryKey>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

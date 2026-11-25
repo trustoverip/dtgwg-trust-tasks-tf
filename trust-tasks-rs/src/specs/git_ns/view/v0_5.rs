@@ -68,7 +68,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "effectiveAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -78,7 +78,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -86,7 +86,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_by: ::std::option::Option<Did>,
@@ -245,21 +245,21 @@ pub struct DriftItem {
     ///Whose role differs, for the three role types.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub observed: ::std::option::Option<DriftItemObserved>,
@@ -778,7 +778,7 @@ pub struct GitNamespace {
     ///Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kind: ::std::option::Option<GitNamespaceKind>,
@@ -1067,27 +1067,27 @@ pub struct Payload {
     #[serde(
         rename = "breakGlass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub break_glass: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Narrow the answer to this resource and everything inside it. Absent: everything the caller may see.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<Resource>,
     ///`member` (the default) — what the caller may see through their own git rights, exactly as in 0.4. `administrator` — everything in the namespaces the caller administers (every namespace, for a holder of the community-administrator capability; those they hold `git.ns.admin` on, for anyone else), reasons included. Refused with `git-ns/view:notAdministrator` when the caller administers no namespace within `resource`. Absent means `"member"`; this carries no schema-level default, so a producer that omits it is not normalised into sending it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope: ::std::option::Option<PayloadScope>,
@@ -1252,7 +1252,7 @@ pub struct RepoSummary {
     #[serde(
         rename = "forgeId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_id: ::std::option::Option<ForgeId>,
@@ -1491,7 +1491,7 @@ pub struct Response {
     pub accounts: ::std::vec::Vec<LinkedAccount>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1590,7 +1590,7 @@ pub struct RightRecord {
     #[serde(
         rename = "breakGlass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub break_glass: ::std::option::Option<BreakGlass>,
@@ -1598,7 +1598,7 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1610,7 +1610,7 @@ pub struct RightRecord {
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<RightRecordReason>,
@@ -1762,7 +1762,7 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

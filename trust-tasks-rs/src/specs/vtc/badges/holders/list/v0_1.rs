@@ -109,14 +109,14 @@ pub struct CardBlobRef {
     ///Size in bytes of the stored bytes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -124,7 +124,7 @@ pub struct CardBlobRef {
     #[serde(
         rename = "urlExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -669,20 +669,20 @@ pub struct Payload {
     ///An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the badge; a responder MUST NOT accept a cursor it did not issue.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
@@ -762,7 +762,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -772,7 +772,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -797,7 +797,7 @@ pub struct ResponseItemsItem {
     ///The holder's directory fields the caller may see, projected exactly as vtc/directory/entries/show would project them. Absent when the caller may see none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fields: ::std::option::Option<EntryFields>,
@@ -881,7 +881,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -891,7 +891,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

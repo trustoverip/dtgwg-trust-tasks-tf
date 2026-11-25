@@ -216,7 +216,7 @@ pub struct Payload {
     pub enactment: PayloadEnactment,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -224,7 +224,7 @@ pub struct Payload {
     #[serde(
         rename = "parentEnactment",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub parent_enactment: ::std::option::Option<PayloadParentEnactment>,
@@ -236,7 +236,7 @@ pub struct Payload {
     Revealing it here is deliberate. The salt defends against a party who observes a document or a bare digest in transit, which is the threat `task-consent` names for its own salted digest; it is not intended to defend against a party holding this receipt, who is by construction entitled to know the enactment happened and in what order. A ceremony whose step CONTENT must stay hidden from receipt holders wants `enactmentPrivacy: blinded`, not a withheld salt.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub salt: ::std::option::Option<PayloadSalt>,
@@ -446,7 +446,7 @@ pub struct PayloadStepsItem {
     ///The document's `ceremony.round`, where the definition permits bounded repetition. Absent means 1. Enumerating rounds separately is what lets a verifier check the repetition bound.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub round: ::std::option::Option<::std::num::NonZeroU64>,
@@ -455,7 +455,7 @@ pub struct PayloadStepsItem {
     ///Whether the step document carried `ceremony.terminal`. At least one enumerated step MUST carry it for the enactment to be complete.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub terminal: ::std::option::Option<bool>,

@@ -588,7 +588,7 @@ pub struct Payload {
     #[serde(
         rename = "alsoKnownAs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub also_known_as: ::std::option::Option<Vec<PayloadAlsoKnownAsItem>>,
@@ -598,20 +598,20 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version_id: ::std::option::Option<PayloadExpectedVersionId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing audit label. Never published.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
@@ -619,14 +619,14 @@ pub struct Payload {
     #[serde(
         rename = "rotateKeyAgreementKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rotate_key_agreement_key: ::std::option::Option<bool>,
     ///The designated services to stand from now on, replacing the set in force. Absent leaves the services as they are.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub services: ::std::option::Option<ServiceSet>,
@@ -892,7 +892,7 @@ pub struct Response {
     pub did: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -991,7 +991,7 @@ pub struct ServiceSet {
     ///Further services in the set. Absent means none. None may use `#didcomm` or `#tsp`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub additional: ::std::option::Option<::std::vec::Vec<DesignatedService>>,

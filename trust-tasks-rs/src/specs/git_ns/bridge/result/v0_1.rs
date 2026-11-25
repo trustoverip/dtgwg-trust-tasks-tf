@@ -188,13 +188,13 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub error: ::std::option::Option<PayloadError>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -205,14 +205,14 @@ pub struct Payload {
     pub outcome: PayloadOutcome,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub repo: ::std::option::Option<PayloadRepo>,
     ///Per-step outcomes, in the order they ran.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub steps: ::std::option::Option<::std::vec::Vec<PayloadStepsItem>>,
@@ -232,7 +232,7 @@ pub struct PayloadError {
     pub code: PayloadErrorCode,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<PayloadErrorMessage>,
@@ -519,7 +519,7 @@ pub struct PayloadStepsItem {
     ///Human-readable detail, typically for a failure.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<PayloadStepsItemDetail>,
@@ -810,7 +810,7 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

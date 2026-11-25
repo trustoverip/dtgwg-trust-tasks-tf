@@ -357,7 +357,7 @@ pub enum DeviceAttestation {
         #[serde(
             rename = "attestationStatement",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         attestation_statement: ::std::option::Option<::std::string::String>,
@@ -576,14 +576,14 @@ impl<'de> ::serde::Deserialize<'de> for DeviceAttestationToken {
 pub struct DeviceBinding {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attestation: ::std::option::Option<DeviceAttestation>,
     ///Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capabilities: ::std::option::Option<Vec<Capability>>,
@@ -599,7 +599,7 @@ pub struct DeviceBinding {
     #[serde(
         rename = "disabledAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub disabled_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -608,7 +608,7 @@ pub struct DeviceBinding {
     pub display_name: DeviceBindingDisplayName,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -616,7 +616,7 @@ pub struct DeviceBinding {
     #[serde(
         rename = "keyCustody",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_custody: ::std::option::Option<KeyCustody>,
@@ -624,14 +624,14 @@ pub struct DeviceBinding {
     #[serde(
         rename = "lastSeenAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_seen_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Free-form platform descriptor (e.g. "macOS 16 / Chrome 142", "iOS 19.1", "Android 16", "Linux/x86_64"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub platform: ::std::option::Option<::std::string::String>,
@@ -639,7 +639,7 @@ pub struct DeviceBinding {
     #[serde(
         rename = "pushCapable",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub push_capable: ::std::option::Option<bool>,
@@ -649,7 +649,7 @@ pub struct DeviceBinding {
     #[serde(
         rename = "wipedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub wiped_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -933,7 +933,7 @@ pub struct KeyCustody {
     #[serde(
         rename = "keyAgreementCurve",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_agreement_curve: ::std::option::Option<::std::string::String>,
@@ -941,7 +941,7 @@ pub struct KeyCustody {
     #[serde(
         rename = "signingAlg",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_alg: ::std::option::Option<::std::string::String>,
@@ -1022,7 +1022,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyCustodyTier {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attestation: ::std::option::Option<DeviceAttestation>,
@@ -1032,7 +1032,7 @@ pub struct Payload {
     pub display_name: PayloadDisplayName,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1040,7 +1040,7 @@ pub struct Payload {
     #[serde(
         rename = "hpkePublicKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub hpke_public_key: ::std::option::Option<PayloadHpkePublicKey>,
@@ -1048,13 +1048,13 @@ pub struct Payload {
     #[serde(
         rename = "keyCustody",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_custody: ::std::option::Option<KeyCustody>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub platform: ::std::option::Option<::std::string::String>,
@@ -1194,7 +1194,7 @@ pub struct Response {
     pub binding: DeviceBinding,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

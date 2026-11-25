@@ -199,7 +199,7 @@ pub struct CapabilityRef {
     ///Optional qualifier. Absent covers every resource of the capability's kind.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<ResourceQualifier>,
@@ -321,7 +321,7 @@ pub struct GroupBinding {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<GroupBindingCreatedBy>,
@@ -619,7 +619,7 @@ impl ::std::convert::From<Vec<MemberAction>> for MemberActions {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -701,7 +701,7 @@ impl<'de> ::serde::Deserialize<'de> for ResourceQualifier {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

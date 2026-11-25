@@ -127,7 +127,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -137,7 +137,7 @@ pub struct Payload {
     #[serde(
         rename = "ownerDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_did: ::std::option::Option<::std::string::String>,
@@ -145,7 +145,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionDays",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -153,7 +153,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionPolicy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -179,7 +179,7 @@ pub struct Response {
     pub epoch: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

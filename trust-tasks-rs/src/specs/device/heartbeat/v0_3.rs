@@ -124,14 +124,14 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Updated platform descriptor if it changed since registration (e.g. browser updated).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub platform: ::std::option::Option<::std::string::String>,
@@ -139,7 +139,7 @@ pub struct Payload {
     #[serde(
         rename = "vaultSeq",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vault_seq: ::std::option::Option<u64>,
@@ -247,7 +247,7 @@ impl ::std::convert::TryFrom<::std::string::String> for QueuedOperationKind {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -255,7 +255,7 @@ pub struct Response {
     #[serde(
         rename = "queuedOperations",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queued_operations: ::std::option::Option<::std::vec::Vec<QueuedOperation>>,
@@ -266,7 +266,7 @@ pub struct Response {
     #[serde(
         rename = "syncHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sync_hint: ::std::option::Option<ResponseSyncHint>,

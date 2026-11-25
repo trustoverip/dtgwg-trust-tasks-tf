@@ -45,7 +45,7 @@ pub struct Award {
     #[serde(
         rename = "credentialId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<GroupCredentialId>,
@@ -53,7 +53,7 @@ pub struct Award {
     #[serde(
         rename = "decidedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -64,26 +64,26 @@ pub struct Award {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "givenBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub given_by: ::std::option::Option<EntryId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub note: ::std::option::Option<AwardNote>,
@@ -91,7 +91,7 @@ pub struct Award {
     pub offered_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared: ::std::option::Option<AwardShare>,
@@ -237,7 +237,7 @@ pub struct AwardShare {
     #[serde(
         rename = "bakedImageUrl",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub baked_image_url: ::std::option::Option<::std::string::String>,
@@ -674,14 +674,14 @@ pub enum Payload {
         badge_id: BadgeId,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
         ///What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         note: ::std::option::Option<AwardNote>,
@@ -693,7 +693,7 @@ pub enum Payload {
         badge_id: BadgeId,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -702,7 +702,7 @@ pub enum Payload {
         ///What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         note: ::std::option::Option<AwardNote>,
@@ -718,7 +718,7 @@ pub struct Response {
     pub awards: ::std::vec::Vec<Award>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

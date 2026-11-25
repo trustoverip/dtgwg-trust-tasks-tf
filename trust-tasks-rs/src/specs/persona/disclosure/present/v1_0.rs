@@ -125,7 +125,7 @@ pub struct Payload {
     ///The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub challenge: ::std::option::Option<PayloadChallenge>,
@@ -133,13 +133,13 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mint: ::std::option::Option<PayloadMint>,
@@ -281,7 +281,7 @@ pub struct PayloadMint {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -311,7 +311,7 @@ pub struct Response {
     #[serde(
         rename = "credentialId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<ResponseCredentialId>,
@@ -322,7 +322,7 @@ pub struct Response {
     pub disclosure_id: Ulid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -172,7 +172,7 @@ pub struct DidSummary {
     ///The DID class the identity was created in. Absent where none was recorded; a VTA never infers one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub class: ::std::option::Option<DidClass>,
@@ -180,7 +180,7 @@ pub struct DidSummary {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
@@ -193,7 +193,7 @@ pub struct DidSummary {
     pub did: DidSummaryDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -201,14 +201,14 @@ pub struct DidSummary {
     #[serde(
         rename = "keyAgreementKeyId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_agreement_key_id: ::std::option::Option<::std::string::String>,
     ///The VTA's own label for the identity. Not published.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<::std::string::String>,
@@ -220,7 +220,7 @@ pub struct DidSummary {
     #[serde(
         rename = "methodDetails",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub method_details: ::std::option::Option<
@@ -235,7 +235,7 @@ pub struct DidSummary {
     #[serde(
         rename = "serverId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub server_id: ::std::option::Option<::std::string::String>,
@@ -243,7 +243,7 @@ pub struct DidSummary {
     #[serde(
         rename = "signingKeyId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_key_id: ::std::option::Option<::std::string::String>,
@@ -446,7 +446,7 @@ pub struct Payload {
     pub did: PayloadDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -533,7 +533,7 @@ pub struct Response {
     pub did: DidSummary,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

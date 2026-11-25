@@ -332,7 +332,7 @@ pub struct Payload {
     pub election_id: ElectionId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -342,7 +342,7 @@ pub struct Payload {
     ///Under a `credential` roll (voting/_shared/0.4 `RollRule`), and only then: the requester's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-025). Required when the election's roll rule is `credential`, refused under any other rule; the community checks it as it stands at the moment of issuance and discards it once it has decided.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentation: ::std::option::Option<PayloadPresentation>,
@@ -447,7 +447,7 @@ pub struct Response {
     pub election_id: ElectionId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -537,7 +537,7 @@ pub struct RootRequest {
     ///The issuance encoding the suite carries.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub encoding: ::std::option::Option<RootRequestEncoding>,
@@ -546,7 +546,7 @@ pub struct RootRequest {
     ///The request's tag under the root context.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub t0: ::std::option::Option<RootRequestT0>,

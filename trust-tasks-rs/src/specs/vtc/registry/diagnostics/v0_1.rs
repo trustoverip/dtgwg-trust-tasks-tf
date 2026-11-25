@@ -124,7 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -153,35 +153,35 @@ pub struct RegistryTransport {
     ///The protocol the last selection chose. Null before the first call, or when selection failed — see `error`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub active: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Protocols the registry's own document advertises, in preference order. Empty before the DID has been resolved, or when addressed by URL alone.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub advertised: ::std::option::Option<::std::vec::Vec<RegistryTransportAdvertisedItem>>,
     ///The registry's DID, when addressed by one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Why the last selection failed, if it did.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub error: ::std::option::Option<::std::option::Option<RegistryTransportError>>,
     ///The registry's endpoint, when addressed by one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -328,7 +328,7 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportError {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -339,14 +339,14 @@ pub struct Response {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<::std::option::Option<ResponseLastError>>,
     #[serde(
         rename = "lastFailureAt",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_failure_at:
@@ -354,7 +354,7 @@ pub struct Response {
     #[serde(
         rename = "lastSuccessAt",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_success_at:
@@ -363,7 +363,7 @@ pub struct Response {
     #[serde(
         rename = "mediatorDid",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mediator_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -371,7 +371,7 @@ pub struct Response {
     #[serde(
         rename = "mediatorUrl",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mediator_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -379,7 +379,7 @@ pub struct Response {
     #[serde(
         rename = "messagingStatus",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub messaging_status: ::std::option::Option<ResponseMessagingStatus>,
@@ -387,7 +387,7 @@ pub struct Response {
     #[serde(
         rename = "oldestPendingAgeSeconds",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_pending_age_seconds: ::std::option::Option<::std::option::Option<i64>>,
@@ -401,7 +401,7 @@ pub struct Response {
     #[serde(
         rename = "registryTransport",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub registry_transport: ::std::option::Option<RegistryTransport>,
@@ -412,7 +412,7 @@ pub struct Response {
     #[serde(
         rename = "syncerEnabled",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_enabled: ::std::option::Option<bool>,
@@ -420,7 +420,7 @@ pub struct Response {
     #[serde(
         rename = "syncerRestarts",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_restarts: ::std::option::Option<u64>,
@@ -428,7 +428,7 @@ pub struct Response {
     #[serde(
         rename = "syncerRunning",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub syncer_running: ::std::option::Option<bool>,
@@ -438,7 +438,7 @@ pub struct Response {
     Reports all protocols rather than only the advertised ones, so a client can tell "not advertised" from "absent from an older response".*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<TransportStatus>>,
@@ -446,7 +446,7 @@ pub struct Response {
     #[serde(
         rename = "vtaDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<ResponseVtaDid>,
@@ -710,7 +710,7 @@ pub struct TransportStatus {
     ///The advertised endpoint, or null when not advertised — there is no endpoint to give.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub endpoint: ::std::option::Option<::std::option::Option<::std::string::String>>,

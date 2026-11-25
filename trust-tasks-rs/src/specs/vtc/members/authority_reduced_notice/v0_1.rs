@@ -136,7 +136,7 @@ pub struct Payload {
     pub did: PayloadDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -146,7 +146,7 @@ pub struct Payload {
     ///The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -154,7 +154,7 @@ pub struct Payload {
     #[serde(
         rename = "resultingRole",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resulting_role: ::std::option::Option<PayloadResultingRole>,

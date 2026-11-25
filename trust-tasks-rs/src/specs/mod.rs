@@ -62,14 +62,16 @@
 #![allow(clippy::type_complexity)]
 
 /// The member-presence helpers every generated module here reads its optional
-/// members through (`#[serde(deserialize_with = "crate::specs::presence::…")]`;
+/// members through (`#[serde(deserialize_with = "crate::specs::__presence::…")]`;
 /// see `trust-tasks-build`'s `presence` pass). One crate-private copy instead
 /// of one per module: nothing here is public API. An application's modules,
 /// generated against `::trust_tasks_rs`, carry their own copy instead, so they
-/// need nothing new from the runtime.
+/// need nothing new from the runtime. The leading underscores keep the name
+/// out of the generated family modules' namespace: a slug segment starts with
+/// a letter, so no family can be called `__presence`.
 // Unused when no specification family is enabled.
 #[allow(dead_code)]
-pub(crate) mod presence {
+pub(crate) mod __presence {
     /// Reads a present member, `null` included, as `Some`, so an absent member
     /// (`None`, via `#[serde(default)]`) stays distinct. For a member whose
     /// schema admits `null`.

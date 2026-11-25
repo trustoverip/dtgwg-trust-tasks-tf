@@ -43,7 +43,7 @@ pub struct ContextPolicy {
     pub export_allowed: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -51,14 +51,14 @@ pub struct ContextPolicy {
     #[serde(
         rename = "presentableTypes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentable_types: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Resource limits for the context. Shape is maintainer-defined.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub quotas:
@@ -67,7 +67,7 @@ pub struct ContextPolicy {
     #[serde(
         rename = "signableKeys",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signable_keys: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -75,7 +75,7 @@ pub struct ContextPolicy {
     #[serde(
         rename = "trustedVerifiers",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trusted_verifiers: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -112,20 +112,20 @@ pub struct ContextRecord {
     ///Free-form description.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<ContextRecordDescription>,
     ///DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -136,7 +136,7 @@ pub struct ContextRecord {
     ///Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub parent: ::std::option::Option<::std::string::String>,
@@ -423,27 +423,27 @@ pub struct Payload {
     #[serde(
         rename = "contextPolicy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_policy: ::std::option::Option<ContextPolicy>,
     ///New description.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PayloadDescription>,
     ///DID this context acts as. Prefer vta/contexts/update-did, which is the task named and audited for this change; setting it here is permitted for a maintainer that treats the two as one write.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -452,7 +452,7 @@ pub struct Payload {
     ///New human-readable name.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub name: ::std::option::Option<PayloadName>,

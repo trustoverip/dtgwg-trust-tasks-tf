@@ -42,7 +42,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "deviceId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<ConsumerContextDeviceId>,
@@ -50,7 +50,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "lastUserVerificationAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -58,7 +58,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "networkClass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
@@ -303,7 +303,7 @@ pub struct Payload {
     #[serde(
         rename = "consumerContext",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consumer_context: ::std::option::Option<ConsumerContext>,
@@ -312,7 +312,7 @@ pub struct Payload {
     pub entry_id: PayloadEntryId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -320,7 +320,7 @@ pub struct Payload {
     #[serde(
         rename = "stepUpProof",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up_proof: ::std::option::Option<StepUpProof>,
@@ -400,7 +400,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntryId {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -583,13 +583,13 @@ pub struct UnsignedTrustTaskEnvelope {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -608,7 +608,7 @@ pub struct UnsignedTrustTaskEnvelope {
     #[serde(
         rename = "threadId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub thread_id: ::std::option::Option<UnsignedTrustTaskEnvelopeThreadId>,

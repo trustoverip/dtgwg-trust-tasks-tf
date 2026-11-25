@@ -277,7 +277,7 @@ pub struct Payload {
     #[serde(
         rename = "candidateModule",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub candidate_module: ::std::option::Option<::std::string::String>,
@@ -288,7 +288,7 @@ pub struct Payload {
     pub candidate_priority: i64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -311,21 +311,21 @@ pub struct PolicyDecision {
     ///Human-readable explanation for diagnostic display.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub explanation: ::std::option::Option<PolicyDecisionExplanation>,
     ///When decision == "allow", whether the maintainer should proxy-login or release-for-fill. Default: proxy.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mode: ::std::option::Option<PolicyDecisionMode>,
     #[serde(
         rename = "stepUp",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up: ::std::option::Option<PolicyDecisionStepUp>,
@@ -333,7 +333,7 @@ pub struct PolicyDecision {
     #[serde(
         rename = "ttlSecondsCap",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_cap: ::std::option::Option<::std::num::NonZeroU64>,
@@ -538,7 +538,7 @@ pub struct PolicyDecisionStepUp {
     #[serde(
         rename = "ttlSeconds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -639,28 +639,28 @@ pub struct PolicyInputConsumer {
     #[serde(
         rename = "deviceId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<::std::string::String>,
     pub did: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kind: ::std::option::Option<ConsumerKind>,
     #[serde(
         rename = "lastUserVerificationAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "networkClass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<PolicyInputConsumerNetworkClass>,
@@ -890,7 +890,7 @@ pub struct Response {
     pub decision: PolicyDecision,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -898,14 +898,14 @@ pub struct Response {
     #[serde(
         rename = "matchedPolicies",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub matched_policies: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trace: ::std::option::Option<::std::vec::Vec<ResponseTraceItem>>,
@@ -1002,7 +1002,7 @@ pub enum SiteTarget {
         #[serde(
             rename = "teamId",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         team_id: ::std::option::Option<SiteTargetTeamId>,

@@ -328,7 +328,7 @@ impl ::std::convert::TryFrom<::std::string::String> for MigrationState {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -336,7 +336,7 @@ pub struct Payload {
     #[serde(
         rename = "maxBytesPerSecond",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes_per_second: ::std::option::Option<i64>,
@@ -487,7 +487,7 @@ pub struct Response {
     pub done_files: u64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -497,7 +497,7 @@ pub struct Response {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<MigrationLastError>,
@@ -508,7 +508,7 @@ pub struct Response {
     #[serde(
         rename = "nextAttemptAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_attempt_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -516,7 +516,7 @@ pub struct Response {
     #[serde(
         rename = "pausedCause",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub paused_cause: ::std::option::Option<MigrationPauseCause>,

@@ -324,7 +324,7 @@ pub struct GcsSettings {
     pub kind: ::serde_json::Value,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prefix: ::std::option::Option<ObjectPrefix>,
@@ -563,7 +563,7 @@ impl<'de> ::serde::Deserialize<'de> for ObjectPrefix {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub auth: ::std::option::Option<StorageAuth>,
@@ -571,13 +571,13 @@ pub struct Payload {
     #[serde(
         rename = "capacityBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -586,7 +586,7 @@ pub struct Payload {
     #[serde(
         rename = "isDefault",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_default: ::std::option::Option<bool>,
@@ -735,7 +735,7 @@ pub struct Response {
     pub config: StorageConfig,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -756,7 +756,7 @@ pub struct S3Settings {
     ///The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub endpoint: ::std::option::Option<::std::string::String>,
@@ -765,13 +765,13 @@ pub struct S3Settings {
     #[serde(
         rename = "pathStyle",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path_style: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prefix: ::std::option::Option<ObjectPrefix>,
@@ -950,7 +950,7 @@ pub enum StorageAuth {
 pub struct StorageConfig {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub auth: ::std::option::Option<StorageAuth>,
@@ -958,7 +958,7 @@ pub struct StorageConfig {
     #[serde(
         rename = "capacityBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
@@ -971,7 +971,7 @@ pub struct StorageConfig {
     #[serde(
         rename = "isDefault",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_default: ::std::option::Option<bool>,
@@ -982,14 +982,14 @@ pub struct StorageConfig {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "updatedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<StorageConfigUpdatedBy>,

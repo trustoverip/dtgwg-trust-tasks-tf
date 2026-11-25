@@ -125,20 +125,20 @@ pub struct Payload {
     ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<PayloadDomain>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mnemonic: ::std::option::Option<PayloadMnemonic>,
@@ -289,7 +289,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -297,7 +297,7 @@ pub struct Response {
     #[serde(
         rename = "lastResolvedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_resolved_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -305,14 +305,14 @@ pub struct Response {
     #[serde(
         rename = "lastUpdatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Echo of the slot read. Absent on the server-wide aggregate.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mnemonic: ::std::option::Option<::std::string::String>,
@@ -320,7 +320,7 @@ pub struct Response {
     #[serde(
         rename = "totalDids",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub total_dids: ::std::option::Option<u64>,

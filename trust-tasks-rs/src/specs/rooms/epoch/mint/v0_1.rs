@@ -51,7 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -179,7 +179,7 @@ pub struct Payload {
     OPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub commit: ::std::option::Option<PayloadCommit>,
@@ -188,14 +188,14 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub link: ::std::option::Option<EpochLink>,
@@ -204,7 +204,7 @@ pub struct Payload {
     ///Optional operator-facing rationale, recorded in the room's audit.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -351,7 +351,7 @@ pub struct Response {
     pub epoch: i64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

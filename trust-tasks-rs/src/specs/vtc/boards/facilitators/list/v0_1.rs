@@ -45,7 +45,7 @@ pub struct Appointment {
     #[serde(
         rename = "appointedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub appointed_by: ::std::option::Option<EntryId>,
@@ -56,7 +56,7 @@ pub struct Appointment {
     #[serde(
         rename = "reviewEndsAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub review_ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -286,7 +286,7 @@ pub struct Payload {
     pub board_id: BoardId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -306,7 +306,7 @@ pub struct Response {
     pub board_id: BoardId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

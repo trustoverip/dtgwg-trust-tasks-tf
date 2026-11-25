@@ -52,7 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -394,28 +394,28 @@ pub struct Payload {
     ///An opaque continuation token from a previous response's `nextCursor`. A host MUST NOT accept a cursor it did not issue.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The most records to return; the host chooses a default and MAY return fewer.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Return only records whose key starts with this. On an `attributed` or `private` room keys are opaque, so a prefix is only useful where the client assigned structure to them.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prefix: ::std::option::Option<PayloadPrefix>,
@@ -428,7 +428,7 @@ pub struct Payload {
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -616,28 +616,28 @@ pub struct RecordMetadataV2 {
     ///The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<::std::string::String>,
     ///The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write, so a listing discloses which records carry files, never anything about the files beyond the blobs' sizes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
     ///Present only on an `open` room; sealed with the body otherwise.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RecordMetadataV2Description>,
     ///The epoch the record was sealed under. Absent on an `open` room.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
@@ -646,14 +646,14 @@ pub struct RecordMetadataV2 {
     ///Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<RecordMetadataV2Status>,
     ///Present only on an `open` room; sealed with the body otherwise.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub title: ::std::option::Option<RecordMetadataV2Title>,
@@ -885,13 +885,13 @@ pub struct Response {
     #[serde(
         rename = "dataCommitment",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub data_commitment: ::std::option::Option<DataCommitment>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -899,7 +899,7 @@ pub struct Response {
     #[serde(
         rename = "headVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head_version: ::std::option::Option<HeadVersion>,
@@ -907,7 +907,7 @@ pub struct Response {
     #[serde(
         rename = "lastPrune",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_prune: ::std::option::Option<RecordPrune>,
@@ -915,7 +915,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -923,7 +923,7 @@ pub struct Response {
     #[serde(
         rename = "recordCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_count: ::std::option::Option<RecordCount>,

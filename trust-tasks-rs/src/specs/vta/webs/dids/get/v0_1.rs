@@ -523,7 +523,7 @@ pub struct Payload {
     pub did: PayloadDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -531,7 +531,7 @@ pub struct Payload {
     #[serde(
         rename = "includeKeriCesr",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_keri_cesr: ::std::option::Option<bool>,
@@ -610,7 +610,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -618,7 +618,7 @@ pub struct Response {
     #[serde(
         rename = "keriCesr",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub keri_cesr: ::std::option::Option<::std::string::String>,
@@ -627,7 +627,7 @@ pub struct Response {
     #[serde(
         rename = "rotationStaged",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rotation_staged: ::std::option::Option<bool>,
@@ -659,7 +659,7 @@ pub struct WebsDidRecord {
     #[serde(
         rename = "deactivatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deactivated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -672,7 +672,7 @@ pub struct WebsDidRecord {
     pub domain: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -688,7 +688,7 @@ pub struct WebsDidRecord {
     ///Operator-facing label. Never published.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<WebsDidRecordLabel>,
@@ -696,14 +696,14 @@ pub struct WebsDidRecord {
     #[serde(
         rename = "nextKeyId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_key_id: ::std::option::Option<::std::string::String>,
     ///Whether this is its context's primary DID.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub primary: ::std::option::Option<bool>,

@@ -127,7 +127,7 @@ pub enum Payload {
         #[serde(
             rename = "contextId",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         context_id: ::std::option::Option<PayloadVariant0ContextId>,
@@ -136,21 +136,21 @@ pub enum Payload {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
         ///Credential format, when not evident from the body. An unimplemented format is refused, not stored.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         format: ::std::option::Option<PayloadVariant0Format>,
         ///Local handle to store under. Absent, derived from the credential's own id. A handle, not a description — see Data carried.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         id: ::std::option::Option<PayloadVariant0Id>,
@@ -160,7 +160,7 @@ pub enum Payload {
         #[serde(
             rename = "contextId",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         context_id: ::std::option::Option<PayloadVariant1ContextId>,
@@ -170,21 +170,21 @@ pub enum Payload {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
         ///Credential format, when not evident from the body. An unimplemented format is refused, not stored.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         format: ::std::option::Option<PayloadVariant1Format>,
         ///Local handle to store under. Absent, derived from the credential's own id. A handle, not a description — see Data carried.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         id: ::std::option::Option<PayloadVariant1Id>,
@@ -638,7 +638,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -647,7 +647,7 @@ pub struct Response {
     ///Classification the maintainer derived. Never supplied by the consumer.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<ResponsePurpose>,

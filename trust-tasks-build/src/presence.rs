@@ -31,7 +31,7 @@
 //! member is omitted. `present` maps a present member, `null` included, to
 //! `Some` (the member admits `null`); `not_null` refuses a `null` (it does
 //! not). For `Target::runtime_crate()` the
-//! helpers are the crate-private `crate::specs::presence` in `trust-tasks-rs`,
+//! helpers are the crate-private `crate::specs::__presence` in `trust-tasks-rs`,
 //! which adds no public API. For an application they are emitted into each
 //! module that needs them, so a generated module names nothing new in the
 //! runtime's `__private` surface (and so no new ABI item).
@@ -264,7 +264,7 @@ type Rewrites = BTreeSet<(String, String)>;
 /// Rewrite the fields described in the module docs, follow each into the
 /// struct's builder, and emit the helpers the fields use. `serde` is the path
 /// generated code names serde by. `shared` is the path of a module that
-/// already defines the helpers (`crate::specs::presence` inside
+/// already defines the helpers (`crate::specs::__presence` inside
 /// `trust-tasks-rs`), or `None` to emit them into this module. `tags` is
 /// what [`mark_nullable_optional_members`] returned.
 ///

@@ -189,7 +189,7 @@ pub struct Entry {
     ///The party's acknowledgement (VMC carrying the grant's digest).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ack: ::std::option::Option<Credential>,
@@ -201,7 +201,7 @@ pub struct Entry {
     ///The signed membership grant (VMC), once the party acknowledged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant: ::std::option::Option<Issued>,
@@ -210,7 +210,7 @@ pub struct Entry {
     pub kind: EntryKind,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<Label>,
@@ -219,7 +219,7 @@ pub struct Entry {
     ///The unsigned membership grant offered to the party, before it acknowledged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub offer: ::std::option::Option<Issued>,
@@ -227,7 +227,7 @@ pub struct Entry {
     ///The party's repudiation (`repudiates/1`) of the listing or the grant.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub repudiation: ::std::option::Option<Credential>,
@@ -310,19 +310,19 @@ impl ::std::convert::TryFrom<::std::string::String> for EntryKind {
 pub struct EntryProfile {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<Description>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<Tags>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<Url>,
@@ -587,7 +587,7 @@ pub struct Payload {
     ///The new description. Absent: kept. An empty string clears it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<Description>,
@@ -595,28 +595,28 @@ pub struct Payload {
     pub did: Did,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The new label. Absent: kept. An empty string clears it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<Label>,
     ///The new tags, replacing the old ones. Absent: kept. An empty array clears them.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<Tags>,
     ///The new address, an http(s) URL. Absent: kept. An empty string clears it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<PayloadUrl>,
@@ -758,7 +758,7 @@ pub struct Response {
     pub entry: Entry,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -780,13 +780,13 @@ pub struct StateChange {
     ///The state before; absent for the first listing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from: ::std::option::Option<EntryState>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<Reason>,

@@ -45,7 +45,7 @@ pub struct Award {
     #[serde(
         rename = "credentialId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<GroupCredentialId>,
@@ -53,7 +53,7 @@ pub struct Award {
     #[serde(
         rename = "decidedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -64,26 +64,26 @@ pub struct Award {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "givenBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub given_by: ::std::option::Option<EntryId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub note: ::std::option::Option<AwardNote>,
@@ -91,7 +91,7 @@ pub struct Award {
     pub offered_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared: ::std::option::Option<AwardShare>,
@@ -237,7 +237,7 @@ pub struct AwardShare {
     #[serde(
         rename = "bakedImageUrl",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub baked_image_url: ::std::option::Option<::std::string::String>,
@@ -341,13 +341,13 @@ pub struct Badge {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<EntryId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub criteria: ::std::option::Option<BadgeCriteria>,
@@ -355,7 +355,7 @@ pub struct Badge {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -363,7 +363,7 @@ pub struct Badge {
     #[serde(
         rename = "groupId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub group_id: ::std::option::Option<GroupId>,
@@ -371,7 +371,7 @@ pub struct Badge {
     #[serde(
         rename = "holderCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub holder_count: ::std::option::Option<u64>,
@@ -386,14 +386,14 @@ pub struct Badge {
     ///Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requestable: ::std::option::Option<bool>,
     #[serde(
         rename = "retiredAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retired_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -401,7 +401,7 @@ pub struct Badge {
     #[serde(
         rename = "shareableOutside",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shareable_outside: ::std::option::Option<bool>,
@@ -409,7 +409,7 @@ pub struct Badge {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -804,14 +804,14 @@ pub struct CardBlobRef {
     ///Size in bytes of the stored bytes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -819,7 +819,7 @@ pub struct CardBlobRef {
     #[serde(
         rename = "urlExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1375,7 +1375,7 @@ pub struct Payload {
     pub badge_id: BadgeId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1397,14 +1397,14 @@ pub struct Response {
     pub credential_regime: CredentialRegime,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Kudos badges only: the member who made it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub maker: ::std::option::Option<EntryId>,
@@ -1412,7 +1412,7 @@ pub struct Response {
     #[serde(
         rename = "myAwards",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub my_awards: ::std::option::Option<::std::vec::Vec<Award>>,
@@ -1424,7 +1424,7 @@ pub struct Response {
     ///Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owners: ::std::option::Option<Vec<EntryId>>,

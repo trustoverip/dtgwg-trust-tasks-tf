@@ -119,7 +119,7 @@ pub struct ContactDocument {
     #[serde(
         rename = "cardVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub card_version: ::std::option::Option<::std::num::NonZeroU64>,
@@ -127,7 +127,7 @@ pub struct ContactDocument {
     ///The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub publisher: ::std::option::Option<ContactDocumentPublisher>,
@@ -146,7 +146,7 @@ pub struct ContactDocumentClaimsItem {
     ///As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub provenance: ::std::option::Option<Provenance>,
@@ -551,7 +551,7 @@ pub struct Payload {
     #[serde(
         rename = "contactId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_id: ::std::option::Option<Ulid>,
@@ -561,7 +561,7 @@ pub struct Payload {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<PayloadCredentialRefsItem>>,
@@ -569,19 +569,19 @@ pub struct Payload {
     #[serde(
         rename = "directoryRef",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub directory_ref: ::std::option::Option<DirectoryRef>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub document: ::std::option::Option<ContactDocument>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -589,28 +589,28 @@ pub struct Payload {
     #[serde(
         rename = "knownByPersona",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub known_by_persona: ::std::option::Option<PayloadKnownByPersona>,
     ///The lists the contact is on, replacing the whole set. Every identifier MUST name a list in this context. Absent: unchanged. Take the contact off every list with `removeLists`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lists: ::std::option::Option<ListIds>,
     ///The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub notes: ::std::option::Option<PayloadNotes>,
     ///The holder's private name for the contact, replacing any they had. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub petname: ::std::option::Option<Petname>,
@@ -618,7 +618,7 @@ pub struct Payload {
     #[serde(
         rename = "removeDirectoryRef",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_directory_ref: ::std::option::Option<bool>,
@@ -626,7 +626,7 @@ pub struct Payload {
     #[serde(
         rename = "removeLists",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_lists: ::std::option::Option<bool>,
@@ -634,7 +634,7 @@ pub struct Payload {
     #[serde(
         rename = "removeNotes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_notes: ::std::option::Option<bool>,
@@ -642,14 +642,14 @@ pub struct Payload {
     #[serde(
         rename = "removePetname",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_petname: ::std::option::Option<bool>,
     ///Star or unstar the contact. Absent: unchanged. A boolean rather than a remove member because `false` is a value the holder chose, not an absence.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub starred: ::std::option::Option<bool>,
@@ -657,7 +657,7 @@ pub struct Payload {
     #[serde(
         rename = "subjectDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_did: ::std::option::Option<PayloadSubjectDid>,
@@ -1143,7 +1143,7 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
@@ -1151,7 +1151,7 @@ pub enum Provenance {
         ///The disclosure rung this claim was, or will be, presented at.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         proof: ::std::option::Option<ProofRung>,
@@ -1497,7 +1497,7 @@ pub struct Response {
     #[serde(
         rename = "changedClaims",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub changed_claims: ::std::option::Option<::std::vec::Vec<ClaimType>>,
@@ -1507,7 +1507,7 @@ pub struct Response {
     pub created: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

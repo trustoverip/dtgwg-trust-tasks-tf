@@ -134,21 +134,21 @@ pub struct Payload {
     pub expects: ::std::vec::Vec<PayloadExpectsItem>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "inResponseTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub in_response_to: ::std::option::Option<PayloadInResponseTo>,
     ///Human-readable description of why the task cannot complete in isolation. Non-normative. Subject to the same restraint as an error message: it reaches a party that may not be entitled to learn why.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<PayloadMessage>,
@@ -233,14 +233,14 @@ pub struct PayloadExpectsItem {
     ///Optional structured data the producer MAY use when composing the expected document — a challenge to echo, an identifier to quote, a presentation definition to satisfy. Its shape is governed by the specification named in typeUri, not by this one. A producer MUST NOT treat a hint as authoritative for any value it can determine itself.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub hint: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable explanation of why this continuation is expected. Non-normative; intended for operator UI and logs.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadExpectsItemReason>,
@@ -321,7 +321,7 @@ pub struct PayloadInResponseTo {
     ///The id of the specific document being answered (SPEC §4.3). Globally unique and never reused, so it names one instance where threadId names an exchange.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub id: ::std::option::Option<PayloadInResponseToId>,

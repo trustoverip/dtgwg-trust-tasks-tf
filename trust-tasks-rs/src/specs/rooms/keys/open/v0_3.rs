@@ -125,7 +125,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -134,7 +134,7 @@ pub struct Payload {
     ///OPTIONAL. The one purpose the caller will use the content this request discloses for (VTI-ACL-103), as `RecordPurpose` defines it. A purpose not granted is refused with `purposeNotGranted`. May be omitted where exactly one purpose is granted, or `any`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<RecordPurpose>,
@@ -472,7 +472,7 @@ impl ::std::fmt::Display for RecordPurpose {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

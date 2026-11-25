@@ -51,7 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -155,14 +155,14 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<::std::num::NonZeroU64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -171,7 +171,7 @@ pub struct Payload {
     ///Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pinned: ::std::option::Option<bool>,
@@ -180,7 +180,7 @@ pub struct Payload {
     ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -190,7 +190,7 @@ pub struct Payload {
     ///The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<PayloadStatus>,
@@ -391,7 +391,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -400,7 +400,7 @@ pub struct Response {
     ///Whether the record is pinned after the operation.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pinned: ::std::option::Option<bool>,

@@ -107,7 +107,7 @@ pub struct DirectoryEntry {
     ///What the party is.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<DirectoryEntryDescription>,
@@ -116,7 +116,7 @@ pub struct DirectoryEntry {
     #[serde(
         rename = "grantId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_id: ::std::option::Option<DirectoryEntryGrantId>,
@@ -124,7 +124,7 @@ pub struct DirectoryEntry {
     ///The name shown.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<DirectoryEntryLabel>,
@@ -132,7 +132,7 @@ pub struct DirectoryEntry {
     #[serde(
         rename = "listingId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listing_id: ::std::option::Option<DirectoryEntryListingId>,
@@ -140,14 +140,14 @@ pub struct DirectoryEntry {
     ///Tags.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<::std::vec::Vec<DirectoryEntryTagsItem>>,
     ///The party's public address.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -754,41 +754,41 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Only entries of this kind.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kind: ::std::option::Option<EntryKind>,
     #[serde(
         rename = "membersOnly",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub members_only: ::std::option::Option<MembersOnly>,
     ///A person's membership credential from a member community, holder-bound to the signer; admits the person to a `members` directory.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership: ::std::option::Option<Membership>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub q: ::std::option::Option<SearchText>,
     ///Only entries in this state.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub state: ::std::option::Option<EntryState>,
@@ -820,7 +820,7 @@ pub struct Response {
     pub entries: ::std::vec::Vec<DirectoryEntry>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

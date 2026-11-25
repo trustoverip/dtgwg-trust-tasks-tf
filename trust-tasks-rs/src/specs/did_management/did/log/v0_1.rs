@@ -125,13 +125,13 @@ pub struct Payload {
     ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<PayloadDomain>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -139,7 +139,7 @@ pub struct Payload {
     ///When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub raw: ::std::option::Option<bool>,
@@ -283,7 +283,7 @@ pub struct Response {
     pub entries: ::std::vec::Vec<ResponseEntriesItem>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -291,7 +291,7 @@ pub struct Response {
     #[serde(
         rename = "logContent",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub log_content: ::std::option::Option<::std::string::String>,
@@ -302,7 +302,7 @@ pub struct Response {
     #[serde(
         rename = "witnessContent",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<::std::string::String>,
@@ -321,7 +321,7 @@ pub struct ResponseEntriesItem {
     ///The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub parameters:
@@ -332,7 +332,7 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "versionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version_id: ::std::option::Option<::std::string::String>,
@@ -340,7 +340,7 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "versionTime",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version_time: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

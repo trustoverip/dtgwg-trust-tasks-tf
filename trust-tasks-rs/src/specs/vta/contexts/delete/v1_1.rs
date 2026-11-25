@@ -129,7 +129,7 @@ pub struct Payload {
     pub abandon_host_copies: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -214,7 +214,7 @@ pub struct Response {
     #[serde(
         rename = "daemonCleanupErrors",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub daemon_cleanup_errors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -222,7 +222,7 @@ pub struct Response {
     pub deleted: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

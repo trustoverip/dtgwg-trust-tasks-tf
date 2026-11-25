@@ -327,20 +327,20 @@ pub struct IdentityChange {
     #[serde(
         rename = "assuranceLevel",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub assurance_level: ::std::option::Option<KeyAssuranceLevel>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub commitment: ::std::option::Option<::std::string::String>,
     #[serde(
         rename = "keyType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_type: ::std::option::Option<KeyType>,
@@ -349,13 +349,13 @@ pub struct IdentityChange {
     #[serde(
         rename = "publicKeyMultibase",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_key_multibase: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationships: ::std::option::Option<Vec<DidVerificationRelationship>>,
@@ -363,7 +363,7 @@ pub struct IdentityChange {
     #[serde(
         rename = "verificationMethod",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verification_method: ::std::option::Option<::std::string::String>,
@@ -468,7 +468,7 @@ pub struct IdentityChangePreview {
     #[serde(
         rename = "assuranceLevel",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub assurance_level: ::std::option::Option<KeyAssuranceLevel>,
@@ -476,7 +476,7 @@ pub struct IdentityChangePreview {
     #[serde(
         rename = "baseVersionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub base_version_id: ::std::option::Option<::std::string::String>,
@@ -493,7 +493,7 @@ pub struct IdentityChangePreview {
     #[serde(
         rename = "recoverySigning",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub recovery_signing: ::std::option::Option<RecoverySigningRequest>,
@@ -502,7 +502,7 @@ pub struct IdentityChangePreview {
     pub update_key_rotates: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub warnings: ::std::option::Option<Vec<PreviewWarning>>,
@@ -688,7 +688,7 @@ pub struct KeyChangeApprovalState {
     ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approvals: ::std::option::Option<::std::vec::Vec<RecordedApproval>>,
@@ -858,7 +858,7 @@ pub struct Payload {
     ///The new identifier document, for methods whose controller writes it. Omit to leave it unchanged. It MUST carry, unchanged, `verificationMethod`, every verification relationship and `keyRoles`: a change to any of them is refused with `vta/dids/update:keyMembersManaged`, because keys change only through the key-role tasks.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub document:
@@ -867,7 +867,7 @@ pub struct Payload {
     #[serde(
         rename = "dryRun",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
@@ -875,20 +875,20 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version_id: ::std::option::Option<PayloadExpectedVersionId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing audit label.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
@@ -896,7 +896,7 @@ pub struct Payload {
     #[serde(
         rename = "methodParameters",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub method_parameters:
@@ -905,14 +905,14 @@ pub struct Payload {
     #[serde(
         rename = "previewId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub preview_id: ::std::option::Option<PayloadPreviewId>,
     ///Why the change is being made, for the audit trail and for the other approvers. Never published.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -1315,7 +1315,7 @@ pub struct Publication {
     ///Present when `selfPublish` is true.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub artifacts: ::std::option::Option<::std::vec::Vec<PublishedArtifact>>,
@@ -1478,7 +1478,7 @@ pub struct RecordedApproval {
     #[serde(
         rename = "recordedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub recorded_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1558,7 +1558,7 @@ pub struct RecoverySigningRequest {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1703,14 +1703,14 @@ pub struct Response {
     ///Present when `outcome` is `pendingApproval`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approvals: ::std::option::Option<KeyChangeApprovalState>,
     pub did: ResponseDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1718,7 +1718,7 @@ pub struct Response {
     #[serde(
         rename = "newVersionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub new_version_id: ::std::option::Option<::std::string::String>,
@@ -1726,14 +1726,14 @@ pub struct Response {
     ///Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub preview: ::std::option::Option<IdentityChangePreview>,
     ///Present when `outcome` is `applied`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub publication: ::std::option::Option<Publication>,

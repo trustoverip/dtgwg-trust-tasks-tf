@@ -43,7 +43,7 @@ pub struct Payload {
     ///Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub patterns: ::std::option::Option<::std::vec::Vec<PayloadPatternsItem>>,
@@ -130,7 +130,7 @@ pub struct Response {
     #[serde(
         rename = "frameworkVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub framework_version: ::std::option::Option<ResponseFrameworkVersion>,
@@ -222,7 +222,7 @@ pub enum ResponseSupportedTypesItem {
         #[serde(
             rename = "requiredExt",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         required_ext: ::std::option::Option<Vec<ResponseSupportedTypesItemObjectRequiredExtItem>>,

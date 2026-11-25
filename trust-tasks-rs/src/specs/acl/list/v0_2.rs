@@ -47,7 +47,7 @@ pub struct AclEntry {
     ///OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approve: ::std::option::Option<AuthorityScope>,
@@ -55,7 +55,7 @@ pub struct AclEntry {
     #[serde(
         rename = "approveCapabilities",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approve_capabilities: ::std::option::Option<ApproveCapabilityScope>,
@@ -64,7 +64,7 @@ pub struct AclEntry {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -72,7 +72,7 @@ pub struct AclEntry {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<::std::string::String>,
@@ -80,7 +80,7 @@ pub struct AclEntry {
     #[serde(
         rename = "delegatedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delegated_by: ::std::option::Option<AclEntryDelegatedBy>,
@@ -88,14 +88,14 @@ pub struct AclEntry {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -104,7 +104,7 @@ pub struct AclEntry {
     ///Optional human-readable label. Confers nothing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<AclEntryLabel>,
@@ -113,7 +113,7 @@ pub struct AclEntry {
     #[serde(
         rename = "stepUp",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up: ::std::option::Option<AclEntryStepUp>,
@@ -122,7 +122,7 @@ pub struct AclEntry {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -130,7 +130,7 @@ pub struct AclEntry {
     #[serde(
         rename = "updatedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
@@ -326,14 +326,14 @@ pub struct AclEntryStepUp {
     ///VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approver: ::std::option::Option<::std::string::String>,
     ///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require: ::std::option::Option<AclEntryStepUpRequire>,
@@ -655,7 +655,7 @@ pub struct CapabilityGrant {
     ///`true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub additive: ::std::option::Option<bool>,
@@ -663,7 +663,7 @@ pub struct CapabilityGrant {
     ///Optional qualifier. Absent covers every resource of the capability's kind.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<ResourceQualifier>,
@@ -683,7 +683,7 @@ pub struct CapabilityRef {
     ///Optional qualifier. Absent covers every resource of the capability's kind.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<ResourceQualifier>,
@@ -1043,35 +1043,35 @@ pub struct Payload {
     ///Optional filter — only entries whose EFFECTIVE capability set includes this capability (the role's full ceiling for `capabilities: {scope: ceiling}`, nothing for `none`, and for `listed` the ceiling ∩ the non-additive grants plus the additive grants). Combined with `resource`, the capability must be held at a qualifier related to that resource by `direction`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capability: ::std::option::Option<Capability>,
     ///Optional filter on the entries' ACT scope, read in the stated `direction`. REQUIRES `direction`. Replaces 0.1's `scope` filter.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<ContextPath>,
     ///Opaque continuation token returned by the maintainer in a previous response. It binds the filters and `direction` it was minted under; a follow-up request MUST repeat them unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///How to read a hierarchical filter (`context`, `resource`). REQUIRED when either is present and REFUSED when neither is: `actingIn` — entries whose scope or qualifier is an ancestor-or-self of the queried one, i.e. who may act IN it (unrestricted act scopes and unqualified capabilities match); `subtree` — entries holding a grant at or BENEATH the queried one (an unrestricted act scope or an unqualified capability does NOT match, and an entry naming contexts both inside and outside the subtree DOES); `any` — the union. Same three questions as 0.1's `acting-in` / `subtree` / `any`, re-cased to lowerCamelCase, with no default.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub direction: ::std::option::Option<PayloadDirection>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1079,21 +1079,21 @@ pub struct Payload {
     #[serde(
         rename = "pageSize",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Optional filter on the resource qualifiers of the entries' effective capabilities (of `capability` when given, of any capability otherwise), read in the stated `direction`. REQUIRES `direction`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<ResourceQualifier>,
     ///Optional filter — only entries with this role are returned.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role: ::std::option::Option<PayloadRole>,
@@ -1101,7 +1101,7 @@ pub struct Payload {
     #[serde(
         rename = "subjectPrefix",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_prefix: ::std::option::Option<PayloadSubjectPrefix>,
@@ -1443,7 +1443,7 @@ pub struct Response {
     ///Opaque continuation token to fetch the next page. Present only when `truncated` is true AND the maintainer supports pagination from this point. Binds the request's filters and direction. Consumers MUST treat it as opaque and re-send it verbatim.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<ResponseCursor>,
@@ -1452,7 +1452,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1460,7 +1460,7 @@ pub struct Response {
     #[serde(
         rename = "redactedFields",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacted_fields: ::std::option::Option<::std::vec::Vec<ResponseRedactedFieldsItem>>,

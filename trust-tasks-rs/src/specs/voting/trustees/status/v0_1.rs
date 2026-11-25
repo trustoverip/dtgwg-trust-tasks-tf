@@ -468,7 +468,7 @@ pub struct Payload {
     pub election_id: ElectionId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -549,7 +549,7 @@ pub struct Response {
     ///Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authorization: ::std::option::Option<SignedRequest>,
@@ -561,13 +561,13 @@ pub struct Response {
     #[serde(
         rename = "electionKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub election_key: ::std::option::Option<ElectionKey>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -575,7 +575,7 @@ pub struct Response {
     ///Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub steps: ::std::option::Option<TrusteeCeremony>,
@@ -601,7 +601,7 @@ pub struct ResponseComplaintsItem {
     pub recipient: TrusteeIndex,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub share: ::std::option::Option<GroupScalar>,

@@ -523,7 +523,7 @@ pub struct Payload {
     #[serde(
         rename = "addMediatorService",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub add_mediator_service: ::std::option::Option<bool>,
@@ -531,7 +531,7 @@ pub struct Payload {
     #[serde(
         rename = "addTspService",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub add_tsp_service: ::std::option::Option<bool>,
@@ -539,7 +539,7 @@ pub struct Payload {
     #[serde(
         rename = "additionalServices",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub additional_services: ::std::option::Option<::std::vec::Vec<DesignatedService>>,
@@ -547,7 +547,7 @@ pub struct Payload {
     #[serde(
         rename = "alsoKnownAs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub also_known_as: ::std::option::Option<Vec<PayloadAlsoKnownAsItem>>,
@@ -560,27 +560,27 @@ pub struct Payload {
     ///Hosting domain to publish under, when the server serves more than one. Absent uses the server's default domain. The domain is part of the DID, and is fixed once the DID designates itself.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<PayloadDomain>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing label. Recorded for audit, never published.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Path segments before the AID. Absent puts the AID directly under the domain (`did:webs:<domain>:<AID>`). The VTA appends the AID; the caller never writes it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path: ::std::option::Option<WebsSlotPath>,
@@ -591,14 +591,14 @@ pub struct Payload {
     #[serde(
         rename = "setPrimary",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub set_primary: ::std::option::Option<bool>,
     ///DID template to shape the DID from (vta/did-templates/*): its services, aliases and integration kind. The VTA reads the rendered document and designates what the did:webs derivation can express, and refuses with `templateNotRepresentable` a template it cannot (CONVENTIONS.md §9). The keys are always the VTA's. Excludes `addMediatorService`, `addTspService`, `additionalServices` and `alsoKnownAs`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template: ::std::option::Option<PayloadTemplate>,
@@ -606,7 +606,7 @@ pub struct Payload {
     #[serde(
         rename = "templateContext",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_context: ::std::option::Option<PayloadTemplateContext>,
@@ -614,7 +614,7 @@ pub struct Payload {
     #[serde(
         rename = "templateVars",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_vars: ::std::option::Option<
@@ -1076,7 +1076,7 @@ pub struct Response {
     pub domain: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1095,7 +1095,7 @@ pub struct Response {
     ///Present and true when the DID was made its context's primary DID.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub primary: ::std::option::Option<bool>,
@@ -1108,7 +1108,7 @@ pub struct Response {
     #[serde(
         rename = "serviceIds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub service_ids: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -1123,7 +1123,7 @@ pub struct Response {
     ///The template the DID was shaped from. Present exactly when the request named one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template: ::std::option::Option<::std::string::String>,
@@ -1131,7 +1131,7 @@ pub struct Response {
     #[serde(
         rename = "templateKind",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_kind: ::std::option::Option<::std::string::String>,
@@ -1139,7 +1139,7 @@ pub struct Response {
     #[serde(
         rename = "templateScope",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_scope: ::std::option::Option<::std::string::String>,

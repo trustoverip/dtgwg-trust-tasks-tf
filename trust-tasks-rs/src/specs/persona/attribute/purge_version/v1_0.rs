@@ -126,14 +126,14 @@ pub struct Payload {
     pub attribute_id: Ulid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The retained versions to remove. Omit to remove every retained version of the attribute. The current version is never removed by this task — that is persona/attribute/delete.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub versions: ::std::option::Option<Vec<Version>>,
@@ -153,7 +153,7 @@ pub struct Response {
     pub attribute_id: Ulid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -163,7 +163,7 @@ pub struct Response {
     #[serde(
         rename = "stalePins",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stale_pins: ::std::option::Option<::std::vec::Vec<ResponseStalePinsItem>>,

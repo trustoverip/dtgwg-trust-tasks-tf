@@ -260,14 +260,14 @@ pub struct Payload {
     pub entry_id: EntryId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///A short note to the introduced member. Plain text.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<PayloadMessage>,
@@ -277,7 +277,7 @@ pub struct Payload {
     ///Fields of the sender's own card to include. The community fills their values from the card and drops any whose visibility does not already cover the recipient.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub share: ::std::option::Option<Vec<FieldKey>>,
@@ -421,7 +421,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReplyTo {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

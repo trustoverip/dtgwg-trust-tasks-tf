@@ -174,13 +174,13 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -190,7 +190,7 @@ pub struct Payload {
     ///One or two emoji, as a decorative mark beside the name. Bounded at 8 bytes because it is a mark and not a field: anything longer is text, and text belongs in `name` where a consumer will lay it out. A maintainer stores it opaquely and MUST NOT parse it; a consumer that cannot render emoji omits it and shows the name, which is why it is OPTIONAL and carries no meaning of its own.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub icon: ::std::option::Option<PayloadIcon>,
@@ -200,7 +200,7 @@ pub struct Payload {
     #[serde(
         rename = "worldId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub world_id: ::std::option::Option<Ulid>,
@@ -343,13 +343,13 @@ pub struct Response {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

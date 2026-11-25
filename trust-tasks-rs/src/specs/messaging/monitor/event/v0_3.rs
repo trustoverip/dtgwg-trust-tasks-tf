@@ -309,7 +309,7 @@ pub struct MonitorEvent {
     ///The sender, where the mediator knows it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from: ::std::option::Option<Vid>,
@@ -317,7 +317,7 @@ pub struct MonitorEvent {
     #[serde(
         rename = "latencyMs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub latency_ms: ::std::option::Option<u64>,
@@ -325,7 +325,7 @@ pub struct MonitorEvent {
     #[serde(
         rename = "messageType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message_type: ::std::option::Option<MonitorEventMessageType>,
@@ -333,7 +333,7 @@ pub struct MonitorEvent {
     #[serde(
         rename = "msgId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub msg_id: ::std::option::Option<MonitorEventMsgId>,
@@ -343,7 +343,7 @@ pub struct MonitorEvent {
     ///Present when stage is `refused`, and on any other stage that failed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub outcome: ::std::option::Option<TrafficOutcome>,
@@ -351,7 +351,7 @@ pub struct MonitorEvent {
     ///Frame size in bytes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size: ::std::option::Option<u64>,
@@ -359,7 +359,7 @@ pub struct MonitorEvent {
     ///The recipient, where the mediator knows it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub to: ::std::option::Option<Vid>,
@@ -513,7 +513,7 @@ pub struct MonitorMembershipEvent {
     #[serde(
         rename = "sessionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<SessionId>,
@@ -664,14 +664,14 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Mux membership events, in the order the mediator observed them. Present only on a subscription that opted in to them with messaging/monitor/subscribe `membership`, and then on every batch, empty when there is nothing to report.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership: ::std::option::Option<::std::vec::Vec<MonitorMembershipEvent>>,
@@ -679,7 +679,7 @@ pub struct Payload {
     #[serde(
         rename = "membershipDropped",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_dropped: ::std::option::Option<u64>,
@@ -959,7 +959,7 @@ pub struct TrafficOutcome {
     ///Short human-readable explanation. Not machine-parsed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<TrafficOutcomeDetail>,

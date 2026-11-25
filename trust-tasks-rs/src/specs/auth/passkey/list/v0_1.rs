@@ -125,7 +125,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -155,7 +155,7 @@ pub struct RegisteredCredential {
     #[serde(
         rename = "deviceLabel",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<RegisteredCredentialDeviceLabel>,
@@ -163,7 +163,7 @@ pub struct RegisteredCredential {
     #[serde(
         rename = "lastUsedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -173,7 +173,7 @@ pub struct RegisteredCredential {
     ///WebAuthn transport hints reported by the authenticator at enrollment (`usb`, `nfc`, `ble`, `internal`, `hybrid`, …). Externally owned and carried verbatim. Deliberately not an enum — unlike `CredentialDescriptor.transports`, which the consumer itself emits, these values were reported by a third-party authenticator, the WebAuthn transport registry grows independently of this specification, and an unrecognized token here is a display concern rather than a validation failure.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<Vec<::std::string::String>>,
@@ -312,7 +312,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

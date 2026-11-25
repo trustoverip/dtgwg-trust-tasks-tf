@@ -47,7 +47,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "effectiveAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -57,7 +57,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -65,7 +65,7 @@ pub struct BreakGlass {
     #[serde(
         rename = "ratifiedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ratified_by: ::std::option::Option<Did>,
@@ -376,7 +376,7 @@ pub struct Payload {
     pub event: PayloadEvent,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -387,7 +387,7 @@ pub struct Payload {
     ///For `ratified`, the ratifier's statement; for `revoked`, the revoker's reason. Absent when none was given, and always for `breakGlass`, whose justification is in `record.breakGlass`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub statement: ::std::option::Option<PayloadStatement>,
@@ -677,7 +677,7 @@ pub struct RightRecord {
     #[serde(
         rename = "breakGlass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub break_glass: ::std::option::Option<BreakGlass>,
@@ -685,7 +685,7 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -697,7 +697,7 @@ pub struct RightRecord {
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<RightRecordReason>,

@@ -44,7 +44,7 @@ pub struct ActivityItem {
     ///Who acted, for an audit item. Absent when a right-to-be-forgotten erasure has removed it from the audit row, and always absent for a job item, which has no actor of its own.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actor: ::std::option::Option<Did>,
@@ -53,28 +53,28 @@ pub struct ActivityItem {
     ///A machine-readable qualifier: `departed` on a departure-triggered change, the old name on a rename, a job's queue state, a drift count. A producer MUST NOT put free-form or personal prose here beyond what the qualifier itself names.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<ActivityItemDetail>,
     ///The namespace the item belongs to. Absent only for a community-wide audit row from before any namespace was unbound (visible to a community administrator with no `namespace` filter only).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub namespace: ::std::option::Option<NamespaceId>,
     ///The resource the item concerns, where it names one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<Resource>,
     ///The right a rights-change item concerns. Absent for a drift report or a job item.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub right: ::std::option::Option<Right>,
@@ -83,7 +83,7 @@ pub struct ActivityItem {
     ///Whose right it was, for a rights-change audit item. Absent likewise on erasure, and always absent for a job item.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<Did>,
@@ -452,27 +452,27 @@ pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `namespace` from the request that produced it — start a fresh query instead.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum items to return in this page. A VTC clamps to 1..=500 (default 100).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only activity in this namespace. Absent: every administered namespace.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub namespace: ::std::option::Option<NamespaceId>,
@@ -574,7 +574,7 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -584,7 +584,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,

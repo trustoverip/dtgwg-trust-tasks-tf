@@ -245,7 +245,7 @@ pub struct Disclosure {
     #[serde(
         rename = "rollCredential",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub roll_credential: ::std::option::Option<RollCredentialDisclosure>,
@@ -254,7 +254,7 @@ pub struct Disclosure {
     pub same_operator: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trustees: ::std::option::Option<Trustees>,
@@ -796,7 +796,7 @@ pub struct Manifest {
     pub community: ManifestCommunity,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<ManifestDescription>,
@@ -816,13 +816,13 @@ pub struct Manifest {
     pub text_release_threshold: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub title: ::std::option::Option<ManifestTitle>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trustees: ::std::option::Option<Trustees>,
@@ -1231,7 +1231,7 @@ pub struct Payload {
     pub election_id: ElectionId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1262,7 +1262,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1279,7 +1279,7 @@ pub enum Question {
         partial: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1297,7 +1297,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1314,7 +1314,7 @@ pub enum Question {
         optional: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1330,7 +1330,7 @@ pub struct QuestionOption {
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<QuestionOptionLabel>,
@@ -1408,32 +1408,32 @@ pub struct QuestionResult {
     pub abstained: u64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub choice: ::std::option::Option<::std::collections::HashMap<Key, u64>>,
     pub question: Key,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ranking: ::std::option::Option<::std::collections::HashMap<Key, ::std::vec::Vec<u64>>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub score: ::std::option::Option<::std::collections::HashMap<Key, QuestionResultScoreValue>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub text: ::std::option::Option<::std::vec::Vec<QuestionResultTextItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub withheld: ::std::option::Option<bool>,
@@ -1670,14 +1670,14 @@ pub struct Response {
     ///With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.5).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ceremony: ::std::option::Option<TrusteeCeremony>,
     ///Present once the community has certified the result.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub certified: ::std::option::Option<Certification>,
@@ -1689,13 +1689,13 @@ pub struct Response {
     #[serde(
         rename = "electionKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub election_key: ::std::option::Option<ElectionKey>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1710,7 +1710,7 @@ pub struct Response {
     #[serde(
         rename = "ticketsIssued",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tickets_issued: ::std::option::Option<u64>,
@@ -1797,7 +1797,7 @@ pub struct RollCredentialDisclosure {
     #[serde(
         rename = "memberOfName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of_name: ::std::option::Option<RollCredentialDisclosureMemberOfName>,
@@ -1805,7 +1805,7 @@ pub struct RollCredentialDisclosure {
     #[serde(
         rename = "presenterDisclosed",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presenter_disclosed: ::std::option::Option<::serde_json::Value>,
@@ -2017,7 +2017,7 @@ impl<'de> ::serde::Deserialize<'de> for RollCredentialDisclosureMemberOfName {
 pub struct RollRule {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listed: ::std::option::Option<Vec<RollRuleListedItem>>,
@@ -2025,7 +2025,7 @@ pub struct RollRule {
     #[serde(
         rename = "memberOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of: ::std::option::Option<RollRuleMemberOf>,

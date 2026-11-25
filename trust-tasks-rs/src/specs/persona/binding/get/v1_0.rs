@@ -126,7 +126,7 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -270,7 +270,7 @@ pub struct Response {
     #[serde(
         rename = "boundAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bound_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -278,7 +278,7 @@ pub struct Response {
     #[serde(
         rename = "claimCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_count: ::std::option::Option<u64>,
@@ -286,14 +286,14 @@ pub struct Response {
     pub context_id: ResponseContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ResponseLabel>,
@@ -303,7 +303,7 @@ pub struct Response {
     #[serde(
         rename = "profileId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
@@ -311,14 +311,14 @@ pub struct Response {
     #[serde(
         rename = "profileName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_name: ::std::option::Option<ResponseProfileName>,
     ///When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

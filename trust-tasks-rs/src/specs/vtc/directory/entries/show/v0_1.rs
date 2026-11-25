@@ -46,14 +46,14 @@ pub struct CardBlobRef {
     ///Size in bytes of the stored bytes.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -61,7 +61,7 @@ pub struct CardBlobRef {
     #[serde(
         rename = "urlExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -210,7 +210,7 @@ pub struct DirectoryEntry {
     ///Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub connected: ::std::option::Option<bool>,
@@ -221,7 +221,7 @@ pub struct DirectoryEntry {
     #[serde(
         rename = "sharedGroups",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_groups: ::std::option::Option<Vec<DirectoryEntrySharedGroupsItem>>,
@@ -699,7 +699,7 @@ pub enum Payload {
         entry_id: EntryId,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -709,7 +709,7 @@ pub enum Payload {
         did: PayloadVariant1Did,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -788,7 +788,7 @@ pub struct Response {
     pub entry: DirectoryEntry,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -808,7 +808,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -818,7 +818,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

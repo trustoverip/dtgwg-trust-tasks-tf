@@ -196,7 +196,7 @@ pub struct KeyRecord {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
@@ -207,20 +207,20 @@ pub struct KeyRecord {
     #[serde(
         rename = "derivationPath",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub derivation_path: ::std::option::Option<::std::string::String>,
     ///Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub exportable: ::std::option::Option<bool>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -232,13 +232,13 @@ pub struct KeyRecord {
     ///Optional human-readable label. Operator-facing only; carries no authorization meaning.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<KeyRecordLabel>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub origin: ::std::option::Option<KeyOrigin>,
@@ -249,7 +249,7 @@ pub struct KeyRecord {
     #[serde(
         rename = "seedId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub seed_id: ::std::option::Option<u64>,
@@ -258,7 +258,7 @@ pub struct KeyRecord {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -589,7 +589,7 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
@@ -597,14 +597,14 @@ pub struct Payload {
     #[serde(
         rename = "derivationPath",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub derivation_path: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -614,7 +614,7 @@ pub struct Payload {
     A maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub internal: ::std::option::Option<bool>,
@@ -622,7 +622,7 @@ pub struct Payload {
     #[serde(
         rename = "keyId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_id: ::std::option::Option<PayloadKeyId>,
@@ -632,14 +632,14 @@ pub struct Payload {
     ///Optional human-readable label for the resulting record.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///BIP-39 phrase to derive from instead of the custodian's own seed. Supplying it makes this an import of externally-generated seed material wearing create's clothes: the phrase reconstitutes the key anywhere, so it is secret-bearing in exactly the way the rest of this payload is not. A custodian MUST refuse it on any transport that is not end-to-end confidential, for the reason `keys/import` refuses its cleartext carrier, and MUST NOT log or echo it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mnemonic: ::std::option::Option<::std::string::String>,
@@ -775,7 +775,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

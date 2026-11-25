@@ -52,7 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -350,7 +350,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -544,14 +544,14 @@ pub struct Response {
     This member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<::std::string::String>,
     ///Present on an `open` room.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cleartext:
@@ -560,13 +560,13 @@ pub struct Response {
     #[serde(
         rename = "dataCommitment",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub data_commitment: ::std::option::Option<DataCommitment>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -574,7 +574,7 @@ pub struct Response {
     #[serde(
         rename = "headVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head_version: ::std::option::Option<HeadVersion>,
@@ -582,7 +582,7 @@ pub struct Response {
     ///Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pinned: ::std::option::Option<bool>,
@@ -590,21 +590,21 @@ pub struct Response {
     #[serde(
         rename = "recordCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_count: ::std::option::Option<RecordCount>,
     ///Present on an `attributed` or `private` room.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sealed: ::std::option::Option<SealedRecord>,
     ///Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<ResponseStatus>,
@@ -616,7 +616,7 @@ pub struct Response {
     OPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trace: ::std::option::Option<RecordTrace>,
@@ -624,7 +624,7 @@ pub struct Response {
     #[serde(
         rename = "updatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -720,7 +720,7 @@ pub struct SealedRecord {
     A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,

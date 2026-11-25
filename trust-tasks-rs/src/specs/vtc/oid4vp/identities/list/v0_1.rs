@@ -42,7 +42,7 @@ pub struct Attestation {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
@@ -138,7 +138,7 @@ pub struct Certificate {
     ///The leaf's issuer distinguished name, as RFC 4514 renders it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issuer: ::std::option::Option<CertificateIssuer>,
@@ -149,7 +149,7 @@ pub struct Certificate {
     ///The leaf's subject distinguished name, as RFC 4514 renders it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<CertificateSubject>,
@@ -372,7 +372,7 @@ pub struct Identity {
     ///The access certificate, for an `eudi` identity that has one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub certificate: ::std::option::Option<Certificate>,
@@ -380,7 +380,7 @@ pub struct Identity {
     #[serde(
         rename = "clientId",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -389,7 +389,7 @@ pub struct Identity {
     ///The identity's DID, for a `swiyu` identity.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -404,7 +404,7 @@ pub struct Identity {
     #[serde(
         rename = "keyId",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -616,7 +616,7 @@ impl ::std::convert::TryFrom<::std::string::String> for IdentityKind {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -644,7 +644,7 @@ pub struct Problem {
     ///Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<ProblemDetail>,
@@ -887,13 +887,13 @@ pub struct Response {
     #[serde(
         rename = "defaultIdentity",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub default_identity: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -46,7 +46,7 @@ pub struct AppStateRecord {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -56,7 +56,7 @@ pub struct AppStateRecord {
     #[serde(
         rename = "deletedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -68,7 +68,7 @@ pub struct AppStateRecord {
     ///The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
@@ -76,7 +76,7 @@ pub struct AppStateRecord {
     #[serde(
         rename = "valueBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,
@@ -380,14 +380,14 @@ pub struct Payload {
     ///Opaque continuation token from a previous response. Consumers MUST treat it as opaque: never construct, decode, mutate, or infer meaning from one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -395,7 +395,7 @@ pub struct Payload {
     #[serde(
         rename = "includeDeleted",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -403,14 +403,14 @@ pub struct Payload {
     #[serde(
         rename = "includeValues",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_values: ::std::option::Option<bool>,
     ///Restrict to one namespace. Optional in snapshot mode, where omitting it enumerates every namespace the caller can read in the context. REQUIRED in change-feed mode, because the version counter `sinceVersion` is compared against is maintained per (contextId, namespace) and a watermark spanning namespaces would name no single point in time.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub namespace: ::std::option::Option<Namespace>,
@@ -418,14 +418,14 @@ pub struct Payload {
     #[serde(
         rename = "pageSize",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub page_size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Restrict to records whose `key` begins with this byte prefix, compared over the UTF-8 encoding. Lets a consumer read one record family — `community/`, `contact/` — without dragging every record in the namespace through the response.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prefix: ::std::option::Option<PayloadPrefix>,
@@ -433,7 +433,7 @@ pub struct Payload {
     #[serde(
         rename = "sinceVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -571,14 +571,14 @@ pub struct Response {
     ///Opaque continuation token for the next page. Present only when `truncated` is true.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -586,7 +586,7 @@ pub struct Response {
     #[serde(
         rename = "highWatermark",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub high_watermark: ::std::option::Option<Version>,
@@ -596,7 +596,7 @@ pub struct Response {
     #[serde(
         rename = "tombstoneRetentionSeconds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_retention_seconds: ::std::option::Option<u64>,

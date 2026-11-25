@@ -129,7 +129,7 @@ pub struct Payload {
     pub controller_vta_did: PayloadControllerVtaDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -212,7 +212,7 @@ pub enum PushRegistration {
         ///Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         environment: ::std::option::Option<PushRegistrationEnvironment>,
@@ -557,7 +557,7 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationTopic {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

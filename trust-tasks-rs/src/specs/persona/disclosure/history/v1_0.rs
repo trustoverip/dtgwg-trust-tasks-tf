@@ -202,7 +202,7 @@ pub struct Payload {
     #[serde(
         rename = "attributeType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_type: ::std::option::Option<ClaimType>,
@@ -210,19 +210,19 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -230,7 +230,7 @@ pub struct Payload {
     pub limit: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -238,7 +238,7 @@ pub struct Payload {
     #[serde(
         rename = "verifierDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verifier_did: ::std::option::Option<PayloadVerifierDid>,
@@ -519,14 +519,14 @@ pub struct Response {
     pub disclosures: ::std::vec::Vec<ResponseDisclosuresItem>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -546,7 +546,7 @@ pub struct ResponseDisclosuresItem {
     #[serde(
         rename = "claimCurrency",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_currency:
@@ -563,7 +563,7 @@ pub struct ResponseDisclosuresItem {
     #[serde(
         rename = "durableCredentialId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub durable_credential_id: ::std::option::Option<::std::string::String>,
@@ -571,27 +571,27 @@ pub struct ResponseDisclosuresItem {
     pub persona_did: ResponseDisclosuresItemPersonaDid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<ResponseDisclosuresItemPurpose>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub renderer: ::std::option::Option<ResponseDisclosuresItemRenderer>,
     ///Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rungs: ::std::option::Option<::std::vec::Vec<ProofRung>>,
     ///The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<::std::string::String>,

@@ -47,7 +47,7 @@ pub struct Approver {
     pub enrolled_via: EnrolledVia,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ApproverLabel>,
@@ -55,7 +55,7 @@ pub struct Approver {
     #[serde(
         rename = "lastUsedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -457,14 +457,14 @@ pub struct Payload {
     pub enrollment_id: PayloadEnrollmentId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///A name for where the approver lives. Overrides the inviter's suggestion.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ApproverLabel>,
@@ -547,7 +547,7 @@ pub struct Response {
     pub approver: Approver,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

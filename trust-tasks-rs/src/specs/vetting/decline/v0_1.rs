@@ -125,20 +125,20 @@ pub struct Payload {
     ///OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub code: ::std::option::Option<PayloadCode>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<PayloadMessage>,

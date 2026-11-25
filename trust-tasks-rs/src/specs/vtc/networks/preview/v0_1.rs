@@ -258,14 +258,14 @@ impl<'de> ::serde::Deserialize<'de> for FrameworkVersion {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The DID the administrator expects at `url`. When present, the community refuses if the network found there answers as another DID.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network: ::std::option::Option<PayloadNetwork>,
@@ -350,7 +350,7 @@ pub struct Response {
     ///The network's description, from its profile.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<ResponseDescription>,
@@ -358,19 +358,19 @@ pub struct Response {
     #[serde(
         rename = "entryState",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub entry_state: ::std::option::Option<ResponseEntryState>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub framework: ::std::option::Option<Framework>,
@@ -380,7 +380,7 @@ pub struct Response {
     #[serde(
         rename = "membershipState",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_state: ::std::option::Option<ResponseMembershipState>,
@@ -392,14 +392,14 @@ pub struct Response {
     #[serde(
         rename = "notListedReason",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub not_listed_reason: ::std::option::Option<ResponseNotListedReason>,
     ///The network's identified owner (VTI-VTN-002), from its profile.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner: ::std::option::Option<ResponseOwner>,
@@ -856,7 +856,7 @@ pub struct Role {
     ///What the network uses the role for.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RoleDescription>,

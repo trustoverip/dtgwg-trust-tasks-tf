@@ -126,7 +126,7 @@ pub struct Payload {
     pub channel: PayloadChannel,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -274,7 +274,7 @@ pub struct Response {
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -283,7 +283,7 @@ pub struct Response {
     ///Present exactly when `channel` is `offer`: an OID4VCI Credential Offer object, carried verbatim, whose pre-authorized code redeems only for the invited DID. Its members are OID4VCI's and are deliberately not re-specified here.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub offer: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,

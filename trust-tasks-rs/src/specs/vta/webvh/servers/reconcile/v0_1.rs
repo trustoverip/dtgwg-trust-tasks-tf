@@ -42,7 +42,7 @@ pub struct AgentOnlyDid {
     #[serde(
         rename = "contextId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<AgentOnlyDidContextId>,
@@ -327,7 +327,7 @@ pub struct HostOnlyDid {
     ///The DID served at that slot, where the slot has been published to. Absent for a reserved-but-unpublished slot.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<HostOnlyDidDid>,
@@ -337,7 +337,7 @@ pub struct HostOnlyDid {
     ///Hosting domain the slot belongs to, as the server reported it. Absent where the server reports none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<HostOnlyDidDomain>,
@@ -536,7 +536,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -619,7 +619,7 @@ pub struct Response {
     pub agent_only: ::std::vec::Vec<AgentOnlyDid>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

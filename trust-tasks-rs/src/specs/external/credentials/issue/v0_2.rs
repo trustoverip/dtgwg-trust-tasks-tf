@@ -237,7 +237,7 @@ impl<'de> ::serde::Deserialize<'de> for ChecksumSha256 {
 pub struct CredentialScope {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actions: ::std::option::Option<Vec<ProviderObjectAction>>,
@@ -245,20 +245,20 @@ pub struct CredentialScope {
     #[serde(
         rename = "objectKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub object_key: ::std::option::Option<CredentialScopeObjectKey>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub prefix: ::std::option::Option<ProviderObjectPrefix>,
     ///`oauth2-private-key-jwt` only: the OAuth scopes requested.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scopes: ::std::option::Option<Vec<CredentialScopeScopesItem>>,
@@ -505,7 +505,7 @@ pub enum Payload {
         context: AccountContextId,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -520,7 +520,7 @@ pub enum Payload {
         context: AccountContextId,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -545,7 +545,7 @@ pub struct PresignBatch {
     #[serde(
         rename = "uploadId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub upload_id: ::std::option::Option<PresignBatchUploadId>,
@@ -739,7 +739,7 @@ pub enum PresignRequest {
         #[serde(
             rename = "partNumberMarker",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         part_number_marker: ::std::option::Option<i64>,
@@ -904,7 +904,7 @@ pub enum Response {
         expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -920,7 +920,7 @@ pub enum Response {
         expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,

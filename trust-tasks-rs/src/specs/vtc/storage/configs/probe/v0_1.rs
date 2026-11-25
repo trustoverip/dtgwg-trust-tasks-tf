@@ -126,7 +126,7 @@ pub struct Payload {
     pub config_id: StorageConfigId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -134,7 +134,7 @@ pub struct Payload {
     #[serde(
         rename = "includeWrite",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_write: ::std::option::Option<bool>,
@@ -154,7 +154,7 @@ pub struct Response {
     pub config_id: StorageConfigId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -244,7 +244,7 @@ pub struct StepResult {
     ///On failure, the backend's error verbatim, truncated, with anything credential-like removed. Untrusted text: render it as text, never as markup or instructions.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub error: ::std::option::Option<StepResultError>,

@@ -125,20 +125,20 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct MonitorFilter {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub channels: ::std::option::Option<Vec<TrafficChannel>>,
     ///Only events whose `from` or `to` is one of these accounts.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dids: ::std::option::Option<Vec<Vid>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub directions: ::std::option::Option<Vec<TrafficDirection>>,
@@ -146,7 +146,7 @@ pub struct MonitorFilter {
     #[serde(
         rename = "failuresOnly",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub failures_only: ::std::option::Option<bool>,
@@ -154,19 +154,19 @@ pub struct MonitorFilter {
     #[serde(
         rename = "messageTypePrefixes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message_type_prefixes: ::std::option::Option<Vec<MonitorFilterMessageTypePrefixesItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub protocols: ::std::option::Option<Vec<WireProtocol>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stages: ::std::option::Option<Vec<TrafficStage>>,
@@ -261,13 +261,13 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub filter: ::std::option::Option<MonitorFilter>,
@@ -275,7 +275,7 @@ pub struct Payload {
     #[serde(
         rename = "leaseSeconds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lease_seconds: ::std::option::Option<i64>,
@@ -283,7 +283,7 @@ pub struct Payload {
     #[serde(
         rename = "maxEventsPerSecond",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_events_per_second: ::std::option::Option<::std::num::NonZeroU64>,
@@ -291,7 +291,7 @@ pub struct Payload {
     #[serde(
         rename = "subscriptionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subscription_id: ::std::option::Option<PayloadSubscriptionId>,
@@ -383,7 +383,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

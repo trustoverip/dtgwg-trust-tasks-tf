@@ -125,14 +125,14 @@ pub struct Payload {
     ///The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -145,7 +145,7 @@ pub struct Payload {
     #[serde(
         rename = "purposeOfUse",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose_of_use: ::std::option::Option<RecordPurpose>,
@@ -527,7 +527,7 @@ pub struct Response {
     pub epoch: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

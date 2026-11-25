@@ -125,13 +125,13 @@ pub struct Payload {
     ///OPTIONAL. Approximate count of queued messages. Advisory only.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -140,14 +140,14 @@ pub struct Payload {
     ///OPTIONAL. The mediator holding the queued messages, so a multi-mediator consumer knows which to drain. A hint — echoed into the contentless push.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mediator: ::std::option::Option<::std::string::String>,
     ///OPTIONAL. A hint the consumer MAY map to platform priority/alert behavior.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub urgency: ::std::option::Option<PayloadUrgency>,
@@ -287,7 +287,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadUrgency {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -277,7 +277,7 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberState {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -490,13 +490,13 @@ pub struct Response {
     ///On a sealed tier, the room epoch after the removal.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<i64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -517,7 +517,7 @@ pub struct RoomMember {
     #[serde(
         rename = "admittedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -527,7 +527,7 @@ pub struct RoomMember {
     #[serde(
         rename = "removedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

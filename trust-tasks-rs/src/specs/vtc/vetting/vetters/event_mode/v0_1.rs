@@ -127,7 +127,7 @@ pub struct Payload {
     pub event_id: PayloadEventId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -281,7 +281,7 @@ pub struct Response {
     #[serde(
         rename = "closesAfter",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closes_after: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -289,7 +289,7 @@ pub struct Response {
     #[serde(
         rename = "dripPerTick",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drip_per_tick: ::std::option::Option<::std::num::NonZeroU64>,
@@ -298,7 +298,7 @@ pub struct Response {
     pub event_id: ResponseEventId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -311,7 +311,7 @@ pub struct Response {
     ///Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ResponseLabel>,

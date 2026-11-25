@@ -128,7 +128,7 @@ pub struct Payload {
     #[serde(
         rename = "actionDetails",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_details:
@@ -137,7 +137,7 @@ pub struct Payload {
     #[serde(
         rename = "actionType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_type: ::std::option::Option<::std::string::String>,
@@ -145,7 +145,7 @@ pub struct Payload {
     pub challenge: PayloadChallenge,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -156,7 +156,7 @@ pub struct Payload {
     ///Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
@@ -352,14 +352,14 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Required when status is `refused`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<::std::string::String>,

@@ -127,7 +127,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A mediator ignores every ext member when deciding whether to ring.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -137,7 +137,7 @@ pub struct Payload {
     ///OPTIONAL. Passed to the gateway as push/wake's urgency hint. `interactive`: a person is expected to act now. `background`: the device may collect at its convenience. Absent: the mediator sends no urgency.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub urgency: ::std::option::Option<PayloadUrgency>,

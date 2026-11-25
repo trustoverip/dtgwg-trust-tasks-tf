@@ -125,19 +125,19 @@ pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub filter: ::std::option::Option<PayloadFilter>,
@@ -147,13 +147,13 @@ pub struct Payload {
     ///Page size. The community chooses when absent (50 in the reference implementation).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sort: ::std::option::Option<PayloadSort>,
@@ -234,14 +234,14 @@ pub struct PayloadFilter {
     ///First UTC day of the range. Default: 29 days before `to`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from: ::std::option::Option<::chrono::naive::NaiveDate>,
     ///One member's figures, across the `attributed` rooms selected.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member: ::std::option::Option<PayloadFilterMember>,
@@ -249,21 +249,21 @@ pub struct PayloadFilter {
     #[serde(
         rename = "roomId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_id: ::std::option::Option<PayloadFilterRoomId>,
     #[serde(
         rename = "storageConfig",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub storage_config: ::std::option::Option<StorageConfigId>,
     ///Last UTC day of the range, inclusive. Default: today.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub to: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -488,7 +488,7 @@ pub struct PayloadSort {
     pub by: PayloadSortBy,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub order: ::std::option::Option<PayloadSortOrder>,
@@ -646,7 +646,7 @@ pub struct Response {
     pub as_of: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -656,7 +656,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -739,7 +739,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes: ::std::option::Option<u64>,
@@ -747,7 +747,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFileBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_file_bytes: ::std::option::Option<i64>,
@@ -755,7 +755,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFiles",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_files: ::std::option::Option<u64>,
@@ -854,14 +854,14 @@ pub struct UsageRow {
     #[serde(
         rename = "capacityBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
     ///Present on a `day` row.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub date: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -872,14 +872,14 @@ pub struct UsageRow {
     ///On a `room` row the room's limits, on a `member` row (one room selected) that member's.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limits: ::std::option::Option<ScopeLimits>,
     ///Present on a `member` row.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member: ::std::option::Option<UsageRowMember>,
@@ -889,7 +889,7 @@ pub struct UsageRow {
     #[serde(
         rename = "roomId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_id: ::std::option::Option<UsageRowRoomId>,
@@ -897,7 +897,7 @@ pub struct UsageRow {
     #[serde(
         rename = "storageConfig",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub storage_config: ::std::option::Option<StorageConfigId>,

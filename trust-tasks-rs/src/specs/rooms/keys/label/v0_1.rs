@@ -125,20 +125,20 @@ pub struct Payload {
     ///The member's new description, replacing any they had. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PersonalLabelDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The member's new name for the room, replacing any they had. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PersonalLabelName>,
@@ -147,7 +147,7 @@ pub struct Payload {
     ///The member's new notes, replacing any they had. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
@@ -155,7 +155,7 @@ pub struct Payload {
     #[serde(
         rename = "removeDescription",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_description: ::std::option::Option<bool>,
@@ -163,7 +163,7 @@ pub struct Payload {
     #[serde(
         rename = "removeLabel",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_label: ::std::option::Option<bool>,
@@ -171,7 +171,7 @@ pub struct Payload {
     #[serde(
         rename = "removeNotes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_notes: ::std::option::Option<bool>,
@@ -179,7 +179,7 @@ pub struct Payload {
     #[serde(
         rename = "removeTags",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_tags: ::std::option::Option<bool>,
@@ -189,7 +189,7 @@ pub struct Payload {
     ///The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<PersonalLabelTags>,
@@ -333,25 +333,25 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 pub struct PersonalLabel {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PersonalLabelDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<PersonalLabelName>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<PersonalLabelTags>,
@@ -679,7 +679,7 @@ pub struct Response {
     pub changed: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -688,7 +688,7 @@ pub struct Response {
     ///The label as it now stands. Absent when no detail remains: removing the last one removes the label.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub personal: ::std::option::Option<PersonalLabel>,

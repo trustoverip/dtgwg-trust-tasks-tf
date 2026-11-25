@@ -45,14 +45,14 @@ pub struct CommunityRoomV2 {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<CommunityRoomV2CreatedBy>,
     ///Absent when the room has none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RoomDescription>,
@@ -60,7 +60,7 @@ pub struct CommunityRoomV2 {
     #[serde(
         rename = "detailsUpdatedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub details_updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -68,7 +68,7 @@ pub struct CommunityRoomV2 {
     #[serde(
         rename = "detailsUpdatedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub details_updated_by: ::std::option::Option<CommunityRoomV2DetailsUpdatedBy>,
@@ -79,7 +79,7 @@ pub struct CommunityRoomV2 {
     #[serde(
         rename = "ownerAuthorityValidUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_authority_valid_until:
@@ -89,14 +89,14 @@ pub struct CommunityRoomV2 {
     #[serde(
         rename = "storageConfig",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub storage_config: ::std::option::Option<StorageConfigId>,
     ///Absent or empty when the room has none.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<RoomTags>,
@@ -330,7 +330,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "epochExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_expires_at: ::std::option::Option<u64>,
@@ -338,7 +338,7 @@ pub struct HostedRoom {
     #[serde(
         rename = "mirrorOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mirror_of: ::std::option::Option<HostedRoomMirrorOf>,
@@ -626,20 +626,20 @@ pub struct Payload {
     ///The room's new description, replacing any it has. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RoomDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The room's new name. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<RoomLabel>,
@@ -648,7 +648,7 @@ pub struct Payload {
     #[serde(
         rename = "removeDescription",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_description: ::std::option::Option<bool>,
@@ -658,7 +658,7 @@ pub struct Payload {
     ///The room's tags, replacing the whole set. An empty list removes them all. Absent: unchanged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<RoomTags>,
@@ -803,7 +803,7 @@ pub struct Response {
     pub changed: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -393,7 +393,7 @@ pub struct AccountSetupArtifactsStepsItem {
     ///A provider CLI command (`aws rolesanywhere create-trust-anchor …`, `gcloud iam workload-identity-pools providers create-oidc … --jwk-json-path`, `az ad app credential reset --cert …`), referring to artifacts by `name`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub command: ::std::option::Option<AccountSetupArtifactsStepsItemCommand>,
@@ -699,7 +699,7 @@ pub struct Payload {
     pub context: AccountContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -718,7 +718,7 @@ impl Payload {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

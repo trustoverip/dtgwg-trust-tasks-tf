@@ -200,7 +200,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -295,7 +295,7 @@ pub struct Response {
     pub entries: ::std::vec::Vec<ResponseEntriesItem>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -322,14 +322,14 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "minimumSet",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub minimum_set: ::std::option::Option<bool>,
     ///OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oidc: ::std::option::Option<::std::vec::Vec<ResponseEntriesItemOidcItem>>,

@@ -127,7 +127,7 @@ pub enum Payload {
     Variant0 {
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -141,7 +141,7 @@ pub enum Payload {
         all_failed: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -214,7 +214,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0JobId {
 pub struct Requeued {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -224,7 +224,7 @@ pub struct Requeued {
     #[serde(
         rename = "memberDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<RequeuedMemberDid>,
@@ -361,7 +361,7 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedMemberDid {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -383,7 +383,7 @@ impl Response {
 pub struct Skipped {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

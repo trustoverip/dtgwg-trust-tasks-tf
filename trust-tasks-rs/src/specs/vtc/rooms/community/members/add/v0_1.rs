@@ -278,7 +278,7 @@ pub struct Payload {
     pub actions: MemberActions,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -494,7 +494,7 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -515,7 +515,7 @@ pub struct RoomMember {
     #[serde(
         rename = "admittedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -525,7 +525,7 @@ pub struct RoomMember {
     #[serde(
         rename = "removedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

@@ -194,7 +194,7 @@ pub struct DirectoryDisclosure {
     pub admin_notes: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -205,7 +205,7 @@ pub struct DirectoryDisclosure {
     pub fields: ::std::vec::Vec<DisclosedField>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub groups: ::std::option::Option<GroupDisclosure>,
@@ -236,14 +236,14 @@ pub struct DisclosedField {
     pub default_visibility: Audience,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<FieldDescription>,
     ///Whether members may filter on the field and see counts by its values. Absent: false.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub facet: ::std::option::Option<bool>,
@@ -941,7 +941,7 @@ pub struct NewCardDefaults {
     ///From whom a new card accepts introductions. Absent where the community does not deliver introductions.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub introductions: ::std::option::Option<Introductions>,
@@ -1028,7 +1028,7 @@ impl ::std::convert::TryFrom<::std::string::String> for NewCardDefaultsSearch {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1056,7 +1056,7 @@ pub struct Response {
     pub disclosure: DirectoryDisclosure,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

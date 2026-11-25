@@ -127,28 +127,28 @@ pub struct Payload {
     #[serde(
         rename = "delegationEvidence",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delegation_evidence: ::std::option::Option<PayloadDelegationEvidence>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The VID being authenticated as, when it differs from the signer of this document. Present and unequal to `issuer` marks a *proxied* authenticate: `issuer` is a delegate (typically the principal's VTA) presenting its own proof, and `payload.delegationEvidence` MUST also be present, describing what entitles `issuer` to act for `principal`. Omitted, or equal to `issuer`, is the ordinary case: the signer authenticates as itself, exactly as auth/authenticate/0.2. See Authorization and Security & Privacy.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub principal: ::std::option::Option<PayloadPrincipal>,
     ///Optional capability tags being requested on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope: ::std::option::Option<::std::vec::Vec<PayloadScopeItem>>,
@@ -159,7 +159,7 @@ pub struct Payload {
     #[serde(
         rename = "sessionKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_key: ::std::option::Option<PayloadSessionKey>,
@@ -237,7 +237,7 @@ pub struct PayloadDelegationEvidence {
     ///The evidence itself, inline — typically a Verifiable Credential or other signed assertion binding `issuer` to `principal`. Opaque to the framework; shape is consumer- or ecosystem-defined by `kind`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential:
@@ -245,7 +245,7 @@ pub struct PayloadDelegationEvidence {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -254,7 +254,7 @@ pub struct PayloadDelegationEvidence {
     ///Alternative to inlining `credential`: an opaque reference (an id, a URL) to evidence the consumer already holds — for example a previously-registered VTA context binding. Consumer-defined; mutually informative with `credential`, not mutually exclusive — a producer MAY supply both.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reference: ::std::option::Option<PayloadDelegationEvidenceReference>,
@@ -645,7 +645,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -669,28 +669,28 @@ pub struct Session {
     #[serde(
         rename = "absoluteExpiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub absolute_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acr: ::std::option::Option<::std::string::String>,
     ///The delegate's VID — the party whose `proof` actually authenticated this session — when this session was established by a *proxied* login (auth/authenticate/0.3, `payload.principal` present and distinct from `issuer`). Absent whenever `subject` authenticated with its own key, including every auth/authenticate/0.1 and /0.2 session and an auth/authenticate/0.3 request where `principal` is absent or equals `issuer`. Carrying `actor` separately from `subject` is what lets an audit trail, a revocation, or a response to a compromised delegate name the true acting party without conflating it with the principal it acted for — see auth/authenticate/0.3 Security & Privacy (Correlation).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actor: ::std::option::Option<SessionActor>,
     ///Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub amr: ::std::option::Option<::std::vec::Vec<SessionAmrItem>>,
@@ -700,7 +700,7 @@ pub struct Session {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -713,7 +713,7 @@ pub struct Session {
     #[serde(
         rename = "sessionKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_key: ::std::option::Option<SessionSessionKey>,
@@ -1045,7 +1045,7 @@ pub struct TokenBundle {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1053,7 +1053,7 @@ pub struct TokenBundle {
     #[serde(
         rename = "refreshExpiresIn",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refresh_expires_in: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1061,14 +1061,14 @@ pub struct TokenBundle {
     #[serde(
         rename = "refreshToken",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refresh_token: ::std::option::Option<TokenBundleRefreshToken>,
     ///Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope: ::std::option::Option<::std::vec::Vec<TokenBundleScopeItem>>,

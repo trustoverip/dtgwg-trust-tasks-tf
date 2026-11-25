@@ -126,28 +126,28 @@ pub struct InForce {
     ///Present for `superseded` and `withdrawn`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Present for `superseded`: the digest of the credential that displaced it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub by: ::std::option::Option<InForceBy>,
     ///Present for `indeterminate`: why the window could not be read. Written by the community.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<InForceReason>,
     ///Present for `suspended`: when the standing suspension was recorded.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -157,7 +157,7 @@ pub struct InForce {
     #[serde(
         rename = "validFrom",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -165,7 +165,7 @@ pub struct InForce {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -451,7 +451,7 @@ impl<'de> ::serde::Deserialize<'de> for LifecycleReason {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -459,7 +459,7 @@ pub struct Payload {
     pub id: PayloadId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<LifecycleReason>,
@@ -547,7 +547,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

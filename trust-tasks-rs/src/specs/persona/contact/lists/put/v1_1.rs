@@ -40,7 +40,7 @@ pub mod error {
 pub struct ContactList {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub colour: ::std::option::Option<ListColour>,
@@ -392,7 +392,7 @@ pub struct Payload {
     ///The list's colour, replacing any it had. Absent: unchanged (none, on a create).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub colour: ::std::option::Option<ListColour>,
@@ -400,7 +400,7 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -408,21 +408,21 @@ pub struct Payload {
     #[serde(
         rename = "listId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub list_id: ::std::option::Option<ListId>,
     ///The list's name. Required to create; on an update, replaces the name. Unique within the context.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub name: ::std::option::Option<ListName>,
     ///Where the list sorts among the holder's lists. Absent on a create: after every existing list.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub order: ::std::option::Option<ListOrder>,
@@ -430,7 +430,7 @@ pub struct Payload {
     #[serde(
         rename = "removeColour",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_colour: ::std::option::Option<bool>,
@@ -509,7 +509,7 @@ pub struct Response {
     pub changed: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

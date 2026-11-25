@@ -46,7 +46,7 @@ pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer controls.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -60,7 +60,7 @@ pub struct Payload {
     ///Human-readable explanation of why the operation was requested. Non-normative; intended for operator UI and audit records. A consumer MUST NOT condition its handling of the operation on this value.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -212,7 +212,7 @@ pub struct PayloadTarget {
     #[serde(
         rename = "typeUri",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_uri: ::std::option::Option<::std::string::String>,
@@ -290,14 +290,14 @@ pub struct Response {
     ///What was created, changed, disclosed, or exercised before the operation took hold. A consumer MUST populate this where `outcome` is `appliedWithEffects` or `alreadyCompleted` — a producer cannot decide whether to compensate without it — and the specification's Conformance section carries that requirement normatively. It is not expressed as a conditional schema because the registry's Rust code generator does not support if/then/else. The framework does not constrain how a task describes its own effects.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effects: ::std::option::Option<::std::vec::Vec<ResponseEffectsItem>>,
     ///Vendor-namespaced extension data per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -331,14 +331,14 @@ pub struct ResponseEffectsItem {
     #[serde(
         rename = "ref",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ref_: ::std::option::Option<::std::string::String>,
     ///Whether the consumer believes this effect can be compensated by a further Trust Task. Advisory. Absent means unknown, which a producer SHOULD treat as no weaker than `false`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reversible: ::std::option::Option<bool>,
@@ -561,7 +561,7 @@ pub struct ResponseTarget {
     #[serde(
         rename = "typeUri",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_uri: ::std::option::Option<::std::string::String>,

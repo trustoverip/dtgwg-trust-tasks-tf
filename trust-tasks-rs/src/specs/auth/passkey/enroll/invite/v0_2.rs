@@ -128,13 +128,13 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<PayloadDeviceLabel>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -144,14 +144,14 @@ pub struct Payload {
     ///Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role: ::std::option::Option<::std::string::String>,
     ///Optional scopes to attach on enrollment.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scopes: ::std::option::Option<::std::vec::Vec<PayloadScopesItem>>,
@@ -160,7 +160,7 @@ pub struct Payload {
     ///Seconds the invite remains valid. Consumers SHOULD pick 15 min – 24 h, and MAY cap it lower; longer windows widen the attack surface.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
@@ -427,7 +427,7 @@ pub struct Response {
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

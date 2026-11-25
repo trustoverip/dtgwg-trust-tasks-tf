@@ -281,13 +281,13 @@ pub struct Payload {
     ///Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -380,7 +380,7 @@ pub struct Profile {
     #[serde(
         rename = "createdAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -388,7 +388,7 @@ pub struct Profile {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<ProfileCredentialRefsItem>>,
@@ -399,7 +399,7 @@ pub struct Profile {
     pub profile_id: Ulid,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reach: ::std::option::Option<FaceReach>,
@@ -407,7 +407,7 @@ pub struct Profile {
     #[serde(
         rename = "retiredAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retired_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -506,7 +506,7 @@ pub enum ProfileEntry {
         ref_: Ulid,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         slot: ::std::option::Option<Slot>,
@@ -518,7 +518,7 @@ pub enum ProfileEntry {
         ref_: Ulid,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         slot: ::std::option::Option<Slot>,
@@ -530,7 +530,7 @@ pub enum ProfileEntry {
         ref_: Ulid,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         slot: ::std::option::Option<Slot>,
@@ -539,7 +539,7 @@ pub enum ProfileEntry {
         inline: ProfileEntryVariant3Inline,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         slot: ::std::option::Option<Slot>,
@@ -553,7 +553,7 @@ pub enum ProfileEntry {
 pub struct ProfileEntryVariant2Override {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ProfileEntryVariant2OverrideLabel>,
@@ -631,7 +631,7 @@ impl<'de> ::serde::Deserialize<'de> for ProfileEntryVariant2OverrideLabel {
 pub struct ProfileEntryVariant3Inline {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ProfileEntryVariant3InlineLabel>,
@@ -937,7 +937,7 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
@@ -945,7 +945,7 @@ pub enum Provenance {
         ///The disclosure rung this claim was, or will be, presented at.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         proof: ::std::option::Option<ProofRung>,
@@ -1285,7 +1285,7 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant3Source {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1293,7 +1293,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

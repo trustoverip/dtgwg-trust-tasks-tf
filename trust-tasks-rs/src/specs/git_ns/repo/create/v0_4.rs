@@ -135,21 +135,21 @@ pub struct DriftItem {
     ///Whose role differs, for the three role types.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub observed: ::std::option::Option<DriftItemObserved>,
@@ -728,13 +728,13 @@ pub struct Payload {
     ///A one-line description for the forge's repository page.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PayloadDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -745,7 +745,7 @@ pub struct Payload {
     ///Who owns the new repository: current members of the community. Absent, the requester alone — which the VTC accepts only when the requester holds `git.repo.create` on the namespace by explicit record. Naming anyone other than the requester is a grant of `git.repo.own`, and needs the authority to grant it (`git.ns.admin` on the namespace).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owners: ::std::option::Option<Vec<Did>>,
@@ -899,7 +899,7 @@ pub struct RepoSummary {
     #[serde(
         rename = "forgeId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_id: ::std::option::Option<ForgeId>,
@@ -1062,7 +1062,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoVisibility {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1070,7 +1070,7 @@ pub struct Response {
     #[serde(
         rename = "manualSteps",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub manual_steps: ::std::option::Option<::std::vec::Vec<ResponseManualStepsItem>>,
@@ -1223,7 +1223,7 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

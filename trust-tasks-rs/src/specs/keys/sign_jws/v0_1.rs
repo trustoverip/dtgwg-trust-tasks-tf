@@ -126,14 +126,14 @@ pub enum Payload {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         header:
@@ -148,14 +148,14 @@ pub enum Payload {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
         ///Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         header:
@@ -360,7 +360,7 @@ pub struct Response {
     pub alg: ResponseAlg,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

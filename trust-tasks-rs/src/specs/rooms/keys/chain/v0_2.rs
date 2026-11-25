@@ -205,21 +205,21 @@ pub struct Payload {
     #[serde(
         rename = "epochFloor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_floor: ::std::option::Option<EpochFloor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The rungs, in any order. A recipient stores those numbered above the room's epoch floor — the higher of the one it holds and `epochFloor` — and reports how far back it can now reach; see the response's `earliestReadableEpoch`. Absent when the request only relays a floor.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub links: ::std::option::Option<::std::vec::Vec<EpochLink>>,
@@ -245,13 +245,13 @@ pub struct Response {
     #[serde(
         rename = "epochFloor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch_floor: ::std::option::Option<EpochFloor>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -260,7 +260,7 @@ pub struct Response {
     ///How many rungs the recipient did not already hold and kept. Rungs numbered at or below the room's epoch floor are not kept and not counted, and are not an error: a member relaying a mirror's chain may hold some. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stored: ::std::option::Option<u64>,

@@ -286,7 +286,7 @@ pub struct LastCheck {
     ///The commit it ran on.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sha: ::std::option::Option<LastCheckSha>,
@@ -567,14 +567,14 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Only the repositories in this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub namespace: ::std::option::Option<NamespaceId>,
@@ -676,7 +676,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -689,7 +689,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "createdBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<Did>,
@@ -700,7 +700,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "failedStep",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub failed_step: ::std::option::Option<RepoStatusFailedStep>,
@@ -708,14 +708,14 @@ pub struct RepoStatus {
     #[serde(
         rename = "forgeId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_id: ::std::option::Option<ForgeId>,
     ///The guard in force against a pull request satisfying its own check, as the bridge last reported it: `requiredWorkflow`, `codeOwnerReview`, `bridgePostedCheck`, `protectedFiles` or `none`. A client treats any other value as `none`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub guard: ::std::option::Option<RepoStatusGuard>,
@@ -724,7 +724,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "lastCheck",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_check: ::std::option::Option<LastCheck>,
@@ -732,7 +732,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<RepoStatusLastError>,
@@ -747,7 +747,7 @@ pub struct RepoStatus {
     #[serde(
         rename = "roleMap",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role_map: ::std::option::Option<RoleMap>,
@@ -1231,7 +1231,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoVisibility {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1267,7 +1267,7 @@ pub struct StepOutcome {
     ///What the bridge said about it — an error, or why it was skipped.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub detail: ::std::option::Option<StepOutcomeDetail>,

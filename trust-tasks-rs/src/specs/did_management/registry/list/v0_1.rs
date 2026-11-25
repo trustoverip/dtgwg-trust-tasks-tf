@@ -126,7 +126,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -134,14 +134,14 @@ pub struct Payload {
     #[serde(
         rename = "serviceType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub service_type: ::std::option::Option<PayloadServiceType>,
     ///Only instances with this health verdict. Absent means every verdict.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status: ::std::option::Option<PayloadStatus>,
@@ -299,7 +299,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -321,7 +321,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "advertisedServices",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub advertised_services:
@@ -332,13 +332,13 @@ pub struct ServiceInstance {
     #[serde(
         rename = "enabledMethods",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enabled_methods: ::std::option::Option<::std::vec::Vec<ServiceInstanceEnabledMethodsItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -348,7 +348,7 @@ pub struct ServiceInstance {
     ///Operator-chosen display label. Untrusted free text.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<ServiceInstanceLabel>,
@@ -356,7 +356,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "lastHealthCheck",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_health_check: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -364,7 +364,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "lastInbound",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_inbound: ::std::option::Option<TransportObservation>,
@@ -372,7 +372,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "lastOutbound",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_outbound: ::std::option::Option<TransportObservation>,
@@ -380,7 +380,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "publicUrl",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::string::String>,
@@ -396,7 +396,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "servicesCheckedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub services_checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

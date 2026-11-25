@@ -126,7 +126,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -134,7 +134,7 @@ pub struct Payload {
     #[serde(
         rename = "pushPlatform",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub push_platform: ::std::option::Option<PayloadPushPlatform>,
@@ -142,7 +142,7 @@ pub struct Payload {
     #[serde(
         rename = "suggestedTriggers",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub suggested_triggers: ::std::option::Option<Vec<PayloadSuggestedTriggersItem>>,
@@ -150,7 +150,7 @@ pub struct Payload {
     #[serde(
         rename = "wakeHandle",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub wake_handle: ::std::option::Option<WakeHandle>,
@@ -303,7 +303,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSuggestedTriggersItem {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -314,7 +314,7 @@ pub struct Response {
     #[serde(
         rename = "triggerPolicy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trigger_policy: ::std::option::Option<WakeTriggerPolicy>,

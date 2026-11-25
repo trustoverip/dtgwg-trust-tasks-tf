@@ -43,7 +43,7 @@ pub struct Artifact {
     #[serde(
         rename = "byteLength",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub byte_length: ::std::option::Option<u64>,
@@ -196,7 +196,7 @@ pub struct Assessment {
     ///The primitive's confidence in `determination`, as an integer percentage. An integer rather than a fraction because no other specification in this registry puts a floating-point value on the wire: a float's textual form is not stable across JSON implementations, which makes byte-exact re-serialization a language-dependent property.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub confidence: ::std::option::Option<i64>,
@@ -355,25 +355,25 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 pub struct Disclosed {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchors: ::std::option::Option<::std::vec::Vec<DisclosedAnchorsItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub document: ::std::option::Option<DisclosedDocument>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub integrity: ::std::option::Option<DisclosedIntegrity>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timeline: ::std::option::Option<DisclosedTimeline>,
@@ -402,7 +402,7 @@ pub struct DisclosedAnchorsItem {
     #[serde(
         rename = "anchoredAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -492,7 +492,7 @@ pub struct DisclosedDocument {
     #[serde(
         rename = "mediaType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub media_type: ::std::option::Option<DisclosedDocumentMediaType>,
@@ -577,21 +577,21 @@ pub struct DisclosedIntegrity {
     #[serde(
         rename = "chainValid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub chain_valid: ::std::option::Option<bool>,
     #[serde(
         rename = "keyCustody",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_custody: ::std::option::Option<DisclosedIntegrityKeyCustody>,
     #[serde(
         rename = "signatureValid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signature_valid: ::std::option::Option<bool>,
@@ -684,21 +684,21 @@ pub struct DisclosedTimeline {
     #[serde(
         rename = "checkpointCount",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checkpoint_count: ::std::option::Option<u64>,
     #[serde(
         rename = "endedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "startedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub started_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -882,13 +882,13 @@ pub struct Payload {
     ///Categories the Verifier requests. A Holder MAY return fewer; it MUST NOT return more.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub disclosure: ::std::option::Option<Vec<DisclosureCategory>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -972,14 +972,14 @@ pub enum ReceiptReference {
         #[serde(
             rename = "digestMultibase",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         digest_multibase: ::std::option::Option<DigestMultibase>,
         #[serde(
             rename = "mediaType",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         media_type: ::std::option::Option<ReceiptReferenceMediaType>,
@@ -1131,13 +1131,13 @@ pub enum Response {
         challenge: ResponseChallenge,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         disclosed: ::std::option::Option<Disclosed>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,
@@ -1152,7 +1152,7 @@ pub enum Response {
         challenge: ResponseChallenge,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         ext: ::std::option::Option<Ext>,

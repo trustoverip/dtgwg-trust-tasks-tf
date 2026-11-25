@@ -43,7 +43,7 @@ pub struct CredentialDescriptor {
     pub id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
@@ -137,7 +137,7 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -151,7 +151,7 @@ pub struct CredentialRequestOptions {
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -159,20 +159,20 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "rpId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "userVerification",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
@@ -401,7 +401,7 @@ pub struct Payload {
     #[serde(
         rename = "acceptableEvidence",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acceptable_evidence: ::std::option::Option<Vec<PayloadAcceptableEvidenceItem>>,
@@ -409,7 +409,7 @@ pub struct Payload {
     #[serde(
         rename = "boundTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bound_to: ::std::option::Option<PayloadBoundTo>,
@@ -417,7 +417,7 @@ pub struct Payload {
     pub challenge: PayloadChallenge,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -427,7 +427,7 @@ pub struct Payload {
     #[serde(
         rename = "sessionId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<PayloadSessionId>,
@@ -437,21 +437,21 @@ pub struct Payload {
     #[serde(
         rename = "targetAcr",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target_acr: ::std::option::Option<::std::string::String>,
     ///Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
     ///Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub webauthn: ::std::option::Option<CredentialRequestOptions>,
@@ -832,14 +832,14 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Required when status is `refused`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<ResponseReason>,

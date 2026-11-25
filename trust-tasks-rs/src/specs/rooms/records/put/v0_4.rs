@@ -52,7 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -304,14 +304,14 @@ pub struct FileManifest {
     #[serde(
         rename = "fileKey",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub file_key: ::std::option::Option<FileManifestFileKey>,
     ///The image's height in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub height: ::std::option::Option<::std::num::NonZeroU64>,
@@ -319,7 +319,7 @@ pub struct FileManifest {
     #[serde(
         rename = "mediaType",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub media_type: ::std::option::Option<FileManifestMediaType>,
@@ -328,13 +328,13 @@ pub struct FileManifest {
     ///Whether the plaintext was padded before sealing, so that ciphertext sizes do not fingerprint known documents. `padme`: zero bytes appended to reach `padme(size)`, the formula above. Absent means `none`. The padding is inside the final segments, and a reader checks it is zero and removes it by truncating to `size`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub padding: ::std::option::Option<FileManifestPadding>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub preview: ::std::option::Option<FileManifestPreview>,
@@ -346,7 +346,7 @@ pub struct FileManifest {
     ///The image's width in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub width: ::std::option::Option<::std::num::NonZeroU64>,
@@ -832,13 +832,13 @@ pub struct Payload {
     ///The blobs this record keeps alive: today at most one, the file the record carries. Cleartext on every tier, because the host must know which blobs a record references to refuse a record naming a blob it does not hold, to count usage, and to collect a blob no record names. Every blob named MUST have been committed in THIS room (rooms/blobs/upload/commit). An array so that several files per record is a later minor version rather than a reshaped member. Omit for a record with no file; a rewrite that omits it releases whatever blob the previous version named. On an `open` room the host also checks it against `cleartext.file`, which it can read: exactly that file's `blobRef` when `file` is present, and absent otherwise.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cleartext: ::std::option::Option<PayloadCleartext>,
@@ -846,14 +846,14 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<u64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -867,7 +867,7 @@ pub struct Payload {
     ///REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sealed: ::std::option::Option<SealedRecord>,
@@ -886,52 +886,52 @@ pub struct PayloadCleartext {
     ///What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub basis: ::std::option::Option<RecordBasis>,
     pub body: PayloadCleartextBody,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub confidence: ::std::option::Option<RecordConfidence>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<PayloadCleartextDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub evidence: ::std::option::Option<RecordEvidenceList>,
     ///Present when the record carries a file. Its `fileKey` MUST be present — an open room has no storage key to derive one from — and its `blobRef` MUST be the one the record names in `blobs`. The host reads it, like every other member here.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub file: ::std::option::Option<FileManifest>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<::std::vec::Vec<PayloadCleartextTagsItem>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub title: ::std::option::Option<PayloadCleartextTitle>,
     #[serde(
         rename = "validFor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_for: ::std::option::Option<PermittedUse>,
@@ -939,7 +939,7 @@ pub struct PayloadCleartext {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<RecordValidUntil>,
@@ -1260,14 +1260,14 @@ pub struct PermittedUse {
     ///The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub note: ::std::option::Option<PermittedUseNote>,
     ///Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purposes: ::std::option::Option<Vec<::std::string::String>>,
@@ -1505,7 +1505,7 @@ pub struct RecordEvidenceCredential {
     ///OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub digest: ::std::option::Option<DigestMultibase>,
@@ -1612,14 +1612,14 @@ pub struct RecordEvidenceRecord {
     #[serde(
         rename = "roomId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_id: ::std::option::Option<RecordEvidenceRecordRoomId>,
     ///The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1809,13 +1809,13 @@ pub struct Response {
     ///The epoch the record was stored under.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1908,7 +1908,7 @@ pub struct SealedRecord {
     A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,

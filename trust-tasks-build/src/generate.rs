@@ -98,7 +98,7 @@ impl Target {
             index: false,
             // Crate-private in `trust-tasks-rs` (`src/specs/mod.rs`), so the
             // 400-odd prebuilt modules share one copy without a public API.
-            presence_helpers: Some("crate::specs::presence"),
+            presence_helpers: Some("crate::specs::__presence"),
         }
     }
 

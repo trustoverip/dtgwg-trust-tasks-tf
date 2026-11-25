@@ -300,21 +300,21 @@ pub struct Payload {
     pub accepts_documentation: VetterAcceptsDocumentation,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub availability: ::std::option::Option<VetterAvailability>,
     #[serde(
         rename = "contactHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_hint: ::std::option::Option<VetterContactHint>,
     #[serde(
         rename = "displayName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<VetterDisplayName>,
@@ -322,7 +322,7 @@ pub struct Payload {
     pub events: ::std::vec::Vec<VetterEvent>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -332,7 +332,7 @@ pub struct Payload {
     pub listed: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub location: ::std::option::Option<VetterLocation>,
@@ -639,7 +639,7 @@ pub struct VetterEvent {
     pub end_date: CalendarDate,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub location: ::std::option::Option<VetterLocation>,
@@ -650,7 +650,7 @@ pub struct VetterEvent {
     ///OPTIONAL. The event's own https page.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url: ::std::option::Option<::std::string::String>,
@@ -730,14 +730,14 @@ impl<'de> ::serde::Deserialize<'de> for VetterEventName {
 pub struct VetterLocation {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub city: ::std::option::Option<PlaceName>,
     pub country: CountryCode,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub region: ::std::option::Option<PlaceName>,

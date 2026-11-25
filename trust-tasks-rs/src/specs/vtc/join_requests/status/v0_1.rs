@@ -124,7 +124,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -132,7 +132,7 @@ pub struct Payload {
     #[serde(
         rename = "requestId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<PayloadRequestId>,
@@ -140,7 +140,7 @@ pub struct Payload {
     #[serde(
         rename = "resendCredentials",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resend_credentials: ::std::option::Option<bool>,
@@ -227,7 +227,7 @@ pub struct Response {
     ///Stable refusal code, safe to branch on. Present only when `status` is `rejected`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub code: ::std::option::Option<::std::string::String>,
@@ -235,7 +235,7 @@ pub struct Response {
     #[serde(
         rename = "credentialResend",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_resend: ::std::option::Option<ResponseCredentialResend>,
@@ -243,7 +243,7 @@ pub struct Response {
     #[serde(
         rename = "credentialsDelivered",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credentials_delivered: ::std::option::Option<bool>,
@@ -251,20 +251,20 @@ pub struct Response {
     #[serde(
         rename = "decidedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///When deferred, what the applicant must supply next.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub needs: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -272,7 +272,7 @@ pub struct Response {
     #[serde(
         rename = "presentationDefinition",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentation_definition:
@@ -280,7 +280,7 @@ pub struct Response {
     ///Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<::std::option::Option<ResponseReason>>,
@@ -290,7 +290,7 @@ pub struct Response {
     #[serde(
         rename = "retryAfter",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retry_after: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

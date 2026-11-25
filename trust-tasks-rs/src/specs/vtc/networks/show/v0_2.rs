@@ -125,7 +125,7 @@ pub struct NetworkMembership {
     ///The community's acknowledgement (VMC carrying the grant's digest).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acknowledgement:
@@ -133,7 +133,7 @@ pub struct NetworkMembership {
     ///The network's membership grant (VMC), once the community acknowledged.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -141,7 +141,7 @@ pub struct NetworkMembership {
     #[serde(
         rename = "joinedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub joined_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -150,7 +150,7 @@ pub struct NetworkMembership {
     ///The network's name, as its profile gives it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub name: ::std::option::Option<NetworkMembershipName>,
@@ -159,7 +159,7 @@ pub struct NetworkMembership {
     ///The community's repudiation (VSC) of the listing, or — on departure — of the grant.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub repudiation:
@@ -372,7 +372,7 @@ impl ::std::convert::TryFrom<::std::string::String> for NetworkMembershipState {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -671,7 +671,7 @@ impl<'de> ::serde::Deserialize<'de> for RegisteredGroupRole {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

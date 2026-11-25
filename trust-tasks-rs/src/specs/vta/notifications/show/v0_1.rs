@@ -259,7 +259,7 @@ pub struct HeldNotification {
     #[serde(
         rename = "dismissedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dismissed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -379,7 +379,7 @@ pub struct Notification {
     #[serde(
         rename = "validFrom",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -387,7 +387,7 @@ pub struct Notification {
     #[serde(
         rename = "validUntil",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -474,7 +474,7 @@ pub struct Payload {
     pub context_id: ContextId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

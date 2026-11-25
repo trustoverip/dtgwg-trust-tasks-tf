@@ -115,21 +115,21 @@ pub struct DriftItem {
     ///Whose role differs, for the three role types.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub observed: ::std::option::Option<DriftItemObserved>,
@@ -347,14 +347,14 @@ pub struct DriftSelector {
     ///The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub observed: ::std::option::Option<DriftSelectorObserved>,
@@ -813,14 +813,14 @@ pub struct Payload {
     pub drift: DriftSelector,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -829,7 +829,7 @@ pub struct Payload {
     ///For `adopt`: the member who receives the right, as the resolver read it — the DID linked to the item's account when they decided. REQUIRED for `adopt` and absent for `revert`. The VTC adopts nothing unless the account is still linked to exactly this member, so a link changed between reading and signing never grants to someone the resolver did not name.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject: ::std::option::Option<Did>,
@@ -1116,14 +1116,14 @@ pub struct Response {
     pub action: ResponseAction,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub right: ::std::option::Option<RightRecord>,
@@ -1279,7 +1279,7 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1291,7 +1291,7 @@ pub struct RightRecord {
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reason: ::std::option::Option<RightRecordReason>,
@@ -1374,7 +1374,7 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

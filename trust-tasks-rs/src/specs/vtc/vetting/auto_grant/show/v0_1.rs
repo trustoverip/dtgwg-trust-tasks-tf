@@ -43,7 +43,7 @@ pub struct AutoGrantStatus {
     #[serde(
         rename = "lastSweep",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_sweep: ::std::option::Option<AutoGrantSweep>,
@@ -214,7 +214,7 @@ impl ::std::fmt::Display for GrantValiditySeconds {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -241,7 +241,7 @@ pub struct Response {
     pub auto_grant: AutoGrantStatus,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

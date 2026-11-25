@@ -43,7 +43,7 @@ pub struct Context {
     #[serde(
         rename = "activeFrom",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub active_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -51,7 +51,7 @@ pub struct Context {
     #[serde(
         rename = "activeTo",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub active_to: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -61,14 +61,14 @@ pub struct Context {
     #[serde(
         rename = "impliedBy",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub implied_by: ::std::option::Option<Right>,
     ///Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub origin: ::std::option::Option<ContextOrigin>,
@@ -364,27 +364,27 @@ pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `resource` from the request that produced it — start a fresh query instead.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cursor: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum published records to return in this page. A VTC clamps to 1..=500 (default 100).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only published records on this resource or inside it. Absent: every resource.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource: ::std::option::Option<Resource>,
@@ -507,7 +507,7 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -515,7 +515,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,

@@ -41,21 +41,21 @@ pub struct CredentialState {
     ///Present with `vta-account`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account: ::std::option::Option<ExternalAccountId>,
     ///Present with `vta-account`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<ExternalAccountContextId>,
     ///Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fingerprint: ::std::option::Option<DigestMultibase>,
@@ -63,7 +63,7 @@ pub struct CredentialState {
     #[serde(
         rename = "roomsHoldingCredentials",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rooms_holding_credentials: ::std::option::Option<u64>,
@@ -71,7 +71,7 @@ pub struct CredentialState {
     #[serde(
         rename = "setAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub set_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -462,7 +462,7 @@ pub struct Payload {
     pub digest_multibase: DigestMultibase,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -619,7 +619,7 @@ pub struct Response {
     pub credential_state: CredentialState,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -627,7 +627,7 @@ pub struct Response {
     #[serde(
         rename = "probeOk",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub probe_ok: ::std::option::Option<bool>,
@@ -679,7 +679,7 @@ pub enum SealedStorageCredential {
         #[serde(
             rename = "sessionToken",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         session_token: ::std::option::Option<SealedStorageCredentialSessionToken>,

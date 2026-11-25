@@ -310,7 +310,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -462,7 +462,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -470,7 +470,7 @@ pub struct Response {
     #[serde(
         rename = "highWatermark",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub high_watermark: ::std::option::Option<Version>,
@@ -600,7 +600,7 @@ pub enum Write {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
@@ -613,7 +613,7 @@ pub enum Write {
         #[serde(
             rename = "expectedVersion",
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         expected_version: ::std::option::Option<ExpectedVersion>,
@@ -633,14 +633,14 @@ pub struct WriteResult {
     #[serde(
         rename = "actualBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub actual_bytes: ::std::option::Option<u64>,
     ///On `written`: true when no live record existed at the address beforehand.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created: ::std::option::Option<bool>,
@@ -648,7 +648,7 @@ pub struct WriteResult {
     #[serde(
         rename = "currentDeleted",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_deleted: ::std::option::Option<bool>,
@@ -656,7 +656,7 @@ pub struct WriteResult {
     #[serde(
         rename = "currentValue",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
@@ -664,7 +664,7 @@ pub struct WriteResult {
     #[serde(
         rename = "currentVersion",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_version: ::std::option::Option<Version>,
@@ -673,7 +673,7 @@ pub struct WriteResult {
     #[serde(
         rename = "limitBytes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub limit_bytes: ::std::option::Option<u64>,
@@ -682,7 +682,7 @@ pub struct WriteResult {
     ///The new version, on `written`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<Version>,

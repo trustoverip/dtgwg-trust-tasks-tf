@@ -576,7 +576,7 @@ pub struct Manifest {
     pub community: ManifestCommunity,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<ManifestDescription>,
@@ -596,13 +596,13 @@ pub struct Manifest {
     pub text_release_threshold: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub title: ::std::option::Option<ManifestTitle>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trustees: ::std::option::Option<Trustees>,
@@ -1010,7 +1010,7 @@ pub struct Payload {
     pub community: PayloadCommunity,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1109,7 +1109,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1126,7 +1126,7 @@ pub enum Question {
         partial: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1144,7 +1144,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1161,7 +1161,7 @@ pub enum Question {
         optional: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1177,7 +1177,7 @@ pub struct QuestionOption {
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<QuestionOptionLabel>,
@@ -1314,7 +1314,7 @@ pub struct Response {
     pub election: ElectionSummary,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1393,7 +1393,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Revote {
 pub struct RollRule {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub listed: ::std::option::Option<Vec<RollRuleListedItem>>,
@@ -1401,7 +1401,7 @@ pub struct RollRule {
     #[serde(
         rename = "memberOf",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of: ::std::option::Option<RollRuleMemberOf>,

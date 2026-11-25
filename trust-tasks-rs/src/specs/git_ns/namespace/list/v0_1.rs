@@ -337,7 +337,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "appName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub app_name: ::std::option::Option<ForgeStatusAppName>,
@@ -345,7 +345,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "appRegistration",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub app_registration: ::std::option::Option<ForgeStatusAppRegistration>,
@@ -353,7 +353,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "appSlug",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub app_slug: ::std::option::Option<ForgeStatusAppSlug>,
@@ -361,7 +361,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "bridgePostedCheck",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bridge_posted_check: ::std::option::Option<bool>,
@@ -369,7 +369,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "installationId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub installation_id: ::std::option::Option<ForgeStatusInstallationId>,
@@ -380,7 +380,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "orgRulesets",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub org_rulesets: ::std::option::Option<bool>,
@@ -388,7 +388,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "permissionUpgradePending",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub permission_upgrade_pending: ::std::option::Option<bool>,
@@ -396,7 +396,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "reportedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reported_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -404,7 +404,7 @@ pub struct ForgeStatus {
     #[serde(
         rename = "requiredWorkflow",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_workflow: ::std::option::Option<bool>,
@@ -875,7 +875,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "boundAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bound_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -886,7 +886,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "bridgeDid",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bridge_did: ::std::option::Option<Did>,
@@ -897,7 +897,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "forgeStatus",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_status: ::std::option::Option<ForgeStatus>,
@@ -910,7 +910,7 @@ pub struct NamespaceStatus {
     ///Whether the owner is an organisation or a personal account, once the forge has said.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub kind: ::std::option::Option<NamespaceStatusKind>,
@@ -922,7 +922,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "ownerId",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_id: ::std::option::Option<ForgeId>,
@@ -941,7 +941,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "roleMap",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role_map: ::std::option::Option<RoleMap>,
@@ -949,7 +949,7 @@ pub struct NamespaceStatus {
     #[serde(
         rename = "roleMapReportedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub role_map_reported_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1278,14 +1278,14 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusState {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Only this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub namespace: ::std::option::Option<NamespaceId>,
@@ -1385,7 +1385,7 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -125,13 +125,13 @@ pub struct Payload {
     ///Only on a count topic (`actions`, `acknowledgements`, `joinRequests`): the caller's current count for that topic as of `observedAt` — what a console badge shows. Absent on every other topic. A console MAY show it until its re-fetch returns, and MUST prefer the read's own count once it does.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

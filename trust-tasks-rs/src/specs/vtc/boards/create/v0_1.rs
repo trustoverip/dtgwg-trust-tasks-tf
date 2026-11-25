@@ -45,7 +45,7 @@ pub struct Board {
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<BoardDescription>,
@@ -53,7 +53,7 @@ pub struct Board {
     pub facilitator: bool,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub formats: ::std::option::Option<Vec<IdeaFormat>>,
@@ -63,7 +63,7 @@ pub struct Board {
     #[serde(
         rename = "maxIdeasPerMember",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_ideas_per_member: ::std::option::Option<::std::num::NonZeroU64>,
@@ -73,7 +73,7 @@ pub struct Board {
     #[serde(
         rename = "selectionRule",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub selection_rule: ::std::option::Option<BoardSelectionRule>,
@@ -81,14 +81,14 @@ pub struct Board {
     pub template: ElectionTemplate,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timetable: ::std::option::Option<::std::vec::Vec<Slot>>,
     pub title: BoardTitle,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub topics: ::std::option::Option<Vec<Topic>>,
@@ -249,44 +249,44 @@ impl<'de> ::serde::Deserialize<'de> for BoardId {
 pub struct BoardIdeaCounts {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub declined: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub merged: ::std::option::Option<u64>,
     #[serde(
         rename = "notSelected",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub not_selected: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub open: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub proposed: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub selected: ::std::option::Option<u64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub withdrawn: ::std::option::Option<u64>,
@@ -582,7 +582,7 @@ pub struct ElectionTemplate {
     pub text_release_threshold: ::std::num::NonZeroU64,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trustees: ::std::option::Option<Trustees>,
@@ -1009,26 +1009,26 @@ pub struct Payload {
     pub audience: BoardAudience,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<BoardDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub formats: ::std::option::Option<Vec<IdeaFormat>>,
     #[serde(
         rename = "maxIdeasPerMember",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_ideas_per_member: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1036,21 +1036,21 @@ pub struct Payload {
     #[serde(
         rename = "selectionRule",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub selection_rule: ::std::option::Option<PayloadSelectionRule>,
     pub template: ElectionTemplate,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timetable: ::std::option::Option<::std::vec::Vec<Slot>>,
     pub title: BoardTitle,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub topics: ::std::option::Option<Vec<Topic>>,
@@ -1144,7 +1144,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1161,7 +1161,7 @@ pub enum Question {
         partial: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1179,7 +1179,7 @@ pub enum Question {
         options: ::std::vec::Vec<QuestionOption>,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1196,7 +1196,7 @@ pub enum Question {
         optional: bool,
         #[serde(
             default,
-            deserialize_with = "crate::specs::presence::not_null",
+            deserialize_with = "crate::specs::__presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         text: ::std::option::Option<QuestionText>,
@@ -1212,7 +1212,7 @@ pub struct QuestionOption {
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<QuestionOptionLabel>,
@@ -1349,7 +1349,7 @@ pub struct Response {
     pub board: Board,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

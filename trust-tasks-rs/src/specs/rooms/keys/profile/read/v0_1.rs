@@ -319,7 +319,7 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -489,7 +489,7 @@ pub struct ReadVerification {
       - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor: ::std::option::Option<ReadVerificationAnchor>,
@@ -501,13 +501,13 @@ pub struct ReadVerification {
     `short` is a host contradicting itself inside one exchange: it committed to a tree of N records and served fewer, with no filter to explain the difference. That is the omission the commitment exists to make detectable, caught without a second party and without an anchor.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub count: ::std::option::Option<ReadVerificationCount>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub head: ::std::option::Option<ReadVerificationHead>,
@@ -530,7 +530,7 @@ pub struct ReadVerification {
     `verified` says the record is under the root the host asserted — and **nothing about whether that root is the room's**, which is what `priorRoots` and an anchor are for. `notOffered` is a host that maintains no tree, which is legal and informative. `failed` is arithmetic that does not close: the host served a path that does not reach its own root, which is either a defect or a fabrication and is not distinguishable from here.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trace: ::std::option::Option<ReadVerificationTrace>,
@@ -926,20 +926,20 @@ pub struct Response {
     ///Who wrote the profile returned: the signed body's `author`, whose authority chain the recipient verified. Present with `profile`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<ResponseAuthor>,
     ///The epoch the returned profile, or the retraction, was found under. Absent on an `open` room.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -947,21 +947,21 @@ pub struct Response {
     #[serde(
         rename = "issuedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Present exactly when `status` is `found`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile: ::std::option::Option<RoomProfile>,
     ///Records at a profile location that the recipient refused, newest first, up to eight. Present when there was at least one. A profile refused at a newer epoch than the one returned is somebody writing what the room is called without the standing to — which is why it is reported rather than dropped.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rejected: ::std::option::Option<::std::vec::Vec<ResponseRejectedItem>>,
@@ -969,14 +969,14 @@ pub struct Response {
     pub room_id: ResponseRoomId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub searched: ::std::option::Option<ResponseSearched>,
     ///`true` when the profile returned was found below the epoch the recipient is at: written before the room's latest epoch advance and not re-written since. Absent on an `open` room, and when `status` is not `found`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stale: ::std::option::Option<bool>,
@@ -985,14 +985,14 @@ pub struct Response {
     ///What the recipient checked of the host's assertions about the record it returned, exactly as `rooms/keys/read` reports it. Present with `profile`, and on `cleared`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub verification: ::std::option::Option<ReadVerification>,
     ///The record's version at the host. Present with `profile`, and on `cleared`.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1075,14 +1075,14 @@ pub struct ResponseRejectedItem {
     ///The body's `author`, when the record opened and parsed far enough to name one. The caller is a member of the room, who could read the same body; nothing here reaches anybody who could not.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub author: ::std::option::Option<ResponseRejectedItemAuthor>,
     ///The epoch whose location held it. Absent on an `open` room.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
@@ -1407,21 +1407,21 @@ pub struct RoomProfile {
     ///What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<RoomProfileDescription>,
     ///One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub emoji: ::std::option::Option<RoomProfileEmoji>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1431,14 +1431,14 @@ pub struct RoomProfile {
     #[serde(
         rename = "recordMembers",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_members: ::std::option::Option<Vec<RoomProfileRecordMembersItem>>,
     ///Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<Vec<RoomProfileTagsItem>>,

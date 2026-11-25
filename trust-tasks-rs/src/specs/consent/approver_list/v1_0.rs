@@ -47,7 +47,7 @@ pub struct ApproverBinding {
     ///Optional. How to deliver the prompt; defaults to bridge-relay when omitted.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route: ::std::option::Option<Route>,
@@ -55,7 +55,7 @@ pub struct ApproverBinding {
     #[serde(
         rename = "routeHint",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route_hint: ::std::option::Option<::std::string::String>,
@@ -335,20 +335,20 @@ pub struct Payload {
     ///Optional. Restrict to this context path.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<PayloadContext>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional. Restrict to this platform tag.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub platform: ::std::option::Option<PayloadPlatform>,
@@ -495,7 +495,7 @@ pub struct Response {
     pub approvers: ::std::vec::Vec<ApproverBinding>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

@@ -108,7 +108,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
@@ -117,7 +117,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "issuedAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -136,7 +136,7 @@ pub struct Endorsement {
     ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -149,7 +149,7 @@ pub struct Endorsement {
     #[serde(
         rename = "revokedAt",
         default,
-        deserialize_with = "crate::specs::presence::present",
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at:
@@ -445,7 +445,7 @@ pub struct Payload {
     pub endorsement_id: PayloadEndorsementId,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -523,7 +523,7 @@ pub struct Response {
     pub endorsement: Endorsement,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

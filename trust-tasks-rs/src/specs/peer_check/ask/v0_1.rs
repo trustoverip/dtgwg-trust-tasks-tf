@@ -121,7 +121,7 @@ pub struct Payload {
     ///OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub note: ::std::option::Option<PayloadNote>,
@@ -332,7 +332,7 @@ pub struct Response {
     #[serde(
         rename = "notConfirmedReason",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub not_confirmed_reason: ::std::option::Option<ResponseNotConfirmedReason>,

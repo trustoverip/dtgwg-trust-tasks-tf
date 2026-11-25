@@ -196,14 +196,14 @@ pub struct Payload {
     ///A challenge the proof's verifier issued, copied into the proof's `challenge` member verbatim (W3C Data Integrity). Absent means the proof carries none. The custodian does not interpret it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub challenge: ::std::option::Option<PayloadChallenge>,
     ///The proof's `created` value (an XML Schema dateTimeStamp, as Data Integrity requires). Absent means the custodian's own clock at signing. When present, the custodian refuses a value outside its acceptance window around its own clock with `keys:invalidArgument`: the key's signature dates the proof, so the producer cannot back- or forward-date it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -212,14 +212,14 @@ pub struct Payload {
     ///The security domain the proof is restricted to, copied into the proof's `domain` member verbatim (W3C Data Integrity). Absent means the proof carries none. The custodian does not interpret it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<PayloadDomain>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -230,7 +230,7 @@ pub struct Payload {
     #[serde(
         rename = "proofPurpose",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub proof_purpose: ::std::option::Option<PayloadProofPurpose>,
@@ -492,7 +492,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadProofPurpose {
 pub struct Proof {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub challenge: ::std::option::Option<::std::string::String>,
@@ -500,7 +500,7 @@ pub struct Proof {
     #[serde(
         rename = "@context",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<ProofContext>,
@@ -509,7 +509,7 @@ pub struct Proof {
     pub cryptosuite: ProofCryptosuite,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub domain: ::std::option::Option<::std::string::String>,
@@ -797,7 +797,7 @@ pub struct Response {
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,

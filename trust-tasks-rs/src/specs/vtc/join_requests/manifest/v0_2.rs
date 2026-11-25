@@ -119,7 +119,7 @@ pub struct CommunityBranding {
     #[serde(
         rename = "accentColor",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accent_color: ::std::option::Option<CommunityBrandingAccentColor>,
@@ -127,13 +127,13 @@ pub struct CommunityBranding {
     #[serde(
         rename = "displayName",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<CommunityBrandingDisplayName>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -141,7 +141,7 @@ pub struct CommunityBranding {
     #[serde(
         rename = "logoUrl",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub logo_url: ::std::option::Option<::std::string::String>,
@@ -293,7 +293,7 @@ pub struct Criterion {
     ///Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<CriterionDescription>,
@@ -305,13 +305,13 @@ pub struct Criterion {
     #[serde(
         rename = "requirementsDigest",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requirements_digest: ::std::option::Option<DigestMultibase>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vetting: ::std::option::Option<VettingRequirements>,
@@ -772,7 +772,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -798,7 +798,7 @@ impl Payload {
 pub struct Response {
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub branding: ::std::option::Option<CommunityBranding>,
@@ -807,7 +807,7 @@ pub struct Response {
     pub criteria: ::std::vec::Vec<Criterion>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -815,7 +815,7 @@ pub struct Response {
     #[serde(
         rename = "requestedAttributes",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requested_attributes:
@@ -896,7 +896,7 @@ pub struct ResponseRequestedAttributesItem {
     ///Why the community asks, in words shown to the applicant before they disclose.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose: ::std::option::Option<ResponseRequestedAttributesItemPurpose>,
@@ -1256,7 +1256,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "acceptedDocumentClasses",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepted_document_classes: ::std::option::Option<Vec<VettingDocumentation>>,
@@ -1266,7 +1266,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "decisionSla",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decision_sla: ::std::option::Option<Duration>,
@@ -1278,7 +1278,7 @@ pub struct VettingRequirements {
     This object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.*/
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -1291,7 +1291,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "extCritical",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext_critical: ::std::option::Option<ExtCritical>,
@@ -1299,27 +1299,27 @@ pub struct VettingRequirements {
     #[serde(
         rename = "governanceFrameworkUrl",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub governance_framework_url: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub independence: ::std::option::Option<VettingRequirementsIndependence>,
     ///Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub invitation: ::std::option::Option<VettingRequirementsInvitation>,
     #[serde(
         rename = "maxStatementAge",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_statement_age: ::std::option::Option<Duration>,
@@ -1327,7 +1327,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "minByMethod",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_by_method: ::std::option::Option<::std::collections::HashMap<VettingMethod, u64>>,
@@ -1338,7 +1338,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "optionalClaims",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_claims: ::std::option::Option<Vec<ClaimType>>,
@@ -1346,14 +1346,14 @@ pub struct VettingRequirements {
     #[serde(
         rename = "requiredClaims",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_claims: ::std::option::Option<Vec<ClaimType>>,
     #[serde(
         rename = "requirementsGrace",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requirements_grace: ::std::option::Option<Duration>,
@@ -1461,7 +1461,7 @@ pub struct VettingRequirementsIndependence {
     #[serde(
         rename = "maxByDeclaredRelationship",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_by_declared_relationship:
@@ -1470,7 +1470,7 @@ pub struct VettingRequirementsIndependence {
     #[serde(
         rename = "requireConsistentIdentityCommitment",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require_consistent_identity_commitment: ::std::option::Option<bool>,

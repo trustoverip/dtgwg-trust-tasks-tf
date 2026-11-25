@@ -44,7 +44,7 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "configSchema",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub config_schema: ::std::option::Option<::std::string::String>,
@@ -52,7 +52,7 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "consentClass",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consent_class: ::std::option::Option<
@@ -61,13 +61,13 @@ pub struct CapabilityManifest {
     ///One-paragraph description for management surfaces.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub description: ::std::option::Option<CapabilityManifestDescription>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -75,7 +75,7 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "externalAdapters",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub external_adapters:
@@ -84,14 +84,14 @@ pub struct CapabilityManifest {
     #[serde(
         rename = "lifecycleHooks",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lifecycle_hooks: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub roles: ::std::option::Option<
@@ -102,7 +102,7 @@ pub struct CapabilityManifest {
     ///Human-readable capability name for management surfaces.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub title: ::std::option::Option<CapabilityManifestTitle>,
@@ -110,7 +110,7 @@ pub struct CapabilityManifest {
     pub version: CapabilityManifestVersion,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vocabulary: ::std::option::Option<CapabilityManifestVocabulary>,
@@ -454,7 +454,7 @@ pub struct CapabilityManifestVocabulary {
     #[serde(
         rename = "resourcePattern",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resource_pattern: ::std::option::Option<::std::string::String>,
@@ -559,7 +559,7 @@ pub struct Payload {
     ///Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub config:
@@ -567,20 +567,20 @@ pub struct Payload {
     ///DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori).
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delegate: ::std::option::Option<::std::string::String>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///The capability's manifest. OPTIONAL for built-in capabilities (the host knows it); REQUIRED when `delegate` is present.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub manifest: ::std::option::Option<CapabilityManifest>,
@@ -727,26 +727,26 @@ pub struct Response {
     #[serde(
         rename = "enabledAt",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enabled_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
     ///Additional human-readable detail.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message: ::std::option::Option<ResponseMessage>,
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version: ::std::option::Option<::std::string::String>,

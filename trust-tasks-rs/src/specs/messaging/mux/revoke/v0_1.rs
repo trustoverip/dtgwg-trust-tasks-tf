@@ -341,21 +341,21 @@ pub struct Payload {
     ///As `member` only: the member DID whose grants are revoked; absent means the requester itself.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<MuxDid>,
     ///As `principal`: member DIDs whose grants to the requester are revoked. As `member`: principal DIDs whose grants on the member are revoked.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dids: ::std::option::Option<Vec<MuxDid>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -363,7 +363,7 @@ pub struct Payload {
     #[serde(
         rename = "grantIds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_ids: ::std::option::Option<Vec<GrantId>>,
@@ -382,7 +382,7 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<Ext>,
@@ -392,7 +392,7 @@ pub struct Response {
     #[serde(
         rename = "unmatchedDids",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub unmatched_dids: ::std::option::Option<::std::vec::Vec<MuxDid>>,
@@ -400,7 +400,7 @@ pub struct Response {
     #[serde(
         rename = "unmatchedGrantIds",
         default,
-        deserialize_with = "crate::specs::presence::not_null",
+        deserialize_with = "crate::specs::__presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub unmatched_grant_ids: ::std::option::Option<::std::vec::Vec<GrantId>>,
