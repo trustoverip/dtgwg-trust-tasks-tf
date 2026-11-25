@@ -123,8 +123,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub add: ::std::vec::Vec<Vid>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub add: ::std::option::Option<::std::vec::Vec<Vid>>,
     ///Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub clear: ::std::option::Option<bool>,
@@ -134,8 +138,12 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub remove: ::std::vec::Vec<Vid>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub remove: ::std::option::Option<::std::vec::Vec<Vid>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -229,11 +237,17 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
-        add: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        add: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Vid>>,
+            ::std::string::String,
+        >,
         clear: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         did: ::std::result::Result<super::Vid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        remove: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        remove: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Vid>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -249,7 +263,7 @@ pub mod builder {
     impl Payload {
         pub fn add<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Vid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.add = value
@@ -289,7 +303,7 @@ pub mod builder {
         }
         pub fn remove<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Vid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.remove = value
@@ -487,4 +501,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

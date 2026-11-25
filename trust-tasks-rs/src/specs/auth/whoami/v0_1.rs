@@ -152,17 +152,29 @@ pub struct Response {
     Why it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.
 
     This member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it.*/
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub capabilities: ::std::vec::Vec<ResponseCapabilitiesItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub capabilities: ::std::option::Option<::std::vec::Vec<ResponseCapabilitiesItem>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Role assignments the auth service holds for the producer. Ecosystem-defined vocabulary.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub roles: ::std::vec::Vec<ResponseRolesItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub roles: ::std::option::Option<::std::vec::Vec<ResponseRolesItem>>,
     ///Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub scopes: ::std::vec::Vec<ResponseScopesItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub scopes: ::std::option::Option<::std::vec::Vec<ResponseScopesItem>>,
     ///Current session state for the producer.
     pub session: Session,
 }
@@ -358,8 +370,12 @@ pub struct Session {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub acr: ::std::option::Option<::std::string::String>,
     ///Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub amr: ::std::vec::Vec<SessionAmrItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub amr: ::std::option::Option<::std::vec::Vec<SessionAmrItem>>,
     ///ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -595,14 +611,16 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         capabilities: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseCapabilitiesItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseCapabilitiesItem>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        roles:
-            ::std::result::Result<::std::vec::Vec<super::ResponseRolesItem>, ::std::string::String>,
+        roles: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ResponseRolesItem>>,
+            ::std::string::String,
+        >,
         scopes: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseScopesItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseScopesItem>>,
             ::std::string::String,
         >,
         session: ::std::result::Result<super::Session, ::std::string::String>,
@@ -621,7 +639,9 @@ pub mod builder {
     impl Response {
         pub fn capabilities<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseCapabilitiesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseCapabilitiesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.capabilities = value
@@ -641,7 +661,9 @@ pub mod builder {
         }
         pub fn roles<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRolesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseRolesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.roles = value
@@ -651,7 +673,9 @@ pub mod builder {
         }
         pub fn scopes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseScopesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseScopesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scopes = value
@@ -699,7 +723,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        amr: ::std::result::Result<::std::vec::Vec<super::SessionAmrItem>, ::std::string::String>,
+        amr: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::SessionAmrItem>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -734,7 +761,9 @@ pub mod builder {
         }
         pub fn amr<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::SessionAmrItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::SessionAmrItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.amr = value
@@ -865,4 +894,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

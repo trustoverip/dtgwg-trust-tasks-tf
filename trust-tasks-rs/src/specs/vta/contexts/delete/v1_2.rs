@@ -207,9 +207,10 @@ pub struct Response {
     #[serde(
         rename = "daemonCleanupErrors",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub daemon_cleanup_errors: ::std::vec::Vec<::std::string::String>,
+    pub daemon_cleanup_errors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.
     pub deleted: bool,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -305,8 +306,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        daemon_cleanup_errors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        daemon_cleanup_errors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         deleted: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -324,7 +327,9 @@ pub mod builder {
     impl Response {
         pub fn daemon_cleanup_errors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.daemon_cleanup_errors = value.try_into().map_err(|e| {
@@ -458,4 +463,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"hostCleanupFailures\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"minLength\":1,\"type\":\"string\"},\"server\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"reason\"],\"type\":\"object\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"hostCleanupFailures\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

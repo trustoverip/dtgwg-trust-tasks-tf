@@ -942,8 +942,12 @@ pub struct Response {
     #[serde(rename = "as")]
     pub as_: MuxRole,
     ///Principal view, first page only: the session attaches on the connection that carried the request. Absent when the request did not arrive on a mux connection.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub attachments: ::std::vec::Vec<AttachView>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub attachments: ::std::option::Option<::std::vec::Vec<AttachView>>,
     ///Member view only: the member DID's current epoch, which a new grant must carry.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub epoch: ::std::option::Option<u64>,
@@ -1631,8 +1635,10 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         as_: ::std::result::Result<super::MuxRole, ::std::string::String>,
-        attachments:
-            ::std::result::Result<::std::vec::Vec<super::AttachView>, ::std::string::String>,
+        attachments: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AttachView>>,
+            ::std::string::String,
+        >,
         epoch: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         grants: ::std::result::Result<::std::vec::Vec<super::GrantView>, ::std::string::String>,
@@ -1666,7 +1672,7 @@ pub mod builder {
         }
         pub fn attachments<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachView>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::AttachView>>>,
             T::Error: ::std::fmt::Display,
         {
             self.attachments = value
@@ -1794,4 +1800,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

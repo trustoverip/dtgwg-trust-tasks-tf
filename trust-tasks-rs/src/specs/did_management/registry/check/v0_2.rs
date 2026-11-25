@@ -221,18 +221,21 @@ pub struct ServiceInstance {
     #[serde(
         rename = "advertisedServices",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub advertised_services: ::std::vec::Vec<ServiceInstanceAdvertisedServicesItem>,
+    pub advertised_services:
+        ::std::option::Option<::std::vec::Vec<ServiceInstanceAdvertisedServicesItem>>,
     ///The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.
     pub did: ServiceInstanceDid,
     ///DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.
     #[serde(
         rename = "enabledMethods",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub enabled_methods: ::std::vec::Vec<ServiceInstanceEnabledMethodsItem>,
+    pub enabled_methods: ::std::option::Option<::std::vec::Vec<ServiceInstanceEnabledMethodsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.
@@ -966,12 +969,12 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct ServiceInstance {
         advertised_services: ::std::result::Result<
-            ::std::vec::Vec<super::ServiceInstanceAdvertisedServicesItem>,
+            ::std::option::Option<::std::vec::Vec<super::ServiceInstanceAdvertisedServicesItem>>,
             ::std::string::String,
         >,
         did: ::std::result::Result<super::ServiceInstanceDid, ::std::string::String>,
         enabled_methods: ::std::result::Result<
-            ::std::vec::Vec<super::ServiceInstanceEnabledMethodsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ServiceInstanceEnabledMethodsItem>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -1035,7 +1038,9 @@ pub mod builder {
         pub fn advertised_services<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::ServiceInstanceAdvertisedServicesItem>,
+                ::std::option::Option<
+                    ::std::vec::Vec<super::ServiceInstanceAdvertisedServicesItem>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1056,7 +1061,9 @@ pub mod builder {
         }
         pub fn enabled_methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ServiceInstanceEnabledMethodsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ServiceInstanceEnabledMethodsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.enabled_methods = value
@@ -1338,4 +1345,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

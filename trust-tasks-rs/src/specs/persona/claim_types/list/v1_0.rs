@@ -318,8 +318,12 @@ pub struct ResponseEntriesItem {
     )]
     pub minimum_set: ::std::option::Option<bool>,
     ///OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub oidc: ::std::vec::Vec<ResponseEntriesItemOidcItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub oidc: ::std::option::Option<::std::vec::Vec<ResponseEntriesItemOidcItem>>,
     pub release: ReleaseRequirement,
     pub sensitivity: Sensitivity,
     #[serde(rename = "type")]
@@ -978,7 +982,7 @@ pub mod builder {
         mask: ::std::result::Result<super::ResponseEntriesItemMask, ::std::string::String>,
         minimum_set: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         oidc: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseEntriesItemOidcItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
             ::std::string::String,
         >,
         release: ::std::result::Result<super::ReleaseRequirement, ::std::string::String>,
@@ -1020,7 +1024,9 @@ pub mod builder {
         }
         pub fn oidc<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseEntriesItemOidcItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.oidc = value
@@ -1260,3 +1266,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

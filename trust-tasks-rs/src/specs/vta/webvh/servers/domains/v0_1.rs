@@ -306,8 +306,12 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 #[non_exhaustive]
 pub struct Response {
     ///The domain used when a request names none — the caller's own default where the server records one, else the server's system default. Producers SHOULD omit it when there is neither; `null` is accepted as the same answer, and consumers MUST NOT read a difference between the two.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub default: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub default: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The domains the agent may use on that server, as the server reported them. Empty is a legitimate answer — a server the agent can reach but holds no domain grant on.
     pub domains: ::std::vec::Vec<DomainEntry>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -527,7 +531,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         default: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         domains: ::std::result::Result<::std::vec::Vec<super::DomainEntry>, ::std::string::String>,
@@ -545,7 +549,9 @@ pub mod builder {
     impl Response {
         pub fn default<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.default = value
@@ -620,3 +626,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

@@ -672,8 +672,12 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///For each `share: pool` claim, in request order, the pool attribute the face now references and whether this compose created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it. Absent when no claim was pooled.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub pooled: ::std::vec::Vec<ResponsePooledItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub pooled: ::std::option::Option<::std::vec::Vec<ResponsePooledItem>>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
     ///Where the face lives. `local`: in `contextId` only, readable through persona/local/profile/get. `pool`: above contexts, readable through persona/profile/get, and able to be worn in other contexts later.
@@ -1505,7 +1509,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         pooled: ::std::result::Result<
-            ::std::vec::Vec<super::ResponsePooledItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponsePooledItem>>,
             ::std::string::String,
         >,
         profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
@@ -1558,7 +1562,9 @@ pub mod builder {
         }
         pub fn pooled<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponsePooledItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponsePooledItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.pooled = value
@@ -1933,4 +1939,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

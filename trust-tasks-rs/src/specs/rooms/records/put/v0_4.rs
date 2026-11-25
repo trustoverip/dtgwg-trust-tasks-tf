@@ -860,8 +860,12 @@ pub struct PayloadCleartext {
     ///Present when the record carries a file. Its `fileKey` MUST be present — an open room has no storage key to derive one from — and its `blobRef` MUST be the one the record names in `blobs`. The host reads it, like every other member here.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub file: ::std::option::Option<FileManifest>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub tags: ::std::vec::Vec<PayloadCleartextTagsItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub tags: ::std::option::Option<::std::vec::Vec<PayloadCleartextTagsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<PayloadCleartextTitle>,
     #[serde(
@@ -2345,7 +2349,7 @@ pub mod builder {
             ::std::string::String,
         >,
         tags: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadCleartextTagsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
             ::std::string::String,
         >,
         title: ::std::result::Result<
@@ -2440,7 +2444,9 @@ pub mod builder {
         }
         pub fn tags<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.tags = value
@@ -3022,4 +3028,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"limit\":{\"minimum\":0,\"type\":\"integer\"},\"measure\":{\"enum\":[\"maxFiles\",\"maxFileBytes\",\"maxBytes\"],\"type\":\"string\"},\"requested\":{\"minimum\":0,\"type\":\"integer\"},\"scope\":{\"enum\":[\"member\",\"room\",\"storage\",\"host\"],\"type\":\"string\"},\"used\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"scope\",\"measure\",\"limit\",\"used\",\"requested\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

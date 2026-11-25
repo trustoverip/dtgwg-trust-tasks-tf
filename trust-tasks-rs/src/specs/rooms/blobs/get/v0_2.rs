@@ -740,9 +740,12 @@ pub struct TransferTarget {
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub headers: ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    pub headers: ::std::option::Option<
+        ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    >,
     ///The part this target writes, or 0 for a read of the whole object.
     pub index: i64,
     pub method: TransferTargetMethod,
@@ -1355,9 +1358,11 @@ pub mod builder {
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         headers: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::TransferTargetHeadersKey,
-                super::TransferTargetHeadersValue,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::TransferTargetHeadersKey,
+                    super::TransferTargetHeadersValue,
+                >,
             >,
             ::std::string::String,
         >,
@@ -1390,9 +1395,11 @@ pub mod builder {
         pub fn headers<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::TransferTargetHeadersKey,
-                    super::TransferTargetHeadersValue,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::TransferTargetHeadersKey,
+                        super::TransferTargetHeadersValue,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -1504,4 +1511,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

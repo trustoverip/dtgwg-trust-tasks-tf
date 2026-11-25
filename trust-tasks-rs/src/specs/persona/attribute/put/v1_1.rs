@@ -930,12 +930,17 @@ pub struct Response {
     #[serde(
         rename = "heldByPin",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub held_by_pin: ::std::vec::Vec<ResponseHeldByPinItem>,
+    pub held_by_pin: ::std::option::Option<::std::vec::Vec<ResponseHeldByPinItem>>,
     ///Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub refreshed: ::std::vec::Vec<ResponseRefreshedItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub refreshed: ::std::option::Option<::std::vec::Vec<ResponseRefreshedItem>>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub version: Version,
@@ -1638,11 +1643,11 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         held_by_pin: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseHeldByPinItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseHeldByPinItem>>,
             ::std::string::String,
         >,
         refreshed: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseRefreshedItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseRefreshedItem>>,
             ::std::string::String,
         >,
         updated_at:
@@ -1710,7 +1715,9 @@ pub mod builder {
         }
         pub fn held_by_pin<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseHeldByPinItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseHeldByPinItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.held_by_pin = value
@@ -1720,7 +1727,9 @@ pub mod builder {
         }
         pub fn refreshed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRefreshedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseRefreshedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.refreshed = value
@@ -2063,4 +2072,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

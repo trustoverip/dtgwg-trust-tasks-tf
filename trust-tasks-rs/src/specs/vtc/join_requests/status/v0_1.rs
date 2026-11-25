@@ -245,18 +245,28 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///When deferred, what the applicant must supply next.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub needs: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub needs: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///When more evidence is needed, the presentation-definition to satisfy (opaque here).
     #[serde(
         rename = "presentationDefinition",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub presentation_definition: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub presentation_definition:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<ResponseReason>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub reason: ::std::option::Option<::std::option::Option<ResponseReason>>,
     #[serde(rename = "requestId")]
     pub request_id: ResponseRequestId,
     ///The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.
@@ -618,13 +628,16 @@ pub mod builder {
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        needs: ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        needs: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         presentation_definition: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         reason: ::std::result::Result<
-            ::std::option::Option<super::ResponseReason>,
+            ::std::option::Option<::std::option::Option<super::ResponseReason>>,
             ::std::string::String,
         >,
         request_id: ::std::result::Result<super::ResponseRequestId, ::std::string::String>,
@@ -706,7 +719,9 @@ pub mod builder {
         }
         pub fn needs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.needs = value
@@ -717,7 +732,9 @@ pub mod builder {
         pub fn presentation_definition<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -728,7 +745,9 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ResponseReason>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ResponseReason>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -852,4 +871,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

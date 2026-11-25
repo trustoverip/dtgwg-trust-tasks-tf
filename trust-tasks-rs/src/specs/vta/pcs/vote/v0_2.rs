@@ -48,9 +48,10 @@ pub struct Answer {
     pub ranking: ::std::option::Option<Vec<Key>>,
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub scores: ::std::collections::HashMap<Key, i64>,
+    pub scores: ::std::option::Option<::std::collections::HashMap<Key, i64>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<AnswerText>,
 }
@@ -1944,7 +1945,7 @@ pub mod builder {
         ranking:
             ::std::result::Result<::std::option::Option<Vec<super::Key>>, ::std::string::String>,
         scores: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, i64>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
             ::std::string::String,
         >,
         text:
@@ -2005,7 +2006,9 @@ pub mod builder {
         }
         pub fn scores<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::Key, i64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scores = value
@@ -3098,4 +3101,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -390,22 +390,34 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub epoch: ::std::option::Option<u64>,
     ///`grantsExpiring` only, REQUIRED: grants delegated to the recipient that have passed about three quarters of their lifetime.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub expiring: ::std::vec::Vec<ExpiringGrant>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expiring: ::std::option::Option<::std::vec::Vec<ExpiringGrant>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Which notice this is. Each kind carries the members the specification lists for it, and no others.
     pub notice: PayloadNotice,
     ///`grantsRevoked` only, REQUIRED: the recipient's grants that were revoked by someone other than the recipient.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revocations: ::std::vec::Vec<Revocation>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub revocations: ::std::option::Option<::std::vec::Vec<Revocation>>,
     ///`grantsPresent` only, REQUIRED: how many of them this authentication just suspended under the unknown-key rule.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub suspended: ::std::option::Option<u64>,
     ///`grantsSuspended` only, REQUIRED: the recipient's grants that were suspended. They must be recreated by a fresh messaging/mux/grant signed by the member DID under its current epoch.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub suspensions: ::std::vec::Vec<Suspension>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub suspensions: ::std::option::Option<::std::vec::Vec<Suspension>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -599,15 +611,21 @@ pub mod builder {
         count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         did: ::std::result::Result<::std::option::Option<super::MuxDid>, ::std::string::String>,
         epoch: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
-        expiring:
-            ::std::result::Result<::std::vec::Vec<super::ExpiringGrant>, ::std::string::String>,
+        expiring: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ExpiringGrant>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         notice: ::std::result::Result<super::PayloadNotice, ::std::string::String>,
-        revocations:
-            ::std::result::Result<::std::vec::Vec<super::Revocation>, ::std::string::String>,
+        revocations: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Revocation>>,
+            ::std::string::String,
+        >,
         suspended: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
-        suspensions:
-            ::std::result::Result<::std::vec::Vec<super::Suspension>, ::std::string::String>,
+        suspensions: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Suspension>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -657,7 +675,9 @@ pub mod builder {
         }
         pub fn expiring<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ExpiringGrant>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ExpiringGrant>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.expiring = value
@@ -687,7 +707,7 @@ pub mod builder {
         }
         pub fn revocations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Revocation>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Revocation>>>,
             T::Error: ::std::fmt::Display,
         {
             self.revocations = value
@@ -707,7 +727,7 @@ pub mod builder {
         }
         pub fn suspensions<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Suspension>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Suspension>>>,
             T::Error: ::std::fmt::Display,
         {
             self.suspensions = value
@@ -931,3 +951,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

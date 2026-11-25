@@ -129,9 +129,10 @@ pub struct Payload {
     #[serde(
         rename = "enabledMethods",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub enabled_methods: ::std::vec::Vec<PayloadEnabledMethodsItem>,
+    pub enabled_methods: ::std::option::Option<::std::vec::Vec<PayloadEnabledMethodsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "instanceId")]
@@ -476,7 +477,7 @@ pub mod builder {
     pub struct Payload {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         enabled_methods: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadEnabledMethodsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadEnabledMethodsItem>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -520,7 +521,9 @@ pub mod builder {
         }
         pub fn enabled_methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadEnabledMethodsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadEnabledMethodsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.enabled_methods = value
@@ -745,4 +748,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

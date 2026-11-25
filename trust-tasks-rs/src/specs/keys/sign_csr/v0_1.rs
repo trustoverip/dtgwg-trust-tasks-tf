@@ -208,14 +208,26 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 #[non_exhaustive]
 pub struct PayloadSubjectAltNames {
     ///dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub dns: ::std::vec::Vec<PayloadSubjectAltNamesDnsItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub dns: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesDnsItem>>,
     ///rfc822Name entries: ASCII mailbox addresses.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub email: ::std::vec::Vec<PayloadSubjectAltNamesEmailItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub email: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesEmailItem>>,
     ///uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub uri: ::std::vec::Vec<PayloadSubjectAltNamesUriItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub uri: ::std::option::Option<::std::vec::Vec<PayloadSubjectAltNamesUriItem>>,
 }
 impl ::std::default::Default for PayloadSubjectAltNames {
     fn default() -> Self {
@@ -852,15 +864,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct PayloadSubjectAltNames {
         dns: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadSubjectAltNamesDnsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesDnsItem>>,
             ::std::string::String,
         >,
         email: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadSubjectAltNamesEmailItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesEmailItem>>,
             ::std::string::String,
         >,
         uri: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadSubjectAltNamesUriItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesUriItem>>,
             ::std::string::String,
         >,
     }
@@ -876,7 +888,9 @@ pub mod builder {
     impl PayloadSubjectAltNames {
         pub fn dns<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadSubjectAltNamesDnsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesDnsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.dns = value
@@ -886,7 +900,9 @@ pub mod builder {
         }
         pub fn email<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadSubjectAltNamesEmailItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesEmailItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.email = value
@@ -896,7 +912,9 @@ pub mod builder {
         }
         pub fn uri<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadSubjectAltNamesUriItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadSubjectAltNamesUriItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.uri = value
@@ -1147,4 +1165,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"index\":{\"minimum\":0,\"type\":\"integer\"},\"member\":{\"enum\":[\"subject\",\"subjectAltNames\"],\"type\":\"string\"},\"reason\":{\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"member\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -688,8 +688,12 @@ pub struct Response {
     ///How this upload's bytes move: `direct` to the room's storage over `targets`, or `proxied` through the host as rooms/blobs/upload/chunk documents signed by `uploadKey`.
     pub mode: TransferMode,
     ///Direct mode only: a PUT target for each of some or all of the `missing` parts. A host MAY issue targets for only some of them; the producer begins again, with the identical manifest and plan, for the rest and for any whose target lapsed. Absent in proxied mode.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub targets: ::std::vec::Vec<TransferTarget>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub targets: ::std::option::Option<::std::vec::Vec<TransferTarget>>,
     #[serde(rename = "uploadId")]
     pub upload_id: TransferId,
 }
@@ -840,9 +844,12 @@ pub struct TransferTarget {
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub headers: ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    pub headers: ::std::option::Option<
+        ::std::collections::HashMap<TransferTargetHeadersKey, TransferTargetHeadersValue>,
+    >,
     ///The part this target writes, or 0 for a read of the whole object.
     pub index: i64,
     pub method: TransferTargetMethod,
@@ -1431,8 +1438,10 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         missing: ::std::result::Result<Vec<super::ChunkIndex>, ::std::string::String>,
         mode: ::std::result::Result<super::TransferMode, ::std::string::String>,
-        targets:
-            ::std::result::Result<::std::vec::Vec<super::TransferTarget>, ::std::string::String>,
+        targets: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::TransferTarget>>,
+            ::std::string::String,
+        >,
         upload_id: ::std::result::Result<super::TransferId, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
@@ -1501,7 +1510,9 @@ pub mod builder {
         }
         pub fn targets<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::TransferTarget>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::TransferTarget>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.targets = value
@@ -1552,9 +1563,11 @@ pub mod builder {
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         headers: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::TransferTargetHeadersKey,
-                super::TransferTargetHeadersValue,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::TransferTargetHeadersKey,
+                    super::TransferTargetHeadersValue,
+                >,
             >,
             ::std::string::String,
         >,
@@ -1587,9 +1600,11 @@ pub mod builder {
         pub fn headers<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::TransferTargetHeadersKey,
-                    super::TransferTargetHeadersValue,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::TransferTargetHeadersKey,
+                        super::TransferTargetHeadersValue,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -1782,4 +1797,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"maxOpen\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

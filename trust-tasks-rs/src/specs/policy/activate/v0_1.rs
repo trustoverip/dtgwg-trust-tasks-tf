@@ -342,9 +342,10 @@ pub struct Response {
     #[serde(
         rename = "previousPolicyId",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub previous_policy_id: ::std::option::Option<::std::string::String>,
+    pub previous_policy_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Echoed from the request.
     pub purpose: ResponsePurpose,
 }
@@ -627,7 +628,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         previous_policy_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         purpose: ::std::result::Result<super::ResponsePurpose, ::std::string::String>,
@@ -676,7 +677,9 @@ pub mod builder {
         }
         pub fn previous_policy_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.previous_policy_id = value.try_into().map_err(|e| {
@@ -789,4 +792,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

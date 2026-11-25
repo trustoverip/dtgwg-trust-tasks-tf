@@ -592,8 +592,12 @@ pub struct Response {
     ///One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.
     pub roles: ::std::vec::Vec<RoleSummary>,
     ///Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub rotations: ::std::vec::Vec<RotationRecord>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub rotations: ::std::option::Option<::std::vec::Vec<RotationRecord>>,
     ///The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.
     #[serde(rename = "versionId")]
     pub version_id: ::std::string::String,
@@ -1178,8 +1182,12 @@ pub struct RotationRecord {
     )]
     pub overlap_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Verification-method identifiers (or, for `update`, public keys) leaving the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub predecessors: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub predecessors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Custody projection only. The operator's stated reason. Never published.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<RotationRecordReason>,
@@ -1200,8 +1208,12 @@ pub struct RotationRecord {
     pub started_in_version_id: ::std::option::Option<::std::string::String>,
     pub state: RotationState,
     ///Verification-method identifiers (or, for `update`, public keys) entering the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub successors: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub successors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl RotationRecord {
     pub fn builder() -> builder::RotationRecord {
@@ -1594,8 +1606,10 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         projection: ::std::result::Result<super::KeyRoleProjection, ::std::string::String>,
         roles: ::std::result::Result<::std::vec::Vec<super::RoleSummary>, ::std::string::String>,
-        rotations:
-            ::std::result::Result<::std::vec::Vec<super::RotationRecord>, ::std::string::String>,
+        rotations: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RotationRecord>>,
+            ::std::string::String,
+        >,
         version_id: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
@@ -1653,7 +1667,9 @@ pub mod builder {
         }
         pub fn rotations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RotationRecord>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RotationRecord>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.rotations = value
@@ -2212,8 +2228,10 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
-        predecessors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        predecessors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         reason: ::std::result::Result<
             ::std::option::Option<super::RotationRecordReason>,
             ::std::string::String,
@@ -2229,8 +2247,10 @@ pub mod builder {
             ::std::string::String,
         >,
         state: ::std::result::Result<super::RotationState, ::std::string::String>,
-        successors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        successors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for RotationRecord {
         fn default() -> Self {
@@ -2367,7 +2387,9 @@ pub mod builder {
         }
         pub fn predecessors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.predecessors = value
@@ -2439,7 +2461,9 @@ pub mod builder {
         }
         pub fn successors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.successors = value
@@ -2554,4 +2578,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

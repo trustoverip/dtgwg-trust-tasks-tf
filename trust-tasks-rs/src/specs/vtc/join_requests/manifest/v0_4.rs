@@ -382,9 +382,11 @@ pub struct Criterion {
     #[serde(
         rename = "presentationDefinition",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub presentation_definition: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub presentation_definition:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.
     #[serde(rename = "requirementsDigest")]
     pub requirements_digest: DigestMultibase,
@@ -1742,9 +1744,11 @@ pub struct Response {
     #[serde(
         rename = "requestedAttributes",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub requested_attributes: ::std::vec::Vec<ResponseRequestedAttributesItem>,
+    pub requested_attributes:
+        ::std::option::Option<::std::vec::Vec<ResponseRequestedAttributesItem>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -2231,9 +2235,10 @@ pub struct VettingRequirements {
     #[serde(
         rename = "minByMethod",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub min_by_method: ::std::collections::HashMap<VettingMethod, u64>,
+    pub min_by_method: ::std::option::Option<::std::collections::HashMap<VettingMethod, u64>>,
     ///How many counted statements are needed, counting each vetter once however many DIDs they hold.
     #[serde(rename = "minStatements")]
     pub min_statements: ::std::num::NonZeroU64,
@@ -2361,9 +2366,11 @@ pub struct VettingRequirementsIndependence {
     #[serde(
         rename = "maxByDeclaredRelationship",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub max_by_declared_relationship: ::std::collections::HashMap<VettingRelationship, u64>,
+    pub max_by_declared_relationship:
+        ::std::option::Option<::std::collections::HashMap<VettingRelationship, u64>>,
     ///When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.
     #[serde(
         rename = "requireConsistentIdentityCommitment",
@@ -2621,7 +2628,7 @@ pub mod builder {
         invitation_required:
             ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         presentation_definition: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         requirements_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
@@ -2698,7 +2705,9 @@ pub mod builder {
         pub fn presentation_definition<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -3218,7 +3227,7 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         requested_attributes: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseRequestedAttributesItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseRequestedAttributesItem>>,
             ::std::string::String,
         >,
     }
@@ -3287,7 +3296,9 @@ pub mod builder {
         }
         pub fn requested_attributes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRequestedAttributesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseRequestedAttributesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.requested_attributes = value.try_into().map_err(|e| {
@@ -3430,7 +3441,7 @@ pub mod builder {
         max_statement_age:
             ::std::result::Result<::std::option::Option<super::Duration>, ::std::string::String>,
         min_by_method: ::std::result::Result<
-            ::std::collections::HashMap<super::VettingMethod, u64>,
+            ::std::option::Option<::std::collections::HashMap<super::VettingMethod, u64>>,
             ::std::string::String,
         >,
         min_statements: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
@@ -3575,7 +3586,9 @@ pub mod builder {
         }
         pub fn min_by_method<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::VettingMethod, u64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::VettingMethod, u64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.min_by_method = value
@@ -3741,7 +3754,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct VettingRequirementsIndependence {
         max_by_declared_relationship: ::std::result::Result<
-            ::std::collections::HashMap<super::VettingRelationship, u64>,
+            ::std::option::Option<::std::collections::HashMap<super::VettingRelationship, u64>>,
             ::std::string::String,
         >,
         require_consistent_identity_commitment:
@@ -3759,7 +3772,7 @@ pub mod builder {
         pub fn max_by_declared_relationship<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::VettingRelationship, u64>,
+                ::std::option::Option<::std::collections::HashMap<super::VettingRelationship, u64>>,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -3842,3 +3855,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

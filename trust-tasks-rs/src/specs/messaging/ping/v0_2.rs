@@ -155,8 +155,12 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub nonce: ::std::option::Option<::std::string::String>,
     ///The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub protocols: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub protocols: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///The mediator's current time (RFC 3339). Advisory; not a trusted time source.
     #[serde(rename = "respondedAt")]
     pub responded_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -293,8 +297,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        protocols:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        protocols: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         responded_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         status: ::std::result::Result<super::ResponseStatus, ::std::string::String>,
@@ -333,7 +339,9 @@ pub mod builder {
         }
         pub fn protocols<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.protocols = value
@@ -411,3 +419,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

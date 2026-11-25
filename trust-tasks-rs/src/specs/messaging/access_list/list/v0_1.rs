@@ -128,8 +128,12 @@ pub struct Payload {
     ///The target account's DID whose access list is being enumerated.
     pub did: Vid,
     ///Membership filter: return only these DIDs, and of them only those present in the account's access list. A supplied DID absent from the response's entries is not in the list. Omitted = enumerate the whole list.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub entries: ::std::vec::Vec<Vid>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub entries: ::std::option::Option<::std::vec::Vec<Vid>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -357,7 +361,10 @@ pub mod builder {
             ::std::string::String,
         >,
         did: ::std::result::Result<super::Vid, ::std::string::String>,
-        entries: ::std::result::Result<::std::vec::Vec<super::Vid>, ::std::string::String>,
+        entries: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Vid>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         limit: ::std::result::Result<
             ::std::option::Option<::std::num::NonZeroU64>,
@@ -398,7 +405,7 @@ pub mod builder {
         }
         pub fn entries<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Vid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Vid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.entries = value
@@ -591,4 +598,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

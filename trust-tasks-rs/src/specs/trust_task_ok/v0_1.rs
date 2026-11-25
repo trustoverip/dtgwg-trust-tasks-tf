@@ -48,8 +48,12 @@ This specification declares no response anchor. An acknowledgement is not answer
 #[deprecated(note = "retired")]
 pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub ext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<PayloadMessage>,
@@ -57,8 +61,12 @@ pub struct Payload {
     Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.
 
     A consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.*/
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub refs: ::std::vec::Vec<PayloadRefsItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub refs: ::std::option::Option<::std::vec::Vec<PayloadRefsItem>>,
 }
 impl ::std::default::Default for Payload {
     fn default() -> Self {
@@ -213,14 +221,17 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         ext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         message: ::std::result::Result<
             ::std::option::Option<super::PayloadMessage>,
             ::std::string::String,
         >,
-        refs: ::std::result::Result<::std::vec::Vec<super::PayloadRefsItem>, ::std::string::String>,
+        refs: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PayloadRefsItem>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -235,7 +246,9 @@ pub mod builder {
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -256,7 +269,9 @@ pub mod builder {
         }
         pub fn refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.refs = value
@@ -354,3 +369,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

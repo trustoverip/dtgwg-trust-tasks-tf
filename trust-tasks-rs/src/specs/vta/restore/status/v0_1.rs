@@ -300,16 +300,20 @@ pub struct RestoreRecord {
     #[serde(
         rename = "hostedDidsDetached",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub hosted_dids_detached: ::std::vec::Vec<RestoreRecordHostedDidsDetachedItem>,
+    pub hosted_dids_detached:
+        ::std::option::Option<::std::vec::Vec<RestoreRecordHostedDidsDetachedItem>>,
     ///Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.
     #[serde(
         rename = "internalKeysLost",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub internal_keys_lost: ::std::vec::Vec<RestoreRecordInternalKeysLostItem>,
+    pub internal_keys_lost:
+        ::std::option::Option<::std::vec::Vec<RestoreRecordInternalKeysLostItem>>,
     ///The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.
     #[serde(
         rename = "sourceDid",
@@ -715,11 +719,11 @@ pub mod builder {
         applied_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         hosted_dids_detached: ::std::result::Result<
-            ::std::vec::Vec<super::RestoreRecordHostedDidsDetachedItem>,
+            ::std::option::Option<::std::vec::Vec<super::RestoreRecordHostedDidsDetachedItem>>,
             ::std::string::String,
         >,
         internal_keys_lost: ::std::result::Result<
-            ::std::vec::Vec<super::RestoreRecordInternalKeysLostItem>,
+            ::std::option::Option<::std::vec::Vec<super::RestoreRecordInternalKeysLostItem>>,
             ::std::string::String,
         >,
         source_did: ::std::result::Result<
@@ -763,7 +767,9 @@ pub mod builder {
         }
         pub fn hosted_dids_detached<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RestoreRecordHostedDidsDetachedItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RestoreRecordHostedDidsDetachedItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.hosted_dids_detached = value.try_into().map_err(|e| {
@@ -773,7 +779,9 @@ pub mod builder {
         }
         pub fn internal_keys_lost<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RestoreRecordInternalKeysLostItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RestoreRecordInternalKeysLostItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.internal_keys_lost = value.try_into().map_err(|e| {
@@ -893,3 +901,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

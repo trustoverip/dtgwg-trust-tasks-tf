@@ -212,9 +212,11 @@ pub struct Response {
     #[serde(
         rename = "memberVmc",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub member_vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub member_vmc:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.
     #[serde(rename = "memberVmcBound")]
     pub member_vmc_bound: bool,
@@ -229,16 +231,20 @@ pub struct Response {
     #[serde(
         rename = "membershipCredential",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub membership_credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub membership_credential:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.
     #[serde(
         rename = "roleCredential",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub role_credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub role_credential:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -304,7 +310,7 @@ pub mod builder {
         did: ::std::result::Result<super::Did, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         member_vmc: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         member_vmc_bound: ::std::result::Result<bool, ::std::string::String>,
@@ -313,11 +319,11 @@ pub mod builder {
             ::std::string::String,
         >,
         membership_credential: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         role_credential: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -358,7 +364,9 @@ pub mod builder {
         pub fn member_vmc<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -392,7 +400,9 @@ pub mod builder {
         pub fn membership_credential<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -404,7 +414,9 @@ pub mod builder {
         pub fn role_credential<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -489,4 +501,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

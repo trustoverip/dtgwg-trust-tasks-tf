@@ -220,9 +220,11 @@ pub struct Response {
     #[serde(
         rename = "reboundPersonaDids",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub rebound_persona_dids: ::std::vec::Vec<ResponseReboundPersonaDidsItem>,
+    pub rebound_persona_dids:
+        ::std::option::Option<::std::vec::Vec<ResponseReboundPersonaDidsItem>>,
     ///The face's version in the pool.
     pub version: Version,
 }
@@ -518,7 +520,7 @@ pub mod builder {
             ::std::string::String,
         >,
         rebound_persona_dids: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseReboundPersonaDidsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
             ::std::string::String,
         >,
         version: ::std::result::Result<super::Version, ::std::string::String>,
@@ -567,7 +569,9 @@ pub mod builder {
         }
         pub fn rebound_persona_dids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.rebound_persona_dids = value.try_into().map_err(|e| {
@@ -741,4 +745,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -645,8 +645,12 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Mux membership events, in the order the mediator observed them. Present only on a subscription that opted in to them with messaging/monitor/subscribe `membership`, and then on every batch, empty when there is nothing to report.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub membership: ::std::vec::Vec<MonitorMembershipEvent>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub membership: ::std::option::Option<::std::vec::Vec<MonitorMembershipEvent>>,
     ///Membership events that matched the subscription's membership filter but were discarded since the previous batch. Present exactly when `membership` is.
     #[serde(
         rename = "membershipDropped",
@@ -1624,7 +1628,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         membership: ::std::result::Result<
-            ::std::vec::Vec<super::MonitorMembershipEvent>,
+            ::std::option::Option<::std::vec::Vec<super::MonitorMembershipEvent>>,
             ::std::string::String,
         >,
         membership_dropped:
@@ -1689,7 +1693,9 @@ pub mod builder {
         }
         pub fn membership<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::MonitorMembershipEvent>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::MonitorMembershipEvent>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.membership = value
@@ -1831,3 +1837,17 @@ pub const EXTENDS: Option<&str> = Some("0.2");
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

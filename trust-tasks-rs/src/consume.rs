@@ -2388,7 +2388,7 @@ mod tests {
                     list::Response {
                         entries: vec![],
                         next_cursor: None,
-                        redacted_fields: vec![],
+                        redacted_fields: None,
                         ext: None,
                     },
                 ))
@@ -2430,7 +2430,7 @@ mod tests {
                         list::Response {
                             entries: vec![],
                             next_cursor: None,
-                            redacted_fields: vec![],
+                            redacted_fields: None,
                             ext: None,
                         },
                     ))
@@ -2536,7 +2536,7 @@ mod tests {
                         list::Response {
                             entries: vec![],
                             next_cursor: None,
-                            redacted_fields: vec![],
+                            redacted_fields: None,
                             ext: None,
                         },
                     ))
@@ -2641,7 +2641,7 @@ mod tests {
         crate::specs::acl::list::v0_3::Response {
             entries: vec![],
             next_cursor: None,
-            redacted_fields: vec![],
+            redacted_fields: None,
             ext: None,
         }
     }

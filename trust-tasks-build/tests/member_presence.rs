@@ -138,7 +138,8 @@ fn assert_presence_kept(file: &syn::File, ty: &str, name: &str, inner: &str) {
     );
     assert!(!serde.contains("is_empty"), "{ty}.{name}: {serde}");
     assert_eq!(
-        builder_field(file, ty, name),
+        // The builder names the module's own types through `super::`.
+        builder_field(file, ty, name).replace("super::", ""),
         format!("::std::result::Result<{OPTION}<{inner}>,::std::string::String>"),
         "builder {ty}.{name}"
     );

@@ -129,9 +129,12 @@ pub struct Histogram {
     ///Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub labels: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    pub labels: ::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    >,
     ///The histogram's stable name (e.g. `did_hosting_resolve_seconds`).
     pub name: HistogramName,
     ///Sum of all observed values.
@@ -226,9 +229,12 @@ pub struct Metric {
     ///Dimensions the value is broken down by (e.g. `{"method": "resolve"}`). Absent or empty when the metric carries none.
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub labels: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    pub labels: ::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    >,
     ///The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.
     pub name: MetricName,
     ///The current reading.
@@ -365,7 +371,9 @@ pub mod builder {
             ::std::result::Result<::std::vec::Vec<super::HistogramBucket>, ::std::string::String>,
         count: ::std::result::Result<u64, ::std::string::String>,
         labels: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::HistogramName, ::std::string::String>,
@@ -406,7 +414,9 @@ pub mod builder {
         pub fn labels<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -518,7 +528,9 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Metric {
         labels: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::MetricName, ::std::string::String>,
@@ -537,7 +549,9 @@ pub mod builder {
         pub fn labels<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -797,3 +811,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

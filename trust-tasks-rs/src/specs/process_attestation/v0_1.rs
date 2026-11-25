@@ -348,8 +348,12 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Disclosed {
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub anchors: ::std::vec::Vec<DisclosedAnchorsItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub anchors: ::std::option::Option<::std::vec::Vec<DisclosedAnchorsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub document: ::std::option::Option<DisclosedDocument>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1308,7 +1312,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Disclosed {
         anchors: ::std::result::Result<
-            ::std::vec::Vec<super::DisclosedAnchorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DisclosedAnchorsItem>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
@@ -1337,7 +1341,9 @@ pub mod builder {
     impl Disclosed {
         pub fn anchors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DisclosedAnchorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DisclosedAnchorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.anchors = value
@@ -1763,3 +1769,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

@@ -501,8 +501,12 @@ pub enum ForgeEvent {
         ///The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.
         ladder: Vec<MappedRole>,
         ///Repositories whose own map differs from `roleMap`, each at most once. Absent or empty: every repository uses `roleMap`.
-        #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-        repos: ::std::vec::Vec<ForgeEventReposItem>,
+        #[serde(
+            default,
+            deserialize_with = "presence::present",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        repos: ::std::option::Option<::std::vec::Vec<ForgeEventReposItem>>,
         #[serde(rename = "roleMap")]
         role_map: RoleMap,
         ///Repositories whose forge roles the bridge last projected under a different map from the one it now applies to them. Absent or empty: none.
@@ -1020,8 +1024,12 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[non_exhaustive]
 pub struct Payload {
     ///The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub drift: ::std::vec::Vec<DriftItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub drift: ::std::option::Option<::std::vec::Vec<DriftItem>>,
     pub event: ForgeEvent,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -1434,7 +1442,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        drift: ::std::result::Result<::std::vec::Vec<super::DriftItem>, ::std::string::String>,
+        drift: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::DriftItem>>,
+            ::std::string::String,
+        >,
         event: ::std::result::Result<super::ForgeEvent, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         namespace: ::std::result::Result<super::NamespaceId, ::std::string::String>,
@@ -1452,7 +1463,7 @@ pub mod builder {
     impl Payload {
         pub fn drift<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DriftItem>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::DriftItem>>>,
             T::Error: ::std::fmt::Display,
         {
             self.drift = value
@@ -1659,4 +1670,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

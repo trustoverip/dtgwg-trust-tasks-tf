@@ -124,11 +124,20 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct NetworkMembership {
     ///The community's acknowledgement (VMC carrying the grant's digest).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub acknowledgement: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub acknowledgement:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The network's membership grant (VMC), once the community acknowledged.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub grant: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub grant: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     pub groups: ::std::vec::Vec<RegisteredGroup>,
     #[serde(
         rename = "joinedAt",
@@ -144,8 +153,13 @@ pub struct NetworkMembership {
     ///The network's DID.
     pub network: NetworkMembershipNetwork,
     ///The community's repudiation (VSC) of the listing, or — on departure — of the grant.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub repudiation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub repudiation:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///`acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
     pub state: NetworkMembershipState,
     #[serde(rename = "updatedAt")]
@@ -663,11 +677,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct NetworkMembership {
         acknowledgement: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         grant: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         groups:
@@ -686,7 +700,7 @@ pub mod builder {
         >,
         network: ::std::result::Result<super::NetworkMembershipNetwork, ::std::string::String>,
         repudiation: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         state: ::std::result::Result<super::NetworkMembershipState, ::std::string::String>,
@@ -715,7 +729,9 @@ pub mod builder {
         pub fn acknowledgement<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -727,7 +743,9 @@ pub mod builder {
         pub fn grant<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -793,7 +811,9 @@ pub mod builder {
         pub fn repudiation<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1137,3 +1157,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

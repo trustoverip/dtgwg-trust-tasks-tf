@@ -125,8 +125,13 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///An opaque bag the community stores verbatim and this task does not interpret. Replaces the bag on the request on the same terms as `vp`.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The request to supplement. OPTIONAL: an applicant whose submit response was lost never received one, and the consumer then resolves the request from the authenticated applicant. A consumer given this value MUST prefer it over inferring the request from the caller.
     #[serde(
         rename = "requestId",
@@ -380,31 +385,48 @@ pub struct VerdictWith {
     #[serde(
         rename = "bundleRef",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub bundle_ref: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub bundle_ref:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Stable refusal code, safe to branch on. `deny` only.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<VerdictWithCode>,
     ///What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub needs: ::std::vec::Vec<VerdictWithNeedsItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub needs: ::std::option::Option<::std::vec::Vec<VerdictWithNeedsItem>>,
     ///Conditions attached to the grant. `allow` only.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub obligations: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub obligations:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
     #[serde(
         rename = "presentationDefinition",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub presentation_definition: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub presentation_definition:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub queue: ::std::option::Option<VerdictWithQueue>,
     ///Elaboration in prose, when the decider gave one. `deny` and `refer`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<VerdictWithReason>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub reason: ::std::option::Option<::std::option::Option<VerdictWithReason>>,
     ///The granted local role. `allow` only.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub role: ::std::option::Option<VerdictWithRole>,
@@ -729,7 +751,7 @@ pub mod builder {
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         request_id: ::std::result::Result<
@@ -765,7 +787,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -939,7 +963,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct VerdictWith {
         bundle_ref: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         code: ::std::result::Result<
@@ -947,15 +971,15 @@ pub mod builder {
             ::std::string::String,
         >,
         needs: ::std::result::Result<
-            ::std::vec::Vec<super::VerdictWithNeedsItem>,
+            ::std::option::Option<::std::vec::Vec<super::VerdictWithNeedsItem>>,
             ::std::string::String,
         >,
         obligations: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         presentation_definition: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         queue: ::std::result::Result<
@@ -963,7 +987,7 @@ pub mod builder {
             ::std::string::String,
         >,
         reason: ::std::result::Result<
-            ::std::option::Option<super::VerdictWithReason>,
+            ::std::option::Option<::std::option::Option<super::VerdictWithReason>>,
             ::std::string::String,
         >,
         role: ::std::result::Result<
@@ -989,7 +1013,9 @@ pub mod builder {
         pub fn bundle_ref<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1010,7 +1036,9 @@ pub mod builder {
         }
         pub fn needs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::VerdictWithNeedsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::VerdictWithNeedsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.needs = value
@@ -1021,7 +1049,9 @@ pub mod builder {
         pub fn obligations<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1033,7 +1063,9 @@ pub mod builder {
         pub fn presentation_definition<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1054,7 +1086,9 @@ pub mod builder {
         }
         pub fn reason<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::VerdictWithReason>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::VerdictWithReason>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.reason = value
@@ -1222,4 +1256,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

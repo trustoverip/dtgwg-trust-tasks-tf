@@ -203,9 +203,11 @@ pub struct Payload {
     #[serde(
         rename = "memberPresentation",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub member_presentation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub member_presentation:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///A W3C Verifiable Presentation of the submitting party's own relationship credential material (opaque here), bound to the session's challenge and domain. A presentation not bound to this session is rejected with witness/session/submit:challengeMismatch.
     pub vp: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
@@ -239,7 +241,7 @@ pub mod builder {
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         member_presentation: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         vp: ::std::result::Result<
@@ -270,7 +272,9 @@ pub mod builder {
         pub fn member_presentation<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -443,4 +447,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

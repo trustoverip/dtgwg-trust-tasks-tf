@@ -1020,9 +1020,11 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub expires_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -1030,8 +1032,12 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub keys: ::std::option::Option<KeyScope>,
     ///Replacement human-readable label. Explicit `null` clears it. Omitted leaves it unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<PayloadLabel>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub label: ::std::option::Option<::std::option::Option<PayloadLabel>>,
     ///Optional human-readable rationale, recorded with the change.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -1174,11 +1180,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[non_exhaustive]
 pub struct PayloadStepUp {
     ///VID that ratifies step-up for this subject. `null` clears it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub approver: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub approver: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Minimum step-up mode. `null` clears the per-entry override.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub require: ::std::option::Option<PayloadStepUpRequire>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub require: ::std::option::Option<::std::option::Option<PayloadStepUpRequire>>,
 }
 impl ::std::default::Default for PayloadStepUp {
     fn default() -> Self {
@@ -2343,13 +2357,13 @@ pub mod builder {
             ::std::string::String,
         >,
         expires_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         keys: ::std::result::Result<::std::option::Option<super::KeyScope>, ::std::string::String>,
         label: ::std::result::Result<
-            ::std::option::Option<super::PayloadLabel>,
+            ::std::option::Option<::std::option::Option<super::PayloadLabel>>,
             ::std::string::String,
         >,
         reason: ::std::result::Result<
@@ -2423,7 +2437,9 @@ pub mod builder {
         pub fn expires_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2454,7 +2470,9 @@ pub mod builder {
         }
         pub fn label<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::PayloadLabel>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.label = value
@@ -2531,11 +2549,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct PayloadStepUp {
         approver: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         require: ::std::result::Result<
-            ::std::option::Option<super::PayloadStepUpRequire>,
+            ::std::option::Option<::std::option::Option<super::PayloadStepUpRequire>>,
             ::std::string::String,
         >,
     }
@@ -2550,7 +2568,9 @@ pub mod builder {
     impl PayloadStepUp {
         pub fn approver<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approver = value
@@ -2560,7 +2580,9 @@ pub mod builder {
         }
         pub fn require<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::PayloadStepUpRequire>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::PayloadStepUpRequire>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.require = value
@@ -2803,4 +2825,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"axes\":{\"items\":{\"enum\":[\"act\",\"capabilities\",\"keys\",\"expiresAt\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"axes\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -63,9 +63,10 @@ pub struct AccountBinding {
     #[serde(
         rename = "sourceCidrs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub source_cidrs: ::std::vec::Vec<AccountBindingSourceCidrsItem>,
+    pub source_cidrs: ::std::option::Option<::std::vec::Vec<AccountBindingSourceCidrsItem>>,
 }
 impl AccountBinding {
     pub fn builder() -> builder::AccountBinding {
@@ -1516,16 +1517,19 @@ pub enum AccountSettings {
         #[serde(
             rename = "allowedObjects",
             default,
-            skip_serializing_if = "::std::vec::Vec::is_empty"
+            deserialize_with = "presence::present",
+            skip_serializing_if = "::std::option::Option::is_none"
         )]
-        allowed_objects: ::std::vec::Vec<AccountSettingsAllowedObjectsItem>,
+        allowed_objects: ::std::option::Option<::std::vec::Vec<AccountSettingsAllowedObjectsItem>>,
         ///Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
         #[serde(
             rename = "maxCoinOutPerTx",
             default,
-            skip_serializing_if = "::std::vec::Vec::is_empty"
+            deserialize_with = "presence::present",
+            skip_serializing_if = "::std::option::Option::is_none"
         )]
-        max_coin_out_per_tx: ::std::vec::Vec<AccountSettingsMaxCoinOutPerTxItem>,
+        max_coin_out_per_tx:
+            ::std::option::Option<::std::vec::Vec<AccountSettingsMaxCoinOutPerTxItem>>,
         ///The largest gas budget one transaction may declare.
         #[serde(rename = "maxGasBudgetMist")]
         max_gas_budget_mist: ::std::num::NonZeroU64,
@@ -3895,7 +3899,7 @@ pub mod builder {
             ::std::string::String,
         >,
         source_cidrs: ::std::result::Result<
-            ::std::vec::Vec<super::AccountBindingSourceCidrsItem>,
+            ::std::option::Option<::std::vec::Vec<super::AccountBindingSourceCidrsItem>>,
             ::std::string::String,
         >,
     }
@@ -3966,7 +3970,9 @@ pub mod builder {
         }
         pub fn source_cidrs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AccountBindingSourceCidrsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AccountBindingSourceCidrsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.source_cidrs = value
@@ -5236,4 +5242,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

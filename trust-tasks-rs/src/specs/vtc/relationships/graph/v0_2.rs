@@ -220,9 +220,10 @@ pub struct GraphHalf {
     #[serde(
         rename = "personaDid",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub persona_did: ::std::option::Option<GraphHalfPersonaDid>,
+    pub persona_did: ::std::option::Option<::std::option::Option<GraphHalfPersonaDid>>,
     ///The party asserted about.
     #[serde(rename = "subjectDid")]
     pub subject_did: GraphHalfSubjectDid,
@@ -667,7 +668,7 @@ pub mod builder {
         id: ::std::result::Result<super::GraphHalfId, ::std::string::String>,
         issuer_did: ::std::result::Result<super::GraphHalfIssuerDid, ::std::string::String>,
         persona_did: ::std::result::Result<
-            ::std::option::Option<super::GraphHalfPersonaDid>,
+            ::std::option::Option<::std::option::Option<super::GraphHalfPersonaDid>>,
             ::std::string::String,
         >,
         subject_did: ::std::result::Result<super::GraphHalfSubjectDid, ::std::string::String>,
@@ -716,7 +717,9 @@ pub mod builder {
         }
         pub fn persona_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::GraphHalfPersonaDid>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::GraphHalfPersonaDid>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.persona_did = value
@@ -923,3 +926,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

@@ -227,9 +227,11 @@ pub struct ContactRevision {
     #[serde(
         rename = "supersededAt",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub superseded_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub superseded_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
 }
 impl ContactRevision {
     pub fn builder() -> builder::ContactRevision {
@@ -854,15 +856,20 @@ pub struct Response {
     #[serde(
         rename = "credentialRefs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_refs: ::std::vec::Vec<ResponseCredentialRefsItem>,
+    pub credential_refs: ::std::option::Option<::std::vec::Vec<ResponseCredentialRefsItem>>,
     pub document: ContactDocument,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present only when `includeHistory` was true. Revision metadata without documents — a timeline is cheap and the documents behind it are not.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub history: ::std::vec::Vec<ContactRevision>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub history: ::std::option::Option<::std::vec::Vec<ContactRevision>>,
     #[serde(rename = "knownByPersona")]
     pub known_by_persona: ResponseKnownByPersona,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1420,7 +1427,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         rev: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
         superseded_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
     }
@@ -1468,7 +1475,9 @@ pub mod builder {
         pub fn superseded_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1602,13 +1611,15 @@ pub mod builder {
     pub struct Response {
         contact_id: ::std::result::Result<super::Ulid, ::std::string::String>,
         credential_refs: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseCredentialRefsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseCredentialRefsItem>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<super::ContactDocument, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        history:
-            ::std::result::Result<::std::vec::Vec<super::ContactRevision>, ::std::string::String>,
+        history: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ContactRevision>>,
+            ::std::string::String,
+        >,
         known_by_persona:
             ::std::result::Result<super::ResponseKnownByPersona, ::std::string::String>,
         notes: ::std::result::Result<
@@ -1646,7 +1657,9 @@ pub mod builder {
         }
         pub fn credential_refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseCredentialRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseCredentialRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_refs = value
@@ -1676,7 +1689,9 @@ pub mod builder {
         }
         pub fn history<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ContactRevision>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ContactRevision>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.history = value
@@ -1818,4 +1833,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -721,9 +721,10 @@ pub struct GroupMember {
     #[serde(
         rename = "credentialId",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_id: ::std::option::Option<GroupCredentialId>,
+    pub credential_id: ::std::option::Option<::std::option::Option<GroupCredentialId>>,
     ///When the member's current group credential expires. Shown to the member themselves and to managers only.
     #[serde(
         rename = "credentialValidUntil",
@@ -1441,7 +1442,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct GroupMember {
         credential_id: ::std::result::Result<
-            ::std::option::Option<super::GroupCredentialId>,
+            ::std::option::Option<::std::option::Option<super::GroupCredentialId>>,
             ::std::string::String,
         >,
         credential_valid_until: ::std::result::Result<
@@ -1472,7 +1473,9 @@ pub mod builder {
     impl GroupMember {
         pub fn credential_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::GroupCredentialId>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::GroupCredentialId>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_id = value
@@ -1887,4 +1890,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

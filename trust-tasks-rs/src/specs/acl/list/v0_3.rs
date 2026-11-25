@@ -1382,9 +1382,10 @@ pub struct Response {
     #[serde(
         rename = "redactedFields",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub redacted_fields: ::std::vec::Vec<ResponseRedactedFieldsItem>,
+    pub redacted_fields: ::std::option::Option<::std::vec::Vec<ResponseRedactedFieldsItem>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -2620,7 +2621,7 @@ pub mod builder {
             ::std::string::String,
         >,
         redacted_fields: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseRedactedFieldsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseRedactedFieldsItem>>,
             ::std::string::String,
         >,
     }
@@ -2667,7 +2668,9 @@ pub mod builder {
         }
         pub fn redacted_fields<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRedactedFieldsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseRedactedFieldsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.redacted_fields = value
@@ -2740,4 +2743,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

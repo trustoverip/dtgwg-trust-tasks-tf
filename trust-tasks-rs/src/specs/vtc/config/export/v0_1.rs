@@ -47,9 +47,10 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "contactEmail",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub contact_email: ::std::option::Option<::std::string::String>,
+    pub contact_email: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///When the community was created. Provenance only — an import never writes it.
     #[serde(
         rename = "createdAt",
@@ -60,16 +61,22 @@ pub struct CommunityProfileSnapshot {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<CommunityProfileSnapshotDescription>,
     ///Opaque community-defined extension bag.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub extensions: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub extensions:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///BCP 47 language tag.
     pub language: CommunityProfileSnapshotLanguage,
     #[serde(
         rename = "logoUrl",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub logo_url: ::std::option::Option<::std::string::String>,
+    pub logo_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub name: CommunityProfileSnapshotName,
     ///The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -77,9 +84,10 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "publicUrl",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub public_url: ::std::option::Option<::std::string::String>,
+    pub public_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
     #[serde(
         rename = "relationshipIdentifierDefault",
@@ -551,16 +559,20 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "acceptedIdvps",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub accepted_idvps: ::std::vec::Vec<PersonhoodGovernanceAcceptedIdvpsItem>,
+    pub accepted_idvps:
+        ::std::option::Option<::std::vec::Vec<PersonhoodGovernanceAcceptedIdvpsItem>>,
     ///Where the governance framework these assertions refer to can be read.
     #[serde(
         rename = "governanceFrameworkUrl",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub governance_framework_url: ::std::option::Option<::std::string::String>,
+    pub governance_framework_url:
+        ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
     #[serde(
         rename = "realHuman",
@@ -675,7 +687,7 @@ pub mod builder {
             ::std::string::String,
         >,
         contact_email: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         created_at: ::std::result::Result<
@@ -687,13 +699,13 @@ pub mod builder {
             ::std::string::String,
         >,
         extensions: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         language:
             ::std::result::Result<super::CommunityProfileSnapshotLanguage, ::std::string::String>,
         logo_url: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         name: ::std::result::Result<super::CommunityProfileSnapshotName, ::std::string::String>,
@@ -702,7 +714,7 @@ pub mod builder {
             ::std::string::String,
         >,
         public_url: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         relationship_identifier_default: ::std::result::Result<
@@ -740,7 +752,9 @@ pub mod builder {
         }
         pub fn contact_email<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.contact_email = value
@@ -775,7 +789,9 @@ pub mod builder {
         pub fn extensions<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -796,7 +812,9 @@ pub mod builder {
         }
         pub fn logo_url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.logo_url = value
@@ -826,7 +844,9 @@ pub mod builder {
         }
         pub fn public_url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.public_url = value
@@ -1026,11 +1046,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct PersonhoodGovernance {
         accepted_idvps: ::std::result::Result<
-            ::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>>,
             ::std::string::String,
         >,
         governance_framework_url: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         real_human: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -1051,7 +1071,9 @@ pub mod builder {
         pub fn accepted_idvps<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>,
+                ::std::option::Option<
+                    ::std::vec::Vec<super::PersonhoodGovernanceAcceptedIdvpsItem>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1062,7 +1084,9 @@ pub mod builder {
         }
         pub fn governance_framework_url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.governance_framework_url = value.try_into().map_err(|e| {
@@ -1194,3 +1218,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

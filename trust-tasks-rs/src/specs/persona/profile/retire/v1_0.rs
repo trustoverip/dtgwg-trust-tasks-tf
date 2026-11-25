@@ -262,8 +262,12 @@ pub struct Response {
     #[serde(rename = "retiredAt")]
     pub retired_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Where the face was worn and no longer is. Absent when it was worn nowhere.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub unbound: ::std::vec::Vec<ResponseUnboundItem>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub unbound: ::std::option::Option<::std::vec::Vec<ResponseUnboundItem>>,
     pub version: Version,
 }
 impl Response {
@@ -607,7 +611,7 @@ pub mod builder {
         retired_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         unbound: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseUnboundItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseUnboundItem>>,
             ::std::string::String,
         >,
         version: ::std::result::Result<super::Version, ::std::string::String>,
@@ -656,7 +660,9 @@ pub mod builder {
         }
         pub fn unbound<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseUnboundItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseUnboundItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.unbound = value
@@ -802,4 +808,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

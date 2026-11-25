@@ -215,9 +215,10 @@ pub struct Payload {
     #[serde(
         rename = "requestedClaims",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub requested_claims: ::std::vec::Vec<ClaimType>,
+    pub requested_claims: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     ///Who would receive it. Required, and not optional, because half of what a preview says is who is asking — a preview that could not name the recipient would be a list of fields rather than a decision.
     #[serde(rename = "verifierDid")]
     pub verifier_did: PayloadVerifierDid,
@@ -607,8 +608,12 @@ impl ::std::convert::TryFrom<::std::string::String> for ProofRung {
 #[non_exhaustive]
 pub struct Response {
     ///Claim types unusual for this verifier's stated purpose. A preview that lists fourteen fields with fourteen equal weights is a notice-and-consent dialog, which is the pattern that trains people to click through; ranking by what is out of place is what makes the surfaced line the one worth reading.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub anomalous: ::std::vec::Vec<ClaimType>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub anomalous: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     pub claims: ::std::vec::Vec<ResponseClaimsItem>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
@@ -652,8 +657,12 @@ pub struct ResponseClaimsItem {
     #[serde(rename = "type")]
     pub type_: ClaimType,
     ///What would be disclosed. Absent for a predicate claim, which discloses no value at all — that absence is the point and a consumer MUST NOT render it as missing data.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub value: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
 }
 impl ResponseClaimsItem {
     pub fn builder() -> builder::ResponseClaimsItem {
@@ -1235,8 +1244,10 @@ pub mod builder {
             ::std::option::Option<super::PayloadRenderer>,
             ::std::string::String,
         >,
-        requested_claims:
-            ::std::result::Result<::std::vec::Vec<super::ClaimType>, ::std::string::String>,
+        requested_claims: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ClaimType>>,
+            ::std::string::String,
+        >,
         verifier_did: ::std::result::Result<super::PayloadVerifierDid, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -1305,7 +1316,7 @@ pub mod builder {
         }
         pub fn requested_claims<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ClaimType>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ClaimType>>>,
             T::Error: ::std::fmt::Display,
         {
             self.requested_claims = value
@@ -1353,7 +1364,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        anomalous: ::std::result::Result<::std::vec::Vec<super::ClaimType>, ::std::string::String>,
+        anomalous: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ClaimType>>,
+            ::std::string::String,
+        >,
         claims: ::std::result::Result<
             ::std::vec::Vec<super::ResponseClaimsItem>,
             ::std::string::String,
@@ -1389,7 +1403,7 @@ pub mod builder {
     impl Response {
         pub fn anomalous<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ClaimType>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ClaimType>>>,
             T::Error: ::std::fmt::Display,
         {
             self.anomalous = value
@@ -1511,7 +1525,7 @@ pub mod builder {
         stale: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         type_: ::std::result::Result<super::ClaimType, ::std::string::String>,
         value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -1591,7 +1605,9 @@ pub mod builder {
         }
         pub fn value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.value = value
@@ -1883,4 +1899,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -210,9 +210,10 @@ pub struct Response {
     #[serde(
         rename = "unboundPersonas",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub unbound_personas: ::std::vec::Vec<::std::string::String>,
+    pub unbound_personas: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -369,8 +370,10 @@ pub mod builder {
         existed: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
-        unbound_personas:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        unbound_personas: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -415,7 +418,9 @@ pub mod builder {
         }
         pub fn unbound_personas<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.unbound_personas = value
@@ -493,4 +498,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

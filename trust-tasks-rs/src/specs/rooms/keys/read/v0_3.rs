@@ -319,8 +319,13 @@ pub struct KeyError {
     ///A declared code of this specification, such as `rooms/keys/read:hostRefused`, `rooms/keys/read:cannotOpen` or `rooms/keys/read:notAttempted`, or a standard code (SPEC §8.3).
     pub code: KeyErrorCode,
     ///As that code defines its `details`.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub details: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub details:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable. Not normative: a consumer acts on `code` and `details`, never on this.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub message: ::std::option::Option<KeyErrorMessage>,
@@ -812,8 +817,13 @@ pub struct ReadResult {
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub cleartext:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the host stored the record's first version, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.createdAt`). Absent where the host served none.
     #[serde(
         rename = "createdAt",
@@ -1483,8 +1493,13 @@ pub struct Response {
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The record body on an `open` room, where there is nothing to open. Carried as itself rather than base64url so that the shape says which tier the member is on — a member ought to be able to tell that this room's host can read what they just read.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub cleartext:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the host stored the record's first version, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.createdAt`). Absent where the host served none.
     #[serde(
         rename = "createdAt",
@@ -1507,8 +1522,12 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub plaintext: ::std::option::Option<::std::string::String>,
     ///Present, and only present, when the request named `keys`: one entry per key, in the request's order. Each entry is that key's own answer — a record or an error — and one key's failure never fails another's.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub results: ::std::vec::Vec<ReadResult>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub results: ::std::option::Option<::std::vec::Vec<ReadResult>>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
     ///Curation state, passed through. A `retracted` record has no body: the tombstone is the answer, not a failure.
@@ -1667,7 +1686,7 @@ pub mod builder {
     pub struct KeyError {
         code: ::std::result::Result<super::KeyErrorCode, ::std::string::String>,
         details: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         message: ::std::result::Result<
@@ -1700,7 +1719,9 @@ pub mod builder {
         pub fn details<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1876,7 +1897,7 @@ pub mod builder {
             ::std::string::String,
         >,
         cleartext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         created_at: ::std::result::Result<
@@ -1954,7 +1975,9 @@ pub mod builder {
         pub fn cleartext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2285,7 +2308,7 @@ pub mod builder {
             ::std::string::String,
         >,
         cleartext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         created_at: ::std::result::Result<
@@ -2305,7 +2328,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        results: ::std::result::Result<::std::vec::Vec<super::ReadResult>, ::std::string::String>,
+        results: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ReadResult>>,
+            ::std::string::String,
+        >,
         room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
         status: ::std::result::Result<
             ::std::option::Option<super::ResponseStatus>,
@@ -2370,7 +2396,9 @@ pub mod builder {
         pub fn cleartext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2433,7 +2461,7 @@ pub mod builder {
         }
         pub fn results<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ReadResult>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ReadResult>>>,
             T::Error: ::std::fmt::Display,
         {
             self.results = value
@@ -2642,4 +2670,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"purpose\":{\"description\":\"The purpose the request named, when it named one.\",\"type\":\"string\"},\"purposeNamed\":{\"description\":\"Whether the request named a purpose. False when it named none where more than one is granted.\",\"type\":\"boolean\"}},\"required\":[\"purposeNamed\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -269,27 +269,43 @@ pub struct Response {
     ///DID of the admin who last wrote the template.
     #[serde(rename = "createdBy")]
     pub created_by: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub defaults: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub defaults:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub description: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub kind: ResponseKind,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub methods: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     pub name: ResponseName,
     #[serde(
         rename = "optionalVars",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub optional_vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub optional_vars:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "requiredVars",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub required_vars: ::std::vec::Vec<::std::string::String>,
+    pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(rename = "schemaVersion")]
     pub schema_version: i64,
     ///Resolved scope of the stored template.
@@ -580,11 +596,11 @@ pub mod builder {
         created_at: ::std::result::Result<i64, ::std::string::String>,
         created_by: ::std::result::Result<::std::string::String, ::std::string::String>,
         defaults: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         description: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
@@ -592,15 +608,19 @@ pub mod builder {
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::ResponseKind, ::std::string::String>,
-        methods:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        name: ::std::result::Result<super::ResponseName, ::std::string::String>,
-        optional_vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        methods: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
             ::std::string::String,
         >,
-        required_vars:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        name: ::std::result::Result<super::ResponseName, ::std::string::String>,
+        optional_vars: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        required_vars: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         schema_version: ::std::result::Result<i64, ::std::string::String>,
         scope: ::std::result::Result<super::Scope, ::std::string::String>,
         updated_at: ::std::result::Result<i64, ::std::string::String>,
@@ -648,7 +668,9 @@ pub mod builder {
         pub fn defaults<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -659,7 +681,9 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -691,7 +715,9 @@ pub mod builder {
         }
         pub fn methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.methods = value
@@ -712,7 +738,9 @@ pub mod builder {
         pub fn optional_vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -723,7 +751,9 @@ pub mod builder {
         }
         pub fn required_vars<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.required_vars = value
@@ -847,4 +877,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

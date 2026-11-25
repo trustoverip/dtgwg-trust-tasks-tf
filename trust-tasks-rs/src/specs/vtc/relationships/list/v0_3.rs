@@ -291,9 +291,10 @@ pub struct Response {
     #[serde(
         rename = "totalEstimate",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub total_estimate: ::std::option::Option<i64>,
+    pub total_estimate: ::std::option::Option<::std::option::Option<i64>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -599,7 +600,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        total_estimate: ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
+        total_estimate: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<i64>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -644,7 +648,7 @@ pub mod builder {
         }
         pub fn total_estimate<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<i64>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<i64>>>,
             T::Error: ::std::fmt::Display,
         {
             self.total_estimate = value
@@ -835,4 +839,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

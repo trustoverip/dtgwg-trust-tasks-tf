@@ -533,9 +533,10 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub next_cursor: ::std::option::Option<::std::string::String>,
+    pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Rows matching `resource` and `subject`, ordered by `resource` then `subject`. A break-glass record waiting out a policy delay is included — it is exactly the one other administrators have a window to revoke.
     pub rights: ::std::vec::Vec<AdminRightRow>,
 }
@@ -1100,7 +1101,7 @@ pub mod builder {
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         next_cursor: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         rights: ::std::result::Result<::std::vec::Vec<super::AdminRightRow>, ::std::string::String>,
@@ -1127,7 +1128,9 @@ pub mod builder {
         }
         pub fn next_cursor<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.next_cursor = value
@@ -1210,4 +1213,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

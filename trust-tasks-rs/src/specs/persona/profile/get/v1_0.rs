@@ -307,9 +307,10 @@ pub struct Profile {
     #[serde(
         rename = "credentialRefs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_refs: ::std::vec::Vec<ProfileCredentialRefsItem>,
+    pub credential_refs: ::std::option::Option<::std::vec::Vec<ProfileCredentialRefsItem>>,
     pub entries: ::std::vec::Vec<ProfileEntry>,
     ///The holder's name for this profile — "Work", "Gaming". Not disclosed.
     pub name: ProfileName,
@@ -1206,8 +1207,12 @@ pub struct ResolvedClaim {
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub value: ::std::option::Option<::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     #[serde(rename = "valueType")]
     pub value_type: ValueType,
     ///The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.
@@ -1370,8 +1375,12 @@ pub struct Response {
     Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
 
     Typed as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.*/
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub resolved: ::std::vec::Vec<ResolvedClaim>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub resolved: ::std::option::Option<::std::vec::Vec<ResolvedClaim>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -1721,7 +1730,7 @@ pub mod builder {
             ::std::string::String,
         >,
         credential_refs: ::std::result::Result<
-            ::std::vec::Vec<super::ProfileCredentialRefsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
             ::std::string::String,
         >,
         entries: ::std::result::Result<::std::vec::Vec<super::ProfileEntry>, ::std::string::String>,
@@ -1769,7 +1778,9 @@ pub mod builder {
         }
         pub fn credential_refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ProfileCredentialRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_refs = value
@@ -2074,7 +2085,7 @@ pub mod builder {
             ::std::string::String,
         >,
         value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         value_type: ::std::result::Result<super::ValueType, ::std::string::String>,
@@ -2183,7 +2194,9 @@ pub mod builder {
         }
         pub fn value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.value = value
@@ -2257,8 +2270,10 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         profile: ::std::result::Result<super::Profile, ::std::string::String>,
-        resolved:
-            ::std::result::Result<::std::vec::Vec<super::ResolvedClaim>, ::std::string::String>,
+        resolved: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ResolvedClaim>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -2303,7 +2318,9 @@ pub mod builder {
         }
         pub fn resolved<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResolvedClaim>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResolvedClaim>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.resolved = value
@@ -2441,4 +2458,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

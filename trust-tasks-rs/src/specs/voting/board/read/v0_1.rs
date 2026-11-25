@@ -48,9 +48,10 @@ pub struct Answer {
     pub ranking: ::std::option::Option<Vec<Key>>,
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub scores: ::std::collections::HashMap<Key, i64>,
+    pub scores: ::std::option::Option<::std::collections::HashMap<Key, i64>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<AnswerText>,
 }
@@ -1105,22 +1106,29 @@ pub struct QuestionResult {
     pub abstained: u64,
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub choice: ::std::collections::HashMap<Key, u64>,
+    pub choice: ::std::option::Option<::std::collections::HashMap<Key, u64>>,
     pub question: Key,
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub ranking: ::std::collections::HashMap<Key, ::std::vec::Vec<u64>>,
+    pub ranking: ::std::option::Option<::std::collections::HashMap<Key, ::std::vec::Vec<u64>>>,
     #[serde(
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub score: ::std::collections::HashMap<Key, QuestionResultScoreValue>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub text: ::std::vec::Vec<QuestionResultTextItem>,
+    pub score: ::std::option::Option<::std::collections::HashMap<Key, QuestionResultScoreValue>>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub text: ::std::option::Option<::std::vec::Vec<QuestionResultTextItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub withheld: ::std::option::Option<bool>,
 }
@@ -1448,7 +1456,7 @@ pub mod builder {
         ranking:
             ::std::result::Result<::std::option::Option<Vec<super::Key>>, ::std::string::String>,
         scores: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, i64>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
             ::std::string::String,
         >,
         text:
@@ -1509,7 +1517,9 @@ pub mod builder {
         }
         pub fn scores<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::Key, i64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scores = value
@@ -2498,20 +2508,22 @@ pub mod builder {
     pub struct QuestionResult {
         abstained: ::std::result::Result<u64, ::std::string::String>,
         choice: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, u64>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, u64>>,
             ::std::string::String,
         >,
         question: ::std::result::Result<super::Key, ::std::string::String>,
         ranking: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>>,
             ::std::string::String,
         >,
         score: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+            ::std::option::Option<
+                ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+            >,
             ::std::string::String,
         >,
         text: ::std::result::Result<
-            ::std::vec::Vec<super::QuestionResultTextItem>,
+            ::std::option::Option<::std::vec::Vec<super::QuestionResultTextItem>>,
             ::std::string::String,
         >,
         withheld: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -2542,7 +2554,9 @@ pub mod builder {
         }
         pub fn choice<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::Key, u64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::Key, u64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.choice = value
@@ -2563,7 +2577,9 @@ pub mod builder {
         pub fn ranking<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2575,7 +2591,9 @@ pub mod builder {
         pub fn score<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2586,7 +2604,9 @@ pub mod builder {
         }
         pub fn text<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::QuestionResultTextItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::QuestionResultTextItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.text = value
@@ -3111,4 +3131,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

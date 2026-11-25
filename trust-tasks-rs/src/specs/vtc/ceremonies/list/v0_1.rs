@@ -48,12 +48,20 @@ pub struct CeremonyManifest {
     #[serde(
         rename = "factsTemplate",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub facts_template: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub facts_template:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub fields: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub fields: ::std::option::Option<
+        ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
     ///Human-readable name for an operator UI.
     pub label: CeremonyManifestLabel,
     ///Whether the ceremony is automatic, operator-driven, or advisory.
@@ -562,11 +570,13 @@ pub mod builder {
             ::std::string::String,
         >,
         facts_template: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         fields: ::std::result::Result<
-            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
             ::std::string::String,
         >,
         label: ::std::result::Result<super::CeremonyManifestLabel, ::std::string::String>,
@@ -609,7 +619,9 @@ pub mod builder {
         pub fn facts_template<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -621,7 +633,9 @@ pub mod builder {
         pub fn fields<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                ::std::option::Option<
+                    ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -825,3 +839,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

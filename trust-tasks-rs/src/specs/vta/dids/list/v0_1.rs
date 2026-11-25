@@ -206,11 +206,14 @@ pub struct DidSummary {
     #[serde(
         rename = "methodDetails",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub method_details: ::std::collections::HashMap<
-        DidMethodName,
-        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub method_details: ::std::option::Option<
+        ::std::collections::HashMap<
+            DidMethodName,
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        >,
     >,
     ///Whether the identity is its context's own DID.
     pub primary: bool,
@@ -842,9 +845,11 @@ pub mod builder {
         level: ::std::result::Result<super::KeyAssuranceLevel, ::std::string::String>,
         method: ::std::result::Result<super::DidMethodName, ::std::string::String>,
         method_details: ::std::result::Result<
-            ::std::collections::HashMap<
-                super::DidMethodName,
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<
+                ::std::collections::HashMap<
+                    super::DidMethodName,
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             ::std::string::String,
         >,
@@ -996,9 +1001,11 @@ pub mod builder {
         pub fn method_details<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<
-                    super::DidMethodName,
-                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<
+                        super::DidMethodName,
+                        ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                    >,
                 >,
             >,
             T::Error: ::std::fmt::Display,
@@ -1343,3 +1350,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

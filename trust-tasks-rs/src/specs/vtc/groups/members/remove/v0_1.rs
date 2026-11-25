@@ -335,9 +335,11 @@ pub struct Response {
     #[serde(
         rename = "credentialValidUntil",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub credential_valid_until:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -501,7 +503,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         credential_valid_until: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         entry_id: ::std::result::Result<super::EntryId, ::std::string::String>,
@@ -524,7 +526,9 @@ pub mod builder {
         pub fn credential_valid_until<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -669,4 +673,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

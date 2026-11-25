@@ -328,8 +328,12 @@ pub struct Receipt {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub relayed: ::std::vec::Vec<Receipt>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
     pub status: DeliveryStatus,
 }
 impl Receipt {
@@ -724,7 +728,10 @@ pub mod builder {
         group: ::std::result::Result<super::ReceiptGroup, ::std::string::String>,
         member: ::std::result::Result<super::Did, ::std::string::String>,
         network: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        relayed: ::std::result::Result<::std::vec::Vec<super::Receipt>, ::std::string::String>,
+        relayed: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Receipt>>,
+            ::std::string::String,
+        >,
         status: ::std::result::Result<super::DeliveryStatus, ::std::string::String>,
     }
     impl ::std::default::Default for Receipt {
@@ -782,7 +789,7 @@ pub mod builder {
         }
         pub fn relayed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Receipt>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Receipt>>>,
             T::Error: ::std::fmt::Display,
         {
             self.relayed = value
@@ -966,4 +973,18 @@ pub mod error_codes {
             "{\"properties\":{\"message\":{\"type\":\"string\"}},\"required\":[\"message\"],\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -668,8 +668,12 @@ impl<'de> ::serde::Deserialize<'de> for KeyAssuranceLevel {
 #[non_exhaustive]
 pub struct KeyChangeApprovalState {
     ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub approvals: ::std::vec::Vec<RecordedApproval>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub approvals: ::std::option::Option<::std::vec::Vec<RecordedApproval>>,
     ///When the preview, and every approval bound to it, stops being usable.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -835,8 +839,13 @@ pub struct Payload {
     ///The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).
     pub did: PayloadDid,
     ///The new identifier document, for methods whose controller writes it. Omit to leave it unchanged. It MUST carry, unchanged, `verificationMethod`, every verification relationship and `keyRoles`: a change to any of them is refused with `vta/dids/update:keyMembersManaged`, because keys change only through the key-role tasks.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub document:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false.
     #[serde(
         rename = "dryRun",
@@ -860,9 +869,11 @@ pub struct Payload {
     #[serde(
         rename = "methodParameters",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub method_parameters: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub method_parameters:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to.
     #[serde(
         rename = "previewId",
@@ -1270,8 +1281,12 @@ impl ::std::convert::TryFrom<::std::string::String> for PreviewWarning {
 #[non_exhaustive]
 pub struct Publication {
     ///Present when `selfPublish` is true.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub artifacts: ::std::vec::Vec<PublishedArtifact>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub artifacts: ::std::option::Option<::std::vec::Vec<PublishedArtifact>>,
     ///True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.
     #[serde(rename = "selfPublish")]
     pub self_publish: bool,
@@ -2083,8 +2098,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct KeyChangeApprovalState {
-        approvals:
-            ::std::result::Result<::std::vec::Vec<super::RecordedApproval>, ::std::string::String>,
+        approvals: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         received: ::std::result::Result<u64, ::std::string::String>,
@@ -2103,7 +2120,9 @@ pub mod builder {
     impl KeyChangeApprovalState {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedApproval>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approvals = value
@@ -2169,7 +2188,7 @@ pub mod builder {
     pub struct Payload {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         document: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         dry_run: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -2183,7 +2202,7 @@ pub mod builder {
             ::std::string::String,
         >,
         method_parameters: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         preview_id: ::std::result::Result<
@@ -2224,7 +2243,9 @@ pub mod builder {
         pub fn document<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2276,7 +2297,9 @@ pub mod builder {
         pub fn method_parameters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -2339,8 +2362,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Publication {
-        artifacts:
-            ::std::result::Result<::std::vec::Vec<super::PublishedArtifact>, ::std::string::String>,
+        artifacts: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            ::std::string::String,
+        >,
         self_publish: ::std::result::Result<bool, ::std::string::String>,
     }
     impl ::std::default::Default for Publication {
@@ -2354,7 +2379,9 @@ pub mod builder {
     impl Publication {
         pub fn artifacts<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PublishedArtifact>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.artifacts = value
@@ -2934,4 +2961,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

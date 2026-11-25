@@ -33,26 +33,108 @@ fn round_trips<T: DeserializeOwned + Serialize>(value: Value) -> T {
 
 #[test]
 fn an_empty_optional_array_stays_present_and_empty() {
-    round_trips::<show::Response>(json!({ "entry": null, "redactedFields": [] }));
+    let r: show::Response = round_trips(json!({ "entry": null, "redactedFields": [] }));
+    assert_eq!(r.redacted_fields.as_deref().map(<[_]>::len), Some(0));
 }
 
 #[test]
 fn an_absent_optional_array_stays_absent() {
-    round_trips::<show::Response>(json!({ "entry": null }));
+    let r: show::Response = round_trips(json!({ "entry": null }));
+    assert!(r.redacted_fields.is_none());
+}
+
+#[test]
+fn a_non_empty_optional_array_round_trips() {
+    let r: show::Response = round_trips(json!({ "entry": null, "redactedFields": ["label"] }));
+    assert_eq!(r.redacted_fields.map(|v| v.len()), Some(1));
 }
 
 #[test]
 fn an_explicit_null_stays_null() {
     // "Explicit `null` clears it." / "Explicit `null` makes the entry permanent."
-    round_trips::<update::Payload>(json!({
+    let p: update::Payload = round_trips(json!({
         "subject": "did:example:alice",
         "label": null,
         "expiresAt": null
     }));
+    assert!(
+        matches!(p.label, Some(None)),
+        "label: null decoded as {:?}",
+        p.label
+    );
+    assert!(matches!(p.expires_at, Some(None)));
 }
 
 #[test]
 fn an_absent_nullable_member_stays_absent() {
     // "Omitted leaves it unchanged."
-    round_trips::<update::Payload>(json!({ "subject": "did:example:alice" }));
+    let p: update::Payload = round_trips(json!({ "subject": "did:example:alice" }));
+    assert!(p.label.is_none());
+    assert!(p.expires_at.is_none());
+}
+
+#[test]
+fn a_present_nullable_member_round_trips() {
+    let p: update::Payload = round_trips(json!({
+        "subject": "did:example:alice",
+        "label": "Alice",
+        "expiresAt": "2030-01-01T00:00:00Z"
+    }));
+    assert_eq!(
+        p.label.flatten().as_deref().map(String::as_str),
+        Some("Alice")
+    );
+}
+
+#[test]
+fn a_null_where_the_schema_forbids_it_is_still_refused() {
+    // `redactedFields` admits no `null`; reading one as absent would accept a
+    // document the schema refuses.
+    let err = serde_json::from_value::<show::Response>(json!({
+        "entry": null,
+        "redactedFields": null
+    }));
+    assert!(err.is_err());
+}
+
+#[test]
+fn the_builder_writes_each_state() {
+    let clear = update::Payload::builder()
+        .subject("did:example:alice")
+        .label(None::<update::PayloadLabel>)
+        .expires_at(None::<chrono::DateTime<chrono::Utc>>);
+    let clear: update::Payload = clear.try_into().expect("build");
+    assert_eq!(
+        serde_json::to_value(&clear).unwrap(),
+        json!({ "subject": "did:example:alice", "label": null, "expiresAt": null })
+    );
+
+    let set: update::Payload = update::Payload::builder()
+        .subject("did:example:alice")
+        .label(Some(update::PayloadLabel::try_from("Alice").unwrap()))
+        .try_into()
+        .expect("build");
+    assert_eq!(
+        serde_json::to_value(&set).unwrap(),
+        json!({ "subject": "did:example:alice", "label": "Alice" })
+    );
+
+    let untouched: update::Payload = update::Payload::builder()
+        .subject("did:example:alice")
+        .try_into()
+        .expect("build");
+    assert_eq!(
+        serde_json::to_value(&untouched).unwrap(),
+        json!({ "subject": "did:example:alice" })
+    );
+
+    let none_redacted: show::Response = show::Response::builder()
+        .entry(None::<show::AclEntry>)
+        .redacted_fields(Vec::<show::ResponseRedactedFieldsItem>::new())
+        .try_into()
+        .expect("build");
+    assert_eq!(
+        serde_json::to_value(&none_redacted).unwrap(),
+        json!({ "entry": null, "redactedFields": [] })
+    );
 }

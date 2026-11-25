@@ -142,10 +142,12 @@ pub struct Payload {
     #[serde(
         rename = "additionalServices",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub additional_services:
+    pub additional_services: ::std::option::Option<
         ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
     ///Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
@@ -153,9 +155,11 @@ pub struct Payload {
     #[serde(
         rename = "didDocument",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub did_document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub did_document:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///An existing log to adopt, for importing a DID minted elsewhere.
     #[serde(
         rename = "didLog",
@@ -232,9 +236,12 @@ pub struct Payload {
     #[serde(
         rename = "templateVars",
         default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub template_vars: ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    pub template_vars: ::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    >,
     ///Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub url: ::std::option::Option<::std::string::String>,
@@ -378,9 +385,11 @@ pub struct Response {
     #[serde(
         rename = "didDocument",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub did_document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub did_document:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "kaKeyId")]
@@ -503,12 +512,14 @@ pub mod builder {
             ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         add_tsp_service: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         additional_services: ::std::result::Result<
-            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
             ::std::string::String,
         >,
         context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
         did_document: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         did_log: ::std::result::Result<
@@ -557,7 +568,9 @@ pub mod builder {
             ::std::string::String,
         >,
         template_vars: ::std::result::Result<
-            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            ::std::option::Option<
+                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+            >,
             ::std::string::String,
         >,
         url: ::std::result::Result<
@@ -616,7 +629,9 @@ pub mod builder {
         pub fn additional_services<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                ::std::option::Option<
+                    ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -638,7 +653,9 @@ pub mod builder {
         pub fn did_document<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -790,7 +807,9 @@ pub mod builder {
         pub fn template_vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -872,7 +891,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         did: ::std::result::Result<::std::string::String, ::std::string::String>,
         did_document: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -951,7 +970,9 @@ pub mod builder {
         pub fn did_document<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1160,4 +1181,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

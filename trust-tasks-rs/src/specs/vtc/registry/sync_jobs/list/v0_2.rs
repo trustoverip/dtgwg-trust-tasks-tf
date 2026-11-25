@@ -137,16 +137,19 @@ pub struct Job {
     #[serde(
         rename = "lastAttemptedAt",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_attempted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub last_attempted_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///The registry's last answer, verbatim. Diagnostic prose for an operator; a consumer MUST NOT parse it.
     #[serde(
         rename = "lastError",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub last_error: ::std::option::Option<JobLastError>,
+    pub last_error: ::std::option::Option<::std::option::Option<JobLastError>>,
     ///The member whose registry record the job carries. In the clear, because an operator holding a hash cannot tell who stopped publishing.
     #[serde(rename = "memberDid")]
     pub member_did: JobMemberDid,
@@ -154,16 +157,20 @@ pub struct Job {
     #[serde(
         rename = "nextAttemptAt",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub next_attempt_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub next_attempt_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///When the maintainer's retention sweep will delete this row. A deadline, not a fix — the member stays unpublished.
     #[serde(
         rename = "purgeDueAt",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub purge_due_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub purge_due_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     pub state: State,
 }
 impl Job {
@@ -548,20 +555,20 @@ pub mod builder {
         job_id: ::std::result::Result<super::JobJobId, ::std::string::String>,
         kind: ::std::result::Result<super::Kind, ::std::string::String>,
         last_attempted_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         last_error: ::std::result::Result<
-            ::std::option::Option<super::JobLastError>,
+            ::std::option::Option<::std::option::Option<super::JobLastError>>,
             ::std::string::String,
         >,
         member_did: ::std::result::Result<super::JobMemberDid, ::std::string::String>,
         next_attempt_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         purge_due_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         state: ::std::result::Result<super::State, ::std::string::String>,
@@ -637,7 +644,9 @@ pub mod builder {
         pub fn last_attempted_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -648,7 +657,9 @@ pub mod builder {
         }
         pub fn last_error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::JobLastError>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::JobLastError>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.last_error = value
@@ -669,7 +680,9 @@ pub mod builder {
         pub fn next_attempt_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -681,7 +694,9 @@ pub mod builder {
         pub fn purge_due_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -918,3 +933,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

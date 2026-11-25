@@ -200,8 +200,12 @@ pub struct Response {
     ///The probed DID, echoed.
     pub did: ResponseDid,
     ///Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub error: ::std::option::Option<ResponseError>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub error: ::std::option::Option<::std::option::Option<ResponseError>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Whether the community recognises this DID. Meaningless unless registryConfigured is true.
@@ -391,7 +395,7 @@ pub mod builder {
     pub struct Response {
         did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
         error: ::std::result::Result<
-            ::std::option::Option<super::ResponseError>,
+            ::std::option::Option<::std::option::Option<super::ResponseError>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -422,7 +426,9 @@ pub mod builder {
         }
         pub fn error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ResponseError>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ResponseError>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.error = value
@@ -510,3 +516,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

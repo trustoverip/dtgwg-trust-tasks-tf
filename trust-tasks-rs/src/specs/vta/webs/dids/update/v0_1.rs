@@ -970,8 +970,12 @@ impl<'de> ::serde::Deserialize<'de> for ResponseVersionId {
 #[non_exhaustive]
 pub struct ServiceSet {
     ///Further services in the set. Absent means none. None may use `#didcomm` or `#tsp`.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub additional: ::std::vec::Vec<DesignatedService>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub additional: ::std::option::Option<::std::vec::Vec<DesignatedService>>,
     ///Whether `#didcomm`, typed `DIDCommMessaging`, with the VTA's mediator's DID as its endpoint, is in the set.
     pub mediator: bool,
     ///Whether `#tsp`, typed `TSPTransport`, with the VTA's mediator's DID as its endpoint, is in the set.
@@ -1340,8 +1344,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ServiceSet {
-        additional:
-            ::std::result::Result<::std::vec::Vec<super::DesignatedService>, ::std::string::String>,
+        additional: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::DesignatedService>>,
+            ::std::string::String,
+        >,
         mediator: ::std::result::Result<bool, ::std::string::String>,
         tsp: ::std::result::Result<bool, ::std::string::String>,
     }
@@ -1357,7 +1363,9 @@ pub mod builder {
     impl ServiceSet {
         pub fn additional<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DesignatedService>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DesignatedService>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.additional = value
@@ -1514,4 +1522,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"hostError\":{\"type\":\"string\"}},\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

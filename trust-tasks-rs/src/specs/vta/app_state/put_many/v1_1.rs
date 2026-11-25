@@ -633,9 +633,10 @@ pub struct WriteResult {
     #[serde(
         rename = "currentValue",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub current_value: ::std::option::Option<::serde_json::Value>,
+    pub current_value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
     ///On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).
     #[serde(
         rename = "currentVersion",
@@ -924,7 +925,7 @@ pub mod builder {
         actual_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         current_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         current_value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
         current_version:
@@ -974,7 +975,9 @@ pub mod builder {
         }
         pub fn current_value<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.current_value = value
@@ -1174,4 +1177,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"actualBytes\":{\"minimum\":0,\"type\":\"integer\"},\"limitBytes\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

@@ -185,8 +185,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///A complete, signed auth/signing-key/authorize/0.1 Trust Task document by which `identityDid` itself authorizes this enrolment: its payload is this payload with `authorization` removed. When present and valid it is the authority evidence of control over `identityDid`, in place of an operation-bound step-up. The consumer verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over the members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub authorization: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub authorization:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "deviceLabel",
         default,
@@ -544,7 +549,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         authorization: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         device_label:
@@ -580,7 +585,9 @@ pub mod builder {
         pub fn authorization<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1048,4 +1055,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

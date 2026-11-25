@@ -572,8 +572,12 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<PayloadCode>,
     ///`attached` and `detached` only, REQUIRED: the members that changed, batched. A larger change is split across several events.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub dids: ::std::vec::Vec<MemberChange>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub dids: ::std::option::Option<::std::vec::Vec<MemberChange>>,
     ///Which event this is. Each kind carries the members the specification lists for it, and no others.
     pub event: PayloadEvent,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
@@ -1088,7 +1092,10 @@ pub mod builder {
     pub struct Payload {
         code:
             ::std::result::Result<::std::option::Option<super::PayloadCode>, ::std::string::String>,
-        dids: ::std::result::Result<::std::vec::Vec<super::MemberChange>, ::std::string::String>,
+        dids: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::MemberChange>>,
+            ::std::string::String,
+        >,
         event: ::std::result::Result<super::PayloadEvent, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         frame_id: ::std::result::Result<
@@ -1158,7 +1165,7 @@ pub mod builder {
         }
         pub fn dids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::MemberChange>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::MemberChange>>>,
             T::Error: ::std::fmt::Display,
         {
             self.dids = value
@@ -1360,3 +1367,17 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
+}

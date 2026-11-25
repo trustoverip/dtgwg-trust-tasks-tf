@@ -1148,8 +1148,12 @@ impl VaultDeletedEvent {
 #[non_exhaustive]
 pub struct VaultEntry {
     ///References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub attachments: ::std::vec::Vec<AttachmentRef>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub attachments: ::std::option::Option<::std::vec::Vec<AttachmentRef>>,
     ///Set by the maintainer (via HIBP integration or equivalent) when the password material associated with this entry is known to appear in a public breach. Consumers SHOULD surface this prominently. Cleared when the user rotates the password and the new password is not in any known breach.
     #[serde(
         rename = "breachedAt",
@@ -2318,8 +2322,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct VaultEntry {
-        attachments:
-            ::std::result::Result<::std::vec::Vec<super::AttachmentRef>, ::std::string::String>,
+        attachments: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            ::std::string::String,
+        >,
         breached_at: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -2411,7 +2417,9 @@ pub mod builder {
     impl VaultEntry {
         pub fn attachments<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AttachmentRef>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::AttachmentRef>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.attachments = value
@@ -2828,4 +2836,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"oldestRetainedSeq\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

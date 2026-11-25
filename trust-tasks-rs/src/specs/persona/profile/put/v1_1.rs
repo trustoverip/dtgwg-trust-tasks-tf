@@ -326,9 +326,10 @@ pub struct Payload {
     #[serde(
         rename = "credentialRefs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_refs: ::std::vec::Vec<PayloadCredentialRefsItem>,
+    pub credential_refs: ::std::option::Option<::std::vec::Vec<PayloadCredentialRefsItem>>,
     ///Ordered; the order is display order. An empty array is legal and means a profile that discloses nothing — useful as a starting point, and not the same as no profile at all.
     pub entries: ::std::vec::Vec<ProfileEntry>,
     #[serde(
@@ -1487,7 +1488,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         credential_refs: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadCredentialRefsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
             ::std::string::String,
         >,
         entries: ::std::result::Result<::std::vec::Vec<super::ProfileEntry>, ::std::string::String>,
@@ -1518,7 +1519,9 @@ pub mod builder {
     impl Payload {
         pub fn credential_refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_refs = value
@@ -2068,4 +2071,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

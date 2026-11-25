@@ -130,8 +130,12 @@ pub struct Payload {
     ///Resource id — the name of the global template to render.
     pub name: PayloadName,
     ///Caller-supplied template variables, keyed by name. The VTA injects ambient variables VTA_DID, VTA_URL, NOW server-side and merges these on top.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub vars: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -222,7 +226,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         name: ::std::result::Result<super::PayloadName, ::std::string::String>,
         vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -259,7 +263,9 @@ pub mod builder {
         pub fn vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -391,4 +397,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

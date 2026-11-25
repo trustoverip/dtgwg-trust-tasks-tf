@@ -171,9 +171,10 @@ pub struct Payload {
     #[serde(
         rename = "outcomeEvidence",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub outcome_evidence: ::std::vec::Vec<OutcomeEvidence>,
+    pub outcome_evidence: ::std::option::Option<::std::vec::Vec<OutcomeEvidence>>,
     ///A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy. A Verifiable Witness Credential in it counts only with paired outcomeEvidence.
     pub presentation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
@@ -382,8 +383,10 @@ pub mod builder {
     pub struct Payload {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        outcome_evidence:
-            ::std::result::Result<::std::vec::Vec<super::OutcomeEvidence>, ::std::string::String>,
+        outcome_evidence: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::OutcomeEvidence>>,
+            ::std::string::String,
+        >,
         presentation: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
@@ -422,7 +425,9 @@ pub mod builder {
         }
         pub fn outcome_evidence<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::OutcomeEvidence>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::OutcomeEvidence>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.outcome_evidence = value
@@ -640,4 +645,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

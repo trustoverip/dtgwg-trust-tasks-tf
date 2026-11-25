@@ -48,9 +48,11 @@ pub struct AttestationResponse {
     #[serde(
         rename = "clientExtensionResults",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub client_extension_results: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub client_extension_results:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     pub id: ::std::string::String,
     #[serde(rename = "rawId")]
     pub raw_id: ::std::string::String,
@@ -136,8 +138,12 @@ pub struct AttestationResponseResponse {
     pub attestation_object: ::std::string::String,
     #[serde(rename = "clientDataJSON")]
     pub client_data_json: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub transports: ::std::vec::Vec<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub transports: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl AttestationResponseResponse {
     pub fn builder() -> builder::AttestationResponseResponse {
@@ -472,7 +478,7 @@ pub mod builder {
             ::std::string::String,
         >,
         client_extension_results: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -508,7 +514,9 @@ pub mod builder {
         pub fn client_extension_results<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -589,8 +597,10 @@ pub mod builder {
     pub struct AttestationResponseResponse {
         attestation_object: ::std::result::Result<::std::string::String, ::std::string::String>,
         client_data_json: ::std::result::Result<::std::string::String, ::std::string::String>,
-        transports:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        transports: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for AttestationResponseResponse {
         fn default() -> Self {
@@ -624,7 +634,9 @@ pub mod builder {
         }
         pub fn transports<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.transports = value
@@ -921,4 +933,18 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"challenge_mismatch\",\"origin_mismatch\",\"rp_id_mismatch\",\"signature_invalid\",\"algorithm_unsupported\",\"attestation_format_invalid\"],\"type\":\"string\"}},\"type\":\"object\"}",
         ),
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }

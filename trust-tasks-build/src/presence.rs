@@ -38,7 +38,7 @@
 //! absent member is read as its declared default, which the schema says it
 //! means.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
 use anyhow::{anyhow, Result};
 use proc_macro2::TokenStream;
@@ -169,9 +169,11 @@ fn resolve<'a>(root: &'a Value, reference: &str) -> Option<&'a Value> {
     root.pointer(pointer)
 }
 
-/// What a rewritten field became, keyed by `(type, field)` so the builder's
-/// copy of the field and its setter can follow.
-type Rewrites = BTreeMap<(String, String), syn::Type>;
+/// The rewritten fields as `(type, field)`, so the builder's copy of each
+/// field and its setter can follow. Every rewrite wraps the field's type in
+/// one more `Option`, so the builder (which names the module's types through
+/// `super::`) wraps its own spelling of the type the same way.
+type Rewrites = BTreeSet<(String, String)>;
 
 /// Rewrite the fields described in the module docs, follow each into the
 /// struct's builder, and emit the `presence` helper when any field uses it.
@@ -280,24 +282,22 @@ impl Rewriter {
         // when `None`. A tagged member typify made required (a `oneOf` branch
         // that requires it) is already written whenever it is present.
         let optional_option = serde.default && serde.skip_if_none() && is_option(ty);
-        let new_ty: syn::Type = if has_tag && optional_option {
-            syn::parse_quote!(::std::option::Option<#ty>)
+        let rewrite = if has_tag && optional_option {
+            true
         } else if !has_tag && optional_option && owner.is_none() && tagged.contains(&json_name) {
             self.ambiguous.push(json_name);
             return;
-        } else if serde.default && serde.skip_if_empty() {
-            syn::parse_quote!(::std::option::Option<#ty>)
-        } else if serde.default && serde.skip.is_none() && is_unit(ty) {
-            syn::parse_quote!(::std::option::Option<()>)
         } else {
-            return;
+            serde.default && (serde.skip_if_empty() || (serde.skip.is_none() && is_unit(ty)))
         };
-        field.ty = new_ty.clone();
+        if !rewrite {
+            return;
+        }
+        field.ty = wrap_in_option(ty);
         serde.rewrite(&mut field.attrs);
         self.used = true;
         if let (Some(owner), Some(ident)) = (owner, &field.ident) {
-            self.rewrites
-                .insert((owner.to_string(), ident.to_string()), new_ty);
+            self.rewrites.insert((owner.to_string(), ident.to_string()));
         }
     }
 }
@@ -469,9 +469,28 @@ impl VisitMut for StripMarker {
     }
 }
 
-/// Give each rewritten field's twin in `mod builder` — the
-/// `Result<T, String>` it holds and the `TryInto<T>` its setter takes — the
-/// field's new type.
+fn wrap_in_option(ty: &syn::Type) -> syn::Type {
+    syn::parse_quote!(::std::option::Option<#ty>)
+}
+
+/// Wrap the first generic argument of the last path segment named `outer`
+/// (`Result<T, String>`, `TryInto<T>`) in one more `Option`.
+fn wrap_first_argument(path: &mut syn::Path, outer: &str) {
+    let Some(seg) = path.segments.last_mut() else {
+        return;
+    };
+    if seg.ident != outer {
+        return;
+    }
+    if let syn::PathArguments::AngleBracketed(args) = &mut seg.arguments {
+        if let Some(syn::GenericArgument::Type(t)) = args.args.first_mut() {
+            *t = wrap_in_option(t);
+        }
+    }
+}
+
+/// Follow each rewritten field into `mod builder`: the `Result<T, String>`
+/// the builder holds and the `TryInto<T>` its setter takes.
 fn follow_into_builder(items: &mut [syn::Item], rewrites: &Rewrites) {
     for item in items.iter_mut() {
         match item {
@@ -482,10 +501,10 @@ fn follow_into_builder(items: &mut [syn::Item], rewrites: &Rewrites) {
                 };
                 for field in fields.named.iter_mut() {
                     let Some(ident) = &field.ident else { continue };
-                    if let Some(new_ty) = rewrites.get(&(owner.clone(), ident.to_string())) {
-                        field.ty = syn::parse_quote!(
-                            ::std::result::Result<#new_ty, ::std::string::String>
-                        );
+                    if rewrites.contains(&(owner.clone(), ident.to_string())) {
+                        if let syn::Type::Path(p) = &mut field.ty {
+                            wrap_first_argument(&mut p.path, "Result");
+                        }
                     }
                 }
             }
@@ -497,41 +516,25 @@ fn follow_into_builder(items: &mut [syn::Item], rewrites: &Rewrites) {
                     let syn::ImplItem::Fn(f) = impl_item else {
                         continue;
                     };
-                    let Some(new_ty) = rewrites.get(&(owner.clone(), f.sig.ident.to_string()))
-                    else {
+                    if !rewrites.contains(&(owner.clone(), f.sig.ident.to_string())) {
+                        continue;
+                    }
+                    let Some(wc) = &mut f.sig.generics.where_clause else {
                         continue;
                     };
-                    if let Some(wc) = &mut f.sig.generics.where_clause {
-                        for pred in wc.predicates.iter_mut() {
-                            retarget_try_into(pred, new_ty);
+                    for pred in wc.predicates.iter_mut() {
+                        let syn::WherePredicate::Type(pt) = pred else {
+                            continue;
+                        };
+                        for bound in pt.bounds.iter_mut() {
+                            if let syn::TypeParamBound::Trait(tb) = bound {
+                                wrap_first_argument(&mut tb.path, "TryInto");
+                            }
                         }
                     }
                 }
             }
             _ => {}
-        }
-    }
-}
-
-/// `T: ::std::convert::TryInto<Old>` → `T: ::std::convert::TryInto<New>`.
-fn retarget_try_into(pred: &mut syn::WherePredicate, new_ty: &syn::Type) {
-    let syn::WherePredicate::Type(pt) = pred else {
-        return;
-    };
-    for bound in pt.bounds.iter_mut() {
-        let syn::TypeParamBound::Trait(tb) = bound else {
-            continue;
-        };
-        let Some(seg) = tb.path.segments.last_mut() else {
-            continue;
-        };
-        if seg.ident != "TryInto" {
-            continue;
-        }
-        if let syn::PathArguments::AngleBracketed(args) = &mut seg.arguments {
-            if let Some(syn::GenericArgument::Type(t)) = args.args.first_mut() {
-                *t = new_ty.clone();
-            }
         }
     }
 }

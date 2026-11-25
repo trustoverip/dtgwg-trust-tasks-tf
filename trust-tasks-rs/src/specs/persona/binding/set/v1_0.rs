@@ -191,16 +191,18 @@ pub struct Payload {
     #[serde(
         rename = "profileId",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub profile_id: ::std::option::Option<Ulid>,
+    pub profile_id: ::std::option::Option<::std::option::Option<Ulid>>,
     ///Attributes the holder opts into publishing on the persona's own DID document or equivalent public surface. Empty by default and MUST remain empty unless explicitly set: everything else is a per-verifier projection, and a published value is one document every relying party sees identically — a permanent correlation point the rest of this family exists to avoid.
     #[serde(
         rename = "publicEntries",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        deserialize_with = "presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub public_entries: ::std::vec::Vec<Ulid>,
+    pub public_entries: ::std::option::Option<::std::vec::Vec<Ulid>>,
     ///When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired (persona/profile/retire), never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -419,9 +421,10 @@ pub struct Response {
     #[serde(
         rename = "profileId",
         default,
+        deserialize_with = "presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub profile_id: ::std::option::Option<Ulid>,
+    pub profile_id: ::std::option::Option<::std::option::Option<Ulid>>,
     ///When this binding ends on its own, as set.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -760,9 +763,14 @@ pub mod builder {
             ::std::option::Option<super::PayloadPersonaDid>,
             ::std::string::String,
         >,
-        profile_id:
-            ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
-        public_entries: ::std::result::Result<::std::vec::Vec<super::Ulid>, ::std::string::String>,
+        profile_id: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<super::Ulid>>,
+            ::std::string::String,
+        >,
+        public_entries: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::Ulid>>,
+            ::std::string::String,
+        >,
         until: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -835,7 +843,7 @@ pub mod builder {
         }
         pub fn profile_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ulid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<super::Ulid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.profile_id = value
@@ -845,7 +853,7 @@ pub mod builder {
         }
         pub fn public_entries<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Ulid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::Ulid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.public_entries = value
@@ -908,8 +916,10 @@ pub mod builder {
         materialised_claim_count:
             ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         persona_did: ::std::result::Result<super::ResponsePersonaDid, ::std::string::String>,
-        profile_id:
-            ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
+        profile_id: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<super::Ulid>>,
+            ::std::string::String,
+        >,
         until: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
@@ -994,7 +1004,7 @@ pub mod builder {
         }
         pub fn profile_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ulid>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<super::Ulid>>>,
             T::Error: ::std::fmt::Display,
         {
             self.profile_id = value
@@ -1240,4 +1250,18 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
+}
+/// Reads a member that is present — `null` included — as `Some`, so
+/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
+#[doc(hidden)]
+mod presence {
+    pub(super) fn present<'de, D, T>(
+        deserializer: D,
+    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
+    }
 }
