@@ -23,8 +23,11 @@
     }
   },
   {
-    "note": "A SET `events` wrapper in the payload — the Type URI replaces it.",
+    "note": "A SET `events` wrapper in the payload, beside the members it would wrap — the Type URI replaces it, and the payload admits no other member.",
     "payload": {
+      "noticeId": "urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2026-11-24T11:00:01Z",
       "events": {
         "https://hcp.example/spec/events/grant-revoked": {
           "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
