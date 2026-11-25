@@ -1,0 +1,180 @@
+[
+  {
+    "note": "Missing `access` — a grant request names what it asks for.",
+    "payload": {
+      "subjectHint": "acct:alex@context.provider.example"
+    }
+  },
+  {
+    "note": "Empty `access` — at least one authorization detail is asked for.",
+    "payload": {
+      "access": []
+    }
+  },
+  {
+    "note": "Wrong authorization-detail `type` — only HCP's context-access detail is carried.",
+    "payload": {
+      "access": [
+        {
+          "type": "https://example.com/other-detail",
+          "actions": ["read"],
+          "categories": ["general_preferences"]
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown action — HCP's actions are read, write and provenance.",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["delete"],
+          "categories": ["general_preferences"]
+        }
+      ]
+    }
+  },
+  {
+    "note": "A detail with no categories — HCP grants are category-scoped (HCP 6.1).",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": []
+        }
+      ]
+    }
+  },
+  {
+    "note": "A purpose code that is not an absolute URI (HCP 6.1.5.2).",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"],
+          "purposes": [{ "code": "travel booking" }]
+        }
+      ]
+    }
+  },
+  {
+    "note": "`expiresIn` beyond HCP's 24-hour maximum for a temporary grant (HCP 6.1.3).",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"]
+        }
+      ],
+      "expiresIn": 172800
+    }
+  },
+  {
+    "note": "A client may not set the provider-owned `notTo` in an onward-sharing request (HCP 6.1.5).",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"],
+          "onwardSharing": { "notTo": ["ads.example"] }
+        }
+      ]
+    }
+  },
+  {
+    "note": "An access token in the request — the client has none yet; the token is what the response returns.",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"]
+        }
+      ],
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response with no `accessToken` — the response is the grant evidence.",
+    "payload": {
+      "tokenExpiresAt": "2026-11-25T11:00:00Z",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"],
+          "purposes": [{ "code": "https://purposes.example/travel-booking" }]
+        }
+      ],
+      "grantType": "temporary",
+      "grantedAt": "2026-11-25T10:00:00Z",
+      "grantExpiresAt": "2026-11-25T14:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An approved detail with no purpose — HCP never issues a grant without one (HCP 6.1.5.2).",
+    "payload": {
+      "accessToken": "hcp_at_x",
+      "tokenExpiresAt": "2026-11-25T11:00:00Z",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"]
+        }
+      ],
+      "grantType": "temporary",
+      "grantedAt": "2026-11-25T10:00:00Z",
+      "grantExpiresAt": "2026-11-25T14:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A non-urn `grantId` — HCP grant identifiers are urn:uuid.",
+    "payload": {
+      "accessToken": "hcp_at_x",
+      "tokenExpiresAt": "2026-11-25T11:00:00Z",
+      "grantId": "grant-42",
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"],
+          "purposes": [{ "code": "https://purposes.example/travel-booking" }]
+        }
+      ],
+      "grantType": "temporary",
+      "grantedAt": "2026-11-25T10:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A `status` member — a grant just approved is active, and HCP's grant status is read with read-own-grant, not echoed here.",
+    "payload": {
+      "accessToken": "hcp_at_x",
+      "tokenExpiresAt": "2026-11-25T11:00:00Z",
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["general_preferences"],
+          "purposes": [{ "code": "https://purposes.example/travel-booking" }]
+        }
+      ],
+      "grantType": "temporary",
+      "grantedAt": "2026-11-25T10:00:00Z",
+      "grantExpiresAt": "2026-11-25T14:00:00Z",
+      "status": "active"
+    }
+  }
+]
