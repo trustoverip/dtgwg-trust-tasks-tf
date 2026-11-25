@@ -399,7 +399,7 @@ export async function runDemo(world = new World()): Promise<DemoResult> {
 
   // 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
   world.step("5. Revocation notice (hcp/grants/revoked 0.1)");
-  const ack = await world.exchange(P, C, world.request(P, C, `${revoked.TYPE_URI}#request`, { grantId, revokedAt: world.clock.iso() }));
+  const ack = await world.exchange(P, C, world.request(P, C, `${revoked.TYPE_URI}#request`, { grantId, noticeId: world.ids.next(), revokedAt: world.clock.iso() }));
   if (ack.type !== revoked.RESPONSE_TYPE_URI) throw new Error("expected the acknowledgement");
 
   // After: the same query again fails — the grant is checked on every request (HCP 6.2.2)

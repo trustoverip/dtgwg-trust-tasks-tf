@@ -54,7 +54,9 @@ Each key is 32 bytes, every byte the same value. Never use such keys for anythin
   `urn:uuid:00000000-0000-4000-8000-` followed by the counter in **lower-case hex**, zero-padded to
   12 digits. A document's `id` takes the next value when the document is built. A request's
   `threadId` is its own `id`, except a resubmission, which keeps the first request's `threadId`.
-  Payload identifiers (`grantId`, `retrievalId`) take the next value *before* the reply's own `id`.
+  Payload identifiers (`grantId`, `retrievalId`, `noticeId`) take the next value *before* the `id`
+  of the document that carries them: the reply's for `grantId` and `retrievalId`, the notice's own
+  for `noticeId`.
 - **Proofs.** `DataIntegrityProof`, `eddsa-jcs-2022`, `proofPurpose: authentication`, `created`
   equal to `issuedAt`. Ed25519 over JCS is deterministic, so `proofValue` matches across languages.
   Every document a party *builds* is signed: requests, responses, next steps and the handler's
@@ -119,8 +121,8 @@ Payload values not listed here are in the golden transcript.
 | 2b | Context Client → Provider | same, **resubmission** | #5, thread #3 | identical payload | `#response` #7: `accessToken hcp_at_demo_0001`, `grantId` #6, `access` as asked, `grantType temporary`, `grantedAt` 10:00:05, `tokenExpiresAt` +1 h, `grantExpiresAt` +14400 s |
 | 3 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #8 | `query "How does Alex like to fly?"`, `categories ["travel_preferences"]`, the purpose, `maxEntries 5`, the grant token | `#response` #10: the two travel entries, `retrievalId` #9, `minimization {"method": "lexical"}`, `categoriesSearched ["travel_preferences"]`, `respondedAt` 10:00:07 |
 | 4 | Management Client → Provider | `…/hcp/grants/revoke/0.1#request` | #11 | `grantId` #6, `accessToken hcp_mt_demo_management` | `#response` #12: `{}` |
-| 5 | Provider → Context Client | `…/hcp/grants/revoked/0.1#request` | #13 | `grantId` #6, `revokedAt` 10:00:10 | `#response` #14 from the Context Client: `{}` |
-| 6 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #15 | the same payload as step 3 | `trust-task-error/0.6` #16: `code "hcp:invalidToken"`, `inResponseTo` #15 |
+| 5 | Provider → Context Client | `…/hcp/grants/revoked/0.1#request` | #14 | `grantId` #6, `noticeId` #13 (HCP's `jti`, the same on every delivery attempt), `revokedAt` 10:00:10 | `#response` #15 from the Context Client: `{}` |
+| 6 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #16 | the same payload as step 3 | `trust-task-error/0.6` #17: `code "hcp:invalidToken"`, `inResponseTo` #16 |
 
 The ids in the table are the counter values (#10 is `…-00000000000a`).
 
@@ -179,3 +181,5 @@ Differences that print nothing:
   `affinidi_tsp` offers) and signs the message, rather than HPKE-Auth. Its `TspConsumer` mints the
   `id` of an error the library builds (tests 3 and 4) with a random `urn:uuid`, as it has no id
   hook; those tests check only the code.
+- **Go** (`hcp-demo-go`): `tsp.Consumer` has no clock hook, so the refusals its pipeline builds
+  (tests 3 and 4) are stamped with the library's system clock; those tests check only the code.

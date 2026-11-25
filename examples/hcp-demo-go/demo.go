@@ -688,7 +688,8 @@ func Run(w *World) Result {
 
 	// 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
 	w.step("5. Revocation notice (hcp/grants/revoked 0.1)")
-	notice := revoked.Payload{GrantID: grantID, RevokedAt: w.Clock.ISO()}
+	// noticeId is HCP's jti, minted once per notice and kept on every delivery attempt.
+	notice := revoked.Payload{GrantID: grantID, NoticeID: w.IDs.Next(), RevokedAt: w.Clock.ISO()}
 	if ack := replyOf[json.RawMessage](w.Exchange(P, C, Request(w, P, C, revoked.TypeURI+"#request", notice, ""))); ack.Type != revoked.ResponseTypeURI {
 		panic("expected the acknowledgement")
 	}

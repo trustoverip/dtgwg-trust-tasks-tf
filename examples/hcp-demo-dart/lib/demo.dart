@@ -687,6 +687,8 @@ Future<DemoResult> runDemo([World? world]) async {
       '${revoked.typeUri}#request',
       revoked.Payload(
         grantId: grant.grantId,
+        // HCP's jti, minted once per notice and kept on every delivery attempt.
+        noticeId: w.ids.next(),
         revokedAt: w.clock.iso(),
       ).toJson(),
     ),

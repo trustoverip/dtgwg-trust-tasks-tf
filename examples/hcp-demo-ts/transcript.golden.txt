@@ -347,28 +347,29 @@
 === 5. Revocation notice (hcp/grants/revoked 0.1) ===
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#request
 {
-  "id": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000e",
   "issuedAt": "2026-11-25T10:00:11Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006",
+    "noticeId": "urn:uuid:00000000-0000-4000-8000-00000000000d",
     "revokedAt": "2026-11-25T10:00:10Z"
   },
   "proof": {
     "created": "2026-11-25T10:00:11Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z3F1BTMpbjHdpjwSty5KA9bCt4h3GKhG4m7PYNawHtY3iVk1ouoavkZ7MKLLG6tTnNSVfJPp6zao96mgo7x9FfSNu",
+    "proofValue": "zo7cN9YdQgR48QedSAQxTGCedFYK2itfWrtnoHundBV7dnnyuTFr2u5z2icPvDsxgJbmHo8Ctxa4KKYc17LG8YdX",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
   "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
-  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000e",
   "type": "https://trusttasks.org/spec/hcp/grants/revoked/0.1#request"
 }
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#response
 {
-  "id": "urn:uuid:00000000-0000-4000-8000-00000000000e",
+  "id": "urn:uuid:00000000-0000-4000-8000-00000000000f",
   "issuedAt": "2026-11-25T10:00:12Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {},
@@ -376,19 +377,19 @@
     "created": "2026-11-25T10:00:12Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z53Zcar4ZZxR8qC5oNts5hXA4JGAUGeEZoo96fpQ9ukMMeFS29gaddE1s55ojZd57r42d5b8MmBcWeadvtUjbtWwW",
+    "proofValue": "z4muFv71ux8GpVSd8wCzsRibpjBrrF8X1D7FpD1zMph5DmbNnCtdFxAFVu2WUmsnxxPcjaGTZ7ywxK9yJNXUV2big",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },
   "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
-  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000d",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000e",
   "type": "https://trusttasks.org/spec/hcp/grants/revoked/0.1#response"
 }
 
 === After revoke: the same query fails with hcp:invalidToken ===
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#request
 {
-  "id": "urn:uuid:00000000-0000-4000-8000-00000000000f",
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000010",
   "issuedAt": "2026-11-25T10:00:13Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {
@@ -404,23 +405,23 @@
     "created": "2026-11-25T10:00:13Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z3bz1ks97sjpw2kvtxfXJsHRSwVH1LY1LbBVm9y87ypwhz141Zy5hniQHkAdMNyoRSoo6QqWDdh7YnjEE1w9f9uxW",
+    "proofValue": "z5symo5GPee8JbeFmzpgEdXzj3RkLa2K5XGhYDKNRvK9aVEeT3cRsLgWi94A3DN9Tg1zV2W7uRANTEMZS5x5uuzQj",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },
   "recipient": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
-  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000f",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000010",
   "type": "https://trusttasks.org/spec/hcp/entries/query/0.1#request"
 }
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
 {
-  "id": "urn:uuid:00000000-0000-4000-8000-000000000010",
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000011",
   "issuedAt": "2026-11-25T10:00:14Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "code": "hcp:invalidToken",
     "inResponseTo": {
-      "id": "urn:uuid:00000000-0000-4000-8000-00000000000f",
+      "id": "urn:uuid:00000000-0000-4000-8000-000000000010",
       "typeUri": "https://trusttasks.org/spec/hcp/entries/query/0.1#request"
     },
     "message": "The access token is not valid.",
@@ -430,11 +431,11 @@
     "created": "2026-11-25T10:00:14Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "zMyuog6CPjb7wdztDeEAuurycr8Zr8jCMWG7ctUmaebcJrdJVxiHSn5A6J9Cqj3R5ukwMqEd4cMAEJMajAL4ifm7",
+    "proofValue": "zAmykXPpvkyXKKHiDDsxri2Qq4t3S3W1QcZwEavcmGvjcc8icMim1LAhSgb7Q6NaKngZZmfMmuCbqBfwaL3FfLca",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
   "recipient": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
-  "threadId": "urn:uuid:00000000-0000-4000-8000-00000000000f",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-000000000010",
   "type": "https://trusttasks.org/spec/trust-task-error/0.6"
 }

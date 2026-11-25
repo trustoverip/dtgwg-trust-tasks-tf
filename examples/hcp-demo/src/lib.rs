@@ -257,6 +257,10 @@ impl World {
         (&s.provider, &s.context_client, &s.management)
     }
 
+    pub fn ids(&self) -> &Ids {
+        &self.shared.ids
+    }
+
     pub fn clock(&self) -> &Clock {
         &self.shared.clock
     }
@@ -793,7 +797,8 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
 
     // 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
     world.step("5. Revocation notice (hcp/grants/revoked 0.1)");
-    let notice = json!({ "grantId": grant_id, "revokedAt": world.clock().iso() });
+    // noticeId is HCP's jti, minted once per notice and kept on every delivery attempt.
+    let notice = json!({ "grantId": grant_id, "noticeId": world.ids().next(), "revokedAt": world.clock().iso() });
     let revoked_uri = request_uri(revoked::Payload::TYPE_URI);
     let tell = world.request(p, c, &revoked_uri, notice, None).await;
     let ack = world.exchange(p, c, &tell).await?;
