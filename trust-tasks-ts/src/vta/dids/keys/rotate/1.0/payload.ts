@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Plan and start the planned rotation of one role of a key-role identity: successors staged, switched at the cache horizon, predecessors retired at the end of the overlap. For `update`, the authority moves to its committed routine successor, or the recovery commitment is replaced.
+ *
+ * @deprecated superseded by vta/dids/keys/rotate/1.1
  */
 export interface VTADIDsKeysRotatePayload {
   /**
@@ -75,6 +77,7 @@ export interface VTADIDsKeysRotatePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/keys/rotate/1.1 */
 export interface VTADIDsKeysRotateResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -122,15 +125,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/keys/rotate/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/rotate/1.1
+ */
 export type Payload = VTADIDsKeysRotatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/rotate/1.1
+ */
 export type Response = VTADIDsKeysRotateResponsePayload;
 
 /**

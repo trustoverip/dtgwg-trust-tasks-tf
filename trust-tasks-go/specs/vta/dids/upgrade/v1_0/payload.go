@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTA DIDs — Upgrade — response payload
+//
+// Deprecated: superseded by vta/dids/upgrade/1.1
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -672,6 +674,8 @@ const (
 // for every role whose custody the new level tightens, removes the keys they replace,
 // moves the update authority, declares the new level and, at level 3, commits the
 // caller's recovery key. A level is never lowered.
+//
+// Deprecated: superseded by vta/dids/upgrade/1.1
 type Payload struct {
 	// The identity, by DID (for a `did:scid` identity, the DID without `src`). It may be at
 	// level 1 — the one task in the family that accepts such an identity — or at level 2.
@@ -746,7 +750,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/dids/upgrade/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/upgrade/1.0#response"

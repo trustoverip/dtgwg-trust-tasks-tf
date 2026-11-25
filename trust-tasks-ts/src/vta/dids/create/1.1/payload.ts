@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Ask a Verifiable Trust Agent to create a key-role identity at key assurance level 2 or 3, under an eligible DID method, from a key-role DID template. The VTA mints every key fresh by its role's custody rules at that level, commits a routine update successor, and at level 3 commits the caller's recovery key (CONVENTIONS.md §3.4, §4, §5). No caller-supplied key, key identifier, keyed document or existing history is accepted.
+ *
+ * @deprecated superseded by vta/dids/create/1.2
  */
 export interface VTADIDsCreatePayload {
   /**
@@ -59,6 +61,7 @@ export interface VTADIDsCreatePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/create/1.2 */
 export interface VTADIDsCreateResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -112,15 +115,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/create/1.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/create/1.2
+ */
 export type Payload = VTADIDsCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/create/1.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/create/1.2
+ */
 export type Response = VTADIDsCreateResponsePayload;
 
 /**

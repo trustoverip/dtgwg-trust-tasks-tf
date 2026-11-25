@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTA DIDs — Keys Rotate — response payload
+//
+// Deprecated: superseded by vta/dids/keys/rotate/1.1
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -696,6 +698,8 @@ type RecoveryCommitment struct {
 // successors staged, switched at the cache horizon, predecessors retired at the end of
 // the overlap. For `update`, the authority moves to its committed routine successor, or
 // the recovery commitment is replaced.
+//
+// Deprecated: superseded by vta/dids/keys/rotate/1.1
 type Payload struct {
 	// The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).
 	DID string `json:"did"`
@@ -783,7 +787,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/dids/keys/rotate/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0#response"

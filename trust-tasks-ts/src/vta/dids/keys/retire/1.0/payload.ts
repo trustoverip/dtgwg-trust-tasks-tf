@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Retire a key of a key-role identity on schedule: the method leaves its role and the document, and a retired attestation or messaging key is destroyed. Completes a rotation (retiring the predecessor) or aborts it (retiring the successor).
+ *
+ * @deprecated superseded by vta/dids/keys/retire/1.1
  */
 export interface VTADIDsKeysRetirePayload {
   /**
@@ -44,6 +46,7 @@ export interface VTADIDsKeysRetirePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/keys/retire/1.1 */
 export interface VTADIDsKeysRetireResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -91,15 +94,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/keys/retire/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/retire/1.1
+ */
 export type Payload = VTADIDsKeysRetirePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/retire/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/retire/1.1
+ */
 export type Response = VTADIDsKeysRetireResponsePayload;
 
 /**

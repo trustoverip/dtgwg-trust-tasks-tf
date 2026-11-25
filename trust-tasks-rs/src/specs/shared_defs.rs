@@ -4222,6 +4222,13 @@ macro_rules! d_Response_13eb704f {
 }
 pub(crate) use d_Response_13eb704f;
 
+macro_rules! d_Response_15037c00 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Update — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_15037c00;
+
 macro_rules! d_Response_15b187b0 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"config\"],\"title\":\"VTC Storage — Configs — Update — response payload\",\"type\":\"object\"}"
@@ -4333,6 +4340,13 @@ macro_rules! d_Response_35f1bbc7 {
     };
 }
 pub(crate) use d_Response_35f1bbc7;
+
+macro_rules! d_Response_3a8252b9 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Retire — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_3a8252b9;
 
 macro_rules! d_Response_3ac06d7f {
     () => {
@@ -4530,6 +4544,13 @@ macro_rules! d_Response_5a52bab9 {
 }
 pub(crate) use d_Response_5a52bab9;
 
+macro_rules! d_Response_5dd3912f {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Add — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_5dd3912f;
+
 macro_rules! d_Response_607dc8f8 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/justify request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/justify/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"JustifyDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Justify — response payload\",\"type\":\"object\"}"
@@ -4578,6 +4599,13 @@ macro_rules! d_Response_67ebd7b3 {
     };
 }
 pub(crate) use d_Response_67ebd7b3;
+
+macro_rules! d_Response_682e93a0 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"$ref\":\"#/$defs/ReissuanceFollowUp\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Revoke — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_682e93a0;
 
 macro_rules! d_Response_6c8cf7a4 {
     () => {
@@ -4711,6 +4739,13 @@ macro_rules! d_Response_90ca391a {
     };
 }
 pub(crate) use d_Response_90ca391a;
+
+macro_rules! d_Response_9a3807c5 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_9a3807c5;
 
 macro_rules! d_Response_9b2c256f {
     () => {
@@ -4964,6 +4999,13 @@ macro_rules! d_Response_e047dd4d {
 }
 pub(crate) use d_Response_e047dd4d;
 
+macro_rules! d_Response_e0a9693e {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The level the resulting document declares.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"$ref\":\"#/$defs/ReissuanceFollowUp\",\"description\":\"What the node must re-sign and re-issue: every status list at once, and, with `previousKeys: revoke`, every attestation artefact the replaced keys signed that is still in force (VTI-KEY-149).\"},\"fromLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The identity's level before the raise.\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Upgrade — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_e0a9693e;
+
 macro_rules! d_Response_e0cc5176 {
     () => {
         "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of actions and the caller's badge counts. Failures use trust-task-error, not this shape.\",\"properties\":{\"actions\":{\"description\":\"The page, in the view's order: open views by deadline soonest first — `expiresAt`, or `landsAt` for `coolingOff` — (actions with neither last, then by `createdAt`), `history` by `closedAt` newest first, `all` open-before-closed in those orders. An empty array is a successful answer: nothing in this view.\",\"items\":{\"$ref\":\"#/$defs/Action\"},\"maxItems\":100,\"type\":\"array\"},\"counts\":{\"additionalProperties\":false,\"description\":\"Totals across the whole collection, not the page — what a console badge shows. Computed for the caller regardless of which `view` was requested.\",\"properties\":{\"requestedByMe\":{\"description\":\"Open actions the caller requested.\",\"minimum\":0,\"type\":\"integer\"},\"waitingForMe\":{\"description\":\"Open actions awaiting the caller's decision or acknowledgement.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"waitingForMe\",\"requestedByMe\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more actions follow. Pass it back as `cursor` with the same `view` and `since`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actions\",\"counts\"],\"title\":\"VTC Admin Actions — List — response payload\",\"type\":\"object\"}"
@@ -5026,6 +5068,13 @@ macro_rules! d_Response_ee1d18e6 {
     };
 }
 pub(crate) use d_Response_ee1d18e6;
+
+macro_rules! d_Response_ef315a34 {
+    () => {
+        "\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"assuranceLevel\":{\"$ref\":\"#/$defs/KeyAssuranceLevel\",\"description\":\"The level the identity is created at, as its document declares it.\"},\"contextId\":{\"type\":\"string\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Create — response payload\",\"type\":\"object\"}"
+    };
+}
+pub(crate) use d_Response_ef315a34;
 
 macro_rules! d_Response_ef939039 {
     () => {

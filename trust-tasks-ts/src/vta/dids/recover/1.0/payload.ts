@@ -9,7 +9,7 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 /**
  * Ask a Verifiable Trust Agent to take over a key-role identity whose VTA was lost, with the identity's committed recovery key (CONVENTIONS.md §9.5; VTI-KEY-117). The recovering VTA generates new keys, and the recovery custodian signs the one change that publishes them. Level 3 only: a level-1 or level-2 identity is recovered by restoring its VTA's backup, and is refused with `vta/dids:assuranceLevelMismatch`.
  *
- * @deprecated superseded by vta/dids/recover/1.1
+ * @deprecated superseded by vta/dids/recover/1.2
  */
 export interface VTADIDsRecoverPayload {
   /**
@@ -64,7 +64,7 @@ export interface VTADIDsRecoverPayload {
   reason?: string;
   ext?: Ext;
 }
-/** @deprecated superseded by vta/dids/recover/1.1 */
+/** @deprecated superseded by vta/dids/recover/1.2 */
 export interface VTADIDsRecoverResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -113,12 +113,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/dids/recover/1.1";
+export const DEPRECATION: string | null = "superseded by vta/dids/recover/1.2";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/dids/recover/1.1
+ * @deprecated superseded by vta/dids/recover/1.2
  */
 export type Payload = VTADIDsRecoverPayload;
 
@@ -128,7 +128,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/recover/1
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/dids/recover/1.1
+ * @deprecated superseded by vta/dids/recover/1.2
  */
 export type Response = VTADIDsRecoverResponsePayload;
 
