@@ -25,17 +25,26 @@ per key. Never reuse them.
    `hcp/*`.
 2. **Grant request.** The client sends [`hcp/grants/request`](../../specs/hcp/grants/request/0.1/spec.md)
    0.1. The provider holds it with a `trust-task-next-step` while the person decides. The client
-   resubmits on the same thread and receives the grant and its access token.
+   resubmits on the same thread and receives an access token and the grant, as HCP's grant object.
 3. **Query.** [`hcp/entries/query`](../../specs/hcp/entries/query/0.1/spec.md) 0.1 runs under the
    grant's token and returns the person's travel entries.
 4. **Revoke.** The person's Management Client sends
    [`hcp/grants/revoke`](../../specs/hcp/grants/revoke/0.1/spec.md) 0.1.
-5. **Revocation notice.** The provider sends
-   [`hcp/grants/revoked`](../../specs/hcp/grants/revoked/0.1/spec.md) 0.1 to the client, which
-   acknowledges it.
+5. **Query after revoke.** Before any notice arrives, the same query fails with
+   `hcp:invalidToken`: the grant is checked on every request, so revocation takes effect at once
+   (HCP 6.2.2). The client drops the token and the copies it holds.
+6. **Revocation notice.** The provider sends
+   [`hcp/grants/revoked`](../../specs/hcp/grants/revoked/0.1/spec.md) 0.1 to the grant's client,
+   which records the `noticeId` and the grant, stops using the grant, and acknowledges. It never
+   sends the old token again.
 
-After step 5, the same query fails with `hcp:invalidToken`, because the grant is checked on every
-request (HCP 6.2.2).
+The provider also applies the rules the tests exercise: a token presented from another VID gets
+`permissionDenied`; only its one registered client may ask for a grant; a resubmission must carry
+the held payload (compared in JCS form, as received rather than through the generated type); and a
+resubmission after approval gets the same grant within the hour, never a second one, and
+`permissionDenied` after it. Each side checks a reply before it uses it: from the party asked, on
+the same thread, signed (unless the library built it), and valid against its schema
+(`trust-task-error` included, against the framework's own schema in `specs/`).
 
 ## Run it
 
@@ -46,8 +55,10 @@ cargo run -p trust-tasks-example-hcp-demo     # the demo
 cargo test -p trust-tasks-example-hcp-demo    # the tests
 ```
 
-The tests check the golden transcript, a query after revoke, a tampered document and a
-schema-invalid document. The golden file is shared with the other ports and lives beside the
+The tests are the 13 listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the
+golden transcript, the query after revoke, a tampered document, a schema-invalid document, the
+client's handling of the notice, the provider's token and grant-request rules, and the reply check.
+The golden file is shared with the other ports and lives beside the
 TypeScript version, [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt);
 the test reads it from there and never keeps a copy. A change to the scenario starts in SCENARIO.md
 and the TypeScript version, which rewrites the golden file.
@@ -69,17 +80,18 @@ Expected output (an excerpt; access tokens are redacted to their first 6 charact
   "payload": {
     "accessToken": "hcp_at…",
 …
-=== After revoke: the same query fails with hcp:invalidToken ===
+=== 5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken ===
 …
     "code": "hcp:invalidToken",
 …
-hcp-demo: discover, grant request (held, then granted), query, revoke, notice and post-revoke refusal all OK
+hcp-demo: discover, grant request (held, then granted), query, revoke, post-revoke refusal and notice all OK
 ```
 
 ## What is simplified
 
 - **The provider is a toy.** It has three entries in memory, a grant table, no storage, no
-  minimization beyond category filtering, no audit log and no directives. It is not an HCP
+  minimization beyond category filtering, no audit log and no directives (every query result
+  carries an empty `directives` list), and a registry of one client. It is not an HCP
   implementation.
 - **There is no consent UI.** The person's decision is one function call, and it always approves
   what was asked. The demo shows the shape of the hold: a next step first, then the grant on
@@ -91,7 +103,8 @@ hcp-demo: discover, grant request (held, then granted), query, revoke, notice an
   `issuedAt` from the system clock, so the demo overwrites it with its own clock before signing.
 - **Tokens are opaque strings** the toy provider mints and looks up. There is no OAuth
   Authorization Service.
-- **The revocation notice is sent once.** HCP's retry schedule (HCP 9.9) is not shown.
+- **The revocation notice is sent once.** HCP's retry schedule (HCP 9.9) is not shown; a test
+  sends a later attempt to show the client deduplicating on `noticeId`.
 - **The specs are drafts**, and several points are pending HCP confirmation. Each spec lists them
   under "Pending HCP confirmation".
 
@@ -101,7 +114,9 @@ As in [`consumer-app`](../consumer-app) and [`getting-started`](../getting-start
 `trust-tasks.toml` pins the tasks, `trust-tasks.lock` and `trust-tasks/` hold the vendored bundles,
 and `build.rs` generates them with `trust-tasks-build` into `$OUT_DIR`. Everything else comes
 through the `trust-tasks` facade (features `tsp`, `proof-affinidi` and `validate`), with
-`affinidi-tsp` for the TSP keys and `affinidi-secrets-resolver` for the signer.
+`affinidi-tsp` for the TSP keys, `affinidi-secrets-resolver` for the signer, and
+`serde_json_canonicalizer` (the RFC 8785 implementation the proof crate signs with) for comparing
+resubmissions.
 
 The lock pins the four `hcp/*` tasks only. `trust-task-discovery` and `trust-task-next-step` are
 framework specifications, which ship with the runtime (`trust_tasks::specs`) and which
@@ -110,6 +125,7 @@ here.
 
 The files:
 
-- `src/lib.rs`: the parties, the toy provider, the handlers and the five steps.
+- `src/lib.rs`: the parties, the toy provider, the client's state, the handlers and the six
+  steps, one function each.
 - `src/main.rs`: runs the demo and prints the transcript.
 - `tests/demo.rs`: the tests.

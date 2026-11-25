@@ -283,8 +283,3 @@ Differences that print nothing:
   tests check only the code. The provider compares grant-request payloads with
   `trusttasks.CanonicalJSON` (members ordered recursively, no whitespace), which is
   equality-equivalent to JCS but not byte-exact JCS: `trust-tasks-go/proof`'s JCS is not exported.
-- **Rust** (`hcp-demo`), *pending*: it checks a `trust-task-error` reply's payload by
-  deserialising it into the runtime's hand-written `ErrorPayload` type rather than against the
-  `trust-task-error` 0.6 payload schema, which TypeScript, Go and Dart use (reply check 5 above).
-  This entry stands until the Rust port either validates against the schema, and removes it, or
-  confirms the difference.

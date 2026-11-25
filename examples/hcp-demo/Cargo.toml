@@ -21,6 +21,10 @@ affinidi-secrets-resolver = "0.6.0"
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 serde = "1"
 serde_json = "1"
+# The RFC 8785 (JCS) implementation trust-tasks-proof canonicalises with for
+# eddsa-jcs-2022 (through affinidi-data-integrity): the provider compares a
+# resubmitted grant request with the held one by their JCS forms.
+serde_json_canonicalizer = "0.4"
 tokio = { version = "1", features = ["macros", "rt"] }
 
 [build-dependencies]

@@ -4,7 +4,8 @@
 //! of this demo follows, with the golden transcript they all print).
 //!
 //! Three parties, each with its own did:key and TSP keys:
-//!   - the HCP Provider (a toy, in-memory: a few entries, a grant table);
+//!   - the HCP Provider (a toy, in-memory: a few entries, a client registry,
+//!     a grant table);
 //!   - a Context Client (a booking agent that wants the person's context);
 //!   - a Management Client (the person's own app, which can revoke grants).
 //!
@@ -19,7 +20,8 @@
 //! framework tasks it also speaks (`trust-task-discovery`,
 //! `trust-task-next-step`) ship with the runtime.
 
-use std::collections::HashMap;
+use std::collections::btree_map::Entry;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
@@ -27,7 +29,7 @@ use affinidi_secrets_resolver::secrets::Secret;
 use affinidi_tsp::message::direct;
 use affinidi_tsp::{MessageType, MetaEnvelope, PrivateVid, ResolvedVid};
 use chrono::{DateTime, SecondsFormat, TimeDelta, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use trust_tasks::proof::affinidi::{SignOptions, Verifier};
 use trust_tasks::proof::ProofExt;
@@ -51,11 +53,29 @@ pub use tasks::hcp::grants::revoked::v0_1 as revoked;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
+/// The bare Type URI of `trust-task-error` 0.6.
+pub const ERROR_TYPE_URI: &str = "https://trusttasks.org/spec/trust-task-error/0.6";
+
+/// The `trust-task-error` 0.6 payload schema. The runtime models the error by
+/// hand and embeds no schema for it (its `PAYLOAD_SCHEMA` is `None`), so the
+/// demo reads the framework's own schema from this repository's `specs/`: it
+/// is self-contained (no `$ref`), and it is the schema the TypeScript, Go and
+/// Dart runtimes ship.
+const ERROR_PAYLOAD_SCHEMA: &str =
+    include_str!("../../../specs/trust-task-error/0.6/payload.schema.json");
+
 // ── Deterministic inputs ───────────────────────────────────────────────────
 // A fixed clock the demo controls: it starts at START and moves one second per
-// document issued. Instants are whole seconds (`…Z`); the system time is never
-// read.
+// document issued. The system time is never read.
 pub const START: &str = "2026-11-25T10:00:00Z";
+
+/// An instant as the documents write it: whole seconds, `YYYY-MM-DDTHH:MM:SSZ`.
+/// The repository's rule is "never write `Utc::now()` into a document": every
+/// instant the demo writes comes from its injected [`Clock`], which holds whole
+/// seconds only, and goes through this one function.
+pub fn iso(t: DateTime<Utc>) -> String {
+    t.to_rfc3339_opts(SecondsFormat::Secs, true)
+}
 
 /// The demo's clock, shared by every party (and the proof verifier).
 #[derive(Clone)]
@@ -71,8 +91,14 @@ impl Clock {
         DateTime::from_timestamp(self.0.load(Ordering::SeqCst), 0).expect("in range")
     }
 
+    /// Now, as an instant.
     pub fn iso(&self) -> String {
         iso(self.now())
+    }
+
+    /// `seconds` after now, as an instant.
+    pub fn plus(&self, seconds: i64) -> String {
+        iso(self.now() + TimeDelta::seconds(seconds))
     }
 
     /// One second on: the instant of the next document issued.
@@ -81,14 +107,10 @@ impl Clock {
         self.now()
     }
 
-    /// `now` plus `seconds`, written as an instant.
-    fn plus(&self, seconds: i64) -> String {
-        iso(self.now() + TimeDelta::seconds(seconds))
+    /// Let time pass without issuing a document (tests only).
+    pub fn advance(&self, seconds: i64) {
+        self.0.fetch_add(seconds, Ordering::SeqCst);
     }
-}
-
-fn iso(t: DateTime<Utc>) -> String {
-    t.to_rfc3339_opts(SecondsFormat::Secs, true)
 }
 
 /// Sequential urn:uuid identifiers: …-000000000001, …-000000000002, …
@@ -137,6 +159,12 @@ pub const PURPOSE: &str = "https://purposes.example/travel-booking";
 pub const MANAGEMENT_TOKEN: &str = "hcp_mt_demo_management";
 /// One fixed text for every refusal (HCP 5.5).
 const NEUTRAL_DENIAL: &str = "The request is not authorized.";
+const INVALID_TOKEN: &str = "The access token is not valid.";
+/// The person, by the pseudonym the provider uses with this client (HCP 3.4).
+const SUBJECT: &str = "hcp-sub-demo-alex";
+/// How long after the response a resubmission still gets the same grant
+/// (hcp/grants/request "After approval"), in seconds.
+pub const AFTER_APPROVAL_WINDOW: i64 = 3600;
 
 /// The person's context, as the toy provider stores it (HCP 4.2, much
 /// simplified): `(ref, category, value)`.
@@ -154,36 +182,100 @@ const ENTRIES: [(&str, &str, &str); 3] = [
     ("hcp-ref-0003", "health_context", "Severe peanut allergy."),
 ];
 
+/// A grant in the provider's table.
 struct Grant {
     grant_id: String,
     token: String,
+    token_expires_at: String,
+    /// The client's VID.
     client: String,
+    /// The approved `access`, as the grant writes it.
+    access: Value,
     categories: Vec<String>,
     purposes: Vec<String>,
+    issued_at: String,
+    expires_at: String,
     active: bool,
+    revoked_at: Option<String>,
 }
 
-/// A grant request the person has not decided yet (SPEC §8.6 hold).
-struct Held {
-    payload: grant_request::Payload,
-    decided: bool,
+/// Where a grant request on one thread stands (hcp/grants/request "Holding").
+enum HoldState {
+    Pending,
+    Approved,
+    /// The grant is issued; `responded_at` is when its response was first sent.
+    Granted {
+        grant_id: String,
+        responded_at: DateTime<Utc>,
+    },
+}
+
+/// A grant request on one thread: held, approved by the person, then granted.
+struct Hold {
+    issuer: String,
+    payload: Value,
+    /// JCS of the payload, to compare resubmissions.
+    canonical: String,
+    state: HoldState,
 }
 
 #[derive(Default)]
 struct ProviderState {
+    /// Its one registered client, by VID: the registration the person is
+    /// shown (`name`, `operator`; HCP 6.1.5, 6.1.6).
+    registered_clients: HashMap<String, Value>,
     grants: Vec<Grant>,
-    /// Held grant requests, by threadId.
-    held: HashMap<String, Held>,
+    /// Grant requests by threadId (the SPEC §8.6 hold).
+    held: HashMap<String, Hold>,
     tokens: u32,
+}
+
+/// What the Context Client keeps for a grant it holds: the token, and the
+/// refs of the copies disclosed under it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct HeldGrant {
+    pub token: String,
+    pub copies: Vec<String>,
+}
+
+#[derive(Default)]
+struct ClientState {
+    /// The grants it holds, by grantId.
+    wallet: HashMap<String, HeldGrant>,
+    /// Revocation notices it has processed: noticeId → grantId
+    /// (hcp/grants/revoked "Deduplication").
+    processed_notices: BTreeMap<String, String>,
 }
 
 /// The validator every receiving end runs (SPEC §7.2 item 2): JSON Schema
 /// 2020-12 over the schema each generated type embeds.
 static VALIDATOR: SchemaValidator = SchemaValidator::new();
 
+/// `hcp/grants/request`'s payload **as received**: the generated type's Type
+/// URI, policy and schema, but the payload kept as JSON. The provider compares
+/// a resubmission with the held request by their JCS forms, which a typed
+/// round trip could change (the generated type drops an empty optional array
+/// on serialising), so the handler takes the JSON itself.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct GrantRequestAsReceived(pub Value);
+
+impl Payload for GrantRequestAsReceived {
+    const TYPE_URI: &'static str = <grant_request::Payload as Payload>::TYPE_URI;
+    const IS_BEARER: bool = <grant_request::Payload as Payload>::IS_BEARER;
+    const IS_PROOF_REQUIRED: bool = <grant_request::Payload as Payload>::IS_PROOF_REQUIRED;
+    const IS_RECIPIENT_REQUIRED: bool = <grant_request::Payload as Payload>::IS_RECIPIENT_REQUIRED;
+    const IS_ISSUED_AT_REQUIRED: bool = <grant_request::Payload as Payload>::IS_ISSUED_AT_REQUIRED;
+    const MAX_DOCUMENT_BYTES: Option<usize> =
+        <grant_request::Payload as Payload>::MAX_DOCUMENT_BYTES;
+    const PAYLOAD_SCHEMA: Option<&'static str> =
+        <grant_request::Payload as Payload>::PAYLOAD_SCHEMA;
+}
+
 // ── The world: three parties, one transport, one clock ─────────────────────
-/// What every handler sees: the parties, the clock, the ids and the toy
-/// provider's tables. Shared, because a handler's future is `'static`.
+/// What every handler sees: the parties, the clock, the ids, the toy
+/// provider's tables and the Context Client's state. Shared, because a
+/// handler's future is `'static`.
 pub struct Shared {
     clock: Clock,
     ids: Ids,
@@ -191,6 +283,7 @@ pub struct Shared {
     context_client: Party,
     management: Party,
     state: Mutex<ProviderState>,
+    client: Mutex<ClientState>,
     transcript: Mutex<String>,
     verifier: Verifier,
 }
@@ -221,14 +314,24 @@ impl World {
     pub fn new() -> Self {
         let clock = Clock::new();
         let verifier_clock = clock.clone();
+        let context_client = party("Context Client", 0x21, 0x22);
+        let registration = json!({
+            "name": "Wayfare booking agent",
+            "operator": { "id": "booking.example", "name": "Wayfare Travel Ltd" },
+        });
+        let state = ProviderState {
+            registered_clients: HashMap::from([(context_client.vid.clone(), registration)]),
+            ..ProviderState::default()
+        };
         let shared = Arc::new(Shared {
             verifier: Verifier::for_did_key().with_clock(Arc::new(move || verifier_clock.now())),
             clock,
             ids: Ids::default(),
             provider: party("Provider", 0x11, 0x12),
-            context_client: party("Context Client", 0x21, 0x22),
+            context_client,
             management: party("Management Client", 0x31, 0x32),
-            state: Mutex::default(),
+            state: Mutex::new(state),
+            client: Mutex::default(),
             transcript: Mutex::default(),
         });
         let provider_inbound = Inbound {
@@ -269,7 +372,28 @@ impl World {
         self.shared.transcript.lock().expect("transcript").clone()
     }
 
-    fn by_vid(&self, vid: &str) -> Result<&Party, Error> {
+    /// The Context Client's wallet, by grantId.
+    pub fn wallet(&self) -> HashMap<String, HeldGrant> {
+        self.shared.client.lock().expect("client").wallet.clone()
+    }
+
+    /// The revocation notices the Context Client has processed: noticeId → grantId.
+    pub fn processed_notices(&self) -> BTreeMap<String, String> {
+        let client = self.shared.client.lock().expect("client");
+        client.processed_notices.clone()
+    }
+
+    /// How many grants the provider has issued.
+    pub fn grant_count(&self) -> usize {
+        self.shared.state.lock().expect("state").grants.len()
+    }
+
+    /// How many grant requests the provider holds (by threadId).
+    pub fn hold_count(&self) -> usize {
+        self.shared.state.lock().expect("state").held.len()
+    }
+
+    pub fn by_vid(&self, vid: &str) -> Result<&Party, Error> {
         let (p, c, m) = self.parties();
         [p, c, m]
             .into_iter()
@@ -343,6 +467,8 @@ impl World {
 
         // ── back at the sender: open the sealed reply and check it before use ──
         let reply = open(&reply_wire, &from.tsp, &to.tsp.to_resolved())?;
+        let thread_id = doc.thread_id.as_deref().unwrap_or(&doc.id);
+        check_reply(&reply, to, thread_id)?;
         if reply.get("proof").is_some() {
             s.verifier.verify_raw(&reply).await?;
         }
@@ -360,10 +486,16 @@ impl World {
             .held
             .get_mut(thread_id)
             .expect("a held request")
-            .decided = true;
+            .state = HoldState::Approved;
         s.push(&format!(
             "[person] approves the grant request on thread {thread_id} in the provider's app\n"
         ));
+    }
+
+    /// The Context Client stops using a grant: drops its token and every copy
+    /// disclosed under it (HCP 6.2.2, 7.6).
+    pub fn forget_grant(&self, grant_id: &str) {
+        self.shared.forget_grant(grant_id);
     }
 
     pub fn step(&self, title: &str) {
@@ -386,21 +518,55 @@ fn open(wire: &[u8], me: &PrivateVid, sender: &ResolvedVid) -> Result<Value, Err
     Ok(Envelope::from_bytes(&message.payload)?.into_document())
 }
 
+/// The codes the receiving end's SPEC §7.2 pipeline raises before any handler
+/// runs. The library builds those error responses itself, unsigned; every
+/// other reply (each response, next step and handler refusal) is signed.
+pub const PIPELINE_CODES: [&str; 10] = [
+    "malformedRequest",
+    "unsupportedType",
+    "unsupportedVersion",
+    "unsupportedExtension",
+    "expired",
+    "proofRequired",
+    "proofInvalid",
+    "wrongRecipient",
+    "identityMismatch",
+    "idConflict",
+];
+
+/// The sender's first checks on a reply before it trusts it (SCENARIO "Every
+/// receiving end", checks 1-3): it is from the party asked, on the thread
+/// asked, and signed unless it is an error the library pipeline built. The
+/// proof itself (check 4) and the payload (check 5) are checked after.
+pub fn check_reply(reply: &Value, from: &Party, thread_id: &str) -> Result<(), Error> {
+    let issuer = reply["issuer"].as_str();
+    if issuer != Some(from.vid.as_str()) {
+        return Err(format!("reply issuer {issuer:?} is not {}", from.vid).into());
+    }
+    let thread = reply["threadId"].as_str();
+    if thread != Some(thread_id) {
+        return Err(format!("reply threadId {thread:?} is not {thread_id}").into());
+    }
+    let library_error = reply["type"] == ERROR_TYPE_URI
+        && reply["payload"]["code"]
+            .as_str()
+            .is_some_and(|code| PIPELINE_CODES.contains(&code));
+    if reply.get("proof").is_none() && !library_error {
+        return Err(format!("reply {} carries no proof", reply["type"]).into());
+    }
+    Ok(())
+}
+
 /// A producer checks the reply it receives before acting on it, as a consumer
-/// checks a request: its payload against the reply type's schema.
+/// checks a request: its payload against the reply type's schema
+/// (`trust-task-error` included).
 fn validate_reply(reply: &Value) -> Result<(), Error> {
     let ty = reply["type"].as_str().unwrap_or_default();
-    let payload = &reply["payload"];
-    if ty == trust_tasks::trust_task_error_type_uri().to_string() {
-        // trust-task-error is modelled by hand in every runtime and has no
-        // schema here: the Rust type is the constraint.
-        serde_json::from_value::<ErrorPayload>(payload.clone())?;
-        return Ok(());
-    }
     fn known<T: Payload>() -> (&'static str, Option<&'static str>) {
         (T::TYPE_URI, T::PAYLOAD_SCHEMA)
     }
     let schemas = [
+        (ERROR_TYPE_URI, Some(ERROR_PAYLOAD_SCHEMA)),
         known::<discovery::Response>(),
         known::<next_step::Payload>(),
         known::<grant_request::Response>(),
@@ -414,8 +580,14 @@ fn validate_reply(reply: &Value) -> Result<(), Error> {
         .and_then(|(_, schema)| *schema)
         .ok_or_else(|| format!("unexpected reply type {ty}"))?;
     VALIDATOR
-        .check(schema, payload)
+        .check(schema, &reply["payload"])
         .map_err(|e| format!("reply {ty} fails its schema: {e}").into())
+}
+
+/// JCS (RFC 8785) of a payload, with the implementation `trust_tasks::proof`
+/// canonicalises with for `eddsa-jcs-2022`.
+fn jcs(value: &Value) -> String {
+    serde_json_canonicalizer::to_string(value).expect("a JSON value canonicalises")
 }
 
 // ── Handlers: what each receiving party does with an accepted document ────
@@ -464,6 +636,12 @@ impl Shared {
             .with_retryable(false)
     }
 
+    fn invalid_token() -> ErrorPayload {
+        ErrorPayload::from(query::error_codes::INVALID_TOKEN)
+            .with_message(INVALID_TOKEN)
+            .with_retryable(false)
+    }
+
     // Step 1 — trust-task-discovery: what the provider serves (SPEC §10).
     async fn discover(&self, doc: TrustTask<discovery::Payload>) -> Reply {
         let supported = [
@@ -476,92 +654,174 @@ impl Shared {
             .await
     }
 
-    // Step 2 — hcp/grants/request: hold with a next step until the person decides (HCP 6.1.6, SPEC §8.6).
-    async fn grant_request(&self, doc: TrustTask<grant_request::Payload>) -> Reply {
+    // Step 2 — hcp/grants/request: hold with a next step until the person
+    // decides, then the one grant (HCP 6.1.6; SPEC §8.6; hcp/grants/request
+    // "Authorization", "Holding while the person decides", "After approval").
+    async fn grant_request(&self, doc: TrustTask<GrantRequestAsReceived>) -> Reply {
+        let issuer = doc.issuer.clone().unwrap_or_default();
         let thread_id = doc.thread_id.clone().unwrap_or_else(|| doc.id.clone());
-        let approved = {
+        let payload = &doc.payload.0;
+        let canonical = jcs(payload);
+
+        /// What the handler answers, decided under the lock and sent after it.
+        enum Answer {
+            Deny,
+            Differs,
+            NextStep,
+            Grant(Value),
+        }
+        let answer = {
             let mut state = self.state.lock().expect("state");
-            match state.held.get(&thread_id) {
-                Some(hold) if hold.decided => Some(hold.payload.clone()),
-                Some(_) => None,
-                None => {
-                    let hold = Held {
-                        payload: doc.payload.clone(),
-                        decided: false,
-                    };
-                    state.held.insert(thread_id.clone(), hold);
-                    None
+            let state = &mut *state;
+            // 1. Only a registered client may ask.
+            if !state.registered_clients.contains_key(&issuer) {
+                Answer::Deny
+            } else {
+                match state.held.get_mut(&thread_id) {
+                    // 2. A new thread: hold it.
+                    None => {
+                        let hold = Hold {
+                            issuer: issuer.clone(),
+                            payload: payload.clone(),
+                            canonical,
+                            state: HoldState::Pending,
+                        };
+                        state.held.insert(thread_id.clone(), hold);
+                        Answer::NextStep
+                    }
+                    // A resubmission is matched by (threadId, issuer); a
+                    // refusal leaves the held request as it is.
+                    // 3. Another issuer on the thread.
+                    Some(hold) if hold.issuer != issuer => Answer::Deny,
+                    // 4. Not the held request: compare JCS forms, never bytes.
+                    Some(hold) if hold.canonical != canonical => Answer::Differs,
+                    Some(hold) => match &hold.state {
+                        // 5. The person has not decided yet.
+                        HoldState::Pending => Answer::NextStep,
+                        // 6. Approved: issue the one grant.
+                        HoldState::Approved => {
+                            let grant = self.issue_grant(&mut state.tokens, &issuer, &hold.payload);
+                            hold.state = HoldState::Granted {
+                                grant_id: grant.grant_id.clone(),
+                                responded_at: self.clock.now(),
+                            };
+                            let response = grant_response(&grant, &state.registered_clients);
+                            state.grants.push(grant);
+                            Answer::Grant(response)
+                        }
+                        // 7. Within the hour after the response, the same
+                        //    grant while it is active; never a second one.
+                        HoldState::Granted {
+                            grant_id,
+                            responded_at,
+                        } => {
+                            let elapsed = (self.clock.now() - *responded_at).num_seconds();
+                            let grant = state.grants.iter().find(|g| &g.grant_id == grant_id);
+                            match grant {
+                                Some(grant) if grant.active && elapsed <= AFTER_APPROVAL_WINDOW => {
+                                    Answer::Grant(grant_response(grant, &state.registered_clients))
+                                }
+                                _ => Answer::Deny,
+                            }
+                        }
+                    },
                 }
             }
         };
-        let Some(asked) = approved else {
-            let payload = json!({
-                "expects": [{
-                    "typeUri": format!("{}#request", grant_request::Payload::TYPE_URI),
-                    "reason": "The request is with the person, who has not decided yet.",
-                    "hint": { "retryAfter": 5 },
-                }],
-                "continuation": "resubmit",
-                "inResponseTo": { "typeUri": doc.type_uri.to_string(), "id": doc.id },
-            });
-            let next_step_uri = next_step::Payload::TYPE_URI.parse().expect("Type URI");
-            let mut step = TrustTask::new(self.ids.next(), next_step_uri, payload);
-            step.issuer = Some(self.provider.vid.clone());
-            step.recipient = doc.issuer.clone();
-            step.issued_at = Some(self.clock.tick());
-            step.thread_id = Some(thread_id);
-            return Ok(self.sign(&self.provider, step).await);
-        };
+        match answer {
+            Answer::Deny => self.refuse(&doc, Self::denied()).await,
+            Answer::Differs => {
+                let differs = ErrorPayload::new(StandardCode::MalformedRequest)
+                    .with_message("The resubmission differs from the held request.")
+                    .with_retryable(false);
+                self.refuse(&doc, differs).await
+            }
+            Answer::NextStep => Ok(self.next_step(&doc, thread_id).await),
+            Answer::Grant(response) => self.reply(&doc, response).await,
+        }
+    }
 
-        // The person approved (the toy approves everything asked, read only).
-        let grant_id = self.ids.next();
-        let token = {
-            let mut state = self.state.lock().expect("state");
-            state.tokens += 1;
-            let token = format!("hcp_at_demo_{:04}", state.tokens); // DEMO ONLY
-            let access = &asked.access;
-            state.grants.push(Grant {
-                grant_id: grant_id.clone(),
-                token: token.clone(),
-                client: doc.issuer.clone().unwrap_or_default(),
-                categories: access
-                    .iter()
-                    .flat_map(|a| a.categories.iter().map(|c| c.to_string()))
-                    .collect(),
-                purposes: access
-                    .iter()
-                    .flat_map(|a| a.purposes.iter().map(|p| p.code.to_string()))
-                    .collect(),
-                active: true,
-            });
-            token
-        };
-        let access: Vec<Value> = asked
-            .access
+    /// The grant the person approved (the toy approves everything asked, read
+    /// only). Its `grantId` takes the next id, before the response's.
+    fn issue_grant(&self, tokens: &mut u32, client: &str, asked: &Value) -> Grant {
+        *tokens += 1;
+        let empty = Vec::new();
+        let details = asked["access"].as_array().unwrap_or(&empty);
+        let purposes_of = |a: &Value| a["purposes"].as_array().cloned().unwrap_or_default();
+        let access: Vec<Value> = details
             .iter()
             .map(|a| {
+                let purposes: Vec<Value> = purposes_of(a)
+                    .iter()
+                    .map(|p| {
+                        let description = p.get("description").unwrap_or(&p["code"]);
+                        json!({ "code": p["code"], "description": description })
+                    })
+                    .collect();
                 json!({
-                    "type": a.type_,
-                    "actions": a.actions,
-                    "categories": a.categories,
-                    "purposes": a.purposes,
+                    "type": a["type"],
+                    "actions": a["actions"],
+                    "categories": a["categories"],
+                    "purposes": purposes,
                 })
             })
             .collect();
-        let response = json!({
-            "accessToken": token,
-            "tokenExpiresAt": self.clock.plus(3600), // HCP 13.4 default
-            "grantId": grant_id,
-            "access": access, // approved as asked
-            "grantType": "temporary",
-            "grantedAt": self.clock.iso(),
-            // HCP 6.1.3 default
-            "grantExpiresAt": self.clock.plus(asked.expires_in.unwrap_or(4 * 3600)),
-        });
-        self.reply(&doc, response).await
+        let strings = |values: Vec<Value>| -> Vec<String> {
+            values
+                .iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        };
+        let categories = details
+            .iter()
+            .flat_map(|a| strings(a["categories"].as_array().cloned().unwrap_or_default()))
+            .collect();
+        let purposes = details
+            .iter()
+            .flat_map(|a| strings(purposes_of(a).iter().map(|p| p["code"].clone()).collect()))
+            .collect();
+        let expires_in = asked["expiresIn"].as_i64().unwrap_or(4 * 3600); // HCP 6.1.3 default
+        Grant {
+            grant_id: self.ids.next(),
+            token: format!("hcp_at_demo_{tokens:04}"), // DEMO ONLY
+            token_expires_at: self.clock.plus(3600),   // HCP 13.4 default
+            client: client.to_string(),
+            access: Value::Array(access), // approved as asked
+            categories,
+            purposes,
+            issued_at: self.clock.iso(),
+            expires_at: self.clock.plus(expires_in),
+            active: true,
+            revoked_at: None,
+        }
     }
 
-    // Step 3 — hcp/entries/query: the grant is checked on every request (HCP 5.2.1, 6.2.2).
+    /// The hold: a next step naming the request Type URI, continuation resubmit (SPEC §8.6).
+    async fn next_step(
+        &self,
+        doc: &TrustTask<GrantRequestAsReceived>,
+        thread_id: String,
+    ) -> TrustTask<Value> {
+        let payload = json!({
+            "expects": [{
+                "typeUri": format!("{}#request", grant_request::Payload::TYPE_URI),
+                "reason": "The request is with the person, who has not decided yet.",
+                "hint": { "retryAfter": 5 },
+            }],
+            "continuation": "resubmit",
+            "inResponseTo": { "typeUri": doc.type_uri.to_string(), "id": doc.id },
+        });
+        let next_step_uri = next_step::Payload::TYPE_URI.parse().expect("Type URI");
+        let mut step = TrustTask::new(self.ids.next(), next_step_uri, payload);
+        step.issuer = Some(self.provider.vid.clone());
+        step.recipient = doc.issuer.clone();
+        step.issued_at = Some(self.clock.tick());
+        step.thread_id = Some(thread_id);
+        self.sign(&self.provider, step).await
+    }
+
+    // Steps 3 and 5 — hcp/entries/query: the grant is checked on every request
+    // (HCP 5.2.1, 6.2.2; hcp/entries/query "Authorization", "The access token", "Errors").
     async fn query(&self, doc: TrustTask<query::Payload>) -> Reply {
         let p = &doc.payload;
         let found = {
@@ -569,14 +829,30 @@ impl Shared {
             state
                 .grants
                 .iter()
-                .find(|g| g.token == **p.access_token && doc.issuer.as_ref() == Some(&g.client))
-                .map(|g| (g.active, g.categories.clone(), g.purposes.clone()))
+                .find(|g| g.token == **p.access_token)
+                .map(|g| {
+                    (
+                        g.client.clone(),
+                        g.active,
+                        g.categories.clone(),
+                        g.purposes.clone(),
+                    )
+                })
         };
-        let Some((true, categories, purposes)) = found else {
-            let invalid = ErrorPayload::from(query::error_codes::INVALID_TOKEN)
-                .with_message("The access token is not valid.");
-            return self.refuse(&doc, invalid).await;
+        // 1. No grant has the token.
+        let Some((client, active, categories, purposes)) = found else {
+            return self.refuse(&doc, Self::invalid_token()).await;
         };
+        // 2. A token issued to another client is no use from this VID; checked
+        //    before the status, so it tells that VID nothing about the grant.
+        if doc.issuer.as_deref() != Some(client.as_str()) {
+            return self.refuse(&doc, Self::denied()).await;
+        }
+        // 3. The grant is revoked.
+        if !active {
+            return self.refuse(&doc, Self::invalid_token()).await;
+        }
+        // 4. The purpose or a category is outside the grant.
         let asked: Vec<String> = if p.categories.is_empty() {
             categories.clone()
         } else {
@@ -585,6 +861,7 @@ impl Shared {
         if !purposes.contains(&p.purpose.0) || asked.iter().any(|c| !categories.contains(c)) {
             return self.refuse(&doc, Self::denied()).await;
         }
+        // 5. The matching entries.
         let use_until = self.clock.plus(3600);
         let limit = p.max_entries.map_or(5, |n| n.get()).min(20) as usize;
         let entries: Vec<Value> = ENTRIES
@@ -612,6 +889,7 @@ impl Shared {
             "retrievalId": self.ids.next(),
             "minimization": { "method": "lexical" },
             "categoriesSearched": asked,
+            "directives": [], // a Context Client always gets the list; the person set none (HCP 6.4)
             "respondedAt": self.clock.iso(),
         });
         self.reply(&doc, response).await
@@ -620,26 +898,54 @@ impl Shared {
     // Step 4 — hcp/grants/revoke: only the person's Management Client may (HCP 6.1.9, 6.2.1).
     async fn revoke(&self, doc: TrustTask<revoke::Payload>) -> Reply {
         let p = &doc.payload;
-        let revoked = {
+        let known = {
             let mut state = self.state.lock().expect("state");
             let grant = state.grants.iter_mut().find(|g| g.grant_id == *p.grant_id);
             match grant {
                 Some(grant) if *p.access_token == MANAGEMENT_TOKEN => {
-                    grant.active = false; // immediate (HCP 6.2.2); a second revoke is idempotent
+                    // Immediate (HCP 6.2.2); a second revoke is idempotent and
+                    // keeps the first revokedAt.
+                    if grant.active {
+                        grant.active = false;
+                        grant.revoked_at = Some(self.clock.iso());
+                    }
                     true
                 }
                 _ => false,
             }
         };
-        if !revoked {
+        if !known {
             return self.refuse(&doc, Self::denied()).await;
         }
         self.reply(&doc, json!({})).await
     }
 
-    // Step 5 — hcp/grants/revoked, at the Context Client: stop using what it holds (HCP 6.2.2, 9.9).
+    // Step 6 — hcp/grants/revoked, at the Context Client (HCP 6.2.2, 9.9;
+    // hcp/grants/revoked "Delivery rules").
     async fn revoked(&self, doc: TrustTask<revoked::Payload>) -> Reply {
+        let notice_id = String::clone(&doc.payload.notice_id);
+        let grant_id = String::clone(&doc.payload.grant_id);
+        // Deduplicate on noticeId: a later attempt of a processed notice is
+        // acknowledged, not acted on again. (A real client keeps the record at
+        // least 25 hours; the demo keeps it for the run.)
+        let first = {
+            let mut client = self.client.lock().expect("client");
+            match client.processed_notices.entry(notice_id) {
+                Entry::Occupied(_) => false,
+                Entry::Vacant(entry) => {
+                    entry.insert(grant_id.clone());
+                    true
+                }
+            }
+        };
+        if first {
+            self.forget_grant(&grant_id);
+        }
         self.reply(&doc, json!({})).await
+    }
+
+    fn forget_grant(&self, grant_id: &str) {
+        self.client.lock().expect("client").wallet.remove(grant_id);
     }
 
     // ── Transcript ─────────────────────────────────────────────────────────
@@ -655,6 +961,31 @@ impl Shared {
             from.name, to.name
         ));
     }
+}
+
+/// The grant response: the token and HCP's grant object, as
+/// hcp/grants/read-own would return it, with the grant's status as it stands.
+fn grant_response(grant: &Grant, registered: &HashMap<String, Value>) -> Value {
+    let registration = &registered[&grant.client];
+    json!({
+        "accessToken": grant.token,
+        "tokenExpiresAt": grant.token_expires_at,
+        "grant": {
+            "grantId": grant.grant_id,
+            "subject": { "id": SUBJECT },
+            "authorizingPrincipal": { "id": SUBJECT },
+            "client": {
+                "id": grant.client,
+                "name": registration["name"],
+                "operator": registration["operator"],
+            },
+            "access": grant.access,
+            "grantType": "temporary",
+            "issuedAt": grant.issued_at,
+            "expiresAt": grant.expires_at,
+            "status": if grant.active { "active" } else { "revoked" },
+        },
+    })
 }
 
 /// Secrets are shown as present, never in full: the first 6 characters and an ellipsis.
@@ -711,33 +1042,11 @@ pub fn pretty(value: &Value, indent: &str) -> String {
     }
 }
 
-// ── The five steps ─────────────────────────────────────────────────────────
-pub struct DemoResult {
-    pub transcript: String,
-    /// Step 6's reply, as received.
-    pub post_revoke_error: Value,
-}
+// ── The six steps, one function each ───────────────────────────────────────
 
-pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
-    let (p, c, m) = world.parties();
-    let request_uri = |uri: &str| format!("{uri}#request");
-
-    // 1. Discover: does the provider speak hcp/*? (trust-task-discovery 0.4, SPEC §10)
-    world.step("1. Discover (trust-task-discovery 0.4)");
-    let patterns = json!({ "patterns": ["hcp/*"] });
-    let discover = world
-        .request(c, p, discovery::Payload::TYPE_URI, patterns, None)
-        .await;
-    let found = world.exchange(c, p, &discover).await?;
-    let supported = found["payload"]["supportedTypes"].as_array();
-    if !supported.is_some_and(|types| types.contains(&json!(grant_request::Payload::TYPE_URI))) {
-        return Err("provider does not serve grant requests".into());
-    }
-
-    // 2. Grant request: held with a next step while the person decides, then
-    //    resubmitted (HCP 6.1.6, 6.1.7; SPEC §8.6)
-    world.step("2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step");
-    let ask = json!({
+/// What the Context Client asks for in step 2.
+pub fn ask() -> Value {
+    json!({
         "access": [{
             "type": "https://hcp.example/spec/authorization/context-access",
             "actions": ["read"],
@@ -749,9 +1058,64 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
         }],
         "expiresIn": 14400,
         "subjectHint": "acct:alex@provider.example",
-    });
+    })
+}
+
+/// The query the Context Client sends in steps 3 and 5, under the grant's token.
+pub fn query_payload(access_token: &str) -> Value {
+    json!({
+        "query": "How does Alex like to fly?",
+        "categories": ["travel_preferences"],
+        "purpose": PURPOSE,
+        "maxEntries": 5,
+        "accessToken": access_token,
+    })
+}
+
+/// `<type>#request`.
+pub fn request_uri(type_uri: &str) -> String {
+    format!("{type_uri}#request")
+}
+
+/// The token the Context Client holds for `grant_id`.
+fn held_token(world: &World, grant_id: &str) -> Result<String, Error> {
+    world
+        .wallet()
+        .get(grant_id)
+        .map(|held| held.token.clone())
+        .ok_or_else(|| format!("the wallet holds no grant {grant_id}").into())
+}
+
+/// Step 1. Discover: does the provider speak hcp/*? (trust-task-discovery 0.4, SPEC §10)
+pub async fn step_discover(world: &World) -> Result<(), Error> {
+    let (p, c, _) = world.parties();
+    world.step("1. Discover (trust-task-discovery 0.4)");
+    let patterns = json!({ "patterns": ["hcp/*"] });
+    let discover = world
+        .request(c, p, discovery::Payload::TYPE_URI, patterns, None)
+        .await;
+    let found = world.exchange(c, p, &discover).await?;
+    let supported = found["payload"]["supportedTypes"].as_array();
+    if !supported.is_some_and(|types| types.contains(&json!(grant_request::Payload::TYPE_URI))) {
+        return Err("provider does not serve grant requests".into());
+    }
+    Ok(())
+}
+
+/// The thread and the grant step 2 ends with.
+pub struct Granted {
+    pub thread_id: String,
+    pub grant_id: String,
+}
+
+/// Step 2. Grant request: held with a next step while the person decides, then
+/// resubmitted on the same thread (hcp/grants/request 0.1, HCP 6.1.6, 6.1.7;
+/// SPEC §8.6). The client keeps the token in its wallet.
+pub async fn step_grant_request(world: &World) -> Result<Granted, Error> {
+    let (p, c, _) = world.parties();
+    world.step("2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step");
     let grant_uri = request_uri(grant_request::Payload::TYPE_URI);
-    let first = world.request(c, p, &grant_uri, ask.clone(), None).await;
+    let first = world.request(c, p, &grant_uri, ask(), None).await;
     let held = world.exchange(c, p, &first).await?;
     if held["type"] != next_step::Payload::TYPE_URI {
         return Err("expected a next step".into());
@@ -759,60 +1123,151 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
     let thread_id = first.thread_id.clone().expect("threadId");
     world.person_approves(&thread_id);
     // Resubmission: a new document, fresh id, same threadId and payload.
-    let resubmission = world.request(c, p, &grant_uri, ask, Some(&thread_id)).await;
+    let resubmission = world
+        .request(c, p, &grant_uri, ask(), Some(&thread_id))
+        .await;
     let granted = world.exchange(c, p, &resubmission).await?;
     if granted["type"] != grant_request::Response::TYPE_URI {
         return Err("expected the grant".into());
     }
-    let access_token = granted["payload"]["accessToken"].clone();
-    let grant_id = granted["payload"]["grantId"].clone();
+    let token = granted["payload"]["accessToken"]
+        .as_str()
+        .unwrap_or_default();
+    let grant_id = granted["payload"]["grant"]["grantId"]
+        .as_str()
+        .unwrap_or_default()
+        .to_string();
+    let held = HeldGrant {
+        token: token.to_string(),
+        copies: Vec::new(),
+    };
+    let s = &world.shared;
+    s.client
+        .lock()
+        .expect("client")
+        .wallet
+        .insert(grant_id.clone(), held);
+    Ok(Granted {
+        thread_id,
+        grant_id,
+    })
+}
 
-    // 3. Query under the grant (hcp/entries/query 0.1, HCP 5.2.1)
+/// Step 3. Query under the grant (hcp/entries/query 0.1, HCP 5.2.1). The client
+/// keeps the refs of the copies.
+pub async fn step_query(world: &World, grant_id: &str) -> Result<(), Error> {
+    let (p, c, _) = world.parties();
     world.step("3. Query (hcp/entries/query 0.1)");
+    let token = held_token(world, grant_id)?;
     let query_uri = request_uri(query::Payload::TYPE_URI);
-    let query_payload = json!({
-        "query": "How does Alex like to fly?",
-        "categories": ["travel_preferences"],
-        "purpose": PURPOSE,
-        "maxEntries": 5,
-        "accessToken": access_token,
-    });
-    let ask = world
-        .request(c, p, &query_uri, query_payload.clone(), None)
+    let sent = world
+        .request(c, p, &query_uri, query_payload(&token), None)
         .await;
-    let answer = world.exchange(c, p, &ask).await?;
+    let answer = world.exchange(c, p, &sent).await?;
     if answer["type"] != query::Response::TYPE_URI {
         return Err("expected entries".into());
     }
+    let refs = answer["payload"]["entries"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|e| e["ref"].as_str().map(str::to_string));
+    let s = &world.shared;
+    if let Some(held) = s.client.lock().expect("client").wallet.get_mut(grant_id) {
+        held.copies.extend(refs);
+    }
+    Ok(())
+}
 
-    // 4. Revoke from the person's Management Client (hcp/grants/revoke 0.1, HCP 6.2.1)
+/// Step 4. Revoke from the person's Management Client (hcp/grants/revoke 0.1, HCP 6.2.1).
+pub async fn step_revoke(world: &World, grant_id: &str) -> Result<(), Error> {
+    let (p, _, m) = world.parties();
     world.step("4. Revoke (hcp/grants/revoke 0.1) from the Management Client");
     let revocation = json!({ "grantId": grant_id, "accessToken": MANAGEMENT_TOKEN });
     let revoke_uri = request_uri(revoke::Payload::TYPE_URI);
-    let ask = world.request(m, p, &revoke_uri, revocation, None).await;
-    let done = world.exchange(m, p, &ask).await?;
+    let sent = world.request(m, p, &revoke_uri, revocation, None).await;
+    let done = world.exchange(m, p, &sent).await?;
     if done["type"] != revoke::Response::TYPE_URI {
         return Err("expected the revocation".into());
     }
+    Ok(())
+}
 
-    // 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
-    world.step("5. Revocation notice (hcp/grants/revoked 0.1)");
-    // noticeId is HCP's jti, minted once per notice and kept on every delivery attempt.
-    let notice = json!({ "grantId": grant_id, "noticeId": world.ids().next(), "revokedAt": world.clock().iso() });
+/// Step 5. The same query, sent before any notice arrives, fails with
+/// hcp:invalidToken: the grant is checked on every request, so revocation
+/// takes effect at once (HCP 6.2.2). The client acts on that at once too: it
+/// drops the token and the copies (hcp/grants/revoked "Independence").
+/// Returns the reply, as received.
+pub async fn step_query_after_revoke(world: &World, grant_id: &str) -> Result<Value, Error> {
+    let (p, c, _) = world.parties();
+    world.step("5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken");
+    let token = held_token(world, grant_id)?;
+    let query_uri = request_uri(query::Payload::TYPE_URI);
+    let again = world
+        .request(c, p, &query_uri, query_payload(&token), None)
+        .await;
+    let refused = world.exchange(c, p, &again).await?;
+    if refused["type"] == ERROR_TYPE_URI && refused["payload"]["code"] == "hcp:invalidToken" {
+        world.forget_grant(grant_id);
+    }
+    Ok(refused)
+}
+
+/// Step 6. Revocation notice to the grant's client (hcp/grants/revoked 0.1, HCP
+/// 6.2.3, 9.9). The client records the noticeId and the grant and stops using
+/// the grant; it never sends the old token again. Returns the notice sent.
+pub async fn step_notice(world: &World, grant_id: &str) -> Result<TrustTask<Value>, Error> {
+    let (p, _, _) = world.parties();
+    world.step("6. Revocation notice (hcp/grants/revoked 0.1)");
+    let (client_vid, revoked_at) = {
+        let state = world.shared.state.lock().expect("state");
+        let grant = state
+            .grants
+            .iter()
+            .find(|g| g.grant_id == grant_id)
+            .ok_or_else(|| format!("no grant {grant_id}"))?;
+        let revoked_at = grant.revoked_at.clone().ok_or("the grant is not revoked")?;
+        (grant.client.clone(), revoked_at)
+    };
+    let client = world.by_vid(&client_vid)?;
+    // noticeId is HCP's jti: minted once per notice, kept on every delivery attempt.
+    let notice =
+        json!({ "grantId": grant_id, "noticeId": world.ids().next(), "revokedAt": revoked_at });
     let revoked_uri = request_uri(revoked::Payload::TYPE_URI);
-    let tell = world.request(p, c, &revoked_uri, notice, None).await;
-    let ack = world.exchange(p, c, &tell).await?;
+    let tell = world.request(p, client, &revoked_uri, notice, None).await;
+    let ack = world.exchange(p, client, &tell).await?;
     if ack["type"] != revoked::Response::TYPE_URI {
         return Err("expected the acknowledgement".into());
     }
+    Ok(tell)
+}
 
-    // After: the same query again fails — the grant is checked on every request (HCP 6.2.2)
-    world.step("After revoke: the same query fails with hcp:invalidToken");
-    let again = world.request(c, p, &query_uri, query_payload, None).await;
-    let refused = world.exchange(c, p, &again).await?;
+pub struct DemoResult {
+    pub transcript: String,
+    pub thread_id: String,
+    pub grant_id: String,
+    /// Step 5's reply, as received.
+    pub post_revoke_error: Value,
+    /// Step 6's notice, as sent.
+    pub notice: TrustTask<Value>,
+}
 
+/// The six steps in order.
+pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
+    step_discover(world).await?;
+    let Granted {
+        thread_id,
+        grant_id,
+    } = step_grant_request(world).await?;
+    step_query(world, &grant_id).await?;
+    step_revoke(world, &grant_id).await?;
+    let post_revoke_error = step_query_after_revoke(world, &grant_id).await?;
+    let notice = step_notice(world, &grant_id).await?;
     Ok(DemoResult {
         transcript: world.transcript(),
-        post_revoke_error: refused,
+        thread_id,
+        grant_id,
+        post_revoke_error,
+        notice,
     })
 }
