@@ -2,6 +2,7 @@ package trusttasks
 
 import (
 	"bytes"
+	"encoding"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -37,13 +38,16 @@ import (
 // are unexported. When T is comparable, so is Nullable[T]: two are == exactly
 // when they are in the same state and, for a value, hold == values.
 //
-// Only [Null] writes null. With a slice or map T, Value(nil) writes [] or {}
-// (unlike encoding/json, which writes a nil slice or map as null), so a set
+// With a plain slice or map T, only [Null] writes null: Value(nil) writes [] or
+// {} (unlike encoding/json, which writes a nil slice or map as null), so a set
 // member has one spelling per meaning and a nil slice cannot turn into null.
 // That matters where null and empty mean opposite things: on acl/* `allowedKeys`,
 // null (like absent) means every key and [] means none, so
 // Value(filtered) with nothing left in filtered writes [] and grants no key.
 // A decoded [] or {} is a Value holding an empty, non-nil slice or map.
+// A T that encodes itself (json.RawMessage, []byte, a type with MarshalJSON
+// or MarshalText) writes a nil value as T does: json.RawMessage(nil) and
+// []byte(nil) write null.
 //
 // Use a Nullable only as a struct field tagged `omitzero`. Each of these
 // fails silently:
@@ -97,9 +101,8 @@ func (n Nullable[T]) IsZero() bool {
 // errAbsentNullable is MarshalJSON's answer for an absent member.
 var errAbsentNullable = errors.New("trusttasks: an absent Nullable cannot be written; tag its member omitzero so that it is left out")
 
-// MarshalJSON writes null or the value, and a nil slice or map value as [] or
-// {}. An absent Nullable is an error: it
-// has nothing it may write, and writing null would turn "leave it unchanged"
+// MarshalJSON writes null or the value, and a nil plain slice or map value
+// as [] or {}. An absent Nullable is an error: it has nothing it may write, and writing null would turn "leave it unchanged"
 // into "clear it". A member tagged `omitzero` is left out before this is
 // called.
 func (n Nullable[T]) MarshalJSON() ([]byte, error) {
@@ -109,18 +112,48 @@ func (n Nullable[T]) MarshalJSON() ([]byte, error) {
 	case n.null:
 		return []byte("null"), nil
 	}
-	// Only Null writes null: a nil slice or map written as a value is empty.
-	switch v := reflect.ValueOf(&n.value).Elem(); v.Kind() {
-	case reflect.Slice:
-		if v.IsNil() {
-			return []byte("[]"), nil
-		}
-	case reflect.Map:
-		if v.IsNil() {
-			return []byte("{}"), nil
+	// A nil plain slice or map written as a value is empty, never null. A T
+	// that encodes itself keeps its own encoding.
+	if plainContainer[T]() {
+		switch v := reflect.ValueOf(&n.value).Elem(); v.Kind() {
+		case reflect.Slice:
+			if v.IsNil() {
+				return []byte("[]"), nil
+			}
+		case reflect.Map:
+			if v.IsNil() {
+				return []byte("{}"), nil
+			}
 		}
 	}
 	return json.Marshal(n.value)
+}
+
+var (
+	jsonMarshalerType = reflect.TypeFor[json.Marshaler]()
+	textMarshalerType = reflect.TypeFor[encoding.TextMarshaler]()
+)
+
+// plainContainer reports whether T is a slice or map that encoding/json
+// writes as a plain array or object: not []byte (written as base64), and
+// without a MarshalJSON or MarshalText of its own on T or *T.
+func plainContainer[T any]() bool {
+	t := reflect.TypeFor[T]()
+	switch t.Kind() {
+	case reflect.Slice:
+		if t.Elem().Kind() == reflect.Uint8 {
+			return false
+		}
+	case reflect.Map:
+	default:
+		return false
+	}
+	for _, m := range []reflect.Type{jsonMarshalerType, textMarshalerType} {
+		if t.Implements(m) || reflect.PointerTo(t).Implements(m) {
+			return false
+		}
+	}
+	return true
 }
 
 // UnmarshalJSON reads null as null and anything else as a value of T,

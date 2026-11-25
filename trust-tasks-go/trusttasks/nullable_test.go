@@ -2,6 +2,8 @@ package trusttasks_test
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
@@ -307,5 +309,57 @@ func TestNullableUnsupportedUses(t *testing.T) {
 	// As a map value, omitzero does not apply, so an absent entry fails.
 	if _, err := json.Marshal(map[string]trusttasks.Nullable[string]{"k": {}}); err == nil {
 		t.Error("a map holding an absent Nullable marshalled; update the type doc")
+	}
+}
+
+// spaced is a named slice with its own encoding: a space-separated string.
+type spaced []string
+
+func (s spaced) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strings.Join(s, " "))
+}
+
+// textMap is a named map that encodes itself through MarshalText.
+type textMap map[string]string
+
+func (m textMap) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d entries", len(m))), nil
+}
+
+// ptrSpaced has its MarshalJSON on the pointer. Nullable hands encoding/json
+// the value, which does not reach a pointer method, so a nil one writes null
+// as encoding/json does; the nil-to-empty rule still stays out of the way.
+type ptrSpaced []string
+
+func (s *ptrSpaced) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strings.Join(*s, " "))
+}
+
+// The nil-to-empty rule is for plain slices and maps. A T that encodes itself
+// writes a nil value as T does, so it never gains a [] or {} it did not ask
+// for: json.RawMessage(nil) and []byte(nil) write null, and a named type's
+// MarshalJSON or MarshalText is honoured.
+func TestNullableNilSelfEncodingTKeepsItsEncoding(t *testing.T) {
+	for _, c := range []struct {
+		name string
+		got  func() ([]byte, error)
+		want string
+	}{
+		{"nil json.RawMessage", trusttasks.Value(json.RawMessage(nil)).MarshalJSON, `null`},
+		{"json.RawMessage", trusttasks.Value(json.RawMessage(`{"a":1}`)).MarshalJSON, `{"a":1}`},
+		{"nil []byte", trusttasks.Value([]byte(nil)).MarshalJSON, `null`},
+		{"empty []byte", trusttasks.Value([]byte{}).MarshalJSON, `""`},
+		{"nil named slice with MarshalJSON", trusttasks.Value(spaced(nil)).MarshalJSON, `""`},
+		{"named slice with MarshalJSON", trusttasks.Value(spaced{"a", "b"}).MarshalJSON, `"a b"`},
+		{"nil named map with MarshalText", trusttasks.Value(textMap(nil)).MarshalJSON, `"0 entries"`},
+		{"nil named slice with a pointer MarshalJSON", trusttasks.Value(ptrSpaced(nil)).MarshalJSON, `null`},
+	} {
+		b, err := c.got()
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if string(b) != c.want {
+			t.Errorf("%s: wrote %s, want %s", c.name, b, c.want)
+		}
 	}
 }
