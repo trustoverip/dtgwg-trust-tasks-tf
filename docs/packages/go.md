@@ -29,6 +29,24 @@ the same reason). TypeScript hoists because structural typing makes it free.
    can say it. `trust-tasks-go/specs/smoke` pins this, on `vta/contexts/update/1.0`'s
    `signableKeys` ("absent: every key; present-but-empty: no keys").
 
+   A member whose schema admits `null` is a pointer too, required or not, and
+   **`omitempty` goes on optional members only**. A required nullable member
+   (`vta/contexts/update-did` 1.2's `did`, where `null` means "no DID of its
+   own") is `*string` with a plain `json:"did"` tag, so a nil writes
+   `"did": null`; with `omitempty` it dropped the key and the document failed
+   its own schema's `required`. `specs/smoke/required_nullable_test.go` pins
+   the prebuilt package, `TestRequiredNullableMembersKeepTheirKey` in
+   `cmd/trust-tasks-gen` the per-module generator.
+
+   An *optional* nullable member is still `*T` with `omitempty`, so Go cannot
+   tell `null` from absent: both decode to nil, and nil writes neither.
+   `acl/update` 0.3 reads `"label": null` as "clear the label" and an absent
+   `label` as "leave it unchanged"; a Go client can only send the second.
+   Saying both needs a different field type (a public API change), so it is
+   an open decision ([runtime-parity.md](../runtime-parity.md)). A member the
+   generator renders as `json.RawMessage` (a `oneOf` with `null`, for example)
+   is not affected: an explicit `null` survives in it.
+
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
    `scripts/release-bump-go.sh` refuses to propose such a bump and tells you what to
