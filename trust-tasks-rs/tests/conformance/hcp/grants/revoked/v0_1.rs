@@ -16,6 +16,15 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7d1f9b3e-4a6c-4e2d-8f5b-1c0a9e8d7f64\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/revoked/0.1#request\",\n  \"issuer\": \"did:web:context.provider.example\",\n  \"recipient\": \"did:web:booking-agent.example\",\n  \"issuedAt\": \"2027-03-01T00:00:05Z\",\n  \"threadId\": \"urn:uuid:0b9a8c7d-6e5f-4a3b-9c2d-1e0f9a8b7c65\",\n  \"payload\": {\n    \"grantId\": \"urn:uuid:9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b\",\n    \"revokedAt\": \"2027-03-01T00:00:00Z\",\n    \"reason\": \"delegation-ended\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2027-03-01T00:00:05Z\",\n    \"verificationMethod\": \"did:web:context.provider.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z4kR8sN2pW6tY1vB9cX3mL7qD5hF2jG8aZ4uE6oP1iT3yK9wV7nM5bQ2xS8fC4rH6eA1gJ3dU9zO5lT7kN2wB4\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:8b6d4f2a-1e9c-4a7b-8d5e-6f4a3b2c1d85\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/revoked/0.1#response\",\n  \"issuer\": \"did:web:booking-agent.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-24T11:00:03Z\",\n  \"threadId\": \"urn:uuid:e5a3c1b9-8d7f-4e2a-9b6c-3d2e1f0a9b74\",\n  \"payload\": {}\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
@@ -49,6 +58,22 @@ fn rejects_invalid_examples() {
         (
             "A SET `events` wrapper in the payload — the Type URI replaces it.",
             "{\n  \"events\": {\n    \"https://hcp.example/spec/events/grant-revoked\": {\n      \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n      \"revokedAt\": \"2026-11-24T11:00:01Z\"\n    }\n  }\n}",
+        ),
+        (
+            "`reason` outside the enumeration — the delegation's own reason for ending (HCP 17.6) is never sent; only `revoked` or `delegation-ended`.",
+            "{\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n  \"reason\": \"majority\",\n  \"revokedAt\": \"2027-03-01T00:00:00Z\"\n}",
+        ),
+        (
+            "`reason` in another casing — `delegation-ended` is HCP's value (HCP 8.2, 17.6) and is carried verbatim.",
+            "{\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n  \"reason\": \"delegationEnded\",\n  \"revokedAt\": \"2027-03-01T00:00:00Z\"\n}",
+        ),
+        (
+            "A `delegation-ended` notice without `revokedAt` — it carries the instant the delegation ended.",
+            "{\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n  \"reason\": \"delegation-ended\"\n}",
+        ),
+        (
+            "Missing `grantId` — the notice names the grant that ended.",
+            "{\n  \"reason\": \"revoked\",\n  \"revokedAt\": \"2026-11-24T11:00:01Z\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

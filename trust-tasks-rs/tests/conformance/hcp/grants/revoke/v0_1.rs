@@ -82,6 +82,10 @@ fn rejects_invalid_response_examples() {
             "A member in the revoke response — HCP answers 204 No Content, so the payload is the empty object.",
             "{\n  \"revoked\": true\n}",
         ),
+        (
+            "A response that says the grant was already revoked — revoking an already-revoked grant succeeds with the same empty object, so the answer never tells the two apart.",
+            "{\n  \"alreadyRevoked\": true\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

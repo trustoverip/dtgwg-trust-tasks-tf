@@ -82,16 +82,80 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The grant-revoked event's `grantId`: the grant that was revoked.
+    ///The grant-revoked event's `grantId`: the grant that was revoked or ended.
     #[serde(rename = "grantId")]
     pub grant_id: Urn,
-    ///The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3).
+    ///How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub reason: ::std::option::Option<PayloadReason>,
+    ///The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6).
     #[serde(rename = "revokedAt")]
     pub revoked_at: Instant,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum PayloadReason {
+    #[serde(rename = "revoked")]
+    Revoked,
+    #[serde(rename = "delegation-ended")]
+    DelegationEnded,
+}
+impl ::std::fmt::Display for PayloadReason {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Revoked => f.write_str("revoked"),
+            Self::DelegationEnded => f.write_str("delegation-ended"),
+        }
+    }
+}
+impl ::std::str::FromStr for PayloadReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "revoked" => Ok(Self::Revoked),
+            "delegation-ended" => Ok(Self::DelegationEnded),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///The client accepted the notice. Carries RFC 8935's `202 Accepted`, which has no body, so the payload is the empty object. A refusal is a trust-task-error, not this shape.
@@ -185,12 +249,17 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         grant_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
         revoked_at: ::std::result::Result<super::Instant, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
                 grant_id: Err("no value supplied for grant_id".to_string()),
+                reason: Ok(Default::default()),
                 revoked_at: Err("no value supplied for revoked_at".to_string()),
             }
         }
@@ -204,6 +273,16 @@ pub mod builder {
             self.grant_id = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for grant_id: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
             self
         }
         pub fn revoked_at<T>(mut self, value: T) -> Self
@@ -222,6 +301,7 @@ pub mod builder {
         fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 grant_id: value.grant_id?,
+                reason: value.reason?,
                 revoked_at: value.revoked_at?,
             })
         }
@@ -230,6 +310,7 @@ pub mod builder {
         fn from(value: super::Payload) -> Self {
             Self {
                 grant_id: Ok(value.grant_id),
+                reason: Ok(value.reason),
                 revoked_at: Ok(value.revoked_at),
             }
         }
@@ -262,7 +343,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/revoked/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The grant-revoked event's `grantId`: the grant that was revoked.\"},\"revokedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3).\"}},\"required\":[\"grantId\",\"revokedAt\"],\"title\":\"HCP — Revocation Notice — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/revoked/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The grant-revoked event's `grantId`: the grant that was revoked or ended.\"},\"reason\":{\"description\":\"How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation.\",\"enum\":[\"revoked\",\"delegation-ended\"],\"type\":\"string\"},\"revokedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6).\"}},\"required\":[\"grantId\",\"revokedAt\"],\"title\":\"HCP — Revocation Notice — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {

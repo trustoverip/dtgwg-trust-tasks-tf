@@ -11,13 +11,17 @@ import type { Instant, Urn } from "../../../../_shared/components.js";
  */
 export interface HCPRevocationNoticePayload {
   /**
-   * The grant-revoked event's `grantId`: the grant that was revoked.
+   * The grant-revoked event's `grantId`: the grant that was revoked or ended.
    */
   grantId: Urn;
   /**
-   * The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3).
+   * The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6).
    */
   revokedAt: Instant;
+  /**
+   * How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation.
+   */
+  reason?: "revoked" | "delegation-ended";
 }
 /**
  * The client accepted the notice. Carries RFC 8935's `202 Accepted`, which has no body, so the payload is the empty object. A refusal is a trust-task-error, not this shape.
@@ -83,11 +87,19 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "properties": {
     "grantId": {
       "$ref": "#/$defs/Urn",
-      "description": "The grant-revoked event's `grantId`: the grant that was revoked."
+      "description": "The grant-revoked event's `grantId`: the grant that was revoked or ended."
     },
     "revokedAt": {
       "$ref": "#/$defs/Instant",
-      "description": "The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3)."
+      "description": "The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6)."
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "revoked",
+        "delegation-ended"
+      ],
+      "description": "How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation."
     }
   },
   "$defs": {

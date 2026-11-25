@@ -7079,7 +7079,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::INVALID_TOKE
 pub mod error_codes {
     /// `hcp:invalidToken`
     ///
-    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a revoked grant also fails here: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but does not name the error (HCP 6.2.2), and this specification reads that evidence as invalid. Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
+    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a revoked grant also fails here: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but does not name the error (HCP 6.2.2), and this specification reads that evidence as invalid, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation" section). Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
     ///
     /// Declared `retryable: false`.
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
