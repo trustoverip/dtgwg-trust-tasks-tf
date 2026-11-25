@@ -103,6 +103,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 |---|---|---|
 | path parameter `{entryId}` (`DELETE /v2/entries/{entryId}`, HCP 9.2) | `entryId` | Moved from the path into the payload, unchanged. A Management Client names the entry by its `id` (HCP 9.4.5). |
 | query parameter `hardDelete=true` (HCP 9.4.5) | the Type URI | This task is the hard deletion; there is no member for it. |
+| `Idempotency-Key` header (HCP 9.6) | the document `id` | See [Repeated requests](#repeated-requests). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `entryId` | `entryId` | Unchanged. |
@@ -193,7 +194,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | invalid request | `malformed-request` | `malformedRequest` |
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
 | not authorized | `scope-denied`: the caller is not a Management Client acting for the Authorizing Principal (HCP 5.4.2, 6.1.9), a delegate names an entry outside the delegation's scope (HCP 17.4), or the entry does not exist, including one already hard-deleted (see [Repeated requests](#repeated-requests)) | `permissionDenied`, with one fixed `message` whatever the reason, which never discloses whether the entry exists (HCP 5.5, 9.7, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
-| conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and this operation carries none. A re-delivered document is handled under [Repeated requests](#repeated-requests). |
+| conflict | `idempotency-conflict` (HCP 9.6) | `idConflict` (see [Repeated requests](#repeated-requests)) |
 | version conflict | `version-conflict` | Does not arise: hard deletion names no version and removes every version (HCP 5.4, 5.4.2). |
 | credential invalid | `credential-invalid` | Does not arise: it concerns a credential written as an entry's content (HCP 14.6), and nothing is written. |
 | subject unavailable | `subject-unavailable` | `unavailable`. Under end-to-end encrypted storage, the request needs the Context Subject's trust domain, which cannot be reached (HCP 4.8); the Management Client may retry later. |
@@ -212,7 +213,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 An entry that does not exist, including one already hard-deleted, is refused with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal: HCP 5.5 makes "the entry does not exist" a not-authorized condition and forbids saying which, so a caller cannot tell an erased entry from one it may not reach.
 
-A re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): it is not executed twice, produces no second `context.hardDeleted` event, and is answered with the original response.
+HCP's HTTP binding asks a provider to accept an idempotency key on `DELETE /v2/entries/{entryId}` (a SHOULD, HCP 9.6), the path a hard deletion takes with `hardDelete=true` (HCP 9.4.5). As for [`hcp/entries/withdraw`](../../withdraw/0.1/spec.md#repeated-requests), this task uses the document `id` as that key, under [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is not executed twice, produces no second `context.hardDeleted` event, and is answered with the original response; a reused `id` with different content is refused with `idConflict`. The provider **MUST** retain its duplicate-execution record, with the response, for at least 24 hours (HCP 9.6), and for at least the acceptance window it applies to `issuedAt`.
 
 ## Pending HCP confirmation
 
