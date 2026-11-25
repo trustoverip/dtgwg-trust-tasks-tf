@@ -73,6 +73,51 @@ that does not reassemble. It saved 1.07 MiB of the `.crate`.
   definition gets a new macro and an unchanged one keeps its name across
   regenerations.
 
+## Generated types fold empty and null into absent
+
+typify (`typify-impl` 0.6.2, `src/structs.rs`, `generate_serde_attr` and
+`has_default`) gives an **optional** member these serde attributes:
+
+- an array without `uniqueItems`: a bare `Vec` with `default` and
+  `skip_serializing_if = "Vec::is_empty"`, so `[]` and absent decode alike and
+  `[]` is written as absent. An array with `uniqueItems` becomes
+  `Option<Vec<_>>`, and `Some(vec![])` is written `[]`;
+- an object with no `properties`: a bare map with `skip_serializing_if =
+  "Map::is_empty"`, so `{}` is written as absent;
+- a nullable member: `Option<_>` with `skip_serializing_if = "Option::is_none"`,
+  so `null` and absent decode alike, and `null` is written as absent.
+
+A **required** member gets no `default` and no `skip_serializing_if`: a
+required nullable member is an `Option<_>` that is written `null`. The loss
+happens on decode too, so a Rust consumer cannot tell the cases apart even
+when the sender kept them. Proofs are unaffected: they are verified over the
+document as received
+([DEVELOPMENT.md](../DEVELOPMENT.md#extends-routing-a-newer-version-to-the-version-a-consumer-implements)).
+
+The generator is not changed for this: that would change field types in every
+family (a `feat(rs)!` workspace event), and still not tell null from absent.
+Where the difference carries meaning, the schema carries it instead. In the
+`hcp` family, each of these is *pending HCP confirmation* (question 42):
+
+- `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
+  `grantId` are required and nullable;
+- an export's `options` is required, with `includeVersions` and
+  `includeAudit`, which say whether `versions` and `audit` were asked for.
+  Read those, not whether the arrays are present;
+- get and query `directives` are required and nullable (null: the requester
+  is not a Context Client);
+- a query's `categories` has `minItems: 1`, so a dropped `[]` cannot widen
+  the query.
+
+What remains in `hcp` is harmless, because HCP treats empty and absent (or
+null and absent) alike there: `evidence`, `relationships`, `confirmations`,
+`drawnFrom`, `covers`, `revealed`, an `AuditEvent`'s `categories`, `disclosed`
+and `data`, an export's `directives` and `delegations`, the `narrowedTo`,
+`metadata`, `unmapped`, `proposal` and `categoryMap` maps, and the optional
+nullable `language`, `confidence`, `validUntil` and `dimension`. A new `hcp`
+member whose empty or null value means something follows the same rule. The
+cross-runtime picture is in [`runtime-parity.md`](../runtime-parity.md#differences).
+
 ## `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with
