@@ -8,7 +8,7 @@
       "type": "object",
       "additionalProperties": true,
       "required": ["@context", "type", "schema", "subject", "exportedBy", "exportedAt", "entries", "rules"],
-      "description": "An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.",
+      "description": "An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.",
       "properties": {
         "@context": {
           "type": ["array", "string"],
@@ -59,19 +59,19 @@
         },
         "rules": {
           "type": "array",
-          "maxItems": 1024,
+          "maxItems": 1000000,
           "items": { "$ref": "standing-rule.schema.json#/$defs/StandingRule" },
           "description": "The Context Subject's standing rules (HCP 5.4.1, 6.3)."
         },
         "directives": {
           "type": "array",
-          "maxItems": 1024,
+          "maxItems": 1000000,
           "items": { "$ref": "directive.schema.json#/$defs/Directive" },
           "description": "The Context Subject's directives (HCP 5.4.1, 6.4)."
         },
         "delegations": {
           "type": "array",
-          "maxItems": 256,
+          "maxItems": 1000000,
           "items": { "$ref": "delegation.schema.json#/$defs/Delegation" },
           "description": "The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2)."
         },
