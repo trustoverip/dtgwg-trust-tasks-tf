@@ -473,6 +473,10 @@ and `/specs/index.json`; the bundles are not committed.
   one, change all. `check-bindings` fails on a shipped schema with a dangling
   `#/$defs/` reference, which is what catches the copies agreeing on a wrong
   rule. Types are still generated from the whole schema.
+  The Rust prebuilt tree then spells each `$defs` entry several of its
+  constants share once, in `trust-tasks-rs/src/specs/shared_defs.rs`, and
+  names it with `concat!` — the constants' values are unchanged, so this is not
+  a rule to mirror ([Rust notes](packages/rust.md#the-prebuilt-tree-spells-each-shared-defs-entry-once)).
 - **`propertyOrder`, `defsOrder` and `defOrigins` restore what canonical form
   loses** — the authored member order, the `$defs` order the TS/Go/Dart
   inliners produce (a last-in-first-out `$ref` frontier, replayed in

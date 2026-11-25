@@ -634,24 +634,71 @@ function tsSchemaConst(src, name) {
   return null;
 }
 
+/** Undo a Rust string literal's escapes, and rustfmt's `\` line continuations. */
+function rustUnescape(body) {
+  const simple = { n: "\n", r: "\r", t: "\t", 0: "\0", "\\": "\\", '"': '"', "'": "'" };
+  return body.replace(
+    /\\(?:\r?\n\s*|u\{([0-9a-fA-F]+)\}|x([0-9a-fA-F]{2})|(.))/g,
+    (_, u, x, c) =>
+      u ? String.fromCodePoint(parseInt(u, 16))
+      : x ? String.fromCharCode(parseInt(x, 16))
+      : c === undefined ? ""
+      : simple[c] ?? c,
+  );
+}
+
+const RUST_STR = String.raw`"((?:[^"\\]|\\[\s\S])*)"`;
+
 /**
- * Parse `const PAYLOAD_SCHEMA: Option<&'static str> = Some("…")` out of the
+ * The `$defs` entries the prebuilt tree spells once, in
+ * `src/specs/shared_defs.rs` (trust-tasks-codegen/src/shared_defs.rs): macro
+ * name → the string literal it expands to. Empty when the file is absent.
+ */
+const rustSharedDefs = (() => {
+  const file = path.join(RS_DIR, "shared_defs.rs");
+  const out = new Map();
+  if (!fs.existsSync(file)) return out;
+  const src = fs.readFileSync(file, "utf8");
+  const re = new RegExp(String.raw`macro_rules!\s+(\w+)\s*\{\s*\(\)\s*=>\s*\{\s*${RUST_STR}\s*\};?\s*\}`, "g");
+  for (const m of src.matchAll(re)) out.set(m[1], rustUnescape(m[2]));
+  return out;
+})();
+
+/**
+ * Parse `const PAYLOAD_SCHEMA: Option<&'static str> = Some(…)` out of the
  * `impl crate::Payload for <ident>` block of a generated Rust module.
  *
- * rustfmt splits the string literal across lines with `\` continuations, so the
- * lines are rejoined before unescaping.
+ * The value is a string literal, or a `concat!` of string literals and
+ * `crate::specs::shared_defs::NAME!()` calls — a `$defs` entry several modules
+ * carry, spelled once — which is resolved here as rustc expands it.
  */
 function rustSchemaConst(src, ident) {
   const implStart = src.indexOf(`impl crate::Payload for ${ident} {`);
   if (implStart < 0) return null;
   const implEnd = src.indexOf("\n}", implStart);
   const block = src.slice(implStart, implEnd < 0 ? undefined : implEnd);
-  const m = /const PAYLOAD_SCHEMA: Option<&'static str> = Some\(\s*"([\s\S]*?)"\s*,?\s*\)\s*;/.exec(block);
-  if (!m) return null;
-  // Undo rustfmt's line continuations, then the Rust string escapes.
-  const joined = m[1].replace(/\\\r?\n\s*/g, "");
+  const head = /const PAYLOAD_SCHEMA: Option<&'static str> = Some\(\s*/.exec(block);
+  if (!head) return null;
+  let rest = block.slice(head.index + head[0].length);
+  let text;
+  const lit = new RegExp(String.raw`^${RUST_STR}`).exec(rest);
+  if (lit) {
+    text = rustUnescape(lit[1]);
+  } else if (rest.startsWith("concat!(")) {
+    rest = rest.slice("concat!(".length);
+    const arg = new RegExp(String.raw`^\s*(?:${RUST_STR}|crate::specs::shared_defs::(\w+)!\(\))\s*,?`);
+    text = "";
+    for (let m; (m = arg.exec(rest)); rest = rest.slice(m[0].length)) {
+      if (m[2] === undefined) text += rustUnescape(m[1]);
+      else if (rustSharedDefs.has(m[2])) text += rustSharedDefs.get(m[2]);
+      else return null;
+    }
+    if (!/^\s*\)/.test(rest)) return null;
+  } else {
+    return null;
+  }
   try {
-    return JSON.parse(JSON.parse(`"${joined}"`));
+    return JSON.parse(text);
   } catch {
     return null;
   }
