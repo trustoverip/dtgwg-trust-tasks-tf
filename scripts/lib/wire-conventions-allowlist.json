@@ -19,18 +19,6 @@
     "hcp/_shared": {
       "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 member names carried verbatim as external vocabulary (SPEC §4.10 rule 5): evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, and delegation `ended.at` (17.2, 17.6), the instant the delegation ended. They are kept so that the objects an export carries pass through unchanged (5.4.1, 5.4.3).",
       "timestamp-name timestamp": "Human Context Protocol (HCP) 2.0-draft-3 audit event `timestamp` (8.2), the instant the event occurred, carried verbatim as external vocabulary (SPEC §4.10 rule 5) so that an event read with hcp/audit/read is the event an export carries (5.4.1)."
-    },
-    "hcp/entries/query": {
-      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
-    },
-    "hcp/entries/get": {
-      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
-    },
-    "hcp/entries/create": {
-      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
-    },
-    "hcp/entries/revise": {
-      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
     }
   }
 }

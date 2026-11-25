@@ -72,7 +72,6 @@
       "sha-384": "IANA Named Information Hash Algorithm Registry",
       "sha-512": "IANA Named Information Hash Algorithm Registry",
       "trust-domain": "Human Context Protocol (HCP) 2.0-draft-3",
-      "verifiable-credential": "Human Context Protocol (HCP) 2.0-draft-3",
       "x509_hash": "OpenID for Verifiable Presentations 1.0 client identifier prefix"
     }
   },
