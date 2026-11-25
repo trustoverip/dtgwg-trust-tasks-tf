@@ -51,6 +51,7 @@
       "context-client": "Human Context Protocol (HCP) 2.0-draft-3",
       "cross-platform": "WebAuthn AuthenticatorAttachment",
       "cryptographically-verified": "Human Context Protocol (HCP) 2.0-draft-3",
+      "delegation-ended": "Human Context Protocol (HCP) 2.0-draft-3",
       "decentralized_identifier": "OpenID for Verifiable Presentations 1.0 client identifier prefix",
       "eddsa-jcs-2022": "W3C Data Integrity EdDSA Cryptosuites",
       "eddsa-rdfc-2022": "W3C Data Integrity EdDSA Cryptosuites",

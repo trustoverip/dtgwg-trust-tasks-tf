@@ -11,7 +11,7 @@ carries:
   reference: https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md
   operation: Revocation notification
 category: access-control
-keywords: [hcp, human-context-protocol, grant, revocation, notification, security-event-token]
+keywords: [hcp, human-context-protocol, grant, revocation, delegation, notification, security-event-token]
 parties:
   - role: HCP Provider
     requirement: REQUIRED
@@ -42,7 +42,8 @@ exposure:
   actsAsSubject: false
   ingests: metadata
   rationale: >-
-    The notice carries only a grant identifier and an instant; the acknowledgement carries nothing.
+    The notice carries only a grant identifier, an instant and whether the grant was revoked or ended with its
+    delegation; the acknowledgement carries nothing.
 retention:
   class: durable
   rationale: >-
@@ -56,7 +57,7 @@ related:
 
 ## Abstract
 
-The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, where that client holds disclosed entries and has registered a notification endpoint (HCP 6.2.2), and the client acknowledges. HCP sends this notice as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any Trust Task binding.
+The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, where that client holds disclosed entries and has registered a notification endpoint (HCP 6.2.2), and the client acknowledges. HCP sends this notice as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any Trust Task binding. The same notice also announces a grant that ended because the delegation it was authorized under ended (HCP 17.6), *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)).
 
 It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)). The revocation itself is [`hcp/grants/revoke`](../../revoke/0.1/spec.md).
 
@@ -70,7 +71,9 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider and client that use this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation notices; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider and client that use this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation notices; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md), *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+
+This specification makes one declared departure from HCP: a delivery attempt after the first carries a fresh `issuedAt` and `proof`, where HCP 9.9 sends the same token on every attempt (see [Delivery rules carried from HCP](#delivery-rules-carried-from-hcp)). It is *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -84,6 +87,7 @@ The client does not need to hold any authority of its own to acknowledge.
 
 - **HCP Provider**, **Context Client** and **grant** have their HCP 2.0-draft-3 meanings.
 - The **grant-revoked event** is HCP's event `https://hcp.example/spec/events/grant-revoked`, with members `grantId` and `revokedAt`.
+- A **delivery attempt** is one sending of the notice. Every attempt for one grant's ending carries the same `id`, `threadId` and payload; each carries its own `issuedAt` and `proof`.
 
 ### HCP field mapping
 
@@ -93,12 +97,13 @@ The Security Event Token's claims map to the Trust Task envelope, and the event'
 |---|---|---|
 | `iss` | `issuer` | The provider's VID. |
 | `aud` | `recipient` | The client's VID. |
-| `jti` | `id` | **Identical on every delivery attempt**, so the client's duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) absorbs retries. |
-| `iat` | `issuedAt` | Whole seconds, as SET instants already are. Identical on every attempt. |
+| `jti` | `id` | **Identical on every delivery attempt**, so a client that already accepted the notice recognizes a later attempt by its `id` ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)). |
+| `iat` | `issuedAt` | Whole seconds, as SET instants already are. **Fresh on every delivery attempt**: the time that attempt is sent. A declared departure from HCP 9.9, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). |
 | `events` key `https://hcp.example/spec/events/grant-revoked` | the Type URI | |
 | event `grantId` | `grantId` | Unchanged. |
-| event `revokedAt` | `revokedAt` | Unchanged. |
-| JWS signature | `proof` | See [Authorization](#authorization) for the key. |
+| event `revokedAt` | `revokedAt` | Unchanged for a revocation. For a grant ended with its delegation, when the delegation ended (HCP 17.6). |
+| `grant.expired` audit `reason` `delegation-ended` (HCP 8.2, 17.6) | `reason` | OPTIONAL. `revoked` or `delegation-ended`; absent means `revoked`. HCP's event has no such member; it is added, *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)). |
+| JWS signature | `proof` | See [Authorization](#authorization) for the key. Made afresh on every delivery attempt. |
 | RFC 8935 `202 Accepted` | the empty `#response` payload | |
 | RFC 8935 `400` error codes | `trust-task-error` codes | See [Errors](#errors). |
 
@@ -113,7 +118,7 @@ HCP sends the notice to the notification endpoint the client registered. Here th
 
 ## Request
 
-The provider sends the notice to the client. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `grantId`, the grant that was revoked, and `revokedAt`, when. Both are REQUIRED.
+The provider sends the notice to the client. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `grantId`, the grant that ended, and `revokedAt`, when. Both are REQUIRED. `reason` is OPTIONAL: `revoked` for a revocation (HCP 6.2), which is also what its absence means, or `delegation-ended` for a grant that ended because the delegation it was authorized under ended (HCP 17.6), *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)). A provider **MUST** send `reason: "delegation-ended"` for such a grant, with `revokedAt` the instant the delegation ended, and a client **MUST** act on the notice the same way whichever `reason` it carries.
 
 ### A grant was revoked
 
@@ -140,6 +145,34 @@ The provider sends the notice to the client. The payload is the top-level schema
 }
 ```
 
+### A grant ended with its delegation
+
+The delegation under which a delegate authorized the grant has ended, so the grant ended at the same instant (HCP 17.6).
+
+```json
+{
+  "id": "urn:uuid:7d1f9b3e-4a6c-4e2d-8f5b-1c0a9e8d7f64",
+  "type": "https://trusttasks.org/spec/hcp/grants/revoked/0.1#request",
+  "issuer": "did:web:context.provider.example",
+  "recipient": "did:web:booking-agent.example",
+  "issuedAt": "2027-03-01T00:00:05Z",
+  "threadId": "urn:uuid:0b9a8c7d-6e5f-4a3b-9c2d-1e0f9a8b7c65",
+  "payload": {
+    "grantId": "urn:uuid:9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
+    "revokedAt": "2027-03-01T00:00:00Z",
+    "reason": "delegation-ended"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2027-03-01T00:00:05Z",
+    "verificationMethod": "did:web:context.provider.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z4kR8sN2pW6tY1vB9cX3mL7qD5hF2jG8aZ4uE6oP1iT3yK9wV7nM5bQ2xS8fC4rH6eA1gJ3dU9zO5lT7kN2wB4"
+  }
+}
+```
+
 ## Response
 
 The client acknowledges the notice. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): the empty object, which carries RFC 8935's `202 Accepted`. It is declared because the provider relies on it: the first acknowledgement is what HCP's `revocation.notified` event records ([SPEC §4.4.2](/SPEC.md#442-acknowledging-a-fire-and-forget-task)). A refusal is a `trust-task-error` (see [Errors](#errors)).
@@ -158,7 +191,7 @@ The client acknowledges the notice. The payload is the sub-schema reachable via 
 }
 ```
 
-A client acknowledges a re-delivered notice the same way, from its duplicate-execution record.
+A client that receives a bit-for-bit identical copy of a notice it already accepted acknowledges it the same way, from its duplicate-execution record. A later delivery attempt differs in `issuedAt` and `proof`, and is answered as [Delivery rules carried from HCP](#delivery-rules-carried-from-hcp) describes.
 
 ## Errors
 
@@ -173,18 +206,28 @@ RFC 8935's `400` error codes map to Trust Task errors as follows.
 
 Every one of these is `retryable: false`. A non-retryable error ends delivery, and the provider records it as abandoned. A client that is temporarily unable to process the notice answers `unavailable`, and the provider retries.
 
+`idConflict` is the exception. A client that already accepted an earlier delivery attempt answers a later one with `idConflict`, as [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) requires of a document whose `id` it holds with different content. For this task that answer shows the client accepted the notice: the provider **MUST** record it as the acknowledgement, not as a failure, and stops delivery.
+
 ## Delivery rules carried from HCP
 
 - **When a notice is sent.** Only if the client holds entries disclosed under the grant and has registered a notification endpoint, which here is its VID (see [Parties](#parties)) (HCP 6.2.2, 6.2.3). A client with no endpoint is not notified; its copies were capped at one hour of use (HCP 7.6).
-- **Retries.** Until it receives an acknowledgement or a non-retryable error, the provider **MUST** retry on a failed delivery and on any answer other than an acknowledgement or a non-retryable error, with exponential backoff, for at least 5 attempts over at least one hour, with the same document: the same `id`, `issuedAt` and `proof` (HCP 9.9).
+- **Retries.** Until it receives an acknowledgement (or `idConflict`, see [Errors](#errors)) or a non-retryable error, the provider **MUST** make a further delivery attempt on a failed delivery and on any other answer, with exponential backoff, for at least 5 attempts over at least one hour (HCP 9.9). This is a carriage rule, a declared departure from HCP 9.9's "same token" wording, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)): every attempt **MUST** reuse the notice's `id`, `threadId` and payload, and **MUST** carry a fresh `issuedAt`, the time of that attempt, and a fresh `proof` over it. The reused `id` lets the client recognize the notice; the fresh `issuedAt` keeps a late attempt within the client's freshness check. In the framework's terms a later attempt is not a retry of the same document ([SPEC §8.4](/SPEC.md#84-retry-semantics)): it is the same notice sent again under its `id`.
 - **Audit.** The provider records `revocation.notified` on the first acknowledgement, or when it abandons delivery (HCP 6.2.3), and meets HCP's duties on abandonment (HCP 6.2.4).
-- **Freshness.** HCP's rule that a client **SHOULD** reject a SET whose `iat` differs from local time by more than 300 seconds (HCP 9.9) applies to `issuedAt` unchanged. HCP's own text is in tension here: every retry over at least one hour carries the same token, so a retry after 300 seconds is stale by that rule. This specification does not resolve it; it is an open question for the HCP editors. A client that acknowledged the first delivery is unaffected, because its duplicate-execution record answers a retry before freshness matters: that record **MUST** cover at least the provider's whole retry period, so a retry inside it is acknowledged, not executed again. A client that never received an earlier attempt and rejects a late one as stale leaves the provider to abandon delivery (HCP 6.2.4).
+- **Freshness.** HCP's rule that a client **SHOULD** reject a SET whose `iat` differs from local time by more than 300 seconds (HCP 9.9) applies to each attempt's `issuedAt`. Because every attempt carries a fresh `issuedAt`, a client that missed the early attempts can still accept a later one; under HCP's own text every attempt carries the first one's `iat`, so any attempt after 300 seconds would be stale. A client's duplicate-execution record for this task **MUST** cover at least the provider's whole retry period, so that a later attempt of a notice it already accepted is recognized by its `id` and never acted on twice.
 - **No notice after relinquishment.** The provider sends no notice to a client that relinquished the grant itself (HCP 5.2.7).
 - **Independence.** The revocation took effect at `revokedAt` whether or not this notice is ever delivered (HCP 6.2.3). A client that learns of the revocation another way, such as `hcp:invalidToken` on a query (HCP 6.2.2), acts on it at once.
 - **On receipt.** The client **MUST** stop using every copy of context disclosed under the grant, whatever its `useUntil`, and **MUST NOT** pass any of them on (HCP 6.2.2, 7.6). The one exception is a copy kept in a record under a legal obligation the client declared at registration, which it keeps only to meet that obligation (HCP 6.2.5). It also stops using the grant's token. HCP does not require deletion, and the provider cannot enforce it (HCP 6.2.2).
-- **A delegation that ends.** When a delegation ends, every grant authorized under it ends with status `expired`, not `revoked`, and "invalidation and notification follow 6.2.2–6.2.4, as for a revocation" (HCP 17.6). HCP names only the grant-revoked event, so whether such a grant is announced with this notice is an open question for the HCP editors. This version of the task is defined for revocation.
+- **A delegation that ends.** When a delegation ends, every grant authorized under it ends with status `expired`, not `revoked`, and "invalidation and notification follow 6.2.2–6.2.4, as for a revocation" (HCP 17.6). HCP names only the grant-revoked event. This specification announces such a grant with this notice, carrying `reason: "delegation-ended"` (the reason HCP's `grant.expired` audit event records, HCP 8.2) and `revokedAt` the instant the delegation ended, *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)). The delivery rules above apply to it unchanged. A grant that reaches its own `expiresAt` is not announced.
 
 Over TSP without a return path, the acknowledgement is delivered best-effort ([TSP binding 0.2 §6](../../../../../bindings/tsp/0.2/spec.md)), so the provider may see no acknowledgement for a notice the client accepted. It then retries, and abandons as HCP describes.
+
+## Pending HCP confirmation
+
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+
+- **Question 3 — freshness versus retries.** Every delivery attempt reuses the notice's `id` but carries a fresh `issuedAt` and `proof`, and the client applies HCP's 300-second check to that `issuedAt`. This is a declared departure from HCP 9.9, which sends the same token on every attempt (see [Delivery rules carried from HCP](#delivery-rules-carried-from-hcp)).
+- **Question 4 — a grant ended with its delegation.** It is announced with this notice, with `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended (HCP 17.6). The `reason` member is an addition HCP's event does not have (see [Request](#request)).
+- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors.
 
 ## What HCP requires that a document cannot express
 
@@ -196,7 +239,7 @@ Over TSP without a return path, the acknowledgement is delivered best-effort ([T
 
 ### Data carried
 
-The notice carries a grant identifier and the instant of revocation; the acknowledgement carries nothing. Neither carries context or tokens. A producer **MUST NOT** put the revocation's reason, or anything about the person, in `ext`: HCP's event carries no reason, and a reason could disclose why the person withdrew.
+The notice carries a grant identifier, the instant the grant ended and, optionally, `reason`; the acknowledgement carries nothing. Neither carries context or tokens. `reason` says only whether the grant was revoked or ended with its delegation. It **MUST NOT** carry why: a provider **MUST NOT** send the delegation's own reason for ending (HCP 17.6), such as `majority`, which would disclose the person's age, and **MUST NOT** put that, the revocation's reason, or anything about the person, in `ext`. A reason for a revocation could disclose why the person withdrew.
 
 ### Correlation
 

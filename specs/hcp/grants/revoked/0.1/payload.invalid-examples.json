@@ -31,6 +31,36 @@
     }
   },
   {
+    "note": "`reason` outside the enumeration — the delegation's own reason for ending (HCP 17.6) is never sent; only `revoked` or `delegation-ended`.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2027-03-01T00:00:00Z",
+      "reason": "majority"
+    }
+  },
+  {
+    "note": "`reason` in another casing — `delegation-ended` is HCP's value (HCP 8.2, 17.6) and is carried verbatim.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": "2027-03-01T00:00:00Z",
+      "reason": "delegationEnded"
+    }
+  },
+  {
+    "note": "A `delegation-ended` notice without `revokedAt` — it carries the instant the delegation ended.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "reason": "delegation-ended"
+    }
+  },
+  {
+    "note": "Missing `grantId` — the notice names the grant that ended.",
+    "payload": {
+      "revokedAt": "2026-11-24T11:00:01Z",
+      "reason": "revoked"
+    }
+  },
+  {
     "variant": "response",
     "note": "A member in the acknowledgement — RFC 8935's 202 Accepted has no body, so the payload is the empty object.",
     "payload": {

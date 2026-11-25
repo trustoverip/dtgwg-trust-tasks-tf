@@ -32,5 +32,12 @@
     "payload": {
       "revoked": true
     }
+  },
+  {
+    "variant": "response",
+    "note": "A response that says the grant was already revoked — revoking an already-revoked grant succeeds with the same empty object, so the answer never tells the two apart.",
+    "payload": {
+      "alreadyRevoked": true
+    }
   }
 ]
