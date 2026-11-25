@@ -10,8 +10,11 @@
 //! "clear the label" and an absent one as "leave it unchanged", and an
 //! `expiresAt: null` makes the entry permanent. `trust-tasks-build`'s
 //! `presence` pass rewrites those fields (`Option<Vec<T>>`,
-//! `Option<Option<T>>`); its own tests cover the other shapes (maps, a
-//! `{"type": "null"}` member) on a fixture schema.
+//! `Option<Option<T>>`), and reads every other optional member through a
+//! helper that refuses a `null` the schema has no form for, instead of reading
+//! it as absent. Its own tests cover the field shapes on a fixture schema
+//! (a `{"type": "null"}` member, an intrinsic `default`, `true`), and
+//! `specs::presence`'s unit tests run the helpers on each shape.
 #![cfg(feature = "acl")]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
@@ -98,6 +101,21 @@ fn a_null_where_the_schema_forbids_it_is_still_refused() {
 }
 
 #[test]
+fn a_null_on_an_optional_member_without_a_null_form_is_refused() {
+    // acl/update 0.3 `purposes`: "There is no null form." Before, `null` was
+    // read as absent ("leave unchanged") and re-encoded without the member.
+    for member in ["purposes", "approve", "keys", "ext"] {
+        let err = serde_json::from_value::<update::Payload>(json!({
+            "subject": "did:example:alice",
+            member: null
+        }))
+        .expect_err(member)
+        .to_string();
+        assert!(err.contains("no null form"), "{member}: {err}");
+    }
+}
+
+#[test]
 fn the_builder_writes_each_state() {
     let clear = update::Payload::builder()
         .subject("did:example:alice")
@@ -129,6 +147,10 @@ fn the_builder_writes_each_state() {
     );
 
     let none_redacted: show::Response = show::Response::builder()
+        // `entry` is *required* and nullable, so it is a single `Option`:
+        // `None` here is the member's `null` (always written), not the
+        // optional-member rule above where `None::<T>` sends `null` and leaving
+        // the setter out omits the member.
         .entry(None::<show::AclEntry>)
         .redacted_fields(Vec::<show::ResponseRedactedFieldsItem>::new())
         .try_into()
@@ -137,4 +159,43 @@ fn the_builder_writes_each_state() {
         serde_json::to_value(&none_redacted).unwrap(),
         json!({ "entry": null, "redactedFields": [] })
     );
+}
+
+/// An optional map member: `{}` stays present and empty, absent stays absent,
+/// and `null` (no null form) is refused.
+#[cfg(feature = "vta")]
+mod map_member {
+    use super::*;
+    use trust_tasks_rs::specs::vta::did_templates::update::v3_2 as templates;
+
+    fn payload(defaults: Option<Value>) -> Value {
+        let mut template = json!({
+            "schemaVersion": 1,
+            "kind": "agent",
+            "name": "example",
+            "document": { "id": "did:webvh:{SCID}:example.com:{DID}" }
+        });
+        if let Some(d) = defaults {
+            template["defaults"] = d;
+        }
+        json!({ "name": "example", "template": template })
+    }
+
+    #[test]
+    fn an_empty_map_stays_present_and_empty() {
+        let p: templates::Payload = round_trips(payload(Some(json!({}))));
+        assert_eq!(p.template.defaults.map(|m| m.len()), Some(0));
+    }
+
+    #[test]
+    fn an_absent_map_stays_absent() {
+        let p: templates::Payload = round_trips(payload(None));
+        assert!(p.template.defaults.is_none());
+    }
+
+    #[test]
+    fn a_null_map_is_refused() {
+        let err = serde_json::from_value::<templates::Payload>(payload(Some(Value::Null)));
+        assert!(err.unwrap_err().to_string().contains("no null form"));
+    }
 }
