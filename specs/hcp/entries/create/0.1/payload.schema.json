@@ -8,8 +8,9 @@
   "required": ["schema", "subject", "content", "classification", "assertion", "record", "accessToken"],
   "properties": {
     "schema": {
-      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Uri",
-      "description": "HCP `schema`: the entry structure version (HCP 4.2), `https://hcp.example/spec/entry/2.0` for HCP 2.0-draft-3. A `schema` the provider does not accept is refused with `malformedRequest` (HCP 5.2.3)."
+      "type": "string",
+      "const": "https://hcp.example/spec/entry/2.0",
+      "description": "HCP `schema`: the entry structure version, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3's create request takes this one value: v1 entry forms are accepted through hcp/import only (HCP 4.3). Any other value fails the schema and is refused with `malformedRequest` (HCP 4.2, 5.2.3)."
     },
     "subject": {
       "$ref": "../../../_shared/0.1/entry-write.schema.json#/$defs/WriteSubject",

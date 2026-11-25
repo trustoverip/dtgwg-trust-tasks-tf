@@ -136,7 +136,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
 - `record.provenance.assertedBy.id` is REQUIRED unless `declarationType` is `person-declared`, when the provider records the Context Subject, or the content is a credential, when the provider takes the credential's issuer (HCP 5.2.3, 14.6). The schema does not check it.
 - `record.relationships[].target`, and a proposal's `entry`, name an entry by its `ref` for a Context Client and its `id` for a Management Client (HCP 5.2.3). Only a `contradicts` relationship carries a `proposal` (HCP 4.7.4).
 - `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
-- A `schema` the provider does not accept, or a category it does not hold, is refused with `malformedRequest` (HCP 5.2.3).
+- `schema` is `https://hcp.example/spec/entry/2.0`, compared as an exact string, the one value HCP 2.0-draft-3's create request takes: v1 entry forms are accepted through [`hcp/import`](../../../import/0.1/spec.md) only (HCP 4.2, 4.3). Any other `schema`, or a category the provider does not hold, is refused with `malformedRequest` (HCP 5.2.3).
 - The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and a proposal's `proposedBy` and `proposedAt`, and never takes them from a request (HCP 5.2.3, 4.7.4). The entry returned, like every stored entry, carries each proposal with all six of its members (the shared `RecordedProposal`).
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
 
@@ -233,7 +233,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 | HCP error (5.5) | Code | Trust Task error |
 |---|---|---|
-| invalid request | `malformed-request`: schema validation, a `confidence` that does not match `declarationType`, a `schema` the provider does not accept, a category it does not hold (HCP 5.2.3) | `malformedRequest` |
+| invalid request | `malformed-request`: schema validation, a `confidence` that does not match `declarationType`, a `schema` other than `https://hcp.example/spec/entry/2.0`, a category it does not hold (HCP 4.2, 5.2.3) | `malformedRequest` |
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
 | not authorized | `scope-denied`: a category the grant does not let the caller write, an `issuer-attested` write from a client that is not the issuer or authorized by it (HCP 5.2.3, 3.7) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict`: a retried request that does not match the original (HCP 9.6) | `idConflict`: the document `id` reused with different content ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)). See [Repeated requests](#repeated-requests). |
