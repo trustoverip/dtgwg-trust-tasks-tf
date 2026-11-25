@@ -23,6 +23,10 @@ It is a demonstration, not a reference provider. The keys are DEMO ONLY.
 
 `trust-task-error` 0.6 is used too, but has no bundle: every runtime models it by hand.
 
+The Rust port pins only the four `hcp/*` tasks: `trust-tasks-build` refuses to generate a
+framework specification, and `trust-task-discovery` and `trust-task-next-step` ship with the Rust
+runtime (`trust_tasks::specs`). The versions used are the same.
+
 ## Parties and keys (DEMO ONLY)
 
 Each key is 32 bytes, every byte the same value. Never use such keys for anything real.
