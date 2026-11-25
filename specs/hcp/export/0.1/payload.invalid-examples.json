@@ -42,6 +42,7 @@
         },
         "exportedBy": "https://context.provider.example",
         "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
         "entries": [],
         "rules": []
       },
@@ -65,6 +66,7 @@
         },
         "exportedBy": "https://context.provider.example",
         "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
         "entries": []
       }
     }
@@ -84,6 +86,7 @@
         },
         "exportedBy": "https://context.provider.example",
         "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
         "entries": [],
         "rules": [
           {
@@ -112,9 +115,20 @@
         },
         "exportedBy": "https://context.provider.example",
         "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeVersions": false, "includeAudit": false },
         "entries": [],
         "rules": []
       }
     }
+  },
+  {
+    "variant": "response",
+    "note": "An export without `options` — the carriage requires it, so that the export says whether `versions` and `audit` were asked for (HCP 5.4.1; question 42).",
+    "payload": {"export": {"@context": ["https://hcp.example/contexts/v2"], "type": "ContextExport", "schema": "https://hcp.example/spec/export/2.0", "subject": {"id": "did:web:person.example"}, "exportedBy": "https://context.provider.example", "exportedAt": "2026-11-25T09:00:02Z", "entries": [], "rules": []}}
+  },
+  {
+    "variant": "response",
+    "note": "An export whose `options` omits `includeAudit` — the carriage requires `includeVersions` and `includeAudit`, each true or false (HCP 5.4.1; question 42).",
+    "payload": {"export": {"@context": ["https://hcp.example/contexts/v2"], "type": "ContextExport", "schema": "https://hcp.example/spec/export/2.0", "subject": {"id": "did:web:person.example"}, "exportedBy": "https://context.provider.example", "exportedAt": "2026-11-25T09:00:02Z", "options": {"includeVersions": false}, "entries": [], "rules": []}}
   }
 ]

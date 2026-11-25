@@ -44,7 +44,7 @@
       "title": "HCP — Get Entry — response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["entry", "retrievalId", "minimization", "respondedAt"],
+      "required": ["entry", "retrievalId", "minimization", "directives", "respondedAt"],
       "description": "The HCP Get entry result (HCP 5.2.2): the entry, inside a result so that the minimization report has somewhere to sit. Failures use trust-task-error, not this shape.",
       "properties": {
         "entry": {
@@ -63,9 +63,9 @@
           "description": "HCP `minimization`: the minimization report (HCP 7.5). Its `method` is `none`, since the caller named a single entry (HCP 5.2.2, 9.4.2)."
         },
         "directives": {
-          "type": "array",
+          "type": ["array", "null"],
           "items": { "$ref": "../../../_shared/0.1/directive.schema.json#/$defs/Directive" },
-          "description": "HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies."
+          "description": "HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies. Null where the requester is not a Context Client, to whom HCP delivers no directives. HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that \"none applies\" is never confused with \"not a Context Client\", pending HCP confirmation (question 42)."
         },
         "respondedAt": {
           "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",

@@ -158,7 +158,7 @@ The provider answers with the entry. The payload is the sub-schema reachable via
 - `entry` is a `Disclosure` for a Context Client (HCP 7.4), with its `useUntil` (HCP 7.6), and the whole `Entry` for a Management Client.
 - `retrievalId` identifies this retrieval in the provider's audit log.
 - `minimization` is the minimization report (HCP 7.5). Its `method` is `none`: entry-selection minimization is inapplicable when the caller names a single entry, and its absence is not non-conformance (HCP 5.2.2).
-- `directives` are the directives that apply, where the requester is a Context Client (HCP 6.4). The schema leaves the member optional, as HCP's does, but every result to a Context Client carries it, empty when none applies.
+- `directives` are the directives that apply, where the requester is a Context Client (HCP 6.4). Every result to a Context Client carries it, empty when none applies; a result to a Management Client carries it as null. HCP's own shape leaves the member optional; the carriage requires it, a list or null, so that "none applies" is never confused with "not a Context Client", *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `respondedAt` is HCP's `timestamp`, renamed.
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
@@ -244,6 +244,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 4 — a re-delivered read.** It causes no second `context.read` audit event (see [Repeated requests](#repeated-requests)).
 - **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request), [Authorization](#authorization)).
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
+- **Question 42 — presence signals the carriage adds.** The result's `directives` is required: a list, empty when none applies, for a Context Client, and null for a Management Client. HCP's own shape leaves it optional (HCP 5.2.2, 6.4).
 
 ## What HCP requires that a document cannot express
 

@@ -98,7 +98,7 @@ The authority is **the grant** the person gave the client: a category-scoped, pu
 
 Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. Where the request carries a proof, a token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)); where it carries none, a provider that knows which VID it registered the client under **SHOULD** still check that the `issuer` is that client.
 
-Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and no `directives` are required. This specification reads HCP as letting a Management Client query and receive whole `Entry` objects with no `directives`, *pending HCP confirmation* ([question 5](#pending-hcp-confirmation)).
+Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and `directives` null. This specification reads HCP as letting a Management Client query and receive whole `Entry` objects with no directives, *pending HCP confirmation* ([question 5](#pending-hcp-confirmation)).
 
 ## Definitions
 
@@ -137,7 +137,7 @@ HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery 
 The Context Client sends the query to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `query` (REQUIRED) is what the client wants context about.
-- `categories` (OPTIONAL) narrows the search. Absent means every category the grant covers.
+- `categories` (OPTIONAL) narrows the search. Absent means every category the grant covers. It is never empty: HCP gives an empty list no meaning, and a generated library that drops an empty list would turn it into a query of every category, so the schema refuses one (`minItems: 1`), *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `purpose` (REQUIRED) is the purpose code the context is for; `purposeDescription` (OPTIONAL) says it in words.
 - `maxEntries` (OPTIONAL) is the most entries the client wants. HCP's default is 5 and its ceiling is 20 (HCP 7.2); those are HCP's values, restated.
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
@@ -171,7 +171,7 @@ The provider answers with the disclosed context. The payload is the sub-schema r
 - `retrievalId` identifies this retrieval in the provider's audit log.
 - `minimization` is the provider's minimization report (HCP 7.5). Its `method` is the relevance method that determined the final ordering, which the provider declares in its discovery document (HCP 7.3, 19.3): `lexical`, `semantic` or `llm` among the registered values. It never carries a count of what was considered or withheld (HCP 7.5).
 - `categoriesSearched` lists the categories searched: those the request named or, where it named none, every category the grant can read for the purpose (HCP 5.2.1).
-- `directives` are the person's directives that apply to the client and to the disclosed context (HCP 6.4). The schema leaves the member optional, as HCP's does, but every result to a Context Client carries it, empty when no directive applies (HCP 6.4). A client that claims to follow directives **MUST** follow every directive delivered to it, and **MUST NOT** treat one whose `action` it does not recognize as a permission (HCP 6.4).
+- `directives` are the person's directives that apply to the client and to the disclosed context (HCP 6.4). Every result to a Context Client carries it, empty when no directive applies (HCP 6.4); a result to a requester that is not a Context Client carries it as null ([question 5](#pending-hcp-confirmation)). HCP's own shape leaves the member optional; the carriage requires it, a list or null, so that "none applies" is never confused with "not a Context Client", *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). A client that claims to follow directives **MUST** follow every directive delivered to it, and **MUST NOT** treat one whose `action` it does not recognize as a permission (HCP 6.4).
 - `respondedAt` is HCP's `timestamp`, renamed.
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
@@ -291,8 +291,9 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
 - **Question 4 — a re-delivered query.** It causes no second `context.read` audit event (HCP 8.1, 9.6; see [Repeated requests](#repeated-requests)).
-- **Question 5 — a Management Client as requester.** A Management Client may query and receive whole `Entry` objects, with no `directives` (HCP 5.1, 5.2.1, 7.4; see [Authorization](#authorization)).
+- **Question 5 — a Management Client as requester.** A Management Client may query and receive whole `Entry` objects, with `directives` null (HCP 5.1, 5.2.1, 7.4; see [Authorization](#authorization)).
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
+- **Question 42 — presence signals the carriage adds.** The result's `directives` is required: a list, empty when none applies, for a Context Client, and null for any other requester; and a request's `categories`, where present, is never empty. HCP's own shapes leave `directives` optional and accept an empty `categories` (HCP 5.2.1, 6.4).
 
 ## What HCP requires that a document cannot express
 

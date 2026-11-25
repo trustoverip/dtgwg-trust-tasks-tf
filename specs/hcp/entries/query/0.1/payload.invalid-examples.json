@@ -1354,5 +1354,14 @@
       "directives": [],
       "respondedAt": "2026-11-25T09:00:01Z"
     }
+  },
+  {
+    "note": "An empty `categories` — omit the member to query every category; an empty list has no meaning in HCP 5.2.1, and a library that drops it would widen the query (question 42).",
+    "payload": {"query": "dietary preferences", "purpose": "https://hcp.example/purposes/reservation", "accessToken": "hcp_at_x", "categories": []}
+  },
+  {
+    "variant": "response",
+    "note": "A result without `directives` — the carriage requires it: a list, empty when none applies, for a Context Client, and null for any other requester (HCP 6.4; question 42).",
+    "payload": {"entries": [], "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99", "minimization": {"method": "lexical"}, "categoriesSearched": ["general_preferences"], "respondedAt": "2026-11-24T10:00:01Z"}
   }
 ]

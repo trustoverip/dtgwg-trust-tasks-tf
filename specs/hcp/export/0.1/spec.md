@@ -183,9 +183,10 @@ An absent option, or one set to `false`, takes HCP's default.
 The provider answers with the export. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): one member, `export`, holding the HCP export document unchanged (see [HCP field mapping](#hcp-field-mapping)).
 
 - `@context`, `type` (`ContextExport`) and `schema` (`https://hcp.example/spec/export/2.0`, compared as an exact string) are HCP's, carried verbatim.
-- `subject`, `exportedBy` and `exportedAt` are the Context Subject, the exporting provider and when the export was made. `options` records the options used.
+- `subject`, `exportedBy` and `exportedAt` are the Context Subject, the exporting provider and when the export was made. `options` records the options used. It is REQUIRED, and carries `includeVersions` and `includeAudit`, each `true` where that option was asked and `false` otherwise, so that the export itself says what it was asked to hold: under a `true` option, an empty or absent `versions` or `audit` means asked for and none; under a `false` one, not asked for. HCP's own shape leaves `options` optional, though HCP 5.4.1 lists it among the export's members and its template writes every option; requiring it is *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `entries` is the current version of each entry exported, in the form of HCP 4.2, each carrying its status.
-- `versions` is present only where `includeVersions` was asked, and `audit` only where `includeAudit` was asked.
+- `versions` is present only where `includeVersions` was asked, and `audit` only where `includeAudit` was asked. A reader tells "asked for, none" from "not asked for" by `options`, never by the presence of the array, which some generated libraries drop when it is empty.
+- Each event in `audit` is a shared [`AuditEvent`](../../_shared/0.1/audit-event.schema.json), which requires `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each a value or null, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `rules`, `directives` and `delegations` are the Context Subject's standing rules, directives, and the delegations made for them; a delegate's export carries only those [Authorization](#authorization) sets out.
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
@@ -330,6 +331,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 33 — export size.** The export travels in one document bounded at the framework's 16 MiB ceiling; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's export carries only the superseded versions, of the entries it returns, whose own categories are all within the delegation's scope (see [Authorization](#authorization)).
+- **Question 42 — presence signals the carriage adds.** The export's `options` is required, with `includeVersions` and `includeAudit` each `true` or `false`, so that the export says whether `versions` and `audit` were asked for; and every `AuditEvent` in `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null. HCP's own shapes leave these members optional (HCP 5.4.1, 8.2).
 
 ## What HCP requires that a document cannot express
 
