@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/grants/revoked/0.1",
+  "title": "HCP — Revocation Notice — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["grantId", "revokedAt"],
+  "properties": {
+    "grantId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "The grant-revoked event's `grantId`: the grant that was revoked."
+    },
+    "revokedAt": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",
+      "description": "The grant-revoked event's `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3)."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Revocation Notice — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The client accepted the notice. Carries RFC 8935's `202 Accepted`, which has no body, so the payload is the empty object. A refusal is a trust-task-error, not this shape.",
+      "properties": {}
+    }
+  }
+}

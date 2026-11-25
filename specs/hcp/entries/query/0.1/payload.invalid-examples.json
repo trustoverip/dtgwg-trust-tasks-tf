@@ -1,0 +1,458 @@
+[
+  {
+    "note": "Missing `purpose` — HCP 5.2.1 makes the purpose code REQUIRED on every query; a purposeless query cannot be checked against the grant.",
+    "payload": {
+      "query": "dietary preferences",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the token is the only evidence of the grant (option A carriage); a query without one cannot be authorized.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation"
+    }
+  },
+  {
+    "note": "`maxEntries: 0` — HCP's maxEntries is an integer of at least 1.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "maxEntries": 0
+    }
+  },
+  {
+    "note": "Relative `purpose` — a purpose code is an absolute URI.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "Empty `query` — the query text has minLength 1.",
+    "payload": {
+      "query": "",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x"
+    }
+  },
+  {
+    "note": "More than 256 `categories` — the framework bound on the request array.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "categories": [
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences",
+        "general_preferences"
+      ]
+    }
+  },
+  {
+    "note": "Unknown top-level request member — additionalProperties: false.",
+    "payload": {
+      "query": "dietary preferences",
+      "purpose": "https://hcp.example/purposes/reservation",
+      "accessToken": "hcp_at_x",
+      "frobnicate": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "More than 20 `entries` — HCP 7.2 caps a query result at 20 entries.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        },
+        {
+          "ref": "hcp-ref-1",
+          "useUntil": "2026-11-25T10:00:00Z"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {},
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "HCP's bare `timestamp` instead of the renamed `respondedAt` — the rename is part of the carriage mapping, so `timestamp` is an unknown member and `respondedAt` is missing.",
+    "payload": {
+      "entries": [],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {},
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "timestamp": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A disclosure without `useUntil` — HCP 7.6 requires a use limit on every disclosed copy, and an object without `ref`/`useUntil` is not an Entry either.",
+    "payload": {
+      "entries": [
+        {
+          "ref": "hcp-ref-1"
+        }
+      ],
+      "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
+      "minimization": {},
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Non-urn `retrievalId` — HCP identifiers are urn:uuid.",
+    "payload": {
+      "entries": [],
+      "retrievalId": "retrieval-1",
+      "minimization": {},
+      "categoriesSearched": [
+        "general_preferences"
+      ],
+      "respondedAt": "2026-11-24T10:00:01Z"
+    }
+  }
+]

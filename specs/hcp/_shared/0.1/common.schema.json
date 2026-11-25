@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/_shared/0.1/common.schema.json",
+  "title": "HCP — Common definitions",
+  "description": "Common value shapes of the Human Context Protocol (HCP) 2.0-draft-3, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Where this schema and the HCP text differ, the HCP text governs.",
+  "$defs": {
+    "Urn": {
+      "type": "string",
+      "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers."
+    },
+    "Category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:.+)$",
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a name from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+    },
+    "PurposeCode": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:.+$",
+      "description": "An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used."
+    },
+    "Instant": {
+      "type": "string",
+      "format": "date-time",
+      "description": "An RFC 3339 instant."
+    }
+  }
+}

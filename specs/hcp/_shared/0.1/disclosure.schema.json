@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/_shared/0.1/disclosure.schema.json",
+  "title": "HCP — Disclosure",
+  "description": "The Human Context Protocol (HCP) 2.0-draft-3 disclosure: an entry as a Context Client receives it (HCP 7.4, 7.6), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Open, as HCP's objects are (HCP Appendix A.3). Where this schema and the HCP text differ, the HCP text governs.",
+  "$defs": {
+    "Disclosure": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["ref", "useUntil"],
+      "description": "A disclosed copy of an entry. It carries a grant-scoped `ref` in place of the entry's stable `id` (HCP 7.4), and the instant until which the client may use the copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives them.",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and different across grants, so two clients cannot join their copies on it."
+        },
+        "useUntil": {
+          "$ref": "common.schema.json#/$defs/Instant",
+          "description": "The instant after which the client MUST NOT use this copy (HCP 7.6): at least one hour and at most 30 days after disclosure, and at most 24 hours for High-sensitivity context."
+        },
+        "content": {
+          "$ref": "context-entry.schema.json#/$defs/Content",
+          "description": "The disclosed content."
+        },
+        "assertion": {
+          "$ref": "context-entry.schema.json#/$defs/Assertion",
+          "description": "How the content was declared."
+        },
+        "classification": {
+          "$ref": "context-entry.schema.json#/$defs/Classification",
+          "description": "The entry's categories and purpose limits."
+        },
+        "record": {
+          "$ref": "context-entry.schema.json#/$defs/Record",
+          "description": "The entry's status and provenance as disclosed."
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "context-entry.schema.json#/$defs/EvidenceItem" },
+          "description": "Evidence items disclosed with the entry. Absent when none is disclosed."
+        }
+      }
+    }
+  }
+}

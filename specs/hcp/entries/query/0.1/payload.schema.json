@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/entries/query/0.1",
+  "title": "HCP — Query Context — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token stands for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query", "purpose", "accessToken"],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "description": "HCP `query`: what the client wants context about, in natural language. HCP treats query text as being as sensitive as content (HCP 8.2), so the provider does not log it."
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Category" },
+      "description": "HCP `categories`: the categories to search. Absent means every category the grant covers. A category outside the grant is refused with `permissionDenied` (HCP 5.2.1). The bound of 256 is a framework bound, not an HCP requirement."
+    },
+    "purpose": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/PurposeCode",
+      "description": "HCP `purpose`: the purpose code, an absolute URI, the context is requested for. It must be a purpose the grant allows (HCP 5.2.1)."
+    },
+    "purposeDescription": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "HCP `purposeDescription`: a human-readable statement of the purpose. Absent when the client gives none."
+    },
+    "maxEntries": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "HCP `maxEntries`: the most entries the client wants. Absent means HCP's default of 5. The provider returns at most the lesser of this value and 20 (HCP 7.2)."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The HCP access token (an OAuth or first-party token, HCP 9.3) that stands for the grant, carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Query Context — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries", "retrievalId", "minimization", "categoriesSearched", "respondedAt"],
+      "description": "The HCP Query result: the disclosed entries, ordered by the provider's declared method, with the directives that apply to them. Failures use trust-task-error, not this shape.",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "anyOf": [
+              { "$ref": "../../../_shared/0.1/disclosure.schema.json#/$defs/Disclosure" },
+              { "$ref": "../../../_shared/0.1/context-entry.schema.json#/$defs/Entry" }
+            ]
+          },
+          "description": "HCP `entries`: at most 20 entries (HCP 7.2), each a Disclosure, or an Entry where HCP lets the reader see the entry itself. Empty when nothing matched or nothing could be disclosed."
+        },
+        "retrievalId": {
+          "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "HCP `retrievalId`: the identifier of this retrieval, as recorded in the provider's `context.read` audit event (HCP 8.1)."
+        },
+        "minimization": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "HCP `minimization`: the provider's account of how it minimized the result (HCP 7.2), carried as HCP defines it."
+        },
+        "categoriesSearched": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Category" },
+          "description": "HCP `categoriesSearched`: the categories the provider searched."
+        },
+        "directives": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/directive.schema.json#/$defs/Directive" },
+          "description": "HCP `directives`: the directives that apply to the disclosed context (HCP 6.4). Absent when none applies."
+        },
+        "respondedAt": {
+          "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "HCP `timestamp`, renamed: when the provider produced the result."
+        }
+      }
+    }
+  }
+}

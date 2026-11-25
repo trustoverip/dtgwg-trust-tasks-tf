@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Non-urn `grantId` — HCP grant identifiers are urn:uuid.",
+    "payload": {
+      "grantId": "grant-42",
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f"
+    }
+  },
+  {
+    "note": "Missing `grantId` — a revocation names the grant it ends.",
+    "payload": {
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Unknown top-level request member — HCP's revoke takes no reason or other member.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "accessToken": "hcp_mt_x",
+      "reason": "no longer needed"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the revoke response — HCP answers 204 No Content, so the payload is the empty object.",
+    "payload": {
+      "revoked": true
+    }
+  }
+]

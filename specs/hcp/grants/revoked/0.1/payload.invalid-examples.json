@@ -1,0 +1,40 @@
+[
+  {
+    "note": "Non-urn `grantId` — HCP grant identifiers are urn:uuid.",
+    "payload": {
+      "grantId": "grant-42",
+      "revokedAt": "2026-11-24T11:00:01Z"
+    }
+  },
+  {
+    "note": "Missing `revokedAt` — the grant-revoked event carries when the revocation took effect.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f"
+    }
+  },
+  {
+    "note": "`revokedAt` as Unix seconds — instants are RFC 3339 strings, even though the SET's own `iat` is numeric.",
+    "payload": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "revokedAt": 1795604401
+    }
+  },
+  {
+    "note": "A SET `events` wrapper in the payload — the Type URI replaces it.",
+    "payload": {
+      "events": {
+        "https://hcp.example/spec/events/grant-revoked": {
+          "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+          "revokedAt": "2026-11-24T11:00:01Z"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the acknowledgement — RFC 8935's 202 Accepted has no body, so the payload is the empty object.",
+    "payload": {
+      "accepted": true
+    }
+  }
+]

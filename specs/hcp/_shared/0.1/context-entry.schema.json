@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/_shared/0.1/context-entry.schema.json",
+  "title": "HCP — Context entry",
+  "description": "The Human Context Protocol (HCP) 2.0-draft-3 context entry (HCP section 4) and its parts, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Objects are open, as HCP's are (HCP Appendix A.3): a member HCP defines that is not declared here, or that a later draft adds, is preserved rather than rejected, so an entry round-trips intact. Only members whose shape the HCP text fixes are declared. Where this schema and the HCP text differ, the HCP text governs.",
+  "$defs": {
+    "Entry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["schema", "id", "type", "subject", "content", "assertion", "classification", "record"],
+      "description": "An HCP context entry (HCP section 4), carried verbatim. A Context Client normally receives a Disclosure, which carries a grant-scoped `ref` in place of `id` (HCP 7.4); the stable `id` reaches only the parties HCP lets see it.",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The HCP entry schema identifier the entry conforms to, as HCP defines it."
+        },
+        "id": {
+          "$ref": "common.schema.json#/$defs/Urn",
+          "description": "The entry's stable identifier (HCP section 4). Never disclosed to a Context Client, which sees a `ref` instead (HCP 7.4)."
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The entry type, as HCP defines it."
+        },
+        "subject": {
+          "$ref": "#/$defs/EntrySubject",
+          "description": "The Context Subject the entry is about."
+        },
+        "content": {
+          "$ref": "#/$defs/Content",
+          "description": "What the entry says, shaped by the content profile the entry uses (HCP section 4)."
+        },
+        "assertion": {
+          "$ref": "#/$defs/Assertion",
+          "description": "Who declared the content, how, and with what confidence (HCP 4.2.5)."
+        },
+        "classification": {
+          "$ref": "#/$defs/Classification",
+          "description": "The entry's categories and purpose limits (HCP 4.5)."
+        },
+        "record": {
+          "$ref": "#/$defs/Record",
+          "description": "The entry's status, version and provenance as recorded by the provider."
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EvidenceItem" },
+          "description": "Evidence items backing the entry, such as a verifiable credential. At most one item has role `content` (HCP section 4). Absent when the entry carries no evidence."
+        }
+      }
+    },
+    "EntrySubject": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id"],
+      "description": "The subject of an entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The subject's identifier as presented to the reader. A Context Client sees a per-client pseudonym (HCP 3.4), never an identifier shared across clients."
+        }
+      }
+    },
+    "Content": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Entry content. Its shape is set by the content profile: the General Context profile (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and `language`; the VC Evidence profile points at an evidence item instead (HCP section 4).",
+      "properties": {
+        "value": {
+          "description": "The context itself under the General Context profile: a string, or an object whose shape the profile leaves to the entry type."
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The language of `value`, as a BCP 47 language tag. Absent when the profile or value has none."
+        }
+      }
+    },
+    "Assertion": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["declarationType"],
+      "description": "How the entry's content was declared (HCP 4.2.5). HCP requires `confidence` when `declarationType` is `model-inferred`.",
+      "properties": {
+        "declarationType": {
+          "type": "string",
+          "enum": ["person-declared", "model-inferred", "issuer-attested"],
+          "description": "Who declared the content: the person, a model inferring it, or an issuer attesting it. HCP's own values, carried verbatim."
+        },
+        "confidence": {
+          "type": ["string", "null"],
+          "enum": ["high", "medium", "low", null],
+          "description": "The asserter's confidence in an inferred assertion. REQUIRED by HCP when `declarationType` is `model-inferred`; null or absent otherwise."
+        },
+        "validUntil": {
+          "$ref": "common.schema.json#/$defs/Instant",
+          "description": "The instant after which the assertion no longer holds. Absent when it states no end."
+        },
+        "basis": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task, the setting and the rationale. Carried as HCP defines it."
+        },
+        "permittedPurposes": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/PurposeCode" },
+          "description": "Purposes the asserter permits the content to be used for. Absent when the assertion sets none."
+        }
+      }
+    },
+    "Classification": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["categories"],
+      "description": "The entry's classification (HCP 4.5). A grant reaches an entry when it covers any one of the entry's categories.",
+      "properties": {
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "common.schema.json#/$defs/Category" },
+          "description": "The entry's categories; at least one (HCP 4.5)."
+        },
+        "dimension": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "A hint at the aspect of the person the entry describes. A hint only; it grants and limits nothing (HCP 4.5)."
+        },
+        "permittedPurposes": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/PurposeCode" },
+          "description": "Purposes the entry may be disclosed for. Absent when the classification sets none."
+        }
+      }
+    },
+    "Record": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status"],
+      "description": "The provider's record of the entry: its status, version, provenance, relationships, conversion and metadata. Members other than `status` and `provenance` are carried as HCP defines them.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "conflicted", "expired", "revoked", "suspended", "deleted"],
+          "description": "The entry's lifecycle status, as HCP defines it."
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance",
+          "description": "Who asserted the entry, under which grant it was submitted, and who recorded it."
+        }
+      }
+    },
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The entry's provenance (HCP section 4): `assertedBy`, `assertedAt`, `source`, `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`, `recordedAt` and `confirmations`. The instants are declared here; the other members are carried as HCP defines them.",
+      "properties": {
+        "assertedAt": {
+          "$ref": "common.schema.json#/$defs/Instant",
+          "description": "When the asserter made the assertion."
+        },
+        "recordedAt": {
+          "$ref": "common.schema.json#/$defs/Instant",
+          "description": "When the provider recorded the entry."
+        }
+      }
+    },
+    "EvidenceItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["role", "type"],
+      "description": "One evidence item on an entry (HCP section 4).",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["content", "supports"],
+          "description": "`content`: the item is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry."
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The evidence type, such as `verifiable-credential`, as HCP defines it."
+        }
+      }
+    }
+  }
+}

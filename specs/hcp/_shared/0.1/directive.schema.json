@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/_shared/0.1/directive.schema.json",
+  "title": "HCP — Directive",
+  "description": "The Human Context Protocol (HCP) 2.0-draft-3 directive (HCP 6.4), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Open, as HCP's objects are (HCP Appendix A.3). Where this schema and the HCP text differ, the HCP text governs.",
+  "$defs": {
+    "Directive": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "A directive the person set on what a client may do with disclosed context (HCP 6.4). A directive only narrows what a grant allows, and the provider delivers every applicable directive with every read result. Members other than the action and effect are carried as HCP defines them.",
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:.+)$",
+          "description": "The action the directive governs: `share`, `sign` or `transact`, or an absolute URI naming another action."
+        },
+        "effect": {
+          "type": "string",
+          "enum": ["deny", "ask-first", "permit"],
+          "description": "What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's own values, carried verbatim. A `permit` never widens the grant."
+        }
+      }
+    }
+  }
+}

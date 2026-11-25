@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/grants/revoke/0.1",
+  "title": "HCP — Revoke Grant — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Revoke grant operation (HCP 6.2, 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2): a Management Client, acting for the Authorizing Principal, ends a grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["grantId", "accessToken"],
+  "properties": {
+    "grantId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to revoke."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Revoke Grant — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The grant is revoked. Carries HCP's `204 No Content`, which has no body, so the payload is the empty object. Failures use trust-task-error, not this shape.",
+      "properties": {}
+    }
+  }
+}
