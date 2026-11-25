@@ -3185,6 +3185,7 @@ mod vtc {
                 mod v0_3;
                 mod v0_4;
                 mod v0_5;
+                mod v0_6;
             }
             mod get {
                 mod v0_1;
@@ -3192,6 +3193,7 @@ mod vtc {
                 mod v0_3;
                 mod v0_4;
                 mod v0_5;
+                mod v0_6;
             }
             mod list {
                 mod v0_1;
@@ -3229,6 +3231,7 @@ mod vtc {
                 mod v0_2;
                 mod v0_3;
                 mod v0_4;
+                mod v0_5;
             }
         }
         mod get {
