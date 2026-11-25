@@ -29,9 +29,11 @@ const (
 // trust-tasks-go/specs.
 var smokePackages = []string{
 	"acl/grant/v0_2",
+	"acl/update/v0_3",
 	"auth/authenticate/v0_3",
 	"vta/contexts/update/v1_0",
 	"vta/contexts/update-did/v1_2",
+	"vtc/registry/records/list/v0_2",
 }
 
 func TestGeneratedPackagesDriveTheRuntime(t *testing.T) {
