@@ -24,7 +24,7 @@ proofRequirement:
   response: RECOMMENDED
   rationale: >-
     HCP requires the revocation notice to be signed and the client to verify it (HCP 9.9): an unsigned notice would
-    let anyone make a client discard context and stop using a live grant. The proof is REQUIRED on every binding.
+    let anyone make a client stop using its context and a live grant. The proof is REQUIRED on every binding.
     The acknowledgement's proof is RECOMMENDED, so the provider can show the client received the notice.
 issuedAtRequirement:
   requirement: REQUIRED
@@ -35,7 +35,8 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    The client must stop using, and delete, every copy of context disclosed under the grant (HCP 6.2.2).
+    The client must stop using every copy of context disclosed under the grant and must pass none of them on (HCP
+    6.2.2), except a copy kept under a legal obligation it declared (HCP 6.2.5).
 exposure:
   discloses: none
   actsAsSubject: false
@@ -46,7 +47,7 @@ retention:
   class: durable
   rationale: >-
     The provider records the first acknowledgement, or the abandonment of delivery, as a `revocation.notified` audit
-    event (HCP 6.2.3), and the client keeps the notice as its record of why it deleted the context.
+    event (HCP 6.2.3), and the client keeps the notice as its record of why it stopped using the context.
 errorCodes: []
 related:
   - hcp/grants/revoke
@@ -55,7 +56,7 @@ related:
 
 ## Abstract
 
-The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, and the client acknowledges. HCP sends this notice as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any Trust Task binding.
+The **HCP — Revocation Notice** Trust Task carries the revocation notification of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2.3 and 9.9). When a grant is revoked, the *HCP Provider* tells the *Context Client* that held it, where that client holds disclosed entries and has registered a notification endpoint (HCP 6.2.2), and the client acknowledges. HCP sends this notice as a signed Security Event Token (RFC 8417) delivered by push (RFC 8935); this task carries the same event as a signed Trust Task document, so the provider can reach the client over any Trust Task binding.
 
 It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)). The revocation itself is [`hcp/grants/revoke`](../../revoke/0.1/spec.md).
 
@@ -75,7 +76,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the provider's position as the holder of the grant**: only the provider that issued a grant can say it has ended. The client accepts the notice only when its `proof` verifies under a key of that provider. Here the proof is the authorization in the sense of [CONTRIBUTING-SPECS](../../../../../CONTRIBUTING-SPECS.md#what-to-write): a verified assertion by the one party entitled to make it, for the one purpose of ending use of that grant.
 
-HCP requires the notice to be signed with a key the provider publishes at its `jwks_uri` (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. To meet both, the provider **MUST** sign the notice with a key that its VID's DID document lists **and** that its HCP JWKS also publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A client **MUST** check that the `issuer` VID is bound to the provider that issued the grant (see [Parties](#parties)) and **MUST** refuse a notice whose key it cannot find in that provider's JWKS.
+HCP requires the notice to be signed with an asymmetric algorithm, with a key the provider publishes at its `jwks_uri`, and the client to verify it (HCP 9.9). A Trust Task proof is made with a key of the `issuer` VID. To meet both, the provider **MUST** sign the notice with a key that its VID's DID document lists **and** that its HCP JWKS also publishes, so that a client verifying under either HCP's rule or this framework's finds the same key. A client **MUST** check that the `issuer` VID is bound to the provider that issued the grant (see [Parties](#parties)) and **MUST** refuse a notice whose key it cannot find in that provider's JWKS.
 
 The client does not need to hold any authority of its own to acknowledge.
 
@@ -174,19 +175,21 @@ Every one of these is `retryable: false`. A non-retryable error ends delivery, a
 
 ## Delivery rules carried from HCP
 
-- **Retries.** Until it receives an acknowledgement or a non-retryable error, the provider **MUST** retry at least 5 times over at least one hour, with the same document: the same `id`, `issuedAt` and `proof` (HCP 9.9).
+- **When a notice is sent.** Only if the client holds entries disclosed under the grant and has registered a notification endpoint, which here is its VID (see [Parties](#parties)) (HCP 6.2.2, 6.2.3). A client with no endpoint is not notified; its copies were capped at one hour of use (HCP 7.6).
+- **Retries.** Until it receives an acknowledgement or a non-retryable error, the provider **MUST** retry on a failed delivery and on any answer other than an acknowledgement or a non-retryable error, with exponential backoff, for at least 5 attempts over at least one hour, with the same document: the same `id`, `issuedAt` and `proof` (HCP 9.9).
 - **Audit.** The provider records `revocation.notified` on the first acknowledgement, or when it abandons delivery (HCP 6.2.3), and meets HCP's duties on abandonment (HCP 6.2.4).
-- **Freshness.** HCP's 300-second freshness rule for the SET's `iat` (HCP 9.9) applies to `issuedAt` unchanged. The client's duplicate-execution record **MUST** cover at least the provider's whole retry period, so a retry inside it is acknowledged, not executed again.
+- **Freshness.** HCP's rule that a client **SHOULD** reject a SET whose `iat` differs from local time by more than 300 seconds (HCP 9.9) applies to `issuedAt` unchanged. HCP's own text is in tension here: every retry over at least one hour carries the same token, so a retry after 300 seconds is stale by that rule. This specification does not resolve it; it is an open question for the HCP editors. A client that acknowledged the first delivery is unaffected, because its duplicate-execution record answers a retry before freshness matters: that record **MUST** cover at least the provider's whole retry period, so a retry inside it is acknowledged, not executed again. A client that never received an earlier attempt and rejects a late one as stale leaves the provider to abandon delivery (HCP 6.2.4).
 - **No notice after relinquishment.** The provider sends no notice to a client that relinquished the grant itself (HCP 5.2.7).
 - **Independence.** The revocation took effect at `revokedAt` whether or not this notice is ever delivered (HCP 6.2.3). A client that learns of the revocation another way, such as `hcp:invalidToken` on a query (HCP 6.2.2), acts on it at once.
-- **On receipt.** The client stops using every copy of context disclosed under the grant, deletes them, and stops using the grant's token (HCP 6.2.2).
+- **On receipt.** The client **MUST** stop using every copy of context disclosed under the grant, whatever its `useUntil`, and **MUST NOT** pass any of them on (HCP 6.2.2, 7.6). The one exception is a copy kept in a record under a legal obligation the client declared at registration, which it keeps only to meet that obligation (HCP 6.2.5). It also stops using the grant's token. HCP does not require deletion, and the provider cannot enforce it (HCP 6.2.2).
+- **A delegation that ends.** When a delegation ends, every grant authorized under it ends with status `expired`, not `revoked`, and "invalidation and notification follow 6.2.2–6.2.4, as for a revocation" (HCP 17.6). HCP names only the grant-revoked event, so whether such a grant is announced with this notice is an open question for the HCP editors. This version of the task is defined for revocation.
 
 Over TSP without a return path, the acknowledgement is delivered best-effort ([TSP binding 0.2 §6](../../../../../bindings/tsp/0.2/spec.md)), so the provider may see no acknowledgement for a notice the client accepted. It then retries, and abandons as HCP describes.
 
 ## What HCP requires that a document cannot express
 
 - The retry schedule and the abandonment duty (HCP 9.9, 6.2.4).
-- The client's deletion of disclosed copies (HCP 6.2.2), which no acknowledgement can prove.
+- The client's end of use of disclosed copies, and its passing none on (HCP 6.2.2), which no acknowledgement can prove.
 - The key-publication rule: the signing key's presence in the provider's JWKS (HCP 9.9) is checked outside the document.
 
 ## Security & Privacy
@@ -201,8 +204,8 @@ The `grantId` joins this notice to the revocation request and to the client's ea
 
 ### Retention
 
-The provider keeps the `revocation.notified` audit event (HCP 6.2.3) and **SHOULD** keep the acknowledgement with it as evidence of delivery. The client **SHOULD** keep the signed notice as its record of why it deleted context, for as long as it might be asked to account for that deletion; it **MUST NOT** keep the deleted context.
+The provider keeps the `revocation.notified` audit event (HCP 6.2.3) and **SHOULD** keep the acknowledgement with it as evidence of delivery. The client **SHOULD** keep the signed notice as its record of why it stopped using the context, for as long as it might be asked to account for that. HCP requires the client to stop using the copies and pass none on, not to delete them (HCP 6.2.2); a copy kept under a declared legal obligation is kept only to meet that obligation (HCP 6.2.5).
 
 ### Consent/purpose
 
-The notice exists to carry out the person's withdrawal of permission. Its data is used only to identify the grant whose context must be deleted. Nothing in this task asks the person anything, and whether the client tells its own user is its policy ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
+The notice exists to carry out the person's withdrawal of permission. Its data is used only to identify the grant whose context the client must stop using. Nothing in this task asks the person anything, and whether the client tells its own user is its policy ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).

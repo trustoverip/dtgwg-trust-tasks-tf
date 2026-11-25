@@ -51,8 +51,8 @@ retention:
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
-      The Management Client's access token is missing from the provider's records, expired, revoked, or otherwise not
-      valid for this provider (HCP 5.5 `invalid-token`).
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
+      Client's access token.
     retryable: false
 related:
   - hcp/grants/revoked
@@ -61,7 +61,7 @@ related:
 
 ## Abstract
 
-The **HCP — Revoke Grant** Trust Task carries the Revoke grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2 and 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2). A *Management Client*, acting for the *Authorizing Principal*, tells an *HCP Provider* to end a grant. The grant ends at once, the provider records the revocation, and it notifies the affected client with [`hcp/grants/revoked`](../../revoked/0.1/spec.md).
+The **HCP — Revoke Grant** Trust Task carries the Revoke grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.2 and 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2). A *Management Client*, acting for the *Authorizing Principal*, tells an *HCP Provider* to end a grant. The grant ends at once and the provider records the revocation. Where the affected client holds disclosed entries and has registered a notification endpoint, the provider notifies it with [`hcp/grants/revoked`](../../revoked/0.1/spec.md) (HCP 6.2.2).
 
 It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
 
@@ -79,9 +79,9 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 ## Authorization
 
-The authority is **the Authorizing Principal's own authority over their grants**, which a Management Client exercises for them (HCP 6.1). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Only a Management Client may revoke: a Context Client token, or any other caller, is refused with `permissionDenied` (HCP 6.1.9). A Context Client that wants to give up its own grant uses HCP's separate Relinquish operation (HCP 5.2.7), which is not this task.
+The authority is **the Authorizing Principal's own authority over their grants**, which a Management Client exercises for them (HCP 6.1). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Revoking a grant is a governance operation, which only a Management Client acting for the Authorizing Principal may perform; any other caller receives not authorized (HCP 6.1.9), carried as `permissionDenied`. Over HCP's HTTP binding the same `DELETE /v2/grants/{grantId}` called with a Context Client's token instead *relinquishes* the grant that token was issued under, and fails with not authorized for any other grant (HCP 9.4.6, 5.2.7). This task carries revocation only: a Context Client token is refused with `permissionDenied` whichever grant it names, and a Context Client that wants to give up its own grant uses HCP's Relinquish operation (HCP 5.2.7), which is not this task.
 
-Under Delegated Authorization (HCP 17.5), a delegate acting as Authorizing Principal may revoke as the person could; the provider applies HCP's delegation rules to the token, unchanged.
+Under the Delegated Authorization Profile, a Management Client may act for the Context Subject or for a delegate, within what HCP 17 allows each (HCP 6.1.9). A delegate may revoke any grant within the delegation's scope; the Context Subject may revoke every grant made for them, including every grant a delegate authorized, and that revocation is never conditioned on the delegate's agreement (HCP 17.5, 6.2.1). The provider applies those rules to the token, unchanged.
 
 The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
@@ -157,21 +157,28 @@ The provider answers when the grant is revoked. The payload is the sub-schema re
 
 ## Errors
 
-| HCP condition (5.5) | Trust Task error |
-|---|---|
-| `malformed-request` | `malformedRequest` |
-| `invalid-token` | `hcp:invalidToken`, `retryable: false` |
-| `scope-denied`, including a caller that is not a Management Client (HCP 6.1.9) | `permissionDenied` |
-| `subject-unavailable` | `unavailable` |
-| `unsupported-version` | `unsupportedVersion` |
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows.
 
-Revocation is **never rate limited** (HCP 6.2.1), so a provider **MUST NOT** refuse it with `unavailable` for throttling.
+| HCP error (5.5) | Code | Trust Task error |
+|---|---|---|
+| invalid request | `malformed-request` | `malformedRequest` |
+| unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
+| not authorized | `scope-denied`: the request falls outside the caller's authority, including a caller that is not a Management Client (HCP 6.1.9), a Context Client token (see [Authorization](#authorization)) and a grant outside a delegation's scope (HCP 17.5) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
+| conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and revocation carries none. A re-delivered document is handled under [Repeated requests](#repeated-requests). |
+| version conflict | `version-conflict` | Does not arise: revocation names no entry version (HCP 5.2.4, 5.4). |
+| credential invalid | `credential-invalid` | Does not arise: it concerns a credential written as an entry's content (HCP 14.6). |
+| subject unavailable | `subject-unavailable` | `unavailable` |
+| rate limited | `rate-limited` | Never: revocation is **never rate limited** (HCP 5.5, 6.2.1), so a provider **MUST NOT** refuse it with `unavailable` for throttling. |
+| unsupported version | `unsupported-version` | `unsupportedVersion` |
+
+HCP does not say which error, if any, a revocation of an unknown `grantId` yields; see [Repeated requests](#repeated-requests).
 
 ## Revocation rules carried from HCP
 
-- **Immediate.** The grant is invalid from the moment the provider accepts the revocation: every later request under it fails with `hcp:invalidToken` (HCP 6.2.2). The provider appends the `grant.revoked` audit event within 60 seconds (HCP 6.2.2).
-- **Notice is independent.** The provider then notifies the affected Context Client ([`hcp/grants/revoked`](../../revoked/0.1/spec.md)); the revocation takes effect whether or not that notice is delivered (HCP 6.2.3), and the response to this task does not wait for it.
-- **No notice after relinquishment.** A client that relinquished its grant (HCP 5.2.7) is not notified.
+- **Immediate.** Once the revocation completes, no request presenting evidence issued under the grant succeeds, and the provider checks the grant's current status on every request, never a token's own validity alone (HCP 6.2.2). HCP does not name the error such a request gets; this specification reads it as `hcp:invalidToken` (see [`hcp/entries/query`](../../../entries/query/0.1/spec.md#errors)), and it is an open question for the HCP editors. The provider appends the `grant.revoked` audit event within 60 seconds (HCP 6.2.2).
+- **Notice where a client holds context.** If the client holds disclosed entries and has registered a notification endpoint, the provider notifies it ([`hcp/grants/revoked`](../../revoked/0.1/spec.md), HCP 6.2.2, 6.2.3). A client with no endpoint is not notified; its copies were capped at one hour of use (HCP 7.6).
+- **Notice is independent.** The revocation takes effect whether or not that notice is delivered (HCP 6.2.3), and the response to this task does not wait for it.
+- **No notice after relinquishment.** A client that relinquished its grant (HCP 5.2.7) is not notified. Relinquishment is not this task.
 
 ## Repeated requests
 

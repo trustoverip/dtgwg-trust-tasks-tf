@@ -43,14 +43,14 @@ exposure:
   ingests: secret
   rationale: >-
     The response discloses a person's personal context, which may include health and other High-sensitivity
-    categories. The request carries the HCP access token, a bearer secret, and query text that HCP treats as being
-    as sensitive as content (HCP 8.2).
+    categories. The request carries the HCP access token, a bearer secret, and the query text, which can itself say
+    something about the person.
 retention:
   class: durable
   rationale: >-
     The provider keeps the `context.read` audit event HCP requires for every read (HCP 8.1), so the person can see
-    who read what. The query text itself is not logged (HCP 8.2), and the client keeps disclosed copies only until
-    each one's `useUntil`.
+    who read what. HCP's audit event records the `purpose` and `purposeDescription` but has no member for the query
+    text (HCP 8.2). The client stops using each disclosed copy at its `useUntil` (HCP 7.6).
 maxDocumentBytes:
   response: 2097152
   rationale: >-
@@ -59,9 +59,10 @@ maxDocumentBytes:
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
-      The access token is missing from the provider's records, expired, revoked, or otherwise not valid for this
-      provider (HCP 5.5 `invalid-token`). A grant that was revoked surfaces here, and that failure is itself a
-      notice of revocation to the client (HCP 6.2.2).
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
+      revoked grant also fails here: HCP requires that no request presenting evidence issued under a revoked grant
+      succeeds, but does not name the error (HCP 6.2.2), and this specification reads that evidence as invalid.
+      Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
     retryable: false
 related:
   - hcp/grants/revoke
@@ -94,12 +95,12 @@ The authority is **the grant** the person gave the client: a category-scoped, pu
 
 Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client, so a stolen token sent from another VID is refused with `permissionDenied`; HCP itself does not bind the token to a VID.
 
-A Management Client token does not authorize this task: querying context is a Context Client operation (HCP 5.1).
+Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and no `directives` are required.
 
 ## Definitions
 
 - **Context Client**, **Management Client**, **HCP Provider**, **Authorizing Principal**, **Context Subject**, **grant**, **entry**, **disclosure**, **directive** and **category** have their HCP 2.0-draft-3 meanings.
-- The shared shapes are in [`hcp/_shared/0.1`](../../../_shared/0.1/common.schema.json): [`Disclosure`](../../../_shared/0.1/disclosure.schema.json), [`Entry`](../../../_shared/0.1/context-entry.schema.json) and [`Directive`](../../../_shared/0.1/directive.schema.json). They are open, as HCP's objects are (HCP Appendix A.3): a member HCP defines that those schemas do not declare is preserved, never rejected.
+- The shared shapes are in [`hcp/_shared/0.1`](../../../_shared/0.1/common.schema.json): [`Disclosure`](../../../_shared/0.1/disclosure.schema.json), [`Entry`](../../../_shared/0.1/context-entry.schema.json) and [`Directive`](../../../_shared/0.1/directive.schema.json). They are open, as HCP's own schemas are: a member those schemas do not declare is accepted, never rejected, and a provider preserves an entry member it does not define (HCP 4.2, A.3).
 
 ### HCP field mapping
 
@@ -163,11 +164,11 @@ The Context Client sends the query to the provider. The payload is the top-level
 
 The provider answers with the disclosed context. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
-- `entries` holds at most the lesser of `maxEntries` and 20 entries, ordered by the provider's declared minimization method (HCP 7.2). Each is a `Disclosure`, carrying a grant-scoped `ref` instead of the entry's stable `id` (HCP 7.4) and a `useUntil` after which the client **MUST NOT** use the copy (HCP 7.6). An `Entry` appears only where HCP lets the reader see the entry itself. An empty `entries` is a successful answer: nothing matched, or nothing could be disclosed.
+- `entries` holds at most the lesser of `maxEntries` and 20 entries (HCP 7.2), in relevance order (HCP 7.3). `maxEntries` is a ceiling, not a target: the provider never pads the result to reach it (HCP 7.2). Each entry is a `Disclosure`. It carries a grant-scoped `ref` instead of the entry's stable `id`, the `version` disclosed, and the entry's `standing`. It withholds the entry's `id`, `subject` and `record` (HCP 7.4). Its `useUntil` is the time after which the client **MUST NOT** use the copy or pass it on (HCP 7.6). An `Entry` appears only where the requester is not a Context Client (HCP 5.2.1, 7.4). An empty `entries` is a successful answer: nothing matched, or nothing could be disclosed.
 - `retrievalId` identifies this retrieval in the provider's audit log.
-- `minimization` is the provider's account of how it reduced the result.
-- `categoriesSearched` lists the categories searched.
-- `directives` (OPTIONAL) are the person's directives that apply to the disclosed context (HCP 6.4). The client **MUST** honour them.
+- `minimization` is the provider's minimization report (HCP 7.5). Its `method` is the relevance method that determined the final ordering, which the provider declares in its discovery document (HCP 7.3, 19.3): `lexical`, `semantic` or `llm` among the registered values. It never carries a count of what was considered or withheld (HCP 7.5).
+- `categoriesSearched` lists the categories searched: those the request named or, where it named none, every category the grant can read for the purpose (HCP 5.2.1).
+- `directives` are the person's directives that apply to the client and to the disclosed context (HCP 6.4). The schema leaves the member optional, as HCP's does, but every result to a Context Client carries it, empty when no directive applies (HCP 6.4). A client that claims to follow directives **MUST** follow every directive delivered to it, and **MUST NOT** treat one whose `action` it does not recognize as a permission (HCP 6.4).
 - `respondedAt` is HCP's `timestamp`, renamed.
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
@@ -260,47 +261,50 @@ The token's grant was revoked, so the provider refuses the query. The client tre
 
 ## Errors
 
-HCP's Core errors (HCP 5.5) map to Trust Task errors as follows. The provider uses the code in the right-hand column; it never sends HCP's `problem+json` body.
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider uses the code in the right-hand column. It never sends HCP's Core error object or the HTTP binding's problem details (HCP 9.7).
 
-| HCP condition (5.5) | Trust Task error |
-|---|---|
-| `malformed-request` | `malformedRequest` |
-| `invalid-token` | `hcp:invalidToken`, `retryable: false` |
-| `scope-denied`, including a category or purpose outside the grant (HCP 5.2.1) | `permissionDenied`, with one fixed `message` whatever the reason, so the error does not reveal whether out-of-scope context exists (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
-| `subject-unavailable` | `unavailable` |
-| `rate-limited` | `unavailable`, with `retryAfter` |
-| `unsupported-version` | `unsupportedVersion` |
+| HCP error (5.5) | Code | Trust Task error |
+|---|---|---|
+| invalid request | `malformed-request` | `malformedRequest` |
+| unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
+| not authorized | `scope-denied`: the request falls outside the grant (a category or purpose the grant does not cover, HCP 5.2.1), or the entry does not exist | `permissionDenied`, with one fixed `message` whatever the reason. HCP requires that the response not disclose which (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)). |
+| conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and Query carries none. A re-delivered document is handled under [Repeated requests](#repeated-requests). |
+| version conflict | `version-conflict` | Does not arise: Query names no entry version (HCP 5.2.4, 5.4). |
+| credential invalid | `credential-invalid` | Does not arise: HCP raises it when a credential written as an entry's content fails verification (HCP 14.6), which a read does not do. |
+| subject unavailable | `subject-unavailable` | `unavailable`. The client may retry later (HCP 5.5). |
+| rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
+| unsupported version | `unsupported-version` | `unsupportedVersion`. The provider never serves a different HCP version silently (HCP 5.5). |
 
 A client that does not know `hcp:invalidToken` reads it as `taskFailed` ([SPEC §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)) and still honours `retryable: false`.
 
 ## Repeated requests
 
-HCP requires a `context.read` audit event for every query (HCP 8.1). Because this task is consequential, a consumer applies [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is not executed twice, so it produces no second disclosure and no second `context.read` event. This is how carriage reads HCP 8.1. HCP's own no-duplicate rule (HCP 9.6) is written for create and revise only, and the HCP editors have not yet said whether a re-delivered query may skip a second event. A provider **MUST** retain its duplicate-execution record for at least the acceptance window it applies to `issuedAt`.
+HCP requires a `context.read` audit event for every query (HCP 8.1). Because this task is consequential, a consumer applies [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is not executed twice, so it produces no second disclosure and no second `context.read` event. This is how carriage reads HCP 8.1. HCP's own idempotency rule (HCP 9.6) is a MUST for create and revise and a SHOULD for withdraw, and says nothing of Query; and the HCP editors have not yet said whether a re-delivered query may skip a second event. A provider **MUST** retain its duplicate-execution record for at least the acceptance window it applies to `issuedAt`.
 
 ## What HCP requires that a document cannot express
 
 - **The grant check on every request** (HCP 6.2.2), and the scope checks of HCP 5.2.1: they are made against provider-held state.
-- **Minimization** (HCP 7.2): the provider decides which entries to disclose and in what order; the document only carries the result.
+- **Minimization** (HCP 7.1–7.3): the provider decides which entries to disclose and in what order; the document only carries the result.
 - **Use limits** (HCP 7.6): `useUntil` is carried, but the client's duty to stop using a copy after it, and not to pass copies on (HCP 3.12), is on the client.
-- **Directives** (HCP 6.4): carried with every result; honouring them is on the client.
-- **Pseudonymous subject identifiers** (HCP 3.4) and grant-scoped `ref`s (HCP 7.4): minted by the provider.
-- **Cryptosuite.** HCP requires `eddsa-rdfc-2022` for credentials it verifies (HCP 14.5). That concerns credentials inside entries, not this document's `proof`, which follows [SPEC §4.7.1](/SPEC.md#471-cryptosuites).
+- **Directives** (HCP 6.4): carried with every result to a Context Client; following them is on a client that claims to.
+- **Grant-scoped `ref`s** (HCP 7.4): minted by the provider. A disclosure carries no subject identifier at all (HCP 7.4); the per-client pseudonym is in the grant (HCP 3.4).
+- **Cryptosuite.** An HCP implementation **MUST** verify `eddsa-rdfc-2022` and **SHOULD** verify `ecdsa-sd-2023` for credentials that are an entry's content (HCP 14.5). That concerns credentials inside entries, not this document's `proof`, which follows [SPEC §4.7.1](/SPEC.md#471-cryptosuites).
 
 ## Security & Privacy
 
 ### Data carried
 
-The request carries the access token, a bearer secret, and the query text, which HCP treats as being as sensitive as content (HCP 8.2). The response carries the person's context: up to 20 disclosures that may include High-sensitivity categories such as `health_context`, and credentials as evidence. A producer **MUST NOT** put context, query text or the token in `ext` or in any `message`. The smallest answer is an empty `entries`; the provider, not the client, decides how much to disclose, and a client asks for no more than its purpose needs, through `categories` and `maxEntries`.
+The request carries the access token, a bearer secret, and the query text, which can itself reveal something about the person. The response carries the person's context: up to 20 disclosures that may include High-sensitivity categories such as `health_context`, and credentials as evidence. A producer **MUST NOT** put context, query text or the token in `ext` or in any `message`. The smallest answer is an empty `entries`; the provider, not the client, decides how much to disclose, and a client asks for no more than its purpose needs, through `categories` and `maxEntries`.
 
 Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a signed assertion that any third party can verify. That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
 
 ### Correlation
 
-The provider sees which client queried, when, for which purpose and categories; that is inherent in a grant check and is what the audit log records. The client sees the person only under a per-client pseudonym (HCP 3.4) and entries only by grant-scoped `ref`s (HCP 7.4), so two clients cannot join their copies on an identifier HCP mints. The access token is stable for the life of the grant and joins every query made under it; it must travel only to the provider. `threadId` joins a request to its response and **SHOULD** be fresh per query. Response size can reveal how much context matched; a provider **MAY** pad the response.
+The provider sees which client queried, when, for which purpose and categories; that is inherent in a grant check and is what the audit log records. A disclosure carries no subject identifier, and names each entry only by a grant-scoped `ref` (HCP 7.4); the subject identifier the client does learn, in its grant, is a pseudonym specific to that client (HCP 3.4). So two clients cannot join their copies on an identifier HCP mints. A credential disclosed whole as evidence may still carry identifiers of its own (HCP 7.4). The access token is stable for the life of the grant and joins every query made under it; it must travel only to the provider. `threadId` joins a request to its response and **SHOULD** be fresh per query. Response size can reveal how much context matched; a provider **MAY** pad the response.
 
 ### Retention
 
-The provider keeps the `context.read` audit event (HCP 8.1) for as long as HCP and its own policy require, readable only by the Context Subject (HCP 8.3). It does not log the query text (HCP 8.2). The client keeps each disclosed copy only until its `useUntil` (HCP 7.6), and deletes it, and every copy derived from it, on revocation (HCP 6.2.2). The signed response is evidence of what the provider released; a client that keeps it as evidence keeps it apart from the context it carries, which still expires.
+The provider keeps the `context.read` audit event (HCP 8.1) for as long as HCP and its own policy require, readable only by the Context Subject (HCP 8.3). HCP's audit event records the `purpose` and `purposeDescription` but has no member for the query text (HCP 8.2). The client stops using each disclosed copy at its `useUntil` (HCP 7.6). When the grant is revoked, it stops using every copy disclosed under the grant at once, whatever its `useUntil`, and passes none of them on (HCP 6.2.2). The one exception is a copy kept under a legal obligation the client declared at registration (HCP 6.2.5). HCP does not require deletion, and the provider cannot enforce it (HCP 6.2.2). The signed response is evidence of what the provider released; a client that keeps it as evidence keeps it apart from the context it carries, which still expires.
 
 ### Consent/purpose
 
