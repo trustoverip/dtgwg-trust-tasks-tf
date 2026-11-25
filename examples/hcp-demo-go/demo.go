@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"sort"
@@ -41,19 +42,32 @@ import (
 
 // ── Deterministic inputs ───────────────────────────────────────────────────
 
-// start is where the demo's clock begins.
+// start is where the demo's clock begins: 2026-11-25T10:00:00Z.
 var start = time.Date(2026, 11, 25, 10, 0, 0, 0, time.UTC)
 
+// iso is an instant as the documents write it: whole seconds,
+// `YYYY-MM-DDTHH:MM:SSZ`. The repository's rule is "never write the system time
+// into a document": every instant the demo writes comes from its injected
+// Clock, which holds whole seconds only, and goes through this one function.
+func iso(t time.Time) string {
+	if t.Nanosecond() != 0 {
+		panic("the demo's instants are whole seconds")
+	}
+	return t.UTC().Format("2006-01-02T15:04:05Z")
+}
+
 // Clock is a fixed clock the demo controls: it starts at start and moves one
-// second per document issued. Instants are whole seconds (`…Z`), never the
-// system time.
+// second per document issued. It never reads the system time.
 type Clock struct{ t time.Time }
 
 // Now is the clock's instant, for the pipeline and the proof verifier.
 func (c *Clock) Now() time.Time { return c.t }
 
 // ISO is the clock's instant as the documents write it.
-func (c *Clock) ISO() string { return instant(c.t) }
+func (c *Clock) ISO() string { return iso(c.t) }
+
+// Plus is the instant seconds after now.
+func (c *Clock) Plus(seconds int64) string { return iso(c.t.Add(time.Duration(seconds) * time.Second)) }
 
 // Tick moves the clock one second and returns the new instant: the
 // trusttasks.Clock a built document is stamped with.
@@ -62,7 +76,8 @@ func (c *Clock) Tick() string {
 	return c.ISO()
 }
 
-func instant(t time.Time) string { return t.UTC().Format(time.RFC3339) }
+// Advance lets time pass without issuing a document (tests only).
+func (c *Clock) Advance(seconds int64) { c.t = c.t.Add(time.Duration(seconds) * time.Second) }
 
 // IDs hands out sequential urn:uuid identifiers: …-000000000001, …-000000000002, …
 type IDs struct{ n int }
@@ -108,6 +123,13 @@ const (
 	ManagementToken = "hcp_mt_demo_management"
 	// neutralDenial is one fixed text for every refusal (HCP 5.5).
 	neutralDenial = "The request is not authorized."
+	// invalidToken is the text of every hcp:invalidToken.
+	invalidToken = "The access token is not valid."
+	// subject is the person, by the pseudonym the provider uses with this client (HCP 3.4).
+	subject = "hcp-sub-demo-alex"
+	// AfterApprovalWindow is how long after the response a resubmission still
+	// gets the same grant, in seconds (hcp/grants/request "After approval").
+	AfterApprovalWindow = 3600
 )
 
 // entry is the person's context, as the toy provider stores it (HCP 4.2, much simplified).
@@ -119,22 +141,54 @@ var entries = []entry{
 	{"hcp-ref-0003", "health_context", "Severe peanut allergy."},
 }
 
-type grant struct {
-	grantID, token, client string
-	categories, purposes   []string
-	status                 string // "active" | "revoked"
+// registration is what the provider knows of a registered client, and shows the person (HCP 6.1.5, 6.1.6).
+type registration struct {
+	name     string
+	operator grantrequest.Named
 }
 
-// hold is a grant request the person has not decided yet (SPEC §8.6 hold).
+// grant is a grant in the provider's table.
+type grant struct {
+	grantID, token, tokenExpiresAt string
+	client                         string // the client's VID
+	access                         []grantrequest.AccessDetail
+	categories, purposes           []string
+	issuedAt, expiresAt            string
+	status                         grantrequest.GrantStatus // active | revoked
+	revokedAt                      string
+}
+
+// holdState is where a held grant request stands.
+type holdState int
+
+const (
+	pending holdState = iota
+	approved
+	granted
+)
+
+// hold is a grant request on one thread: held, approved by the person, then
+// granted (hcp/grants/request "Holding").
 type hold struct {
-	payload grantrequest.Payload
-	decided bool
+	issuer      string
+	payload     grantrequest.Payload
+	canonical   string // the JCS form of the payload, to compare resubmissions
+	state       holdState
+	grantID     string
+	respondedAt time.Time // when the response was first sent
+}
+
+// HeldGrant is what the Context Client keeps for a grant it holds: the token,
+// and the refs of the copies disclosed under it.
+type HeldGrant struct {
+	Token  string
+	Copies []string
 }
 
 // ── The world: three parties, one transport, one clock ─────────────────────
 
 // World holds the three parties, the shared clock and counter, the toy
-// provider's state and the transcript.
+// provider's state, the Context Client's state and the transcript.
 type World struct {
 	Clock         *Clock
 	IDs           *IDs
@@ -142,26 +196,43 @@ type World struct {
 	ContextClient *Party
 	Management    *Party
 
+	// ── The provider's state ──
+	// registeredClients is its one registered client, by VID.
+	registeredClients map[string]registration
+	grants            []*grant
+	// held is the grant requests by threadId (the SPEC §8.6 hold).
+	held   map[string]*hold
+	tokens int
+
+	// ── The Context Client's state ──
+	// Wallet is the grants it holds, by grantId.
+	Wallet map[string]*HeldGrant
+	// ProcessedNotices is the revocation notices it has processed: noticeId →
+	// grantId (hcp/grants/revoked "Deduplication").
+	ProcessedNotices map[string]string
+
 	transcript strings.Builder
-	grants     []*grant
-	held       map[string]*hold
-	tokens     int
 	verifier   *proof.Verifier
 	// One TSP consumer per receiving party: its replay guard is that party's
 	// duplicate-execution record.
 	consumers map[string]*tsp.Consumer
 }
 
-// NewWorld builds the parties and their consumers.
+// NewWorld builds the parties, the provider's registry and the consumers.
 func NewWorld() *World {
 	w := &World{
-		Clock:         &Clock{t: start},
-		IDs:           &IDs{},
-		Provider:      newParty("Provider", 0x11, 0x12),
-		ContextClient: newParty("Context Client", 0x21, 0x22),
-		Management:    newParty("Management Client", 0x31, 0x32),
-		held:          map[string]*hold{},
-		consumers:     map[string]*tsp.Consumer{},
+		Clock:            &Clock{t: start},
+		IDs:              &IDs{},
+		Provider:         newParty("Provider", 0x11, 0x12),
+		ContextClient:    newParty("Context Client", 0x21, 0x22),
+		Management:       newParty("Management Client", 0x31, 0x32),
+		held:             map[string]*hold{},
+		Wallet:           map[string]*HeldGrant{},
+		ProcessedNotices: map[string]string{},
+		consumers:        map[string]*tsp.Consumer{},
+	}
+	w.registeredClients = map[string]registration{
+		w.ContextClient.VID: {name: "Wayfare booking agent", operator: grantrequest.Named{ID: "booking.example", Name: "Wayfare Travel Ltd"}},
 	}
 	w.verifier = proof.NewVerifier(proof.WithClock(w.Clock.Now))
 	for _, me := range []*Party{w.Provider, w.ContextClient} {
@@ -183,6 +254,15 @@ func (w *World) byVID(vid string) *Party {
 		}
 	}
 	panic("unknown VID " + vid)
+}
+
+func (w *World) grantByID(grantID string) *grant {
+	for _, g := range w.grants {
+		if g.grantID == grantID {
+			return g
+		}
+	}
+	return nil
 }
 
 // sign signs a built document as by, with the proof's created equal to the clock.
@@ -214,7 +294,8 @@ func Request[P any](w *World, from, to *Party, typeURI string, payload P, thread
 }
 
 // Exchange seals doc over TSP from → to, lets to consume it, and opens the
-// sealed reply back at from. It returns the reply exactly as it arrived.
+// sealed reply back at from. It checks the reply (CheckReply, then its proof
+// and its payload's schema) and returns it exactly as it arrived.
 func (w *World) Exchange(from, to *Party, doc json.RawMessage) json.RawMessage {
 	w.print(from, to, doc)
 	wire, err := tsp.PackTrustTask(doc, from.TSP, to.TSP.Public())
@@ -244,6 +325,16 @@ func (w *World) Exchange(from, to *Party, doc json.RawMessage) json.RawMessage {
 	opened, err := tsp.UnpackTrustTask(replyWire, from.TSP, to.TSP.Public())
 	must(err)
 	reply := opened.Document
+	var sent struct {
+		ID       string  `json:"id"`
+		ThreadID *string `json:"threadId"`
+	}
+	must(json.Unmarshal(doc, &sent))
+	thread := sent.ID
+	if sent.ThreadID != nil {
+		thread = *sent.ThreadID
+	}
+	must(CheckReply(reply, to, thread))
 	var shape struct {
 		Type    string          `json:"type"`
 		Proof   json.RawMessage `json:"proof"`
@@ -260,15 +351,68 @@ func (w *World) Exchange(from, to *Party, doc json.RawMessage) json.RawMessage {
 	return reply
 }
 
+// pipelineCodes are the codes the receiving end's SPEC §7.2 pipeline raises
+// before any handler runs. The library builds those error responses itself,
+// unsigned; every other reply (each response, next step and handler refusal)
+// is signed.
+var pipelineCodes = []string{
+	"malformedRequest",
+	"unsupportedType",
+	"unsupportedVersion",
+	"unsupportedExtension",
+	"expired",
+	"proofRequired",
+	"proofInvalid",
+	"wrongRecipient",
+	"identityMismatch",
+	"idConflict",
+}
+
+// CheckReply is the sender's check on a reply before it trusts it: who it is
+// from, which thread, and that it is signed unless the library built it. The
+// proof itself and the payload's schema are checked after it.
+func CheckReply(reply json.RawMessage, from *Party, threadID string) error {
+	var r struct {
+		Type     string          `json:"type"`
+		Issuer   *string         `json:"issuer"`
+		ThreadID *string         `json:"threadId"`
+		Proof    json.RawMessage `json:"proof"`
+		Payload  struct {
+			Code string `json:"code"`
+		} `json:"payload"`
+	}
+	if err := json.Unmarshal(reply, &r); err != nil {
+		return fmt.Errorf("reply: %w", err)
+	}
+	if r.Issuer == nil || *r.Issuer != from.VID {
+		return fmt.Errorf("reply issuer %v is not %s", deref(r.Issuer), from.VID)
+	}
+	if r.ThreadID == nil || *r.ThreadID != threadID {
+		return fmt.Errorf("reply threadId %v is not %s", deref(r.ThreadID), threadID)
+	}
+	libraryError := r.Type == tt.TrustTaskErrorTypeURI && slices.Contains(pipelineCodes, r.Payload.Code)
+	if r.Proof == nil && !libraryError {
+		return errors.New("reply " + r.Type + " carries no proof")
+	}
+	return nil
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return "(absent)"
+	}
+	return *s
+}
+
 // route consumes an unpacked document addressed to me.
 type route func(ctx context.Context, w *World, me *Party, u *tsp.Unpacked) (*tsp.Received[json.RawMessage], error)
 
 // serve runs the §7.2 pipeline for one specification and, once it accepts the
 // document, hands it to handle. Every reply a handler builds is signed, so the
 // reply type is the signed document itself.
-func serve[P any](spec tt.SpecPolicy, handle func(w *World, me *Party, doc *tt.Document[P]) (*tt.Document[json.RawMessage], error)) route {
+func serve[P any](spec tt.SpecPolicy, decode func(json.RawMessage) (P, error), handle func(w *World, me *Party, doc *tt.Document[P]) (*tt.Document[json.RawMessage], error)) route {
 	return func(ctx context.Context, w *World, me *Party, u *tsp.Unpacked) (*tsp.Received[json.RawMessage], error) {
-		return tsp.Consume(ctx, w.consumers[me.VID], u, spec, decode[P],
+		return tsp.Consume(ctx, w.consumers[me.VID], u, spec, decode,
 			func(_ context.Context, doc *tt.Document[P], _ tt.ResolvedParties) (*tt.Document[json.RawMessage], error) {
 				return handle(w, me, doc)
 			})
@@ -285,13 +429,38 @@ func decode[P any](raw json.RawMessage) (P, error) {
 	return p, err
 }
 
+// withJCS is a decoded payload together with the payload as received and its
+// JCS form, for a handler that compares payloads. It marshals as the payload as
+// received, so the pipeline's schema check sees the received payload.
+type withJCS[P any] struct {
+	Value P
+	Raw   json.RawMessage
+	JCS   string
+}
+
+// MarshalJSON is the payload as received.
+func (p withJCS[P]) MarshalJSON() ([]byte, error) { return p.Raw, nil }
+
+// decodeWithJCS decodes as decode does and keeps the payload's canonical form.
+// tt.CanonicalJSON orders members recursively and drops insignificant
+// whitespace: it is equality-equivalent to JCS, which is all a comparison
+// needs. (trust-tasks-go/proof's byte-exact JCS is not exported.)
+func decodeWithJCS[P any](raw json.RawMessage) (withJCS[P], error) {
+	p, err := decode[P](raw)
+	if err != nil {
+		return withJCS[P]{}, err
+	}
+	canonical, err := tt.CanonicalJSON(raw)
+	return withJCS[P]{Value: p, Raw: append(json.RawMessage(nil), raw...), JCS: string(canonical)}, err
+}
+
 // routes is what each receiving party serves, by bare Type URI.
 var routes = map[string]route{
-	discovery.TypeURI:    serve(discovery.Spec, handleDiscovery),
-	grantrequest.TypeURI: serve(grantrequest.Spec, handleGrantRequest),
-	query.TypeURI:        serve(query.Spec, handleQuery),
-	revoke.TypeURI:       serve(revoke.Spec, handleRevoke),
-	revoked.TypeURI:      serve(revoked.Spec, handleRevoked),
+	discovery.TypeURI:    serve(discovery.Spec, decode[discovery.Payload], handleDiscovery),
+	grantrequest.TypeURI: serve(grantrequest.Spec, decodeWithJCS[grantrequest.Payload], handleGrantRequest),
+	query.TypeURI:        serve(query.Spec, decode[query.Payload], handleQuery),
+	revoke.TypeURI:       serve(revoke.Spec, decode[revoke.Payload], handleRevoke),
+	revoked.TypeURI:      serve(revoked.Spec, decode[revoked.Payload], handleRevoked),
 }
 
 // ── Handlers: what each receiving party does with an accepted document ────
@@ -325,89 +494,147 @@ func handleDiscovery(w *World, me *Party, doc *tt.Document[discovery.Payload]) (
 }
 
 // Step 2 — hcp/grants/request: hold with a next step until the person decides
-// (HCP 6.1.6, SPEC §8.6).
-func handleGrantRequest(w *World, me *Party, doc *tt.Document[grantrequest.Payload]) (*tt.Document[json.RawMessage], error) {
-	threadID := *doc.ThreadID
+// (HCP 6.1.6, SPEC §8.6), then the grant, and "After approval". The rules are
+// applied in SCENARIO.md's order.
+func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantrequest.Payload]]) (*tt.Document[json.RawMessage], error) {
+	issuer, threadID := *doc.Issuer, *doc.ThreadID
+	// 1. Only a registered client may ask (hcp/grants/request "Authorization").
+	if _, ok := w.registeredClients[issuer]; !ok {
+		return refuse(w, me, doc, "permissionDenied", neutralDenial)
+	}
 	h := w.held[threadID]
+	// 2. A new thread: hold it.
 	if h == nil {
-		w.held[threadID] = &hold{payload: doc.Payload}
+		w.held[threadID] = &hold{issuer: issuer, payload: doc.Payload.Value, canonical: doc.Payload.JCS, state: pending}
+		return w.nextStep(me, doc)
 	}
-	if h == nil || !h.decided {
-		id := w.IDs.Next()
-		issuedAt := w.Clock.Tick()
-		reason := "The request is with the person, who has not decided yet."
-		hint := map[string]json.RawMessage{"retryAfter": json.RawMessage("5")}
-		return asSigned(w.sign(me, tt.Document[nextstep.Payload]{
-			ID: id, Type: nextstep.TypeURI, Issuer: &me.VID, Recipient: doc.Issuer,
-			IssuedAt: &issuedAt, ThreadID: &threadID,
-			Payload: nextstep.Payload{
-				Expects:      []nextstep.PayloadExpectsItem{{TypeURI: grantrequest.TypeURI + "#request", Reason: &reason, Hint: &hint}},
-				Continuation: quoted("resubmit"),
-				InResponseTo: &nextstep.PayloadInResponseTo{TypeURI: doc.Type, ID: &doc.ID},
-			},
-		})), nil
+	// 3, 4. A resubmission is matched by (threadId, issuer), and must be the held
+	// payload (JCS forms compared); a refusal leaves the hold as it is.
+	if h.issuer != issuer {
+		return refuse(w, me, doc, "permissionDenied", neutralDenial)
+	}
+	if h.canonical != doc.Payload.JCS {
+		return refuse(w, me, doc, "malformedRequest", "The resubmission differs from the held request.")
 	}
 
-	// The person approved (the toy approves everything asked, read only).
-	g := &grant{grantID: w.IDs.Next(), client: *doc.Issuer, status: "active"}
-	w.tokens++
-	g.token = fmt.Sprintf("hcp_at_demo_%04d", w.tokens) // DEMO ONLY
-	var access []grantrequest.GrantedAccess
-	for _, a := range h.payload.Access {
-		g.categories = append(g.categories, a.Categories...)
-		var purposes []grantrequest.Purpose
-		if a.Purposes != nil {
-			purposes = *a.Purposes
+	switch h.state {
+	case pending: // 5. still with the person
+		return w.nextStep(me, doc)
+	case approved: // 6. the person approved (the toy approves everything asked, read only): issue the one grant
+		w.tokens++
+		g := &grant{
+			grantID:        w.IDs.Next(),
+			token:          fmt.Sprintf("hcp_at_demo_%04d", w.tokens), // DEMO ONLY
+			tokenExpiresAt: w.Clock.Plus(3600),                        // HCP 13.4 default
+			client:         issuer,
+			issuedAt:       w.Clock.ISO(),
+			status:         grantrequest.GrantStatusActive,
 		}
-		for _, p := range purposes {
-			g.purposes = append(g.purposes, p.Code)
+		for _, a := range h.payload.Access {
+			g.categories = append(g.categories, a.Categories...)
+			var purposes []grantrequest.Purpose
+			if a.Purposes != nil {
+				for _, p := range *a.Purposes {
+					description := p.Code
+					if p.Description != nil {
+						description = *p.Description
+					}
+					purposes = append(purposes, grantrequest.Purpose{Code: p.Code, Description: description})
+					g.purposes = append(g.purposes, p.Code)
+				}
+			}
+			actions := make([]grantrequest.AccessDetailActionsItem, len(a.Actions))
+			for i, x := range a.Actions {
+				actions[i] = grantrequest.AccessDetailActionsItem(x)
+			}
+			g.access = append(g.access, grantrequest.AccessDetail{Type: a.Type, Actions: actions, Categories: a.Categories, Purposes: purposes}) // approved as asked
 		}
-		access = append(access, grantrequest.GrantedAccess{Type: a.Type, Actions: a.Actions, Categories: a.Categories, Purposes: purposes}) // approved as asked
+		expiresIn := int64(4 * 3600) // HCP 6.1.3 default
+		if h.payload.ExpiresIn != nil {
+			expiresIn = *h.payload.ExpiresIn
+		}
+		g.expiresAt = w.Clock.Plus(expiresIn)
+		w.grants = append(w.grants, g)
+		h.state, h.grantID, h.respondedAt = granted, g.grantID, w.Clock.Now()
+		return reply(w, me, doc, w.grantResponse(g))
+	default: // 7. granted: the same grant within the hour, never a second one; after it, permissionDenied
+		g := w.grantByID(h.grantID)
+		late := w.Clock.Now().Sub(h.respondedAt) > AfterApprovalWindow*time.Second
+		if late || g.status != grantrequest.GrantStatusActive {
+			return refuse(w, me, doc, "permissionDenied", neutralDenial)
+		}
+		return reply(w, me, doc, w.grantResponse(g))
 	}
-	w.grants = append(w.grants, g)
-	expiresIn := int64(4 * 3600) // HCP 6.1.3 default
-	if h.payload.ExpiresIn != nil {
-		expiresIn = *h.payload.ExpiresIn
-	}
-	grantExpiresAt := w.plus(expiresIn)
-	return reply(w, me, doc, grantrequest.Response{
+}
+
+// nextStep is the hold: a next step naming the request Type URI, continuation
+// resubmit (SPEC §8.6).
+func (w *World) nextStep(me *Party, doc *tt.Document[withJCS[grantrequest.Payload]]) (*tt.Document[json.RawMessage], error) {
+	id := w.IDs.Next()
+	issuedAt := w.Clock.Tick()
+	reason := "The request is with the person, who has not decided yet."
+	hint := map[string]json.RawMessage{"retryAfter": json.RawMessage("5")}
+	return asSigned(w.sign(me, tt.Document[nextstep.Payload]{
+		ID: id, Type: nextstep.TypeURI, Issuer: &me.VID, Recipient: doc.Issuer,
+		IssuedAt: &issuedAt, ThreadID: doc.ThreadID,
+		Payload: nextstep.Payload{
+			Expects:      []nextstep.PayloadExpectsItem{{TypeURI: grantrequest.TypeURI + "#request", Reason: &reason, Hint: &hint}},
+			Continuation: quoted("resubmit"),
+			InResponseTo: &nextstep.PayloadInResponseTo{TypeURI: doc.Type, ID: &doc.ID},
+		},
+	})), nil
+}
+
+// grantResponse is the token and HCP's grant object, as hcp/grants/read-own
+// would return it.
+func (w *World) grantResponse(g *grant) grantrequest.Response {
+	r := w.registeredClients[g.client]
+	expiresAt := g.expiresAt
+	return grantrequest.Response{
 		AccessToken:    g.token,
-		TokenExpiresAt: w.plus(3600), // HCP 13.4 default
-		GrantID:        g.grantID,
-		Access:         access,
-		GrantType:      grantrequest.ResponseGrantTypeTemporary,
-		GrantedAt:      w.Clock.ISO(),
-		GrantExpiresAt: &grantExpiresAt,
-	})
+		TokenExpiresAt: g.tokenExpiresAt,
+		Grant: grantrequest.Grant{
+			GrantID:              g.grantID,
+			Subject:              grantrequest.GrantParty{ID: subject},
+			AuthorizingPrincipal: grantrequest.AuthorizingPrincipal{ID: subject},
+			Client:               grantrequest.GrantClient{ID: g.client, Name: r.name, Operator: r.operator},
+			Access:               g.access,
+			GrantType:            grantrequest.GrantGrantTypeTemporary,
+			IssuedAt:             g.issuedAt,
+			ExpiresAt:            &expiresAt,
+			Status:               g.status,
+		},
+	}
 }
 
-func (w *World) plus(seconds int64) string {
-	return instant(w.Clock.Now().Add(time.Duration(seconds) * time.Second))
-}
-
-// Step 3 — hcp/entries/query: the grant is checked on every request (HCP 5.2.1, 6.2.2).
+// Steps 3 and 5 — hcp/entries/query: the grant is checked on every request
+// (HCP 5.2.1, 6.2.2), in SCENARIO.md's order.
 func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Document[json.RawMessage], error) {
 	p := doc.Payload
 	var g *grant
 	for _, x := range w.grants {
-		if x.token == p.AccessToken && doc.Issuer != nil && x.client == *doc.Issuer {
+		if x.token == p.AccessToken {
 			g = x
 			break
 		}
 	}
-	if g == nil || g.status != "active" {
-		return refuse(w, me, doc, "hcp:invalidToken", "The access token is not valid.")
+	if g == nil {
+		return refuse(w, me, doc, "hcp:invalidToken", invalidToken)
+	}
+	// A token issued to another client is no use from this VID (query "The
+	// access token"); checked before the status, so it tells that VID nothing
+	// about the grant.
+	if doc.Issuer == nil || g.client != *doc.Issuer {
+		return refuse(w, me, doc, "permissionDenied", neutralDenial)
+	}
+	if g.status != grantrequest.GrantStatusActive {
+		return refuse(w, me, doc, "hcp:invalidToken", invalidToken)
 	}
 	asked := g.categories
 	if p.Categories != nil {
 		asked = *p.Categories
 	}
-	for _, c := range asked {
-		if !slices.Contains(g.categories, c) {
-			return refuse(w, me, doc, "permissionDenied", neutralDenial)
-		}
-	}
-	if !slices.Contains(g.purposes, p.Purpose) {
+	if !slices.Contains(g.purposes, p.Purpose) || slices.ContainsFunc(asked, func(c string) bool { return !slices.Contains(g.categories, c) }) {
 		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	}
 	limit := int64(5)
@@ -415,7 +642,7 @@ func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Docu
 		limit = *p.MaxEntries
 	}
 	limit = min(limit, 20)
-	useUntil := w.plus(3600)
+	useUntil := w.Clock.Plus(3600)
 	disclosed := []json.RawMessage{}
 	for _, e := range entries {
 		if int64(len(disclosed)) == limit || !slices.Contains(asked, e.category) {
@@ -434,11 +661,13 @@ func handleQuery(w *World, me *Party, doc *tt.Document[query.Payload]) (*tt.Docu
 		must(err)
 		disclosed = append(disclosed, d)
 	}
+	directives := []query.Directive{} // a Context Client always gets the list; the person set none (HCP 6.4)
 	return reply(w, me, doc, query.Response{
 		Entries:            disclosed,
 		RetrievalID:        w.IDs.Next(),
 		Minimization:       query.MinimizationReport{Method: "lexical"},
 		CategoriesSearched: asked,
+		Directives:         &directives,
 		RespondedAt:        w.Clock.ISO(),
 	})
 }
@@ -448,26 +677,41 @@ func handleRevoke(w *World, me *Party, doc *tt.Document[revoke.Payload]) (*tt.Do
 	if doc.Payload.AccessToken != ManagementToken {
 		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	}
-	for _, g := range w.grants {
-		if g.grantID == doc.Payload.GrantID {
-			g.status = "revoked" // immediate (HCP 6.2.2); a second revoke is idempotent
-			return reply(w, me, doc, revoke.Response{})
-		}
+	g := w.grantByID(doc.Payload.GrantID)
+	if g == nil {
+		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	}
-	return refuse(w, me, doc, "permissionDenied", neutralDenial)
+	if g.status == grantrequest.GrantStatusActive {
+		g.status = grantrequest.GrantStatusRevoked // immediate (HCP 6.2.2); a second revoke is idempotent
+		g.revokedAt = w.Clock.ISO()
+	}
+	return reply(w, me, doc, revoke.Response{})
 }
 
-// Step 5 — hcp/grants/revoked, at the Context Client: stop using what it holds (HCP 6.2.2, 9.9).
+// Step 6 — hcp/grants/revoked, at the Context Client (HCP 6.2.2, 9.9;
+// hcp/grants/revoked "Delivery rules").
 func handleRevoked(w *World, me *Party, doc *tt.Document[revoked.Payload]) (*tt.Document[json.RawMessage], error) {
+	p := doc.Payload
+	// Deduplicate on noticeId: a later attempt of a processed notice is
+	// acknowledged, not acted on again. (A real client keeps the record at
+	// least 25 hours; the demo keeps it for the run.)
+	if _, seen := w.ProcessedNotices[p.NoticeID]; !seen {
+		w.ProcessedNotices[p.NoticeID] = p.GrantID
+		w.ForgetGrant(p.GrantID)
+	}
 	return reply(w, me, doc, revoked.Response{})
 }
 
 // PersonApproves is the person deciding, in the provider's own modality (here:
 // approving at once).
 func (w *World) PersonApproves(threadID string) {
-	w.held[threadID].decided = true
+	w.held[threadID].state = approved
 	fmt.Fprintf(&w.transcript, "[person] approves the grant request on thread %s in the provider's app\n", threadID)
 }
+
+// ForgetGrant is the Context Client no longer using a grant: it drops the
+// token and every copy disclosed under it (HCP 6.2.2, 7.6).
+func (w *World) ForgetGrant(grantID string) { delete(w.Wallet, grantID) }
 
 // ── Transcript ─────────────────────────────────────────────────────────────
 
@@ -612,15 +856,6 @@ func must(err error) {
 	}
 }
 
-// ── The five steps ─────────────────────────────────────────────────────────
-
-// Result is what a run produces: the transcript and step 6's reply.
-type Result struct {
-	Transcript     string
-	PostRevokeCode string
-	PostRevokeType string
-}
-
 // replyOf decodes a reply document's type and payload.
 func replyOf[P any](raw json.RawMessage) tt.Document[P] {
 	var doc tt.Document[P]
@@ -628,75 +863,149 @@ func replyOf[P any](raw json.RawMessage) tt.Document[P] {
 	return doc
 }
 
-// Run plays the five steps on w (a fresh world when nil).
-func Run(w *World) Result {
-	if w == nil {
-		w = NewWorld()
-	}
-	P, C, M := w.Provider, w.ContextClient, w.Management
+// ── The six steps, one function each ───────────────────────────────────────
 
-	// 1. Discover: does the provider speak hcp/*? (trust-task-discovery 0.4, SPEC §10)
+// Ask is what the Context Client asks for in step 2.
+func Ask() grantrequest.Payload {
+	description := "Book trips that match how you like to travel"
+	expiresIn := int64(14400)
+	subjectHint := "acct:alex@provider.example"
+	return grantrequest.Payload{
+		Access: []grantrequest.AccessRequest{{
+			Type:       "https://hcp.example/spec/authorization/context-access",
+			Actions:    []grantrequest.GrantAction{grantrequest.GrantActionRead},
+			Categories: []string{"travel_preferences"},
+			Purposes:   &[]grantrequest.RequestedPurpose{{Code: Purpose, Description: &description}},
+		}},
+		ExpiresIn:   &expiresIn,
+		SubjectHint: &subjectHint,
+	}
+}
+
+// QueryPayload is the query the Context Client sends in steps 3 and 5, under
+// the grant's token.
+func QueryPayload(accessToken string) query.Payload {
+	maxEntries := int64(5)
+	return query.Payload{Query: "How does Alex like to fly?", Categories: &[]string{"travel_preferences"}, Purpose: Purpose, MaxEntries: &maxEntries, AccessToken: accessToken}
+}
+
+// StepDiscover is step 1, Discover: does the provider speak hcp/*?
+// (trust-task-discovery 0.4, SPEC §10)
+func StepDiscover(w *World) {
+	P, C := w.Provider, w.ContextClient
 	w.step("1. Discover (trust-task-discovery 0.4)")
 	found := replyOf[discovery.Response](w.Exchange(C, P, Request(w, C, P, discovery.TypeURI, discovery.Payload{Patterns: &[]string{"hcp/*"}}, "")))
 	if !slices.ContainsFunc(found.Payload.SupportedTypes, func(t json.RawMessage) bool { return string(t) == string(quoted(grantrequest.TypeURI)) }) {
 		panic("provider does not serve grant requests")
 	}
+}
 
-	// 2. Grant request: held with a next step while the person decides, then
-	// resubmitted (HCP 6.1.6, 6.1.7; SPEC §8.6)
+// StepGrantRequest is step 2, Grant request: held with a next step while the
+// person decides, then resubmitted on the same thread (HCP 6.1.6, 6.1.7; SPEC
+// §8.6). The client keeps the token in its wallet. It returns the thread and
+// the grant.
+func StepGrantRequest(w *World) (threadID, grantID string) {
+	P, C := w.Provider, w.ContextClient
 	w.step("2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step")
-	description := "Book trips that match how you like to travel"
-	expiresIn := int64(14400)
-	subjectHint := "acct:alex@provider.example"
-	ask := grantrequest.Payload{
-		Access: []grantrequest.AccessRequest{{
-			Type:       "https://hcp.example/spec/authorization/context-access",
-			Actions:    []grantrequest.GrantAction{grantrequest.GrantActionRead},
-			Categories: []string{"travel_preferences"},
-			Purposes:   &[]grantrequest.Purpose{{Code: Purpose, Description: &description}},
-		}},
-		ExpiresIn:   &expiresIn,
-		SubjectHint: &subjectHint,
-	}
-	first := Request(w, C, P, grantrequest.TypeURI+"#request", ask, "")
-	held := replyOf[json.RawMessage](w.Exchange(C, P, first))
-	if held.Type != nextstep.TypeURI {
+	first := Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), "")
+	if held := replyOf[json.RawMessage](w.Exchange(C, P, first)); held.Type != nextstep.TypeURI {
 		panic("expected a next step")
 	}
-	thread := *replyOf[json.RawMessage](first).ThreadID
-	w.PersonApproves(thread)
+	threadID = *replyOf[json.RawMessage](first).ThreadID
+	w.PersonApproves(threadID)
 	// Resubmission: a new document, fresh id, same threadId and payload.
-	granted := replyOf[grantrequest.Response](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", ask, thread)))
+	granted := replyOf[grantrequest.Response](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID)))
 	if granted.Type != grantrequest.ResponseTypeURI {
 		panic("expected the grant")
 	}
-	accessToken, grantID := granted.Payload.AccessToken, granted.Payload.GrantID
+	grantID = granted.Payload.Grant.GrantID
+	w.Wallet[grantID] = &HeldGrant{Token: granted.Payload.AccessToken, Copies: []string{}}
+	return threadID, grantID
+}
 
-	// 3. Query under the grant (hcp/entries/query 0.1, HCP 5.2.1)
+// StepQuery is step 3, Query under the grant (hcp/entries/query 0.1, HCP
+// 5.2.1). The client keeps the refs of the copies.
+func StepQuery(w *World, grantID string) {
+	P, C := w.Provider, w.ContextClient
 	w.step("3. Query (hcp/entries/query 0.1)")
-	maxEntries := int64(5)
-	queryPayload := query.Payload{Query: "How does Alex like to fly?", Categories: &[]string{"travel_preferences"}, Purpose: Purpose, MaxEntries: &maxEntries, AccessToken: accessToken}
-	if answer := replyOf[json.RawMessage](w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", queryPayload, ""))); answer.Type != query.ResponseTypeURI {
+	held := w.Wallet[grantID]
+	answer := replyOf[query.Response](w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", QueryPayload(held.Token), "")))
+	if answer.Type != query.ResponseTypeURI {
 		panic("expected entries")
 	}
+	for _, e := range answer.Payload.Entries {
+		var d struct {
+			Ref string `json:"ref"`
+		}
+		must(json.Unmarshal(e, &d))
+		held.Copies = append(held.Copies, d.Ref)
+	}
+}
 
-	// 4. Revoke from the person's Management Client (hcp/grants/revoke 0.1, HCP 6.2.1)
+// StepRevoke is step 4, Revoke from the person's Management Client
+// (hcp/grants/revoke 0.1, HCP 6.2.1).
+func StepRevoke(w *World, grantID string) {
+	P, M := w.Provider, w.Management
 	w.step("4. Revoke (hcp/grants/revoke 0.1) from the Management Client")
 	if done := replyOf[json.RawMessage](w.Exchange(M, P, Request(w, M, P, revoke.TypeURI+"#request", revoke.Payload{GrantID: grantID, AccessToken: ManagementToken}, ""))); done.Type != revoke.ResponseTypeURI {
 		panic("expected the revocation")
 	}
+}
 
-	// 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
-	w.step("5. Revocation notice (hcp/grants/revoked 0.1)")
-	// noticeId is HCP's jti, minted once per notice and kept on every delivery attempt.
-	notice := revoked.Payload{GrantID: grantID, NoticeID: w.IDs.Next(), RevokedAt: w.Clock.ISO()}
-	if ack := replyOf[json.RawMessage](w.Exchange(P, C, Request(w, P, C, revoked.TypeURI+"#request", notice, ""))); ack.Type != revoked.ResponseTypeURI {
+// StepQueryAfterRevoke is step 5: the same query, sent before any notice
+// arrives, fails with hcp:invalidToken. The grant is checked on every request,
+// so revocation takes effect at once (HCP 6.2.2). The client acts on that at
+// once too: it drops the token and the copies (hcp/grants/revoked
+// "Independence"). It returns the reply.
+func StepQueryAfterRevoke(w *World, grantID string) tt.Document[tt.ErrorPayload] {
+	P, C := w.Provider, w.ContextClient
+	w.step("5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken")
+	held := w.Wallet[grantID]
+	refused := replyOf[tt.ErrorPayload](w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", QueryPayload(held.Token), "")))
+	if refused.Type == tt.TrustTaskErrorTypeURI && refused.Payload.Code == "hcp:invalidToken" {
+		w.ForgetGrant(grantID)
+	}
+	return refused
+}
+
+// StepNotice is step 6, Revocation notice to the grant's client
+// (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9). The client records the noticeId and
+// the grant and stops using the grant; it never sends the old token again. It
+// returns the notice sent.
+func StepNotice(w *World, grantID string) tt.Document[revoked.Payload] {
+	P := w.Provider
+	w.step("6. Revocation notice (hcp/grants/revoked 0.1)")
+	g := w.grantByID(grantID)
+	client := w.byVID(g.client)
+	// noticeId is HCP's jti: minted once per notice, before the notice's own id,
+	// and kept on every delivery attempt.
+	payload := revoked.Payload{GrantID: grantID, NoticeID: w.IDs.Next(), RevokedAt: g.revokedAt}
+	notice := Request(w, P, client, revoked.TypeURI+"#request", payload, "")
+	if ack := replyOf[json.RawMessage](w.Exchange(P, client, notice)); ack.Type != revoked.ResponseTypeURI {
 		panic("expected the acknowledgement")
 	}
+	return replyOf[revoked.Payload](notice)
+}
 
-	// After: the same query again fails — the grant is checked on every request (HCP 6.2.2)
-	w.step("After revoke: the same query fails with hcp:invalidToken")
-	refused := replyOf[tt.ErrorPayload](w.Exchange(C, P, Request(w, C, P, query.TypeURI+"#request", queryPayload, "")))
+// Result is what a run produces.
+type Result struct {
+	Transcript      string
+	ThreadID        string
+	GrantID         string
+	PostRevokeError tt.Document[tt.ErrorPayload]
+	Notice          tt.Document[revoked.Payload]
+}
 
-	return Result{Transcript: w.transcript.String(), PostRevokeType: refused.Type, PostRevokeCode: refused.Payload.Code}
+// RunDemo plays the six steps, in order, on w (a fresh world when nil).
+func RunDemo(w *World) Result {
+	if w == nil {
+		w = NewWorld()
+	}
+	StepDiscover(w)
+	threadID, grantID := StepGrantRequest(w)
+	StepQuery(w, grantID)
+	StepRevoke(w, grantID)
+	postRevokeError := StepQueryAfterRevoke(w, grantID)
+	notice := StepNotice(w, grantID)
+	return Result{Transcript: w.transcript.String(), ThreadID: threadID, GrantID: grantID, PostRevokeError: postRevokeError, Notice: notice}
 }

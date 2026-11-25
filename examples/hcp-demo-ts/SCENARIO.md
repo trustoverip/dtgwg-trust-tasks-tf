@@ -277,8 +277,12 @@ Differences that print nothing:
   `affinidi_tsp` offers) and signs the message, rather than HPKE-Auth. Its `TspConsumer` mints the
   `id` of an error the library builds (tests 3 and 4) with a random `urn:uuid`, as it has no id
   hook; those tests check only the code.
-- **Go** (`hcp-demo-go`): `tsp.Consumer` has no clock hook, so the refusals its pipeline builds
-  (tests 3 and 4) are stamped with the library's system clock; those tests check only the code.
+- **Go** (`hcp-demo-go`): `tsp.Consumer.Now` drives the pipeline's checks (so test 11's freshness
+  check runs on the injected clock), but the consumer has no hook for the clock that stamps the
+  refusals its pipeline builds (tests 3 and 4): those carry the library's system clock, and the
+  tests check only the code. The provider compares grant-request payloads with
+  `trusttasks.CanonicalJSON` (members ordered recursively, no whitespace), which is
+  equality-equivalent to JCS but not byte-exact JCS: `trust-tasks-go/proof`'s JCS is not exported.
 - **Rust** (`hcp-demo`), *pending*: it checks a `trust-task-error` reply's payload by
   deserialising it into the runtime's hand-written `ErrorPayload` type rather than against the
   `trust-task-error` 0.6 payload schema, which TypeScript, Go and Dart use (reply check 5 above).
