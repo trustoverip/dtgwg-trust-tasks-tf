@@ -33,7 +33,7 @@ extension type const ResponseStatus(String value) {
 /// Synchronous ack from the approver acknowledging it received the request and will
 /// (or will not) deliver an approve-response. Carried in a Trust Task document whose
 /// type is https://trusttasks.org/spec/auth/step-up/approve-request/0.1#response.
-@Deprecated('superseded by auth/step-up/approve-request/0.5')
+@Deprecated('superseded by auth/step-up/approve-request/0.6')
 class Response {
   const Response({
     required this.status,
@@ -174,7 +174,7 @@ extension type const PayloadAcceptableEvidenceItem(String value) {
 
 /// A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL
 /// elevation for a subject's session.
-@Deprecated('superseded by auth/step-up/approve-request/0.5')
+@Deprecated('superseded by auth/step-up/approve-request/0.6')
 class Payload {
   const Payload({
     required this.subject,
@@ -269,7 +269,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by auth/step-up/approve-request/0.5';
+const String? deprecation = 'superseded by auth/step-up/approve-request/0.6';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

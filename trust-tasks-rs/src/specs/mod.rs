@@ -211,6 +211,7 @@ pub mod registry;
     note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
 )]
 pub mod rooms;
+mod shared_defs;
 #[cfg(feature = "sync")]
 #[cfg(not(test))]
 #[deprecated(

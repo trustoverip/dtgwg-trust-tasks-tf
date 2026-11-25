@@ -25,6 +25,7 @@
 //! ```
 
 mod bundle;
+mod shared_defs;
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -443,8 +444,17 @@ fn main() -> Result<()> {
         modules.push(generated);
     }
 
+    // Spell each `$defs` entry the schema constants repeat once, which keeps
+    // the `.crate` under crates.io's upload limit. Pure, like the generation
+    // above.
+    let shared = {
+        let mut contents: Vec<&mut String> = modules.iter_mut().map(|m| &mut m.contents).collect();
+        shared_defs::dedup(&mut contents)?
+    };
+
     // Every spec generated. Now it is safe to wipe, so removals propagate.
     clean_generated_tree(&out_root)?;
+    fs::write(out_root.join(format!("{}.rs", shared_defs::MODULE)), shared)?;
 
     for module in &modules {
         if let Some(parent) = module.path.parent() {
@@ -1333,9 +1343,11 @@ fn write_node(
     };
     let mut names: Vec<&String> = node.children.keys().chain(node.leaves.iter()).collect();
     names.sort();
-    let body = names.into_iter().map(decl).collect::<Vec<_>>().join("\n");
+    let mut body = names.into_iter().map(decl).collect::<Vec<_>>().join("\n");
 
     if is_root {
+        // Never gated: every family's schema constants name it.
+        body = format!("mod {};\n{body}", shared_defs::MODULE);
         // Preserve the hand-written preamble in specs/mod.rs; only the block
         // between the codegen markers is regenerated.
         let path = dir.join("mod.rs");

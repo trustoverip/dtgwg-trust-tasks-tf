@@ -14,7 +14,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// For `login`: who is now signed in, for the starter's "Continue as …?" confirmation.
 /// Never tokens: over HTTPS the session itself is delivered as HttpOnly cookies.
-@Deprecated('superseded by auth/oob/redeem/0.2')
+@Deprecated('retired; use auth/oob/redeem/0.2')
 class Response {
   const Response({
     required this.subject,
@@ -72,7 +72,7 @@ typedef RequestId = String;
 /// starter key; held as a long poll until the request is approved. The outer document
 /// members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 /// framework — SPEC §6.3.
-@Deprecated('superseded by auth/oob/redeem/0.2')
+@Deprecated('retired; use auth/oob/redeem/0.2')
 class Payload {
   const Payload({
     required this.requestId,
@@ -102,7 +102,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by auth/oob/redeem/0.2';
+const String? deprecation = 'retired; use auth/oob/redeem/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/auth/oob/redeem/0.1';
