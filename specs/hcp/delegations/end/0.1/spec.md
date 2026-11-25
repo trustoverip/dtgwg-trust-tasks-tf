@@ -80,7 +80,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on ending a delegation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on ending a delegation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 A provider that does not conform to the profile does not expose this operation (HCP 9.4.13): it **MUST NOT** advertise this task, and answers a request for it with `unsupportedType`, as [`hcp/delegations/list`](../../list/0.1/spec.md#conformance) explains.
 
@@ -92,8 +92,8 @@ The authority, and the reason the delegation ends with, are fixed by **who the M
 |---|---|---|
 | The delegate the delegation names | That delegation, whatever its basis (HCP 9.4.13, 17.6) | `relinquished` |
 | The Context Subject | A delegation whose `basis.method` is `appointed` (HCP 9.4.13, 17.5, 17.6) | `ended-by-subject` |
-| The delegate who appointed a sub-delegation | That sub-delegation (HCP 17.6, 17.10), *pending HCP confirmation* ([question 25](#pending-hcp-confirmation)) | `ended-by-delegate` |
-| The Context Subject | A sub-delegation whose parent's `basis.method` is `appointed`, since they may end it "wherever they may end the parent" (HCP 17.10), *pending HCP confirmation* ([question 25](#pending-hcp-confirmation)) | `ended-by-subject` |
+| The delegate who appointed a sub-delegation | That sub-delegation (HCP 17.6, 17.10), *pending HCP confirmation* ([question 32](#pending-hcp-confirmation)) | `ended-by-delegate` |
+| The Context Subject | A sub-delegation whose parent's `basis.method` is `appointed`, since they may end it "wherever they may end the parent" (HCP 17.10), *pending HCP confirmation* ([question 32](#pending-hcp-confirmation)) | `ended-by-subject` |
 
 Any other caller receives not authorized (HCP 9.4.13), carried as `permissionDenied`: among them the Context Subject for a delegation resting on any basis other than `appointed` (a court order, a parent's authority, an attested relationship), which ends only as HCP 17.6 sets out, though its grants can always be revoked with [`hcp/grants/revoke`](../../../grants/revoke/0.1/spec.md) (HCP 17.5). A grant held by a Context Client never authorizes this task, whatever its scopes (HCP 6.1.9).
 
@@ -193,7 +193,7 @@ A provider that does not conform to the Delegated Authorization Profile answers 
 
 When a delegation ends (HCP 17.6):
 
-- **Every grant under it ends at that moment.** Its `status` becomes `expired`, and the provider appends `grant.expired` with `data.reason` `delegation-ended` (HCP 8.2). Invalidation and notification follow HCP 6.2.2–6.2.4, as for a revocation: no request presenting evidence issued under such a grant succeeds, and each client holding one is sent the grant-revoked notice. Over Trust Tasks that notice is [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md) with `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended, *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)). The delegation's own reason (`relinquished`, `ended-by-subject`, ...) is never sent to a client.
+- **Every grant under it ends at that moment.** Its `status` becomes `expired`, and the provider appends `grant.expired` with `data.reason` `delegation-ended` (HCP 8.2). Invalidation and notification follow HCP 6.2.2–6.2.4, as for a revocation: no request presenting evidence issued under such a grant succeeds, and each client holding one is sent the grant-revoked notice. Over Trust Tasks that notice is [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md) with `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended, *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)). The delegation's own reason (`relinquished`, `ended-by-subject`, ...) is never sent to a client.
 - **Every sub-delegation under it ends**, with reason `parent-ended` (HCP 17.6, 17.10), and with it every grant made under the sub-delegation, as above.
 - **The provider appends `delegation.ended`**, recording `delegationId` and `reason` (HCP 8.1, 8.2), and sets the delegation's `ended` to the instant and the reason. Like every event other than `context.read`, it is durable before this task's response is sent (HCP 8.4).
 - **Entries written under the delegation's grants are unaffected.** They are the Context Subject's, and their provenance shows the grant under which each was written (HCP 17.6, 3.5).
@@ -203,7 +203,7 @@ When a delegation ends (HCP 17.6):
 
 ## Repeated requests
 
-HCP 2.0-draft-3 does not say what ending an already-ended delegation yields (HCP 9.4.13). This specification reads HCP as follows, *pending HCP confirmation* ([question 13](#pending-hcp-confirmation)):
+HCP 2.0-draft-3 does not say what ending an already-ended delegation yields (HCP 9.4.13). This specification reads HCP as follows, *pending HCP confirmation* ([question 27](#pending-hcp-confirmation)):
 
 - A caller who could end the delegation while it held, and asks to end it after it has ended, for any reason, succeeds idempotently with the empty response. The provider appends no second `delegation.ended` event, changes no `ended` member, and sends no second notice. The authorization check comes first: any other caller receives `permissionDenied`.
 - A `delegationId` the provider does not hold, or one not visible to the caller, is refused with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal, so that a caller cannot tell an unknown delegation from one it may not end.
@@ -214,10 +214,10 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 4 — notice to clients.** Each grant that ends with the delegation is announced with [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md#pending-hcp-confirmation), carrying `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended.
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 13 — an already-ended or unknown delegation.** Ending an ended delegation succeeds idempotently, with no second `delegation.ended` event; an unknown one is refused with `permissionDenied` (see [Repeated requests](#repeated-requests)).
-- **Question 25 — ending a sub-delegation.** HCP 17.10 governs where HCP 9.4.13 is narrower: the delegate who appointed a sub-delegation may end it (`ended-by-delegate`), and so may the Context Subject where the parent's basis is `appointed` (`ended-by-subject`) (see [Authorization](#authorization)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 17 — notice to clients.** Each grant that ends with the delegation is announced with [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md#pending-hcp-confirmation), carrying `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended.
+- **Question 27 — an already-ended or unknown delegation.** Ending an ended delegation succeeds idempotently, with no second `delegation.ended` event; an unknown one is refused with `permissionDenied` (see [Repeated requests](#repeated-requests)).
+- **Question 32 — ending a sub-delegation.** HCP 17.10 governs where HCP 9.4.13 is narrower: the delegate who appointed a sub-delegation may end it (`ended-by-delegate`), and so may the Context Subject where the parent's basis is `appointed` (`ended-by-subject`) (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 

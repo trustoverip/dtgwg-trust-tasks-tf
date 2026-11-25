@@ -87,7 +87,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the disclosure summary; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the disclosure summary; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -106,12 +106,12 @@ The `proof` on the request, where present, establishes which Management Client V
 
 | HCP field | Member | Notes |
 |---|---|---|
-| query parameters `client`, `category`, `from`, `to` (HCP 9.4.12) | `client`, `category`, `from`, `to` | Unchanged. `from` and `to` are both inclusive, *pending HCP confirmation* ([question 21](#pending-hcp-confirmation)). |
-| query parameters `cursor`, `limit` (HCP 9.5, 9.4.12: "MAY be paginated") | `cursor`, `limit` | Unchanged; `limit` at most 1000, a framework bound ([question 14](#pending-hcp-confirmation)). |
+| query parameters `client`, `category`, `from`, `to` (HCP 9.4.12) | `client`, `category`, `from`, `to` | Unchanged. `from` and `to` are both inclusive, *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)). |
+| query parameters `cursor`, `limit` (HCP 9.5, 9.4.12: "MAY be paginated") | `cursor`, `limit` | Unchanged; `limit` at most 1000, a framework bound ([question 3](#pending-hcp-confirmation)). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `clients` (HCP 9.4.12) | `clients` | Unchanged; each member carries the members of HCP 8.6, unchanged. |
-| result `nextCursor` (HCP 9.5) | `nextCursor` | **Absent**, not null, on the last page, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). |
+| result `nextCursor` (HCP 9.5) | `nextCursor` | **Absent**, not null, on the last page, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). |
 
 ### Parties
 
@@ -127,8 +127,8 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a prov
 The Management Client asks for the summary. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `accessToken` (REQUIRED) is the Management Client's token.
-- `client`, `category`, `from` and `to` (each OPTIONAL) narrow the summary to one client, one category, and a date range (HCP 8.6, 9.4.12). Each summary is then computed only from the disclosures that match: `from` and `to` bound when each disclosure took place, both inclusive, *pending HCP confirmation* ([question 21](#pending-hcp-confirmation)).
-- `cursor` and `limit` (OPTIONAL) page the result, which HCP lets a provider paginate (HCP 9.4.12, 9.5), *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). `limit` is the most client summaries to return, at most 1000; absent leaves the page size to the provider. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from, and a provider **MUST NOT** accept a cursor it did not issue. A provider that does not paginate ignores `limit` and returns every summary, within its `maxDocumentBytes`.
+- `client`, `category`, `from` and `to` (each OPTIONAL) narrow the summary to one client, one category, and a date range (HCP 8.6, 9.4.12). Each summary is then computed only from the disclosures that match: `from` and `to` bound when each disclosure took place, both inclusive, *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
+- `cursor` and `limit` (OPTIONAL) page the result, which HCP lets a provider paginate (HCP 9.4.12, 9.5), *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). `limit` is the most client summaries to return, at most 1000; absent leaves the page size to the provider. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from, and a provider **MUST NOT** accept a cursor it did not issue. A provider that does not paginate ignores `limit` and returns every summary, within its `maxDocumentBytes`.
 
 ### What has been disclosed in health context
 
@@ -169,7 +169,7 @@ The provider answers with one summary per client. The payload is the sub-schema 
   - `usableUntil`: the latest `useUntil` among the copies disclosed (HCP 7.6) or, where a revocation notice was delivered, the time of delivery (HCP 6.2.4). It is REQUIRED and admits null, as in the result shape HCP publishes; HCP's text does not say when it is null, and a provider **SHOULD** send a date-time whenever the log records one;
   - `notification`: `delivered`, `abandoned` or `none`, for the most recent revocation notice (HCP 6.2.4);
   - `legalRetention`, only where the client declared at registration that the law requires it to keep what it receives: the `record`, `obligation` and `period`, as in the grant (HCP 6.1.5, 6.2.5).
-- `nextCursor` is an opaque token for the next page, present only when more summaries remain; it is **absent**, never null, on the last page or where the provider does not paginate, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)).
+- `nextCursor` is an opaque token for the next page, present only when more summaries remain; it is **absent**, never null, on the last page or where the provider does not paginate, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
 
 An empty `clients` is a successful answer: no client received context within the filters. Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
@@ -269,9 +269,9 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 14 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
-- **Question 21 — the date range.** `from` and `to` are both inclusive, and bound when each disclosure took place.
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 3 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
+- **Question 30 — the date range.** `from` and `to` are both inclusive, and bound when each disclosure took place.
 
 ## What HCP requires that a document cannot express
 

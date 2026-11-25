@@ -74,7 +74,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on standing rules; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on standing rules; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -179,7 +179,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 ## Repeated requests
 
-HCP 2.0-draft-3 does not say what removing an unknown or already-removed rule yields (HCP 9.4.14). This specification reads HCP as follows, *pending HCP confirmation* ([question 13](#pending-hcp-confirmation)): a `ruleId` the provider does not hold, including one already removed, is refused with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal, so that a caller cannot tell an unknown rule from one it may not remove.
+HCP 2.0-draft-3 does not say what removing an unknown or already-removed rule yields (HCP 9.4.14). This specification reads HCP as follows, *pending HCP confirmation* ([question 27](#pending-hcp-confirmation)): a `ruleId` the provider does not hold, including one already removed, is refused with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal, so that a caller cannot tell an unknown rule from one it may not remove.
 
 A re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): it is not executed twice, and is answered with the original empty response.
 
@@ -187,8 +187,8 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 13 — unknown and already-removed rules.** Refused with `permissionDenied`, with the same text as every other not-authorized refusal (see [Repeated requests](#repeated-requests)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 27 — unknown and already-removed rules.** Refused with `permissionDenied`, with the same text as every other not-authorized refusal (see [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
 

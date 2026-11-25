@@ -25,7 +25,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["entryId", "hardDeleted", "respondedAt"],
-      "description": "The entry is permanently removed (HCP 5.4.2). The shape of HCP 9.4.5's withdraw result with `hardDeleted` true and no `status`, pending HCP confirmation (question 16 in the spec's \"Pending HCP confirmation\" section). Failures use trust-task-error, not this shape.",
+      "description": "The entry is permanently removed (HCP 5.4.2). The shape of HCP 9.4.5's withdraw result with `hardDeleted` true and no `status`, pending HCP confirmation (question 11 in the spec's \"Pending HCP confirmation\" section). Failures use trust-task-error, not this shape.",
       "properties": {
         "entryId": {
           "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",

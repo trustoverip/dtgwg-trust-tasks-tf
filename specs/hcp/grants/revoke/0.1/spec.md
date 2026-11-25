@@ -75,7 +75,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on revocation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -171,18 +171,18 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | rate limited | `rate-limited` | Never: revocation is **never rate limited** (HCP 5.5, 6.2.1), so a provider **MUST NOT** refuse it with `unavailable` for throttling. |
 | unsupported version | `unsupported-version` | `unsupportedVersion` |
 
-A revocation of an unknown `grantId` is refused with `permissionDenied`, and a revocation of an already-revoked grant succeeds; see [Repeated requests](#repeated-requests). Both are *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)).
+A revocation of an unknown `grantId` is refused with `permissionDenied`, and a revocation of an already-revoked grant succeeds; see [Repeated requests](#repeated-requests). Both are *pending HCP confirmation* ([question 15](#pending-hcp-confirmation)).
 
 ## Revocation rules carried from HCP
 
-- **Immediate.** Once the revocation completes, no request presenting evidence issued under the grant succeeds, and the provider checks the grant's current status on every request, never a token's own validity alone (HCP 6.2.2). HCP does not name the error such a request gets; this specification reads it as `hcp:invalidToken` (see [`hcp/entries/query`](../../../entries/query/0.1/spec.md#errors)), *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)). The provider appends the `grant.revoked` audit event within 60 seconds (HCP 6.2.2).
+- **Immediate.** Once the revocation completes, no request presenting evidence issued under the grant succeeds, and the provider checks the grant's current status on every request, never a token's own validity alone (HCP 6.2.2). HCP does not name the error such a request gets; this specification reads it as `hcp:invalidToken` (see [`hcp/entries/query`](../../../entries/query/0.1/spec.md#errors)), *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)). The provider appends the `grant.revoked` audit event within 60 seconds (HCP 6.2.2).
 - **Notice where a client holds context.** If the client holds disclosed entries and has registered a notification endpoint, the provider notifies it ([`hcp/grants/revoked`](../../revoked/0.1/spec.md), HCP 6.2.2, 6.2.3). A client with no endpoint is not notified; its copies were capped at one hour of use (HCP 7.6).
 - **Notice is independent.** The revocation takes effect whether or not that notice is delivered (HCP 6.2.3), and the response to this task does not wait for it.
 - **No notice after relinquishment.** A client that relinquished its grant (HCP 5.2.7) is not notified. Relinquishment is not this task.
 
 ## Repeated requests
 
-HCP 2.0-draft-3 does not say what a revocation of an already-revoked grant, or of an unknown `grantId`, yields (HCP 9.4.6, 6.2.1). This specification reads HCP as follows, *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)):
+HCP 2.0-draft-3 does not say what a revocation of an already-revoked grant, or of an unknown `grantId`, yields (HCP 9.4.6, 6.2.1). This specification reads HCP as follows, *pending HCP confirmation* ([question 15](#pending-hcp-confirmation)):
 
 - **An already-revoked grant.** Revoking a grant that is already revoked succeeds, idempotently, with the empty `#response` payload, as HCP's `204 No Content` would. Nothing changes: the provider appends no second `grant.revoked` audit event and sends no second revocation notice.
 - **An unknown or unseen grant.** A `grantId` the provider does not know, or one naming a grant the caller is not entitled to see, is refused with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal. HCP 5.5 requires that a not-authorized response not disclose whether the object exists, so a caller cannot tell an unknown grant from someone else's. The visibility check comes first: an already-revoked grant the caller cannot see is refused the same way, never answered with the empty response.
@@ -193,9 +193,9 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Read as `hcp:invalidToken`, since HCP 5.5 defines `invalid-token` as invalid authorization evidence and HCP 6.2.2 names no error (see [Revocation rules carried from HCP](#revocation-rules-carried-from-hcp)).
-- **Question 2 — repeated and unknown revocations.** An already-revoked grant succeeds idempotently with the empty response; an unknown `grantId`, or one the caller cannot see, gets `permissionDenied` with the same text (see [Repeated requests](#repeated-requests)).
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. A conformance identifier for the carriage is to be requested from the HCP editors.
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. A conformance identifier for the carriage is to be requested from the HCP editors.
+- **Question 2 — a request under a revoked grant.** Read as `hcp:invalidToken`, since HCP 5.5 defines `invalid-token` as invalid authorization evidence and HCP 6.2.2 names no error (see [Revocation rules carried from HCP](#revocation-rules-carried-from-hcp)).
+- **Question 15 — repeated and unknown revocations.** An already-revoked grant succeeds idempotently with the empty response; an unknown `grantId`, or one the caller cannot see, gets `permissionDenied` with the same text (see [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
 

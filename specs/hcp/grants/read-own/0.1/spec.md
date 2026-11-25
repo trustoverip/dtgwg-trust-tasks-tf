@@ -52,7 +52,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
 related:
@@ -77,7 +77,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on reading a grant (HCP 5.2.6, 6.1.5). A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on reading a grant (HCP 5.2.6, 6.1.5). A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -97,7 +97,7 @@ A Management Client's token does not stand for a grant it acts under; over HCP's
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result: the grant (HCP 5.2.6, 6.1.5) | `grant` | **Wrapped**: HCP's published result schema is the grant object itself. |
-| "with the directives that apply to it" (HCP 5.2.6) | `directives` | HCP's text gives the result directives but names no member for them, and its published result schema has none; see [question C6](#pending-hcp-confirmation). |
+| "with the directives that apply to it" (HCP 5.2.6) | `directives` | HCP's text gives the result directives but names no member for them, and its published result schema has none; see [question 18](#pending-hcp-confirmation). |
 
 ### Parties
 
@@ -213,15 +213,15 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
 | unsupported version | `unsupported-version` | `unsupportedVersion` |
 
-A grant that is `revoked` or `expired` is not returned: a token issued under it is no longer valid evidence (HCP 6.2.2), and the request fails with `hcp:invalidToken`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+A grant that is `revoked` or `expired` is not returned: a token issued under it is no longer valid evidence (HCP 6.2.2), and the request fails with `hcp:invalidToken`, *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)).
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C6 — where the directives go.** The result is `{ "grant", "directives" }`, `directives` REQUIRED and empty when none applies; HCP's text gives the result directives, and its published result schema is the bare grant (see [HCP field mapping](#hcp-field-mapping)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 18 — where the directives go.** The result is `{ "grant", "directives" }`, `directives` REQUIRED and empty when none applies; HCP's text gives the result directives, and its published result schema is the bare grant (see [HCP field mapping](#hcp-field-mapping)).
 
 ## What HCP requires that a document cannot express
 

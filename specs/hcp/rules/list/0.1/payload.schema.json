@@ -26,7 +26,7 @@
         "rules": {
           "type": "array",
           "items": { "$ref": "../../../_shared/0.1/standing-rule.schema.json#/$defs/StandingRule" },
-          "description": "HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 23 in the spec). Empty when there is none. HCP sets no order."
+          "description": "HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order."
         }
       }
     }

@@ -57,7 +57,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
 related:
@@ -82,13 +82,13 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Get entry operation; this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Get entry operation; this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
 The authority is **the grant** the person gave the client (HCP 6.1), evidenced by the access token in `accessToken`. The provider **MUST** check the grant on every request (HCP 6.2.2), exactly as over HCP's HTTP binding. At least one of the entry's categories **MUST** be within the grant with `purpose` among the purposes approved for it; no standing rule may deny the client's Client Operator any of the entry's categories (HCP 6.3); and the entry's permitted purposes, where present, **MUST** include `purpose` (HCP 4.2.6, 5.2.2). A narrowed grant reaches only the entries its narrowing allows (HCP 6.1.5.1, rule 4).
 
-A Context Client names only entries disclosed to it under the same grant, since it knows no other `ref` (HCP 5.2.2). A Context Client that names an entry by `entryId` is refused with `permissionDenied`, *pending HCP confirmation* ([question C1](#pending-hcp-confirmation)).
+A Context Client names only entries disclosed to it under the same grant, since it knows no other `ref` (HCP 5.2.2). A Context Client that names an entry by `entryId` is refused with `permissionDenied`, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
 
 As for [`hcp/entries/query`](../../query/0.1/spec.md#authorization), neither the document's `proof` nor the `issuer` VID is the authorization; the token is. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client.
 
@@ -126,7 +126,7 @@ As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST
 
 The client names the entry and the purpose. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-- `ref` (a Context Client) or `entryId` (a Management Client) names the entry. Exactly one is present; a request with both or neither is refused with `malformedRequest`, *pending HCP confirmation* ([question C1](#pending-hcp-confirmation)). The schema does not check this.
+- `ref` (a Context Client) or `entryId` (a Management Client) names the entry. Exactly one is present; a request with both or neither is refused with `malformedRequest`, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)). The schema does not check this.
 - `purpose` (REQUIRED) is the purpose code; `purposeDescription` (OPTIONAL) says it in words.
 - `version` (OPTIONAL) asks for that version instead of the current one.
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
@@ -232,16 +232,16 @@ A client that does not know `hcp:invalidToken` reads it as `taskFailed` ([SPEC �
 
 ## Repeated requests
 
-HCP requires a `context.read` event for every get entry (HCP 5.2.2, 8.1). As for [`hcp/entries/query`](../../query/0.1/spec.md#repeated-requests), a re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) and causes no second disclosure and no second event, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
+HCP requires a `context.read` event for every get entry (HCP 5.2.2, 8.1). As for [`hcp/entries/query`](../../query/0.1/spec.md#repeated-requests), a re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) and causes no second disclosure and no second event, *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)).
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
-- **Question 6 — a re-delivered read.** It causes no second `context.read` audit event (see [Repeated requests](#repeated-requests)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C1 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request), [Authorization](#authorization)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 4 — a re-delivered read.** It causes no second `context.read` audit event (see [Repeated requests](#repeated-requests)).
+- **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request), [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 

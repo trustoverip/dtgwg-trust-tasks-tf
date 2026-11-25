@@ -71,7 +71,7 @@ errorCodes:
       Trust Task document. Not an HCP error: HCP sets no size limit on an export (HCP 5.4.1, 9.4.8). Retrying the
       same request cannot succeed; the Management Client takes the export over HCP's HTTP binding (`GET /v2/export`,
       HCP 9.4.8), or asks again with narrower options (without versions or the audit log, or excluding deleted
-      entries). Pending HCP confirmation (question 17 in the spec's "Pending HCP confirmation" section).
+      entries). Pending HCP confirmation (question 33 in the spec's "Pending HCP confirmation" section).
     retryable: false
 related:
   - hcp/import
@@ -95,7 +95,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on export; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on export; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -248,7 +248,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
 
 ### An export too large for one document
 
-The person asked for every version and the audit log, and the export would exceed this task's 16 MiB bound, so the provider refuses with `hcp:exportTooLarge`, *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP binding, or asks again without the versions or the audit log.
+The person asked for every version and the audit log, and the export would exceed this task's 16 MiB bound, so the provider refuses with `hcp:exportTooLarge`, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP binding, or asks again without the versions or the audit log.
 
 ```json
 {
@@ -294,7 +294,7 @@ This task adds one code that is not an HCP error: `hcp:exportTooLarge`, `retryab
 
 ## Export size
 
-HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 16 MiB, the framework's ceiling for a declared bound: a framework bound, not an HCP requirement. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp:exportTooLarge`, and the Management Client takes the export over HCP's HTTP binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 17](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported.
+HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 16 MiB, the framework's ceiling for a declared bound: a framework bound, not an HCP requirement. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp:exportTooLarge`, and the Management Client takes the export over HCP's HTTP binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported.
 
 ## Repeated requests
 
@@ -304,8 +304,8 @@ HCP requires a `context.exported` event for every export (HCP 5.4.1). Because th
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 17 — export size.** The export travels in one document bounded at the framework's 16 MiB ceiling; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 33 — export size.** The export travels in one document bounded at the framework's 16 MiB ceiling; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
 
 ## What HCP requires that a document cannot express
 

@@ -79,15 +79,15 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on grant representation and grant access; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on grant representation and grant access; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
 The authority is **the Authorizing Principal's own authority over their grants**, which a Management Client exercises for them (HCP 5.4, 6.1.5, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Listing grants is a governance operation: a grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9), and any caller that is neither a Management Client acting for the Context Subject or a delegate, nor a Context Client presenting its own token, receives not authorized, carried as `permissionDenied`.
 
-Over HCP's HTTP binding, `GET /v2/grants` called with a Context Client's token returns the one grant under which that token was issued (HCP 9.4.6). This task does the same, *pending HCP confirmation* ([question 27](#pending-hcp-confirmation)): a request whose `accessToken` is a Context Client's token is answered with a `grants` list holding only that grant, where it has the `status` asked for, and otherwise an empty list; `nextCursor` is never present. The grant is returned as Read own grant returns it (HCP 5.2.6), with `authorizingPrincipal.delegation` withheld (HCP 17.4); a Context Client that also wants the directives that apply to its grant uses [`hcp/grants/read-own`](../../read-own/0.1/spec.md). The provider never returns a grant issued to one HCP Client to any other: an HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client (HCP 6.1.5).
+Over HCP's HTTP binding, `GET /v2/grants` called with a Context Client's token returns the one grant under which that token was issued (HCP 9.4.6). This task does the same, *pending HCP confirmation* ([question 19](#pending-hcp-confirmation)): a request whose `accessToken` is a Context Client's token is answered with a `grants` list holding only that grant, where it has the `status` asked for, and otherwise an empty list; `nextCursor` is never present. The grant is returned as Read own grant returns it (HCP 5.2.6), with `authorizingPrincipal.delegation` withheld (HCP 17.4); a Context Client that also wants the directives that apply to its grant uses [`hcp/grants/read-own`](../../read-own/0.1/spec.md). The provider never returns a grant issued to one HCP Client to any other: an HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client (HCP 6.1.5).
 
-Under the Delegated Authorization Profile, the Context Subject's Management Client is listed every grant made for them, whoever authorized it (HCP 6.1.5, 17.5). A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope, which includes every grant the delegate authorized under it, *pending HCP confirmation* ([question 24](#pending-hcp-confirmation)); HCP 9.4.6 says "all grants", and HCP 17.4 limits a delegate's governance operations to the delegation's scope.
+Under the Delegated Authorization Profile, the Context Subject's Management Client is listed every grant made for them, whoever authorized it (HCP 6.1.5, 17.5). A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope, which includes every grant the delegate authorized under it, *pending HCP confirmation* ([question 20](#pending-hcp-confirmation)); HCP 9.4.6 says "all grants", and HCP 17.4 limits a delegate's governance operations to the delegation's scope.
 
 The `proof`, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
@@ -103,11 +103,11 @@ The `proof`, where present, establishes which Management Client VID sent the doc
 |---|---|---|
 | query parameter `status` (HCP 9.4.6) | `status` | Unchanged. Absent means `active`, HCP's default. |
 | query parameter `cursor` (HCP 9.5) | `cursor` | Unchanged. |
-| query parameter `limit` (HCP 9.5) | `limit` | Unchanged. At most 1000, a framework bound HCP does not set, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). |
+| query parameter `limit` (HCP 9.5) | `limit` | Unchanged. At most 1000, a framework bound HCP does not set, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | response body, the grant objects (HCP 9.4.6) | `grants` | HCP's binding names no member for the list; here it is `grants`. |
-| response `nextCursor` (HCP 9.5) | `nextCursor` | **Absent, not null,** when the set is exhausted, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). |
+| response `nextCursor` (HCP 9.5) | `nextCursor` | **Absent, not null,** when the set is exhausted, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). |
 
 ### Parties
 
@@ -150,7 +150,7 @@ The Management Client asks the provider for the grants. The payload is the top-l
 The provider answers with a page of grants. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
 - `grants` holds the grant objects with the status asked for (HCP 6.1.5, 9.4.6), at most `limit` of them and never more than 1000. An empty `grants` is a successful answer: there are none.
-- `nextCursor` is present where more grants remain, and absent when the set is exhausted, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). It is opaque: the Management Client **MUST NOT** interpret it, and the provider **MUST NOT** make it a value from which the size or position of the set can be read, **MUST NOT** encode a credential or entry content in it, and **MUST** keep it valid for at least 300 seconds (HCP 9.5).
+- `nextCursor` is present where more grants remain, and absent when the set is exhausted, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). It is opaque: the Management Client **MUST NOT** interpret it, and the provider **MUST NOT** make it a value from which the size or position of the set can be read, **MUST NOT** encode a credential or entry content in it, and **MUST** keep it valid for at least 300 seconds (HCP 9.5).
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
@@ -234,10 +234,10 @@ The task is a read with no side effect, so a re-delivered document may simply be
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 14 — pagination.** The request takes `cursor` and `limit`, `limit` capped at 1000 by the carriage, and the response's `nextCursor` is absent, not null, when the set is exhausted; the cursor stays opaque and valid for at least 300 seconds (HCP 9.5).
-- **Question 24 — a delegate's grant list.** A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope (see [Authorization](#authorization)).
-- **Question 27 — a Context Client's token.** A Context Client presenting its own token is listed only the grant under which that token was issued, as `GET /v2/grants` answers it over HCP's HTTP binding (HCP 9.4.6), rather than refused as a caller of a governance operation (HCP 6.1.9) (see [Authorization](#authorization)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 3 — pagination.** The request takes `cursor` and `limit`, `limit` capped at 1000 by the carriage, and the response's `nextCursor` is absent, not null, when the set is exhausted; the cursor stays opaque and valid for at least 300 seconds (HCP 9.5).
+- **Question 19 — a Context Client's token.** A Context Client presenting its own token is listed only the grant under which that token was issued, as `GET /v2/grants` answers it over HCP's HTTP binding (HCP 9.4.6), rather than refused as a caller of a governance operation (HCP 6.1.9) (see [Authorization](#authorization)).
+- **Question 20 — a delegate's grant list.** A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 

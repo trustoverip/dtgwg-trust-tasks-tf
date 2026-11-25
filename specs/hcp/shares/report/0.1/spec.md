@@ -51,7 +51,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
 related:
@@ -76,7 +76,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A client that shares context with another organization under HCP 3.12 **MUST** report each share to the provider when it next reaches it (HCP 5.2.8); this task is one way to do so. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A client that shares context with another organization under HCP 3.12 **MUST** report each share to the provider when it next reaches it (HCP 5.2.8); this task is one way to do so. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -177,15 +177,15 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 ## Repeated requests
 
-HCP requires a `context.shared` event for every report (HCP 5.2.8, 8.1), and defines no idempotency for one (HCP 9.6). Because this task is consequential, [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) applies: a re-delivered document with the same `id` and content is not executed again, so it appends no second `context.shared` event, *pending HCP confirmation* ([question C7](#pending-hcp-confirmation)). A client that retries a report it is unsure arrived resends the same document, never a new one, so that one share is recorded once.
+HCP requires a `context.shared` event for every report (HCP 5.2.8, 8.1), and defines no idempotency for one (HCP 9.6). Because this task is consequential, [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) applies: a re-delivered document with the same `id` and content is not executed again, so it appends no second `context.shared` event, *pending HCP confirmation* ([question 26](#pending-hcp-confirmation)). A client that retries a report it is unsure arrived resends the same document, never a new one, so that one share is recorded once.
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken`. A client whose grant was revoked after it shared has no way to report under HCP 2.0-draft-3; that gap is HCP's, and this task does not fill it.
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C7 — a re-delivered report.** It appends no second `context.shared` event (see [Repeated requests](#repeated-requests)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`. A client whose grant was revoked after it shared has no way to report under HCP 2.0-draft-3; that gap is HCP's, and this task does not fill it.
+- **Question 26 — a re-delivered report.** It appends no second `context.shared` event (see [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
 

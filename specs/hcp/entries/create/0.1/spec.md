@@ -58,7 +58,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
   - code: hcp:credentialInvalid
@@ -89,7 +89,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Create operation, including the VC Evidence Profile's ingest rules where the content is a credential (HCP 14.6); this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Create operation, including the VC Evidence Profile's ingest rules where the content is a credential (HCP 14.6); this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -132,7 +132,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
 - `assertion.confidence` is REQUIRED and non-null when `assertion.declarationType` is `model-inferred`, and null or absent otherwise. A write that breaks this is refused with `malformedRequest` (HCP 5.2.3). The schema does not check it.
 - `record.provenance.assertedBy.id` is REQUIRED unless `declarationType` is `person-declared`, when the provider records the Context Subject, or the content is a credential, when the provider takes the credential's issuer (HCP 5.2.3, 14.6). The schema does not check it.
 - `record.relationships[].target`, and a proposal's `entry`, name an entry by its `ref` for a Context Client and its `id` for a Management Client (HCP 5.2.3). Only a `contradicts` relationship carries a `proposal` (HCP 4.7.4).
-- `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question C3](#pending-hcp-confirmation)).
+- `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
 - A `schema` the provider does not accept, or a category it does not hold, is refused with `malformedRequest` (HCP 5.2.3).
 - The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and never takes them from a request (HCP 5.2.3).
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
@@ -254,9 +254,9 @@ HCP's HTTP binding makes a create idempotent under an `Idempotency-Key` header (
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C3 — `classification.permittedPurposes` on a create.** Refused with `malformedRequest`, since only a governance operation sets it (see [Request](#request)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 7 — `classification.permittedPurposes` on a create.** Refused with `malformedRequest`, since only a governance operation sets it (see [Request](#request)).
 
 ## What HCP requires that a document cannot express
 

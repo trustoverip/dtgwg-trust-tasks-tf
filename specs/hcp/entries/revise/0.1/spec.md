@@ -58,7 +58,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
   - code: hcp:versionConflict
@@ -95,13 +95,13 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Revise operation; this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Revise operation; this specification restates the ones that bear on the document and does not relax any. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
-The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). The grant **MUST** let the caller write the entry's categories, and a Context Client names only an entry disclosed to it under the same grant (HCP 5.2.2, 5.2.4). Anything else is refused with `permissionDenied`, with one fixed `message`, so that entry existence is not disclosed (HCP 5.5). A Context Client that names the entry by `entryId` is refused the same way, *pending HCP confirmation* ([question C1](#pending-hcp-confirmation)).
+The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). The grant **MUST** let the caller write the entry's categories, and a Context Client names only an entry disclosed to it under the same grant (HCP 5.2.2, 5.2.4). Anything else is refused with `permissionDenied`, with one fixed `message`, so that entry existence is not disclosed (HCP 5.5). A Context Client that names the entry by `entryId` is refused the same way, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
 
-Only an issuer revises an `issuer-attested` entry (HCP 3.7, 4.2.6). A Context Client **MUST NOT** revise an entry whose current version the Context Subject has rejected (HCP 3.8, 5.2.4); a provider refuses such a revision with `permissionDenied`, *pending HCP confirmation* ([question C5](#pending-hcp-confirmation)).
+Only an issuer revises an `issuer-attested` entry (HCP 3.7, 4.2.6). A Context Client **MUST NOT** revise an entry whose current version the Context Subject has rejected (HCP 3.8, 5.2.4); a provider refuses such a revision with `permissionDenied`, *pending HCP confirmation* ([question 9](#pending-hcp-confirmation)).
 
 As for [`hcp/entries/create`](../../create/0.1/spec.md#authorization), the REQUIRED `proof` is not the authorization, and does not replace the provenance the provider records for the new version (HCP 3.5).
 
@@ -116,7 +116,7 @@ As for [`hcp/entries/create`](../../create/0.1/spec.md#authorization), the REQUI
 |---|---|---|
 | request `ref` or `entryId` (the `{entryId}` path segment, HCP 9.4.4) | `ref` or `entryId` | Moved from the path into the payload. Exactly one is present. |
 | request `expectedVersion`, `content`, `evidence`, `reason` | the same | Unchanged. |
-| request `assertion.*` | `assertion` | Unchanged. Includes `basis` and `permittedPurposes`, which HCP's text gives a revision ("as for create") but its published request schema omits (HCP 5.2.4); see [question C2](#pending-hcp-confirmation). |
+| request `assertion.*` | `assertion` | Unchanged. Includes `basis` and `permittedPurposes`, which HCP's text gives a revision ("as for create") but its published request schema omits (HCP 5.2.4); see [question 8](#pending-hcp-confirmation). |
 | request `record.provenance.*`, `record.relationships` | `record` | Unchanged. A relationship may carry a `proposal`, as for create (HCP 4.7.4, 5.2.4). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `Idempotency-Key` header (HCP 9.6) | the document `id` | See [Repeated requests](#repeated-requests). |
@@ -136,7 +136,7 @@ As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST
 
 The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-- `ref` (a Context Client) or `entryId` (a Management Client) names the entry. Exactly one is present; both or neither is refused with `malformedRequest`, *pending HCP confirmation* ([question C1](#pending-hcp-confirmation)). The schema does not check this.
+- `ref` (a Context Client) or `entryId` (a Management Client) names the entry. Exactly one is present; both or neither is refused with `malformedRequest`, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)). The schema does not check this.
 - `expectedVersion` (REQUIRED) is the version the client read, which the revision replaces.
 - `content` (REQUIRED) is the revised content, whole; `evidence` (OPTIONAL) the revision's evidence, whole, absent meaning none.
 - `reason` (REQUIRED) is recorded in the audit log.
@@ -263,11 +263,11 @@ As for [`hcp/entries/create`](../../create/0.1/spec.md#repeated-requests), the d
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C1 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request)).
-- **Question C2 — `basis`, `permittedPurposes` and `proposal` on a revision.** Carried, as HCP's text says ("as for create", HCP 5.2.4, 4.7.4), although HCP's published revise request schema omits them (see [HCP field mapping](#hcp-field-mapping)).
-- **Question C5 — revising a rejected version.** A Context Client's revision of an entry whose current version the Context Subject rejected is refused with `permissionDenied` (see [Authorization](#authorization)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request)).
+- **Question 8 — `basis`, `permittedPurposes` and `proposal` on a revision.** Carried, as HCP's text says ("as for create", HCP 5.2.4, 4.7.4), although HCP's published revise request schema omits them (see [HCP field mapping](#hcp-field-mapping)).
+- **Question 9 — revising a rejected version.** A Context Client's revision of an entry whose current version the Context Subject rejected is refused with `permissionDenied` (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 

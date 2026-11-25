@@ -83,13 +83,13 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on standing rules; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on standing rules; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
 The authority is **the Context Subject's own authority over their standing rules**, which a Management Client exercises for them (HCP 6.3, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Listing standing rules is a governance operation: any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9).
 
-Under the Delegated Authorization Profile, HCP lets a delegate call this operation "within the delegation's scope" (HCP 9.4.14), and a delegate's governance operations reach only categories within scope (HCP 17.4), but HCP does not say which rules a delegate sees. This specification takes the narrowest reading, *pending HCP confirmation* ([question 26](#pending-hcp-confirmation)): a delegate's list carries each rule whose `categories` are absent, or are all within the delegation's scope; a rule that names any category outside the scope is left out whole, never trimmed, so the list never discloses an out-of-scope category. The Context Subject's list carries every rule.
+Under the Delegated Authorization Profile, HCP lets a delegate call this operation "within the delegation's scope" (HCP 9.4.14), and a delegate's governance operations reach only categories within scope (HCP 17.4), but HCP does not say which rules a delegate sees. This specification takes the narrowest reading, *pending HCP confirmation* ([question 28](#pending-hcp-confirmation)): a delegate's list carries each rule whose `categories` are absent, or are all within the delegation's scope; a rule that names any category outside the scope is left out whole, never trimmed, so the list never discloses an out-of-scope category. The Context Subject's list carries every rule.
 
 The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
@@ -105,7 +105,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 | `GET /v2/rules` (HCP 9.2, 9.4.14) | the Type URI | No query parameters in HCP, so no request member beyond the token. |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
-| result `200`: a `rules` array (HCP 9.4.14) | `rules` in the `#response` payload | Unchanged. Not paginated: HCP gives this operation no cursor ([question 14](#pending-hcp-confirmation)). |
+| result `200`: a `rules` array (HCP 9.4.14) | `rules` in the `#response` payload | Unchanged. Not paginated: HCP gives this operation no cursor ([question 3](#pending-hcp-confirmation)). |
 
 ### Parties
 
@@ -203,7 +203,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 - **What a rule is.** Each listed rule is a deny rule the Context Subject (or a delegate) set across every grant, present and future, with the `ruleId`, `effect`, `setBy` and `createdAt` the provider set (HCP 6.3).
 - **No audit event.** HCP 8.1 lists no event for reading the standing rules, and this task adds none.
-- **Not paginated.** HCP 9.4.14 answers with the whole `rules` array; this task does the same ([question 14](#pending-hcp-confirmation)).
+- **Not paginated.** HCP 9.4.14 answers with the whole `rules` array; this task does the same ([question 3](#pending-hcp-confirmation)).
 - **Removed rules.** A removed rule is no longer held, so it is not listed; its `rule.removed` audit event stays readable through the audit log (HCP 8.1, 8.3).
 
 ## Repeated requests
@@ -214,9 +214,9 @@ Reading has no effect, so a re-delivered document changes nothing. A consumer st
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 14 — pagination.** The rules list is not paginated, as in HCP 9.4.14.
-- **Question 26 — what a delegate's list carries.** Each rule whose `categories` are absent or all within the delegation's scope; a rule naming any other category is left out whole (see [Authorization](#authorization)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 3 — pagination.** The rules list is not paginated, as in HCP 9.4.14.
+- **Question 28 — what a delegate's list carries.** Each rule whose `categories` are absent or all within the delegation's scope; a rule naming any other category is left out whole (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 

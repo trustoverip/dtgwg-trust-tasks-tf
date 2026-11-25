@@ -86,7 +86,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on delegations; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on delegations; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 **A provider that does not conform to the profile.** HCP exposes `GET /v2/delegations` only on an implementation conforming to the Delegated Authorization Profile (HCP 9.4.13). A provider that does not conform **MUST NOT** advertise this task, and answers a request for it with `unsupportedType`, as for any task it does not serve ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). That is the carriage of an endpoint that is not exposed, not a refusal: whether a provider conforms to the profile is public in its discovery document (HCP 19), so `unsupportedType` reveals nothing about the person, and `permissionDenied` would wrongly suggest that some other caller could succeed.
 
@@ -109,7 +109,7 @@ The `proof` on the request, where present, establishes which Management Client V
 
 | HCP field | Member | Notes |
 |---|---|---|
-| query parameter `status` (HCP 9.4.13) | `status` | Unchanged; its one value is `ended`, which adds ended delegations to those that hold, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). |
+| query parameter `status` (HCP 9.4.13) | `status` | Unchanged; its one value is `ended`, which adds ended delegations to those that hold, *pending HCP confirmation* ([question 31](#pending-hcp-confirmation)). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `delegations` (HCP 9.4.13) | `delegations` | Unchanged. Not paginated (HCP 9.4.13). |
@@ -128,7 +128,7 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a prov
 The Management Client asks for the delegations. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `accessToken` (REQUIRED) is the Management Client's token.
-- `status` (OPTIONAL) is HCP's `status` parameter, whose only defined value is `ended`. HCP 9.4.13 returns delegations "with ended ones where `status=ended` is asked". This specification reads "with" as additive, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)): without `status`, the result holds only the delegations that hold (those with no `ended` member); with `status: "ended"`, it holds those and the delegations that have ended. A Management Client that wants only ended delegations selects those that carry `ended`.
+- `status` (OPTIONAL) is HCP's `status` parameter, whose only defined value is `ended`. HCP 9.4.13 returns delegations "with ended ones where `status=ended` is asked". This specification reads "with" as additive, *pending HCP confirmation* ([question 31](#pending-hcp-confirmation)): without `status`, the result holds only the delegations that hold (those with no `ended` member); with `status: "ended"`, it holds those and the delegations that have ended. A Management Client that wants only ended delegations selects those that carry `ended`.
 
 ### The person asks for every delegation, ended ones included
 
@@ -250,8 +250,8 @@ A provider that does not conform to the Delegated Authorization Profile answers 
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 22 — `status=ended`.** Additive: without `status`, only the delegations that hold; with `status: "ended"`, those and the delegations that have ended (see [Request](#request)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 31 — `status=ended`.** Additive: without `status`, only the delegations that hold; with `status: "ended"`, those and the delegations that have ended (see [Request](#request)).
 
 ## What HCP requires that a document cannot express
 

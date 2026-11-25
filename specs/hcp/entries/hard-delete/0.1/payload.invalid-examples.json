@@ -22,7 +22,7 @@
   },
   {
     "variant": "response",
-    "note": "A `status` member — a hard-deleted entry is no longer held, so it has no status (question 16).",
+    "note": "A `status` member — a hard-deleted entry is no longer held, so it has no status (question 11).",
     "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "hardDeleted": true, "status": "deleted", "respondedAt": "2026-11-25T09:00:01Z" }
   },
   {

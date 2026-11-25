@@ -62,7 +62,7 @@ errorCodes:
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
       revoked grant also fails here: HCP requires that no request presenting evidence issued under a revoked grant
       succeeds, but does not name the error (HCP 6.2.2), and this specification reads that evidence as invalid,
-      pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation" section). Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
+      pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation" section). Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
     retryable: false
 related:
   - hcp/grants/revoke
@@ -87,7 +87,7 @@ HCP's text is © its authors under CC BY 4.0. This specification and the shared 
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Query operation; this specification restates the ones that bear on the document and does not relax any. Conformance to HCP is HCP's: serving this task does not make a provider conform to an HCP binding, and HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Query operation; this specification restates the ones that bear on the document and does not relax any. Conformance to HCP is HCP's: serving this task does not make a provider conform to an HCP binding, and HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -241,7 +241,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
 
 ### A revoked grant
 
-The token's grant was revoked, so the provider refuses the query with `hcp:invalidToken`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)). The client treats this as notice of the revocation (HCP 6.2.2).
+The token's grant was revoked, so the provider refuses the query with `hcp:invalidToken`, *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)). The client treats this as notice of the revocation (HCP 6.2.2).
 
 ```json
 {
@@ -279,16 +279,16 @@ A client that does not know `hcp:invalidToken` reads it as `taskFailed` ([SPEC �
 
 ## Repeated requests
 
-HCP requires a `context.read` audit event for every query (HCP 8.1). Because this task is consequential, a consumer applies [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is not executed twice, so it produces no second disclosure and no second `context.read` event. This is how carriage reads HCP 8.1. HCP's own idempotency rule (HCP 9.6) is a MUST for create and revise and a SHOULD for withdraw, and says nothing of Query. That a re-delivered query causes no second `context.read` event is *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)). A provider **MUST** retain its duplicate-execution record for at least the acceptance window it applies to `issuedAt`.
+HCP requires a `context.read` audit event for every query (HCP 8.1). Because this task is consequential, a consumer applies [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is not executed twice, so it produces no second disclosure and no second `context.read` event. This is how carriage reads HCP 8.1. HCP's own idempotency rule (HCP 9.6) is a MUST for create and revise and a SHOULD for withdraw, and says nothing of Query. That a re-delivered query causes no second `context.read` event is *pending HCP confirmation* ([question 4](#pending-hcp-confirmation)). A provider **MUST** retain its duplicate-execution record for at least the acceptance window it applies to `issuedAt`.
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
+- **Question 4 — a re-delivered query.** It causes no second `context.read` audit event (HCP 8.1, 9.6; see [Repeated requests](#repeated-requests)).
 - **Question 5 — a Management Client as requester.** A Management Client may query and receive whole `Entry` objects, with no `directives` (HCP 5.1, 5.2.1, 7.4; see [Authorization](#authorization)).
-- **Question 6 — a re-delivered query.** It causes no second `context.read` audit event (HCP 8.1, 9.6; see [Repeated requests](#repeated-requests)).
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with `trust-task-discovery` instead. A conformance identifier for the carriage is to be requested from the HCP editors (see [Conformance](#conformance)).
 
 ## What HCP requires that a document cannot express
 

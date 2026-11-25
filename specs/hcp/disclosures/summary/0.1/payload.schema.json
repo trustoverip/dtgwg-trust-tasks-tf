@@ -25,11 +25,11 @@
     },
     "from": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",
-      "description": "HCP query parameter `from` (HCP 9.4.12, 8.6): only disclosures at or after this instant. Inclusive, pending HCP confirmation (question 21)."
+      "description": "HCP query parameter `from` (HCP 9.4.12, 8.6): only disclosures at or after this instant. Inclusive, pending HCP confirmation (question 30)."
     },
     "to": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",
-      "description": "HCP query parameter `to` (HCP 9.4.12, 8.6): only disclosures at or before this instant. Inclusive, pending HCP confirmation (question 21)."
+      "description": "HCP query parameter `to` (HCP 9.4.12, 8.6): only disclosures at or before this instant. Inclusive, pending HCP confirmation (question 30)."
     },
     "cursor": {
       "type": "string",
@@ -41,7 +41,7 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 1000,
-      "description": "HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 14)."
+      "description": "HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3)."
     }
   },
   "$defs": {
@@ -62,7 +62,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1024,
-          "description": "HCP `nextCursor` (HCP 9.5, 9.4.12): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted or the provider does not paginate: a departure from HCP 9.5's null, pending HCP confirmation (question 14). The maxLength is a framework bound, not an HCP requirement."
+          "description": "HCP `nextCursor` (HCP 9.5, 9.4.12): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted or the provider does not paginate: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement."
         }
       }
     },

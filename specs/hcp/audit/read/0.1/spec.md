@@ -86,7 +86,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the audit log; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the audit log; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -115,16 +115,16 @@ The `proof` on the request, where present, establishes which Management Client V
 
 | HCP field | Member | Notes |
 |---|---|---|
-| filter by HCP Client (HCP 8.3) | `client` | Named as in HCP 9.4.12, *pending HCP confirmation* ([question 15](#pending-hcp-confirmation)). |
+| filter by HCP Client (HCP 8.3) | `client` | Named as in HCP 9.4.12, *pending HCP confirmation* ([question 29](#pending-hcp-confirmation)). |
 | filter by category (HCP 8.3) | `category` | As above. |
-| filter by event type (HCP 8.3) | `eventType` | Named after the audit event's own member (HCP 8.2), *pending HCP confirmation* ([question 15](#pending-hcp-confirmation)). |
-| filter by date range (HCP 8.3) | `from`, `to` | Named as in HCP 9.4.12; both inclusive, *pending HCP confirmation* ([questions 15 and 21](#pending-hcp-confirmation)). |
+| filter by event type (HCP 8.3) | `eventType` | Named after the audit event's own member (HCP 8.2), *pending HCP confirmation* ([question 29](#pending-hcp-confirmation)). |
+| filter by date range (HCP 8.3) | `from`, `to` | Named as in HCP 9.4.12; both inclusive, *pending HCP confirmation* ([questions 29 and 30](#pending-hcp-confirmation)). |
 | query parameter `cursor` (HCP 9.5) | `cursor` | Unchanged. |
-| query parameter `limit` (HCP 9.5) | `limit` | Unchanged; at most 1000, a framework bound ([question 14](#pending-hcp-confirmation)). |
+| query parameter `limit` (HCP 9.5) | `limit` | Unchanged; at most 1000, a framework bound ([question 3](#pending-hcp-confirmation)). |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
-| the audit log returned (HCP 9.4.7) | `events` | HCP names no member; *pending HCP confirmation* ([question 21](#pending-hcp-confirmation)). |
-| result `nextCursor` (HCP 9.5) | `nextCursor` | **Absent**, not null, on the last page, *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)). |
+| the audit log returned (HCP 9.4.7) | `events` | HCP names no member; *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)). |
+| result `nextCursor` (HCP 9.5) | `nextCursor` | **Absent**, not null, on the last page, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). |
 
 ### Parties
 
@@ -140,9 +140,9 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a prov
 The Management Client asks for a page of the log. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `accessToken` (REQUIRED) is the Management Client's token.
-- `client`, `category`, `eventType`, `from` and `to` (each OPTIONAL, single-valued) narrow the log as HCP 8.3 requires, *pending HCP confirmation* ([question 15](#pending-hcp-confirmation)). An event matches when it matches every filter given. `client` matches an event in which that client took part, as initiator or as the client of the grant concerned; `category` matches an event whose `categories` include it; `from` and `to` bound the event's `timestamp`, both inclusive, *pending HCP confirmation* ([question 21](#pending-hcp-confirmation)).
+- `client`, `category`, `eventType`, `from` and `to` (each OPTIONAL, single-valued) narrow the log as HCP 8.3 requires, *pending HCP confirmation* ([question 29](#pending-hcp-confirmation)). An event matches when it matches every filter given. `client` matches an event in which that client took part, as initiator or as the client of the grant concerned; `category` matches an event whose `categories` include it; `from` and `to` bound the event's `timestamp`, both inclusive, *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
 - `cursor` (OPTIONAL) is a previous response's `nextCursor`; absent asks for the first page. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from; a provider **MAY** refuse a cursor whose filters differ with `malformedRequest`. A provider **MUST NOT** accept a cursor it did not issue.
-- `limit` (OPTIONAL) is the most events to return, at most 1000 (a framework bound, *pending HCP confirmation*, [question 14](#pending-hcp-confirmation)). Absent leaves the page size to the provider. Either way, the provider returns fewer events where more would take the response past its `maxDocumentBytes`, and returns `nextCursor` for the rest.
+- `limit` (OPTIONAL) is the most events to return, at most 1000 (a framework bound, *pending HCP confirmation*, [question 3](#pending-hcp-confirmation)). Absent leaves the page size to the provider. Either way, the provider returns fewer events where more would take the response past its `maxDocumentBytes`, and returns `nextCursor` for the rest.
 
 ### The person reviews who read their health context in November
 
@@ -177,8 +177,8 @@ The Management Client asks for a page of the log. The payload is the top-level s
 
 The provider answers with one page. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
-- `events` holds the page's audit events, oldest first, each a shared [`AuditEvent`](../../../_shared/0.1/audit-event.schema.json) (HCP 8.2), as the caller may read it ([Authorization](#authorization)). An empty `events` is a successful answer: nothing matched. The member name is *pending HCP confirmation* ([question 21](#pending-hcp-confirmation)).
-- `nextCursor` is an opaque token for the next page, present only when more events remain. It is **absent**, never null, on the last page, a departure from HCP 9.5's null *pending HCP confirmation* ([question 14](#pending-hcp-confirmation)).
+- `events` holds the page's audit events, oldest first, each a shared [`AuditEvent`](../../../_shared/0.1/audit-event.schema.json) (HCP 8.2), as the caller may read it ([Authorization](#authorization)). An empty `events` is a successful answer: nothing matched. The member name is *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
+- `nextCursor` is an opaque token for the next page, present only when more events remain. It is **absent**, never null, on the last page, a departure from HCP 9.5's null *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
@@ -301,10 +301,10 @@ A filter that matches nothing, or nothing the caller may read, is not an error: 
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
-- **Question 14 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
-- **Question 15 — filter names.** `client`, `category`, `eventType`, `from` and `to`, each single-valued and optional.
-- **Question 21 — the result member and the date range.** The page's events are in `events`, oldest first, and `from` and `to` are both inclusive.
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 3 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
+- **Question 29 — filter names.** `client`, `category`, `eventType`, `from` and `to`, each single-valued and optional.
+- **Question 30 — the result member and the date range.** The page's events are in `events`, oldest first, and `from` and `to` are both inclusive.
 
 ## What HCP requires that a document cannot express
 

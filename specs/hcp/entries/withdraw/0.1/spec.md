@@ -53,7 +53,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
 related:
@@ -78,11 +78,11 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Withdraw operation. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the Withdraw operation. A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
-The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). The entry **MUST** be one the grant lets the caller write, and a Context Client names only an entry disclosed to it under the same grant (HCP 5.2.2, 5.2.5); anything else is refused with `permissionDenied`, with one fixed `message` (HCP 5.5). A Context Client that names the entry by `entryId` is refused the same way, *pending HCP confirmation* ([question C1](#pending-hcp-confirmation)).
+The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). The entry **MUST** be one the grant lets the caller write, and a Context Client names only an entry disclosed to it under the same grant (HCP 5.2.2, 5.2.5); anything else is refused with `permissionDenied`, with one fixed `message` (HCP 5.5). A Context Client that names the entry by `entryId` is refused the same way, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
 
 This task never hard-deletes. HCP's HTTP binding hard-deletes on the same path with `hardDelete=true`, which only a Management Client acting for the Authorizing Principal may do (HCP 5.4.2, 9.4.5); that governance operation is not carried here.
 
@@ -101,7 +101,7 @@ This task never hard-deletes. HCP's HTTP binding hard-deletes on the same path w
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `ref` or `entryId` | `ref` or `entryId` | Unchanged: the one the request used. |
 | result `status` | `status` | Unchanged: always `deleted`. |
-| result `hardDeleted` (HCP 9.4.5) | `hardDeleted` | OPTIONAL, and always `false` here. HCP's HTTP binding returns it; its Core text does not list it (HCP 5.2.5); see [question C4](#pending-hcp-confirmation). |
+| result `hardDeleted` (HCP 9.4.5) | `hardDeleted` | OPTIONAL, and always `false` here. HCP's HTTP binding returns it; its Core text does not list it (HCP 5.2.5); see [question 10](#pending-hcp-confirmation). |
 | result `timestamp` | `respondedAt` | **Renamed**, as in `hcp/entries/query`. |
 
 ### Parties
@@ -186,16 +186,16 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 HCP's HTTP binding asks a provider to accept an idempotency key on a withdrawal (a SHOULD, HCP 9.6). This task uses the document `id` as that key, under [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is answered with the original response and appends no second `context.withdrawn` event; a reused `id` with different content is refused with `idConflict`.
 
-A new document withdrawing an entry that is already `deleted` succeeds with the same result, as HCP says repeated deletion is harmless to entry state, and appends a further `context.withdrawn` event, as HCP says a repeat without a key does (HCP 9.6). This reading is *pending HCP confirmation* ([question C4](#pending-hcp-confirmation)).
+A new document withdrawing an entry that is already `deleted` succeeds with the same result, as HCP says repeated deletion is harmless to entry state, and appends a further `context.withdrawn` event, as HCP says a repeat without a key does (HCP 9.6). This reading is *pending HCP confirmation* ([question 10](#pending-hcp-confirmation)).
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
-- **Question C1 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Authorization](#authorization)).
-- **Question C4 — `hardDeleted`, and withdrawing a withdrawn entry.** `hardDeleted` is carried as an OPTIONAL member that is always `false`; a new withdrawal of a `deleted` entry succeeds and is audited again (see [HCP field mapping](#hcp-field-mapping), [Repeated requests](#repeated-requests)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Authorization](#authorization)).
+- **Question 10 — `hardDeleted`, and withdrawing a withdrawn entry.** `hardDeleted` is carried as an OPTIONAL member that is always `false`; a new withdrawal of a `deleted` entry succeeds and is audited again (see [HCP field mapping](#hcp-field-mapping), [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
 

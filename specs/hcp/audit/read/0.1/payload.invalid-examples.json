@@ -4,7 +4,7 @@
     "payload": { "eventType": "context.read" }
   },
   {
-    "note": "`limit` above the carriage's ceiling of 1000 — a framework bound (question 14).",
+    "note": "`limit` above the carriage's ceiling of 1000 — a framework bound (question 3).",
     "payload": { "accessToken": "hcp_mt_x", "limit": 5000 }
   },
   {
@@ -21,7 +21,7 @@
   },
   {
     "variant": "response",
-    "note": "`nextCursor` null on the last page — the carriage leaves it out instead (question 14).",
+    "note": "`nextCursor` null on the last page — the carriage leaves it out instead (question 3).",
     "payload": { "events": [], "nextCursor": null }
   },
   {

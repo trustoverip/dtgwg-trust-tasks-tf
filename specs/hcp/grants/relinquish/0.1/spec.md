@@ -51,7 +51,7 @@ errorCodes:
   - code: hcp:invalidToken
     meaning: >-
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A token issued under a
-      grant already revoked or relinquished also fails here, pending HCP confirmation (question 1 in the spec's
+      grant already revoked or relinquished also fails here, pending HCP confirmation (question 2 in the spec's
       "Pending HCP confirmation" section).
     retryable: false
 related:
@@ -76,7 +76,7 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on relinquishment and revocation (HCP 5.2.7, 6.2.2). A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on relinquishment and revocation (HCP 5.2.7, 6.2.2). A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
 
 ## Authorization
 
@@ -180,14 +180,14 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 ## Repeated requests
 
-A re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) and answered with the original response; it appends no second `grant.revoked` event. A new document after the grant has ended presents a token that is no longer valid evidence and fails with `hcp:invalidToken`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+A re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) and answered with the original response; it appends no second `grant.revoked` event. A new document after the grant has ended presents a token that is no longer valid evidence and fails with `hcp:invalidToken`, *pending HCP confirmation* ([question 2](#pending-hcp-confirmation)).
 
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken`, which covers a second relinquishment with a new document (see [Repeated requests](#repeated-requests)).
-- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`, which covers a second relinquishment with a new document (see [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
 

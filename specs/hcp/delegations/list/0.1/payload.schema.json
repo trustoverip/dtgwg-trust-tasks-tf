@@ -16,7 +16,7 @@
     "status": {
       "type": "string",
       "enum": ["ended"],
-      "description": "HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold (\"with ended ones where `status=ended` is asked\", HCP 9.4.13), pending HCP confirmation (question 22)."
+      "description": "HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold (\"with ended ones where `status=ended` is asked\", HCP 9.4.13), pending HCP confirmation (question 31)."
     }
   },
   "$defs": {
