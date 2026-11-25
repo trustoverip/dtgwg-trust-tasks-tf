@@ -16,7 +16,7 @@
       "minItems": 1,
       "maxItems": 256,
       "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
-      "description": "HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256 is a framework bound, not an HCP requirement."
+      "description": "HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256, and each item's maxLength, are framework bounds, not HCP requirements."
     },
     "purpose": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/PurposeCode",

@@ -11,7 +11,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`."
+      "description": "HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement."
     },
     "entryId": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",

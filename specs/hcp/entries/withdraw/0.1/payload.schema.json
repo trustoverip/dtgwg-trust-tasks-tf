@@ -11,7 +11,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`."
+      "description": "HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement."
     },
     "entryId": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
@@ -43,7 +43,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5)."
+          "description": "HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5). The maxLength is a framework bound, not an HCP requirement."
         },
         "entryId": {
           "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
