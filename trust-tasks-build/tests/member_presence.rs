@@ -282,23 +282,20 @@ fn an_intrinsic_default_is_no_default_so_the_member_keeps_its_presence() {
 fn any_other_optional_member_keeps_its_type_and_refuses_null() {
     for (target, h) in targets() {
         let file = module(&target);
-        for name in ["plain"] {
-            let (ty, serde) = field(&file, "Payload", name);
-            assert_eq!(
-                unprefixed(ty),
-                format!("{OPTION}<::std::string::String>"),
-                "{name}"
-            );
-            assert!(reads_through(&serde, h, Helper::NotNull), "{name}: {serde}");
-            assert!(serde.contains("skip_serializing_if=\"::std::option::Option::is_none\""));
-            // The type is unchanged, so the builder is too.
-            assert_eq!(
-                unprefixed(builder_field(&file, "Payload", name)),
-                format!(
-                    "::std::result::Result<{OPTION}<::std::string::String>,::std::string::String>"
-                ),
-            );
-        }
+        let name = "plain";
+        let (ty, serde) = field(&file, "Payload", name);
+        assert_eq!(
+            unprefixed(ty),
+            format!("{OPTION}<::std::string::String>"),
+            "{name}"
+        );
+        assert!(reads_through(&serde, h, Helper::NotNull), "{name}: {serde}");
+        assert!(serde.contains("skip_serializing_if=\"::std::option::Option::is_none\""));
+        // The type is unchanged, so the builder is too.
+        assert_eq!(
+            unprefixed(builder_field(&file, "Payload", name)),
+            format!("::std::result::Result<{OPTION}<::std::string::String>,::std::string::String>"),
+        );
     }
 }
 
