@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/rules/set/0.1",
   "title": "HCP — Set Standing Rule — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; that rule is not checked by the schema (the registry's Rust generator does not support the conditional keywords it needs). The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; the schema checks it with an `anyOf` of the two `required` clauses. The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": ["accessToken"],
@@ -12,7 +12,7 @@
       "minItems": 1,
       "maxItems": 256,
       "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
-      "description": "HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires` (not checked by the schema). The maxItems is a framework bound, not an HCP requirement."
+      "description": "HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement."
     },
     "requires": {
       "type": "array",
@@ -35,6 +35,10 @@
       "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
     }
   },
+  "anyOf": [
+    { "required": ["operators"] },
+    { "required": ["requires"] }
+  ],
   "$defs": {
     "Response": {
       "$anchor": "response",

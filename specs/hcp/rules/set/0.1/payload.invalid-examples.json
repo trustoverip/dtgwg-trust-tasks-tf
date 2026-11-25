@@ -12,6 +12,10 @@
     "payload": { "effect": "deny", "operators": ["ads.example"], "accessToken": "hcp_mt_x" }
   },
   {
+    "note": "Neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14); a rule with neither would deny every operator.",
+    "payload": { "categories": ["health_context"], "accessToken": "hcp_mt_x" }
+  },
+  {
     "note": "Empty `operators` — absent means every operator; an empty array names none (minItems 1).",
     "payload": { "operators": [], "requires": ["https://hcp.example/spec/clients/directives/2.0"], "accessToken": "hcp_mt_x" }
   },

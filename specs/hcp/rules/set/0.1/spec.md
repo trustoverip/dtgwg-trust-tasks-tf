@@ -100,7 +100,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 
 | HCP field | Member | Notes |
 |---|---|---|
-| request body `operators`, `requires`, `categories` (`POST /v2/rules`, HCP 9.4.14) | `operators`, `requires`, `categories` | Unchanged. HCP requires `operators`, `requires`, or both; the schema does not check it. |
+| request body `operators`, `requires`, `categories` (`POST /v2/rules`, HCP 9.4.14) | `operators`, `requires`, `categories` | Unchanged. HCP requires `operators`, `requires`, or both; the schema checks it. |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `201`: the rule (HCP 9.4.14) | `rule` in the `#response` payload | HCP's body is the rule itself; this task wraps it in one member, `rule`, so the response payload stays a closed object. The rule's members are unchanged. |
@@ -117,7 +117,7 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a prov
 
 ## Request
 
-The Management Client sends the rule to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `operators`, `requires` and `categories`, each OPTIONAL, and `accessToken`, REQUIRED. HCP 9.4.14 requires `operators`, `requires`, or both; that rule is not checked by the schema, and a request with neither is refused with `malformedRequest`.
+The Management Client sends the rule to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `operators`, `requires` and `categories`, each OPTIONAL, and `accessToken`, REQUIRED. HCP 9.4.14 requires `operators`, `requires`, or both, and the schema requires at least one of them; a request with neither fails schema validation and is refused with `malformedRequest`.
 
 ### Keeping health context from an advertising network
 
