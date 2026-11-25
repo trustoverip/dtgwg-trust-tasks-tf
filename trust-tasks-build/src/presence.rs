@@ -202,10 +202,7 @@ fn admits_null(schema: &Value, root: &Value, depth: usize) -> bool {
             return false;
         }
     }
-    if map.get("not").is_some_and(is_exactly_null) {
-        return false;
-    }
-    true
+    !map.get("not").is_some_and(is_exactly_null)
 }
 
 /// `{"type": "null"}` or `{"const": null}`, and nothing else that constrains.
