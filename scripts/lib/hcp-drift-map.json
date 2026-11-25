@@ -1,0 +1,334 @@
+{
+  "$comment": "Which hcp/* schema corresponds to which HCP schema, for scripts/check-hcp-drift.mjs. `objects`: `ours` is a repo path and JSON pointer, `hcp` a path under `hcpSchemaDir` in the hcp-spec repository and a pointer; `renames` maps one of our member paths to HCP's name for it (the field-mapping table's **Renamed** rows). Ids are `<slug>:request`, `<slug>:response`, or `hcp/_shared:<def>`. `notCompared` lists each carried spec side HCP publishes no schema for, with why; every carried side is in one or the other.",
+  "family": "hcp",
+  "hcpSchemaDir": "schemas/2.0-draft-3",
+  "objects": [
+    {
+      "id": "hcp/_shared:Urn",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/Urn",
+      "hcp": "common.json#/$defs/urnUuid"
+    },
+    {
+      "id": "hcp/_shared:Uri",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/Uri",
+      "hcp": "common.json#/$defs/uri"
+    },
+    {
+      "id": "hcp/_shared:Category",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/Category",
+      "hcp": "common.json#/$defs/category"
+    },
+    {
+      "id": "hcp/_shared:PurposeCode",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/PurposeCode",
+      "hcp": "common.json#/$defs/purposeCode"
+    },
+    {
+      "id": "hcp/_shared:Instant",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/Instant",
+      "hcp": "common.json#/$defs/dateTime"
+    },
+    {
+      "id": "hcp/_shared:Assurance",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/Assurance",
+      "hcp": "common.json#/$defs/assurance"
+    },
+    {
+      "id": "hcp/_shared:RelationshipType",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/RelationshipType",
+      "hcp": "common.json#/$defs/relationshipType"
+    },
+    {
+      "id": "hcp/_shared:MinimizationReport",
+      "ours": "specs/hcp/_shared/0.1/common.schema.json#/$defs/MinimizationReport",
+      "hcp": "common.json#/$defs/minimization"
+    },
+    {
+      "id": "hcp/_shared:Content",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/Content",
+      "hcp": "common.json#/$defs/content"
+    },
+    {
+      "id": "hcp/_shared:Assertion",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/Assertion",
+      "hcp": "common.json#/$defs/assertion"
+    },
+    {
+      "id": "hcp/_shared:Basis",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/Basis",
+      "hcp": "common.json#/$defs/basis"
+    },
+    {
+      "id": "hcp/_shared:Classification",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/Classification",
+      "hcp": "common.json#/$defs/classification"
+    },
+    {
+      "id": "hcp/_shared:EvidenceItem",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/EvidenceItem",
+      "hcp": "common.json#/$defs/evidenceItem"
+    },
+    {
+      "id": "hcp/_shared:ClientDescription",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/ClientDescription",
+      "hcp": "common.json#/$defs/clientDescription"
+    },
+    {
+      "id": "hcp/_shared:Entry",
+      "ours": "specs/hcp/_shared/0.1/context-entry.schema.json#/$defs/Entry",
+      "hcp": "entry.json"
+    },
+    {
+      "id": "hcp/_shared:Disclosure",
+      "ours": "specs/hcp/_shared/0.1/disclosure.schema.json#/$defs/Disclosure",
+      "hcp": "disclosure.json"
+    },
+    {
+      "id": "hcp/_shared:Named",
+      "ours": "specs/hcp/_shared/0.1/grant.schema.json#/$defs/Named",
+      "hcp": "common.json#/$defs/named"
+    },
+    {
+      "id": "hcp/_shared:LegalRetention",
+      "ours": "specs/hcp/_shared/0.1/grant.schema.json#/$defs/LegalRetention",
+      "hcp": "common.json#/$defs/legalRetention"
+    },
+    {
+      "id": "hcp/_shared:Purpose",
+      "ours": "specs/hcp/_shared/0.1/grant.schema.json#/$defs/Purpose",
+      "hcp": "common.json#/$defs/purpose"
+    },
+    {
+      "id": "hcp/_shared:AccessDetail",
+      "ours": "specs/hcp/_shared/0.1/grant.schema.json#/$defs/AccessDetail",
+      "hcp": "common.json#/$defs/accessDetail"
+    },
+    {
+      "id": "hcp/_shared:Grant",
+      "ours": "specs/hcp/_shared/0.1/grant.schema.json#/$defs/Grant",
+      "hcp": "grant.json"
+    },
+    {
+      "id": "hcp/_shared:StandingRule",
+      "ours": "specs/hcp/_shared/0.1/standing-rule.schema.json#/$defs/StandingRule",
+      "hcp": "standing-rule.json"
+    },
+    {
+      "id": "hcp/_shared:Directive",
+      "ours": "specs/hcp/_shared/0.1/directive.schema.json#/$defs/Directive",
+      "hcp": "directive.json"
+    },
+    {
+      "id": "hcp/_shared:Delegation",
+      "ours": "specs/hcp/_shared/0.1/delegation.schema.json#/$defs/Delegation",
+      "hcp": "delegation.json"
+    },
+    {
+      "id": "hcp/_shared:AuditEvent",
+      "ours": "specs/hcp/_shared/0.1/audit-event.schema.json#/$defs/AuditEvent",
+      "hcp": "audit-event.json"
+    },
+    {
+      "id": "hcp/_shared:Export",
+      "ours": "specs/hcp/_shared/0.1/export.schema.json#/$defs/Export",
+      "hcp": "export.json"
+    },
+    {
+      "id": "hcp/entries/create:request",
+      "ours": "specs/hcp/entries/create/0.1/payload.schema.json#",
+      "hcp": "operations/create-request.json"
+    },
+    {
+      "id": "hcp/entries/create:response",
+      "ours": "specs/hcp/entries/create/0.1/payload.schema.json#/$defs/Response/properties/entry",
+      "hcp": "operations/create-result.json",
+      "note": "HCP's result body is the entry or disclosure itself; ours wraps it in `entry`."
+    },
+    {
+      "id": "hcp/entries/get:request",
+      "ours": "specs/hcp/entries/get/0.1/payload.schema.json#",
+      "hcp": "operations/get-entry-request.json"
+    },
+    {
+      "id": "hcp/entries/get:response",
+      "ours": "specs/hcp/entries/get/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/get-entry-result.json",
+      "renames": {
+        "respondedAt": "timestamp"
+      }
+    },
+    {
+      "id": "hcp/entries/query:request",
+      "ours": "specs/hcp/entries/query/0.1/payload.schema.json#",
+      "hcp": "operations/query-request.json"
+    },
+    {
+      "id": "hcp/entries/query:response",
+      "ours": "specs/hcp/entries/query/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/query-result.json",
+      "renames": {
+        "respondedAt": "timestamp"
+      }
+    },
+    {
+      "id": "hcp/entries/revise:request",
+      "ours": "specs/hcp/entries/revise/0.1/payload.schema.json#",
+      "hcp": "operations/revise-request.json"
+    },
+    {
+      "id": "hcp/entries/revise:response",
+      "ours": "specs/hcp/entries/revise/0.1/payload.schema.json#/$defs/Response/properties/entry",
+      "hcp": "operations/revise-result.json",
+      "note": "Wrapped in `entry`, as for create."
+    },
+    {
+      "id": "hcp/entries/withdraw:request",
+      "ours": "specs/hcp/entries/withdraw/0.1/payload.schema.json#",
+      "hcp": "operations/withdraw-request.json"
+    },
+    {
+      "id": "hcp/entries/withdraw:response",
+      "ours": "specs/hcp/entries/withdraw/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/withdraw-result.json",
+      "renames": {
+        "respondedAt": "timestamp"
+      }
+    },
+    {
+      "id": "hcp/entries/confirm:response",
+      "ours": "specs/hcp/entries/confirm/0.1/payload.schema.json#/$defs/Response/properties/entry",
+      "hcp": "entry.json",
+      "note": "HCP 9.4.10 returns the entry; ours wraps it in `entry`."
+    },
+    {
+      "id": "hcp/entries/set-categories:response",
+      "ours": "specs/hcp/entries/set-categories/0.1/payload.schema.json#/$defs/Response/properties/entry",
+      "hcp": "entry.json",
+      "note": "HCP 9.4.10 returns the entry; ours wraps it in `entry`."
+    },
+    {
+      "id": "hcp/entries/restrict-purposes:response",
+      "ours": "specs/hcp/entries/restrict-purposes/0.1/payload.schema.json#/$defs/Response/properties/entry",
+      "hcp": "entry.json",
+      "note": "HCP 9.4.10 returns the entry; ours wraps it in `entry`."
+    },
+    {
+      "id": "hcp/import:request",
+      "ours": "specs/hcp/import/0.1/payload.schema.json#",
+      "hcp": "operations/import-request.json"
+    },
+    {
+      "id": "hcp/import:response",
+      "ours": "specs/hcp/import/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/import-result.json"
+    },
+    {
+      "id": "hcp/export:request",
+      "ours": "specs/hcp/export/0.1/payload.schema.json#",
+      "hcp": "export.json#/properties/options",
+      "note": "HCP 9.4.8 takes the options as query parameters; they are the export's `options` (HCP 5.4.1), so the request is compared with that object."
+    },
+    {
+      "id": "hcp/export:response",
+      "ours": "specs/hcp/export/0.1/payload.schema.json#/$defs/Response/properties/export",
+      "hcp": "export.json",
+      "note": "Wrapped in `export`."
+    },
+    {
+      "id": "hcp/shares/report:request",
+      "ours": "specs/hcp/shares/report/0.1/payload.schema.json#",
+      "hcp": "operations/report-sharing-request.json"
+    },
+    {
+      "id": "hcp/rules/set:request",
+      "ours": "specs/hcp/rules/set/0.1/payload.schema.json#",
+      "hcp": "standing-rule.json",
+      "note": "HCP 9.4.14 publishes no request schema; the body is the rule's client-set members, so the request is compared with the rule."
+    },
+    {
+      "id": "hcp/rules/set:response",
+      "ours": "specs/hcp/rules/set/0.1/payload.schema.json#/$defs/Response/properties/rule",
+      "hcp": "standing-rule.json",
+      "note": "Wrapped in `rule`."
+    },
+    {
+      "id": "hcp/rules/list:response",
+      "ours": "specs/hcp/rules/list/0.1/payload.schema.json#/$defs/Response/properties/rules/items",
+      "hcp": "standing-rule.json",
+      "note": "HCP 9.4.14 lists rules; no result schema, each item is a rule."
+    },
+    {
+      "id": "hcp/directives/set:request",
+      "ours": "specs/hcp/directives/set/0.1/payload.schema.json#",
+      "hcp": "directive.json",
+      "note": "HCP 9.4.15 publishes no request schema; the body is the directive's client-set members, so the request is compared with the directive."
+    },
+    {
+      "id": "hcp/directives/set:response",
+      "ours": "specs/hcp/directives/set/0.1/payload.schema.json#/$defs/Response/properties/directive",
+      "hcp": "directive.json",
+      "note": "Wrapped in `directive`."
+    },
+    {
+      "id": "hcp/directives/list:response",
+      "ours": "specs/hcp/directives/list/0.1/payload.schema.json#/$defs/Response/properties/directives/items",
+      "hcp": "directive.json",
+      "note": "HCP 9.4.15 lists directives; no result schema, each item is a directive."
+    },
+    {
+      "id": "hcp/delegations/list:response",
+      "ours": "specs/hcp/delegations/list/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/delegations-result.json"
+    },
+    {
+      "id": "hcp/disclosures/summary:response",
+      "ours": "specs/hcp/disclosures/summary/0.1/payload.schema.json#/$defs/Response",
+      "hcp": "operations/disclosure-summary-result.json"
+    },
+    {
+      "id": "hcp/grants/read-own:response",
+      "ours": "specs/hcp/grants/read-own/0.1/payload.schema.json#/$defs/Response/properties/grant",
+      "hcp": "operations/read-own-grant-result.json",
+      "note": "Wrapped in `grant`; `directives` beside it is ours (Q18)."
+    },
+    {
+      "id": "hcp/grants/list:response",
+      "ours": "specs/hcp/grants/list/0.1/payload.schema.json#/$defs/Response/properties/grants/items",
+      "hcp": "grant.json",
+      "note": "HCP 9.4.6 lists grants; no result schema, each item is a grant."
+    },
+    {
+      "id": "hcp/audit/read:response",
+      "ours": "specs/hcp/audit/read/0.1/payload.schema.json#/$defs/Response/properties/events/items",
+      "hcp": "audit-event.json",
+      "note": "HCP 9.4.7 names no result member (Q30); each item is an audit event."
+    }
+  ],
+  "notCompared": {
+    "hcp/entries/confirm:request": "HCP publishes no JSON schema for it: HCP 9.4.10's body is prose (disposition, expectedVersion), the entry in the path.",
+    "hcp/entries/set-categories:request": "HCP publishes no JSON schema for it: HCP 9.4.10's body is prose.",
+    "hcp/entries/restrict-purposes:request": "HCP publishes no JSON schema for it: HCP 9.4.10's body is prose.",
+    "hcp/entries/hard-delete:request": "HCP publishes no JSON schema for it: HCP 9.4.5 takes the entry in the path.",
+    "hcp/entries/hard-delete:response": "HCP publishes no JSON schema for it: HCP 9.4.5 shows only the withdraw result (Q11).",
+    "hcp/shares/report:response": "Ours has no members; HCP 9.4.11 answers 204.",
+    "hcp/rules/list:request": "HCP publishes no JSON schema for it: GET with no parameters (HCP 9.4.14).",
+    "hcp/rules/remove:request": "HCP publishes no JSON schema for it: the rule id is in the path (HCP 9.4.14).",
+    "hcp/rules/remove:response": "Ours has no members; HCP answers 204.",
+    "hcp/directives/list:request": "HCP publishes no JSON schema for it: GET with no parameters (HCP 9.4.15).",
+    "hcp/directives/remove:request": "HCP publishes no JSON schema for it: the directive id is in the path (HCP 9.4.15).",
+    "hcp/directives/remove:response": "Ours has no members; HCP answers 204.",
+    "hcp/delegations/list:request": "HCP publishes no JSON schema for it: query parameter `status` (HCP 9.4.13).",
+    "hcp/delegations/end:request": "HCP publishes no JSON schema for it: the delegation id is in the path (HCP 9.4.13).",
+    "hcp/delegations/end:response": "Ours has no members; HCP answers 204.",
+    "hcp/disclosures/summary:request": "HCP publishes no JSON schema for it: query parameters (HCP 9.4.12).",
+    "hcp/grants/read-own:request": "HCP publishes no JSON schema for it: GET with no parameters (HCP 9.4.6).",
+    "hcp/grants/list:request": "HCP publishes no JSON schema for it: query parameters (HCP 9.4.6, 9.5).",
+    "hcp/grants/relinquish:request": "HCP publishes no JSON schema for it: the grant id is in the path (HCP 9.4.6).",
+    "hcp/grants/relinquish:response": "Ours has no members; HCP answers 204.",
+    "hcp/grants/revoke:request": "HCP publishes no JSON schema for it: the grant id is in the path (HCP 9.4.6).",
+    "hcp/grants/revoke:response": "Ours has no members; HCP answers 204.",
+    "hcp/grants/revoked:request": "HCP publishes no JSON schema for it: the notice is a Security Event Token (HCP 9.9), whose claims are prose.",
+    "hcp/grants/revoked:response": "Ours has no members; HCP 9.9 answers 202.",
+    "hcp/audit/read:request": "HCP publishes no JSON schema for it: query parameters (HCP 9.4.7, 8.3)."
+  }
+}
