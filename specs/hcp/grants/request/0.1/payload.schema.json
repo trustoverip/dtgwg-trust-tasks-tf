@@ -84,7 +84,7 @@
           "minItems": 1,
           "maxItems": 32,
           "items": {
-            "$ref": "#/$defs/Purpose"
+            "$ref": "#/$defs/RequestedPurpose"
           },
           "description": "HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement."
         },
@@ -107,7 +107,7 @@
       ],
       "description": "An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim."
     },
-    "Purpose": {
+    "RequestedPurpose": {
       "type": "object",
       "additionalProperties": false,
       "required": [
