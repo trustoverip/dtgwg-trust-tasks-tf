@@ -137,7 +137,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
 - `record.relationships[].target`, and a proposal's `entry`, name an entry by its `ref` for a Context Client and its `id` for a Management Client (HCP 5.2.3). Only a `contradicts` relationship carries a `proposal` (HCP 4.7.4).
 - `classification.permittedPurposes` is not a create member: only the Authorizing Principal sets it, by a governance operation (HCP 4.2.1, 4.2.6). A create carrying it is refused with `malformedRequest`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
 - A `schema` the provider does not accept, or a category it does not hold, is refused with `malformedRequest` (HCP 5.2.3).
-- The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and never takes them from a request (HCP 5.2.3).
+- The provider assigns `id`, `record.status`, `record.version`, the rest of `record.provenance` and each relationship's `assertedBy` and `recordedAt`, and a proposal's `proposedBy` and `proposedAt`, and never takes them from a request (HCP 5.2.3, 4.7.4). The entry returned, like every stored entry, carries each proposal with all six of its members (the shared `RecordedProposal`).
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
 
 ### A booking agent records an inferred preference

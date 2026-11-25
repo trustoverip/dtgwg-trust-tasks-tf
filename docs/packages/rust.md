@@ -120,7 +120,7 @@ What remains in `hcp` is harmless, because HCP treats empty and absent (or
 null and absent) alike there: `evidence`, `relationships`, `confirmations`,
 `drawnFrom`, `covers`, `revealed`, an `AuditEvent`'s `categories`, `disclosed`
 and `data`, an export's `directives` and `delegations`, the `narrowedTo`,
-`metadata`, `unmapped`, `proposal` and `categoryMap` maps, and the optional
+`metadata`, `unmapped` and `categoryMap` maps, and the optional
 nullable `language`, `confidence`, `validUntil` and `dimension`. A new `hcp`
 member whose empty or null value means something follows the same rule. The
 cross-runtime picture is in [`runtime-parity.md`](../runtime-parity.md#differences).
