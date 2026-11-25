@@ -145,6 +145,7 @@ updates:
       - /trust-tasks-dart-capability-client
       - /examples/consumer-app-dart
       - /examples/getting-started-dart
+      - /examples/hcp-demo-dart
     schedule:
       interval: weekly
     groups:

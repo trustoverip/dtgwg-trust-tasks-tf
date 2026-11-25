@@ -166,4 +166,12 @@ library's own clock, so the tests check only the code.
 
 ## Documented differences
 
-None yet. A port that cannot match a line of the golden file says so here, with the reason.
+No port differs in a line of the golden file. A port that cannot match one says so here, with the
+reason.
+
+Differences that print nothing:
+
+- **Dart** (`hcp-demo-dart`): `trust_tasks_tsp` seals with HPKE in Base mode (the only mode
+  `affinidi_tsp` offers) and signs the message, rather than HPKE-Auth. Its `TspConsumer` mints the
+  `id` of an error the library builds (tests 3 and 4) with a random `urn:uuid`, as it has no id
+  hook; those tests check only the code.
