@@ -43,6 +43,10 @@ pub struct Target {
     /// Whether [`generate_locked`] also writes a `schema_index` module — see
     /// [`Target::index`].
     pub(crate) index: bool,
+    /// Path of a module of the runtime crate that defines the member-presence
+    /// helpers (`present`, `not_null`), or `None` to emit them into each
+    /// generated module (see `presence`).
+    pub(crate) presence_helpers: Option<&'static str>,
 }
 
 impl Default for Target {
@@ -69,6 +73,7 @@ impl Target {
             dependencies: Some(format!("{path}::__private")),
             generator: "trust-tasks-build",
             index: false,
+            presence_helpers: None,
         }
     }
 
@@ -91,6 +96,9 @@ impl Target {
             dependencies: None,
             generator: "trust-tasks-codegen",
             index: false,
+            // Crate-private in `trust-tasks-rs` (`src/specs/mod.rs`), so the
+            // 400-odd prebuilt modules share one copy without a public API.
+            presence_helpers: Some("crate::specs::presence"),
         }
     }
 
@@ -215,6 +223,7 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     apply_presence(
         &mut parsed,
         &target.dependency_tokens("serde"),
+        target.presence_helpers,
         &nullable_tagged,
     )
     .with_context(|| format!("{ctx}: keeping member presence"))?;

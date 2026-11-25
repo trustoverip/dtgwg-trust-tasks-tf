@@ -61,6 +61,117 @@
 // such member for no reader's benefit.
 #![allow(clippy::type_complexity)]
 
+/// The member-presence helpers every generated module here reads its optional
+/// members through (`#[serde(deserialize_with = "crate::specs::presence::…")]`;
+/// see `trust-tasks-build`'s `presence` pass). One crate-private copy instead
+/// of one per module: nothing here is public API. An application's modules,
+/// generated against `::trust_tasks_rs`, carry their own copy instead, so they
+/// need nothing new from the runtime.
+// Unused when no specification family is enabled.
+#[allow(dead_code)]
+pub(crate) mod presence {
+    /// Reads a present member, `null` included, as `Some`, so an absent member
+    /// (`None`, via `#[serde(default)]`) stays distinct. For a member whose
+    /// schema admits `null`.
+    pub(crate) fn present<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        T::deserialize(deserializer).map(Some)
+    }
+
+    /// Reads a present member as `Some` and refuses a `null`: the member's
+    /// schema has no null form, so `null` is not "absent".
+    pub(crate) fn not_null<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: serde::Deserialize<'de>,
+    {
+        match <Option<T> as serde::Deserialize<'de>>::deserialize(deserializer)? {
+            Some(value) => Ok(Some(value)),
+            None => Err(<D::Error as serde::de::Error>::invalid_type(
+                serde::de::Unexpected::Unit,
+                &"a value (this optional member has no null form: leave it out instead)",
+            )),
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        //! The helpers on the field shapes the generator gives each kind of
+        //! optional member, spelled as the generated code spells them.
+        use serde::{Deserialize, Serialize};
+        use serde_json::{json, Map, Value};
+
+        #[derive(Deserialize, Serialize, Debug, PartialEq)]
+        struct Shapes {
+            // An array or map: `Option<Vec<T>>` / `Option<Map>`, `not_null`.
+            #[serde(
+                default,
+                deserialize_with = "super::not_null",
+                skip_serializing_if = "Option::is_none"
+            )]
+            map: Option<Map<String, Value>>,
+            // `{"type": "null"}`: `Option<()>`, `present`.
+            #[serde(
+                default,
+                deserialize_with = "super::present",
+                skip_serializing_if = "Option::is_none"
+            )]
+            unit: Option<()>,
+            // Admits `null`: `Option<Option<T>>`, `present`.
+            #[serde(
+                default,
+                deserialize_with = "super::present",
+                skip_serializing_if = "Option::is_none"
+            )]
+            nullable: Option<Option<String>>,
+            // Has no null form, any `T` (here one that would read `null`).
+            #[serde(
+                default,
+                deserialize_with = "super::not_null",
+                skip_serializing_if = "Option::is_none"
+            )]
+            value: Option<Value>,
+        }
+
+        fn round_trip(value: Value) -> Shapes {
+            let parsed: Shapes = serde_json::from_value(value.clone()).expect("decode");
+            assert_eq!(serde_json::to_value(&parsed).unwrap(), value);
+            parsed
+        }
+
+        #[test]
+        fn absent_empty_and_null_stay_apart() {
+            let absent = round_trip(json!({}));
+            assert_eq!(
+                (absent.map, absent.unit, absent.nullable, absent.value),
+                (None, None, None, None)
+            );
+            let present = round_trip(json!({"map": {}, "unit": null, "nullable": null}));
+            assert_eq!(present.map, Some(Map::new()));
+            assert_eq!(present.unit, Some(()));
+            assert_eq!(present.nullable, Some(None));
+            let set = round_trip(json!({"nullable": "x", "value": false}));
+            assert_eq!(set.nullable, Some(Some("x".into())));
+            assert_eq!(set.value, Some(Value::Bool(false)));
+        }
+
+        #[test]
+        fn a_null_without_a_null_form_is_refused() {
+            for member in ["map", "value"] {
+                let err = serde_json::from_value::<Shapes>(json!({ member: null }))
+                    .expect_err(member)
+                    .to_string();
+                assert!(err.contains("no null form"), "{member}: {err}");
+            }
+            // `()` reads only `null`.
+            assert!(serde_json::from_value::<Shapes>(json!({"unit": 1})).is_err());
+        }
+    }
+}
+
 // trust-tasks-codegen:begin
 #[cfg(feature = "acl")]
 #[deprecated(

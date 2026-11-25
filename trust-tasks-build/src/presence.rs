@@ -11,21 +11,36 @@
 //!   `skip_serializing_if = "Option::is_none"`, so an explicit `null` is read
 //!   as, and written back as, absent;
 //! - an optional member whose schema is `{"type": "null"}` becomes `()` with
-//!   `#[serde(default)]`, so an absent member is written back as `null`.
+//!   `#[serde(default)]`, so an absent member is written back as `null`;
+//! - any other optional member becomes `Option<T>`, and serde reads a `null`
+//!   there as `None`, so a `null` the schema refuses is accepted and written
+//!   back as absent.
 //!
-//! This module rewrites those fields so the three states stay apart:
+//! This module rewrites those fields so the three states stay apart, and a
+//! `null` is accepted exactly where the schema admits one:
 //!
 //! | schema of an optional member | field type | absent | `null` | value |
 //! |---|---|---|---|---|
 //! | array / map | `Option<Vec<T>>` / `Option<Map>` | `None` | refused | `Some(v)` (`[]` too) |
 //! | admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
 //! | `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
+//! | anything else | `Option<T>` (unchanged) | `None` | refused | `Some(v)` |
 //!
-//! Every rewritten field reads through the module's `presence::present`
-//! helper (`deserialize_with`), which maps a present member — `null`
-//! included — to `Some`, and keeps `skip_serializing_if = "Option::is_none"`,
-//! so only an absent member is omitted. The helper is emitted into each module
-//! that needs it, so a generated module names nothing new in the runtime.
+//! Every optional field reads through one of two helpers (`deserialize_with`)
+//! and keeps `skip_serializing_if = "Option::is_none"`, so only an absent
+//! member is omitted. `present` maps a present member, `null` included, to
+//! `Some` (the member admits `null`); `not_null` refuses a `null` (it does
+//! not). For `Target::runtime_crate()` the
+//! helpers are the crate-private `crate::specs::presence` in `trust-tasks-rs`,
+//! which adds no public API. For an application they are emitted into each
+//! module that needs them, so a generated module names nothing new in the
+//! runtime's `__private` surface (and so no new ABI item).
+//!
+//! A member whose schema is `true`, `{}` or annotations only accepts any
+//! value, `null` included. It is tagged like any other member that admits
+//! `null` (a `true` is rewritten to `{}` in typify's copy so it can carry the
+//! tag), so it becomes `Option<Option<serde_json::Value>>`: absent is `None`,
+//! `null` is `Some(None)`.
 //!
 //! typify's output does not say which `Option<T>` came from a nullable schema
 //! (it wraps a non-nullable optional member in the same `Option`), so
@@ -34,9 +49,12 @@
 //! back off the field's doc comment and removes it. The wire schema
 //! (`PAYLOAD_SCHEMA`) is captured before, and never carries the tag.
 //!
-//! Members with a JSON Schema `default` are left as typify renders them: an
-//! absent member is read as its declared default, which the schema says it
-//! means.
+//! A member with a declared JSON Schema `default` is left as typify renders it
+//! (`#[serde(default = "…")]`), so an absent member reads as that default.
+//! typify treats a default equal to the type's intrinsic one (`[]`, `{}`,
+//! `null`, `false`, `0`, `""`) as no default at all, so such a member is
+//! rewritten like any other optional member, and an absent one reads as
+//! `None`.
 
 use std::collections::BTreeSet;
 
@@ -94,8 +112,12 @@ fn mark(node: &mut Value, root: &Value, tagged: &mut BTreeSet<String>) {
                     if required.contains(name) || !admits_null(prop, root, 0) {
                         continue;
                     }
+                    // `true` cannot carry a tag; `{}` means the same and can.
+                    if prop == &Value::Bool(true) {
+                        *prop = Value::Object(serde_json::Map::new());
+                    }
                     // A bare `{"type": "null"}` is typify's `()`, recognised in
-                    // the output without a tag; `true` cannot carry one.
+                    // the output without a tag.
                     let Value::Object(p) = prop else { continue };
                     if is_null_only(p) {
                         continue;
@@ -125,9 +147,17 @@ fn is_null_only(p: &serde_json::Map<String, Value>) -> bool {
     p.get("type").and_then(Value::as_str) == Some("null")
 }
 
-/// Whether `schema` accepts JSON `null`, as far as the keywords typify reads
-/// decide it. `$ref`s into the document are followed; `depth` bounds a
-/// reference cycle.
+/// Whether `schema` accepts JSON `null`. `$ref`s into the document are
+/// followed; `depth` bounds a reference cycle.
+///
+/// A schema admits `null` only when every keyword that can restrict a value's
+/// type does: `type`, `const`, `enum`, `oneOf` / `anyOf` (some branch),
+/// `allOf` (every branch), `$ref`, and a `not` of a schema that is exactly
+/// `null`. Any other keyword (`not` of anything else, `if`, a type-specific
+/// keyword such as `minLength`) is taken to admit it. The answer drives
+/// whether a `null` is kept or refused, and erring towards "admits" only keeps
+/// a `null` the schema might refuse, where erring the other way would refuse a
+/// document the schema accepts.
 fn admits_null(schema: &Value, root: &Value, depth: usize) -> bool {
     if depth > 64 {
         return false;
@@ -138,30 +168,60 @@ fn admits_null(schema: &Value, root: &Value, depth: usize) -> bool {
         _ => return false,
     };
     if let Some(t) = map.get("type") {
-        return match t {
+        let ok = match t {
             Value::String(s) => s == "null",
             Value::Array(types) => types.iter().any(|t| t == "null"),
             _ => false,
         };
+        if !ok {
+            return false;
+        }
     }
-    if let Some(c) = map.get("const") {
-        return c.is_null();
+    if map.get("const").is_some_and(|c| !c.is_null()) {
+        return false;
     }
     if let Some(Value::Array(values)) = map.get("enum") {
-        return values.iter().any(Value::is_null);
+        if !values.iter().any(Value::is_null) {
+            return false;
+        }
     }
     for key in ["oneOf", "anyOf"] {
         if let Some(Value::Array(branches)) = map.get(key) {
-            return branches.iter().any(|b| admits_null(b, root, depth + 1));
+            if !branches.iter().any(|b| admits_null(b, root, depth + 1)) {
+                return false;
+            }
         }
     }
     if let Some(Value::String(target)) = map.get("$ref") {
-        return resolve(root, target).is_some_and(|t| admits_null(t, root, depth + 1));
+        if resolve(root, target).is_some_and(|t| !admits_null(t, root, depth + 1)) {
+            return false;
+        }
     }
     if let Some(Value::Array(branches)) = map.get("allOf") {
-        return !branches.is_empty() && branches.iter().all(|b| admits_null(b, root, depth + 1));
+        if !branches.iter().all(|b| admits_null(b, root, depth + 1)) {
+            return false;
+        }
     }
-    map.keys().all(|k| ANNOTATIONS.contains(&k.as_str()))
+    if map.get("not").is_some_and(is_exactly_null) {
+        return false;
+    }
+    true
+}
+
+/// `{"type": "null"}` or `{"const": null}`, and nothing else that constrains.
+fn is_exactly_null(schema: &Value) -> bool {
+    let Value::Object(map) = schema else {
+        return false;
+    };
+    let constraining: Vec<&String> = map
+        .keys()
+        .filter(|k| !ANNOTATIONS.contains(&k.as_str()))
+        .collect();
+    match constraining.as_slice() {
+        [k] if *k == "type" => map.get("type") == Some(&Value::String("null".into())),
+        [k] if *k == "const" => map.get("const") == Some(&Value::Null),
+        _ => false,
+    }
 }
 
 fn resolve<'a>(root: &'a Value, reference: &str) -> Option<&'a Value> {
@@ -176,18 +236,24 @@ fn resolve<'a>(root: &'a Value, reference: &str) -> Option<&'a Value> {
 type Rewrites = BTreeSet<(String, String)>;
 
 /// Rewrite the fields described in the module docs, follow each into the
-/// struct's builder, and emit the `presence` helper when any field uses it.
-/// `serde` is the path generated code names serde by. `tagged` is what
-/// [`mark_nullable_optional_members`] returned. A tag goes unread where typify
-/// made the member required (a `oneOf` branch requiring it), which needs no
-/// rewrite, or put it in an enum variant, whose fields carry no docs; that
-/// case is refused when the variant's field could be either.
+/// struct's builder, and emit the helpers the fields use. `serde` is the path
+/// generated code names serde by. `shared` is the path of a module that
+/// already defines the helpers (`crate::specs::presence` inside
+/// `trust-tasks-rs`), or `None` to emit them into this module. `tagged` is
+/// what [`mark_nullable_optional_members`] returned. A tag goes unread where
+/// typify made the member required (a `oneOf` branch requiring it), which
+/// needs no rewrite, or put it in an enum variant, whose fields carry no docs;
+/// that case is refused when the variant's field could be either.
 pub(crate) fn apply_presence(
     file: &mut syn::File,
     serde: &TokenStream,
+    shared: Option<&str>,
     tagged: &BTreeSet<String>,
 ) -> Result<()> {
-    let mut rewriter = Rewriter::default();
+    let mut rewriter = Rewriter {
+        helpers: shared.unwrap_or(HELPER_MODULE).to_string(),
+        ..Rewriter::default()
+    };
     for item in file.items.iter_mut() {
         match item {
             syn::Item::Struct(s) => {
@@ -214,15 +280,17 @@ pub(crate) fn apply_presence(
         // typify writes no doc comment on an enum variant's fields, so the tag
         // cannot come back there; refuse rather than guess from the name.
         return Err(anyhow!(
-            "optional member {name:?} of an enum variant may admit null, and typify's output \
-             does not say which: no field rewrite can be chosen safely"
+            "optional member {name:?} of an enum variant: a member of the same name elsewhere \
+             in the schema admits null, and typify writes no doc on a variant's fields, so \
+             whether this one admits null cannot be read back; no field rewrite can be chosen \
+             safely (rename one of the members, or make the variant a `$defs` type)"
         ));
     }
     // Every doc comment, not only the fields': typify also copies a member's
     // description onto the newtype it makes for a constrained member.
     StripMarker.visit_file_mut(file);
 
-    if rewriter.rewrites.is_empty() && !rewriter.used {
+    if rewriter.rewrites.is_empty() && !rewriter.used_present && !rewriter.used_not_null {
         return Ok(());
     }
     for item in file.items.iter_mut() {
@@ -234,11 +302,15 @@ pub(crate) fn apply_presence(
             }
         }
     }
-    let helper: syn::Item = syn::parse_quote! {
-        /// Reads a member that is present — `null` included — as `Some`, so
-        /// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-        #[doc(hidden)]
-        mod presence {
+    if shared.is_some() {
+        return Ok(());
+    }
+    // Only the helpers this module uses, so neither is dead code.
+    let mut fns: Vec<syn::Item> = Vec::new();
+    if rewriter.used_present {
+        fns.push(syn::parse_quote! {
+            /// Reads a present member, `null` included, as `Some`, so an
+            /// absent member (`None`, via `#[serde(default)]`) stays distinct.
             pub(super) fn present<'de, D, T>(
                 deserializer: D,
             ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
@@ -249,6 +321,39 @@ pub(crate) fn apply_presence(
                 <T as #serde::Deserialize<'de>>::deserialize(deserializer)
                     .map(::std::option::Option::Some)
             }
+        });
+    }
+    if rewriter.used_not_null {
+        fns.push(syn::parse_quote! {
+            /// Reads a present member as `Some` and refuses a `null`: the
+            /// member's schema has no null form, so `null` is not "absent".
+            pub(super) fn not_null<'de, D, T>(
+                deserializer: D,
+            ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
+            where
+                D: #serde::Deserializer<'de>,
+                T: #serde::Deserialize<'de>,
+            {
+                match <::std::option::Option<T> as #serde::Deserialize<'de>>::deserialize(
+                    deserializer,
+                )? {
+                    ::std::option::Option::Some(value) => {
+                        ::std::result::Result::Ok(::std::option::Option::Some(value))
+                    }
+                    ::std::option::Option::None => ::std::result::Result::Err(
+                        <D::Error as #serde::de::Error>::invalid_type(
+                            #serde::de::Unexpected::Unit,
+                            &"a value (this optional member has no null form: leave it out instead)",
+                        ),
+                    ),
+                }
+            }
+        });
+    }
+    let helper: syn::Item = syn::parse_quote! {
+        #[doc(hidden)]
+        mod presence {
+            #(#fns)*
         }
     };
     file.items.push(helper);
@@ -257,11 +362,15 @@ pub(crate) fn apply_presence(
 
 #[derive(Default)]
 struct Rewriter {
+    /// Path the fields name the helpers by: `presence` (emitted into the
+    /// module) or a shared module.
+    helpers: String,
     rewrites: Rewrites,
     /// Optional enum-variant fields whose JSON name was tagged somewhere in
     /// the schema: their own nullability cannot be read back.
     ambiguous: Vec<String>,
-    used: bool,
+    used_present: bool,
+    used_not_null: bool,
 }
 
 impl Rewriter {
@@ -282,20 +391,36 @@ impl Rewriter {
         // when `None`. A tagged member typify made required (a `oneOf` branch
         // that requires it) is already written whenever it is present.
         let optional_option = serde.default && serde.skip_if_none() && is_option(ty);
-        let rewrite = if has_tag && optional_option {
-            true
-        } else if !has_tag && optional_option && owner.is_none() && tagged.contains(&json_name) {
-            self.ambiguous.push(json_name);
-            return;
+        // (wrap the type in one more `Option`, the schema admits `null`)
+        let (wrap, nullable) = if optional_option {
+            if has_tag {
+                (true, true)
+            } else if owner.is_none() && tagged.contains(&json_name) {
+                self.ambiguous.push(json_name);
+                return;
+            } else {
+                // Not nullable: the type stays, a `null` is refused.
+                (false, false)
+            }
+        } else if serde.default && serde.skip_if_empty() {
+            (true, false)
+        } else if serde.default && serde.skip.is_none() && is_unit(ty) {
+            (true, true)
         } else {
-            serde.default && (serde.skip_if_empty() || (serde.skip.is_none() && is_unit(ty)))
+            return;
         };
-        if !rewrite {
+        let helper = if nullable {
+            self.used_present = true;
+            "present"
+        } else {
+            self.used_not_null = true;
+            "not_null"
+        };
+        serde.rewrite(&mut field.attrs, &format!("{}::{helper}", self.helpers));
+        if !wrap {
             return;
         }
         field.ty = wrap_in_option(ty);
-        serde.rewrite(&mut field.attrs);
-        self.used = true;
         if let (Some(owner), Some(ident)) = (owner, &field.ident) {
             self.rewrites.insert((owner.to_string(), ident.to_string()));
         }
@@ -353,8 +478,7 @@ impl SerdeAttr {
 
     /// Replace the field's `#[serde(…)]` with the presence-keeping form,
     /// keeping its `rename`.
-    fn rewrite(&self, attrs: &mut [syn::Attribute]) {
-        let helper = format!("{HELPER_MODULE}::present");
+    fn rewrite(&self, attrs: &mut [syn::Attribute], helper: &str) {
         let attr: syn::Attribute = match &self.rename {
             Some(rename) => syn::parse_quote! {
                 #[serde(
@@ -571,6 +695,11 @@ mod tests {
                 "viaRef": {"$ref": "#/definitions/MaybeThing"},
                 "constNull": {"enum": ["a", null]},
                 "any": {"description": "anything"},
+                "anyTrue": true,
+                "unconstrained": {"minLength": 1},
+                "notNull": {"not": {"type": "null"}},
+                "notString": {"not": {"type": "string"}},
+                "refAndType": {"$ref": "#/definitions/MaybeThing", "type": "object"},
                 "nullOnly": {"type": "null"},
                 "plain": {"type": "string"},
                 "list": {"type": "array", "items": {"type": "string"}},
@@ -581,10 +710,22 @@ mod tests {
                 "MaybeThing": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/Thing"}]}
             }
         }));
-        let want: BTreeSet<String> = ["union", "branch", "viaRef", "constNull", "any", "inner"]
-            .into_iter()
-            .map(String::from)
-            .collect();
+        // `unconstrained` and `notString` cannot be shown to refuse `null`, so
+        // they keep it; `refAndType` must satisfy both, and `object` refuses it.
+        let want: BTreeSet<String> = [
+            "union",
+            "branch",
+            "viaRef",
+            "constNull",
+            "any",
+            "anyTrue",
+            "unconstrained",
+            "notString",
+            "inner",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
         assert_eq!(names, want);
     }
 }

@@ -1,14 +1,18 @@
 //! The types `generate_module` emits keep an optional member's presence: an
 //! absent member, a present empty array or map, and an explicit `null` where
-//! the schema admits one must each survive a decode-then-encode round trip.
+//! the schema admits one must each survive a decode-then-encode round trip,
+//! and a `null` where the schema has no null form is refused, not read as
+//! absent.
 //!
 //! typify renders an optional array or map as a bare `Vec` / map skipped when
 //! empty (`[]` and `{}` come back absent), an optional nullable member as an
 //! `Option` skipped when `None` (`null` comes back absent), and an optional
 //! `{"type": "null"}` member as `()` with `#[serde(default)]` (absent comes
-//! back as `null`). These tests read the field declarations off a fixture
-//! module; `trust-tasks-rs/tests/member_presence.rs` holds the same property
-//! on generated `acl` types at run time.
+//! back as `null`), and reads a `null` on any other optional member as `None`.
+//! These tests read the field declarations off a fixture module, for both
+//! targets; `trust-tasks-rs/tests/member_presence.rs` holds the same property
+//! on generated types at run time, and `trust-tasks-rs`'s `specs::presence`
+//! tests run the helpers on each field shape.
 
 use serde_json::json;
 use trust_tasks_build::{generate_module, Bundle, Target};
@@ -35,6 +39,9 @@ fn fixture_bundle() -> Bundle {
             "nullOnly": {"type": "null", "description": "Reserved; null where present."},
             "plain": {"type": "string"},
             "defaulted": {"type": "boolean", "default": true},
+            "emptyByDefault": {"type": "array", "items": {"type": "string"}, "default": []},
+            "nullByDefault": {"type": ["string", "null"], "default": null},
+            "anything": true,
             "requiredNullable": {"type": ["string", "null"]}
         },
         "$defs": {
@@ -126,12 +133,59 @@ fn builder_field(file: &syn::File, ty: &str, name: &str) -> String {
 }
 
 const OPTION: &str = "::std::option::Option";
-const PRESENT: &str = "deserialize_with=\"presence::present\"";
 
-fn assert_presence_kept(file: &syn::File, ty: &str, name: &str, inner: &str) {
+/// Both targets: the repository's own modules name the crate-private helpers
+/// in `trust-tasks-rs`, an application's carry their own.
+fn targets() -> [(Target, &'static str); 2] {
+    [
+        (Target::runtime_crate(), "crate::specs::presence"),
+        (Target::application(), "presence"),
+    ]
+}
+
+/// Field types as the runtime crate spells them: an application names
+/// serde_json through the runtime's `__private`.
+fn unprefixed(ty: String) -> String {
+    ty.replace("::trust_tasks_rs::__private", "")
+}
+
+/// Which helper a field reads through.
+#[derive(Clone, Copy, Debug)]
+enum Helper {
+    /// The member admits `null`: a present `null` is `Some`.
+    Present,
+    /// It does not: a `null` is refused.
+    NotNull,
+}
+
+fn reads_through(serde: &str, helpers: &str, helper: Helper) -> bool {
+    let name = match helper {
+        Helper::Present => "present",
+        Helper::NotNull => "not_null",
+    };
+    serde.contains(&format!("deserialize_with=\"{helpers}::{name}\""))
+}
+
+/// `ty.name` is `Option<inner>`, read through `helper`, skipped only when
+/// absent, and its builder holds the same `Option`.
+fn assert_presence_kept(
+    file: &syn::File,
+    ty: &str,
+    name: &str,
+    inner: &str,
+    helpers: &str,
+    helper: Helper,
+) {
     let (field_ty, serde) = field(file, ty, name);
-    assert_eq!(field_ty, format!("{OPTION}<{inner}>"), "{ty}.{name}");
-    assert!(serde.contains(PRESENT), "{ty}.{name}: {serde}");
+    assert_eq!(
+        unprefixed(field_ty),
+        format!("{OPTION}<{inner}>"),
+        "{ty}.{name}"
+    );
+    assert!(
+        reads_through(&serde, helpers, helper),
+        "{ty}.{name} ({helper:?}): {serde}"
+    );
     assert!(
         serde.contains("skip_serializing_if=\"::std::option::Option::is_none\""),
         "{ty}.{name}: {serde}"
@@ -139,7 +193,7 @@ fn assert_presence_kept(file: &syn::File, ty: &str, name: &str, inner: &str) {
     assert!(!serde.contains("is_empty"), "{ty}.{name}: {serde}");
     assert_eq!(
         // The builder names the module's own types through `super::`.
-        builder_field(file, ty, name).replace("super::", ""),
+        unprefixed(builder_field(file, ty, name)).replace("super::", ""),
         format!("::std::result::Result<{OPTION}<{inner}>,::std::string::String>"),
         "builder {ty}.{name}"
     );
@@ -147,83 +201,135 @@ fn assert_presence_kept(file: &syn::File, ty: &str, name: &str, inner: &str) {
 
 #[test]
 fn an_optional_array_or_map_is_an_option_so_empty_stays_present() {
-    let file = module(&Target::runtime_crate());
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "list",
-        "::std::vec::Vec<::std::string::String>",
-    );
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "map",
-        "::std::collections::HashMap<::std::string::String,::std::string::String>",
-    );
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "object",
-        "::serde_json::Map<::std::string::String,::serde_json::Value>",
-    );
+    for (target, h) in targets() {
+        let file = module(&target);
+        let list = "::std::vec::Vec<::std::string::String>";
+        assert_presence_kept(&file, "Payload", "list", list, h, Helper::NotNull);
+        assert_presence_kept(
+            &file,
+            "Payload",
+            "map",
+            "::std::collections::HashMap<::std::string::String,::std::string::String>",
+            h,
+            Helper::NotNull,
+        );
+        assert_presence_kept(
+            &file,
+            "Payload",
+            "object",
+            "::serde_json::Map<::std::string::String,::serde_json::Value>",
+            h,
+            Helper::NotNull,
+        );
+    }
 }
 
 #[test]
 fn an_optional_nullable_member_is_a_double_option_so_null_stays_null() {
-    let file = module(&Target::runtime_crate());
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "nullable_string",
-        &format!("{OPTION}<PayloadNullableString>"),
-    );
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "nullable_ref",
-        &format!("{OPTION}<Thing>"),
-    );
-    assert_presence_kept(
-        &file,
-        "Payload",
-        "nullable_list",
-        &format!("{OPTION}<::std::vec::Vec<::std::string::String>>"),
-    );
-    // In a `$defs` type as well as the root.
-    assert_presence_kept(&file, "Thing", "inner", &format!("{OPTION}<i64>"));
+    for (target, h) in targets() {
+        let file = module(&target);
+        let p = Helper::Present;
+        let string = format!("{OPTION}<PayloadNullableString>");
+        assert_presence_kept(&file, "Payload", "nullable_string", &string, h, p);
+        let thing = format!("{OPTION}<Thing>");
+        assert_presence_kept(&file, "Payload", "nullable_ref", &thing, h, p);
+        let list = format!("{OPTION}<::std::vec::Vec<::std::string::String>>");
+        assert_presence_kept(&file, "Payload", "nullable_list", &list, h, p);
+        // In a `$defs` type as well as the root.
+        assert_presence_kept(&file, "Thing", "inner", &format!("{OPTION}<i64>"), h, p);
+        // `true` accepts `null` like any other value.
+        let any = format!("{OPTION}<::serde_json::Value>");
+        assert_presence_kept(&file, "Payload", "anything", &any, h, p);
+    }
 }
 
 #[test]
 fn an_optional_null_only_member_is_absent_unless_present() {
-    let file = module(&Target::runtime_crate());
-    assert_presence_kept(&file, "Payload", "null_only", "()");
+    for (target, h) in targets() {
+        let file = module(&target);
+        assert_presence_kept(&file, "Payload", "null_only", "()", h, Helper::Present);
+    }
 }
 
 #[test]
-fn other_members_are_left_as_typify_renders_them() {
-    let file = module(&Target::runtime_crate());
-    let (ty, serde) = field(&file, "Payload", "plain");
-    assert_eq!(ty, format!("{OPTION}<::std::string::String>"));
-    assert!(!serde.contains(PRESENT));
-    // A declared default: absent reads as the default the schema gives it.
-    let (ty, serde) = field(&file, "Payload", "defaulted");
-    assert_eq!(ty, "bool");
-    assert!(!serde.contains(PRESENT));
-    // Required and nullable: always written, `null` included.
-    let (ty, serde) = field(&file, "Payload", "required_nullable");
-    assert_eq!(ty, format!("{OPTION}<::std::string::String>"));
-    assert!(!serde.contains(PRESENT) && !serde.contains("skip_serializing_if"));
+fn an_intrinsic_default_is_no_default_so_the_member_keeps_its_presence() {
+    // typify reads a `default` equal to the type's intrinsic one (`[]`,
+    // `null`) as no default, so the member is rewritten: absent is `None`.
+    for (target, h) in targets() {
+        let file = module(&target);
+        let list = "::std::vec::Vec<::std::string::String>";
+        assert_presence_kept(
+            &file,
+            "Payload",
+            "empty_by_default",
+            list,
+            h,
+            Helper::NotNull,
+        );
+        let string = format!("{OPTION}<::std::string::String>");
+        assert_presence_kept(
+            &file,
+            "Payload",
+            "null_by_default",
+            &string,
+            h,
+            Helper::Present,
+        );
+    }
+}
+
+#[test]
+fn any_other_optional_member_keeps_its_type_and_refuses_null() {
+    for (target, h) in targets() {
+        let file = module(&target);
+        for name in ["plain"] {
+            let (ty, serde) = field(&file, "Payload", name);
+            assert_eq!(
+                unprefixed(ty),
+                format!("{OPTION}<::std::string::String>"),
+                "{name}"
+            );
+            assert!(reads_through(&serde, h, Helper::NotNull), "{name}: {serde}");
+            assert!(serde.contains("skip_serializing_if=\"::std::option::Option::is_none\""));
+            // The type is unchanged, so the builder is too.
+            assert_eq!(
+                unprefixed(builder_field(&file, "Payload", name)),
+                format!(
+                    "::std::result::Result<{OPTION}<::std::string::String>,::std::string::String>"
+                ),
+            );
+        }
+    }
+}
+
+#[test]
+fn declared_defaults_and_required_members_are_left_as_typify_renders_them() {
+    for (target, _) in targets() {
+        let file = module(&target);
+        // A declared default: absent reads as the default the schema gives it.
+        let (ty, serde) = field(&file, "Payload", "defaulted");
+        assert_eq!(ty, "bool");
+        assert!(!serde.contains("deserialize_with"), "{serde}");
+        // Required and nullable: always written, `null` included.
+        let (ty, serde) = field(&file, "Payload", "required_nullable");
+        assert_eq!(ty, format!("{OPTION}<::std::string::String>"));
+        assert!(!serde.contains("deserialize_with") && !serde.contains("skip_serializing_if"));
+    }
 }
 
 #[test]
 fn the_tag_never_reaches_the_output_and_descriptions_survive() {
-    for target in [Target::runtime_crate(), Target::application()] {
+    for (target, _) in targets() {
         let source = generate_module(&fixture_bundle(), &target).expect("generate");
         assert!(!source.contains("trust-tasks-build:nullable"), "{source}");
         assert!(source.contains("///Explicit null clears it; absent leaves it."));
-        // The helper names serde through the target's path.
-        assert!(source.contains("mod presence"));
     }
+    // Only an application's module carries the helpers, naming serde through
+    // the target's path; the runtime crate's share `crate::specs::presence`.
     let app = generate_module(&fixture_bundle(), &Target::application()).unwrap();
+    assert!(app.contains("mod presence"));
+    assert!(app.contains("fn present<") && app.contains("fn not_null<"));
     assert!(app.contains("::trust_tasks_rs::__private::serde::Deserializer<'de>"));
+    let own = generate_module(&fixture_bundle(), &Target::runtime_crate()).unwrap();
+    assert!(!own.contains("mod presence"));
 }
