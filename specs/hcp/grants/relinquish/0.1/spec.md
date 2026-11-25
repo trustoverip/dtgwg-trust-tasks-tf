@@ -2,7 +2,7 @@
 slug: hcp/grants/relinquish
 version: "0.1"
 title: "HCP — Relinquish Own Grant"
-summary: An HCP Client gives up the Human Context Protocol grant under which it acts, which revokes it; carries the HCP 2.0-draft-3 Relinquish own grant operation.
+summary: A Context Client gives up the Human Context Protocol grant under which it acts, which revokes it; carries the HCP 2.0-draft-3 Relinquish own grant operation.
 status: draft
 targetFrameworkVersion: "0.6.0"
 carries:
@@ -13,7 +13,7 @@ carries:
 category: access-control
 keywords: [hcp, human-context-protocol, grant, relinquish, revocation]
 parties:
-  - role: HCP Client (the client the grant was issued to)
+  - role: Context Client (HCP), the client the grant was issued to
     requirement: REQUIRED
     member: issuer
   - role: HCP Provider
@@ -63,7 +63,7 @@ related:
 
 ## Abstract
 
-The **HCP — Relinquish Own Grant** Trust Task carries the Relinquish own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token in HCP 9.2). An *HCP Client* gives up the grant under which it acts. Relinquishing is a revocation of that grant: it takes effect at once, and is recorded as a revocation the client initiated. No revocation notice is sent to the client that relinquished (HCP 5.2.7).
+The **HCP — Relinquish Own Grant** Trust Task carries the Relinquish own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token in HCP 9.2). A *Context Client* gives up the grant under which it acts. Relinquishing is a revocation of that grant: it takes effect at once, and is recorded as a revocation the client initiated. No revocation notice is sent to the client that relinquished (HCP 5.2.7).
 
 HCP's MCP binding does not carry this operation in 2.0-draft-3 (HCP 5.2.7); this task carries it over any Trust Task binding. It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
 
@@ -105,7 +105,7 @@ The REQUIRED `proof` establishes which client VID sent the document ([SPEC §7.2
 
 | HCP role | Trust Task member |
 |---|---|
-| HCP Client | `issuer` of the request, `recipient` of the response |
+| Context Client (HCP 5.2.7 says HCP Client; a Management Client's token is refused, see [Authorization](#authorization)) | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
 As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1).

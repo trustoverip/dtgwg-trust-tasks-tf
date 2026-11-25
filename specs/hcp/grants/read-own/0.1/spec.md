@@ -2,7 +2,7 @@
 slug: hcp/grants/read-own
 version: "0.1"
 title: "HCP — Read Own Grant"
-summary: An HCP Client reads the Human Context Protocol grant under which it acts, with the directives that apply to it; carries the HCP 2.0-draft-3 Read own grant operation.
+summary: A Context Client reads the Human Context Protocol grant under which it acts, with the directives that apply to it; carries the HCP 2.0-draft-3 Read own grant operation.
 status: draft
 targetFrameworkVersion: "0.6.0"
 carries:
@@ -13,7 +13,7 @@ carries:
 category: access-control
 keywords: [hcp, human-context-protocol, grant, purposes, directives]
 parties:
-  - role: HCP Client (the client the grant was issued to)
+  - role: Context Client (HCP), the client the grant was issued to
     requirement: REQUIRED
     member: issuer
   - role: HCP Provider
@@ -66,7 +66,7 @@ related:
 
 ## Abstract
 
-The **HCP — Read Own Grant** Trust Task carries the Read own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2). An *HCP Client* asks an *HCP Provider* for the grant under which it acts, and receives that grant only (HCP 6.1.5), with the directives that apply to it (HCP 6.4). This is how a client learns which purposes the person approved (HCP 6.1.5.2).
+The **HCP — Read Own Grant** Trust Task carries the Read own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2). A *Context Client* asks an *HCP Provider* for the grant under which it acts, and receives that grant only (HCP 6.1.5), with the directives that apply to it (HCP 6.4). This is how a client learns which purposes the person approved (HCP 6.1.5.2).
 
 It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
 
@@ -108,7 +108,7 @@ Where the request carries a proof, a token issued to a client other than the one
 
 | HCP role | Trust Task member |
 |---|---|
-| HCP Client | `issuer` of the request, `recipient` of the response |
+| Context Client (HCP 5.2.6 says HCP Client; a Management Client's token is refused, see [Authorization](#authorization)) | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
 As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1), and a client **MUST** check that binding before it sends a token to a VID.
