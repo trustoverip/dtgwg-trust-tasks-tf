@@ -132,7 +132,7 @@ As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a provider **MUST
 The Management Client sends the new list to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json). Every member is REQUIRED.
 
 - `entryId` is the `id` of the entry.
-- `permittedPurposes` is the new list of purpose codes, which replaces the old one whole, or null, which removes the person's narrowing (HCP 9.4.10). It is REQUIRED either way, so that removing the narrowing is always an explicit act. A list is never empty: the schema requires at least one purpose, a framework bound, since HCP defines no meaning for an empty list.
+- `permittedPurposes` is the new list of purpose codes, which replaces the old one whole, or null, which removes the person's narrowing (HCP 9.4.10). It is REQUIRED either way, so that removing the narrowing is always an explicit act. An empty list is allowed and is distinct from null: the entry may then be disclosed for no purpose, since an entry **MAY** be disclosed for a purpose only where each list present includes it (HCP 4.2.6), while null removes the narrowing and sets no limit. A receiver keeps the two apart.
 - `expectedVersion` is the `record.version` the Management Client showed the person (HCP 5.4).
 - `accessToken` is the Management Client's token.
 
@@ -159,6 +159,35 @@ The Management Client sends the new list to the provider. The payload is the top
     "verificationMethod": "did:web:wallet.person.example#key-1",
     "proofPurpose": "assertionMethod",
     "proofValue": "z5Qm3vN7kLcT8xB1hR4pW6sY2dF9gJ7aZe1uK5oVbC4iM3kD8tH2yP6xS9wE1rA3jU7fG4lO2pN6vX9zB5bT8cW1"
+  }
+}
+```
+
+### Withholding an entry from every purpose
+
+An empty list permits no purpose, so the entry is disclosed for none, whatever a grant approves (HCP 4.2.6).
+
+```json
+{
+  "id": "urn:uuid:4f8a2c1e-7b3d-4e9a-a5c6-2d1f0e9b8a73",
+  "type": "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1#request",
+  "issuer": "did:web:wallet.person.example",
+  "recipient": "did:web:context.provider.example",
+  "issuedAt": "2026-11-25T09:05:00Z",
+  "threadId": "urn:uuid:9c3e5a7b-2d4f-4a6c-8e1b-3f5a7c9e1b2d",
+  "payload": {
+    "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae",
+    "permittedPurposes": [],
+    "expectedVersion": 3,
+    "accessToken": "hcp_mt_7a2d9c4e1b6f3058"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T09:05:00Z",
+    "verificationMethod": "did:web:wallet.person.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z3Kp8wR2mVdN6yT1cH5qL9sB4fX7gJ2aWe8uM3oZbD6iQ1kF5tG9yS4xP7wA2rE6jC3fU8lN1pV5vY9zH4bK7cR2"
   }
 }
 ```

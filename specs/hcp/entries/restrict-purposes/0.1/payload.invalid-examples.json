@@ -1,9 +1,5 @@
 [
   {
-    "note": "Empty `permittedPurposes` — it would permit no purpose, which HCP does not define; null removes the narrowing instead (HCP 9.4.10). A framework bound.",
-    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "permittedPurposes": [], "expectedVersion": 3, "accessToken": "hcp_mt_x" }
-  },
-  {
     "note": "Missing `permittedPurposes` — the request states the new list, or null to remove the narrowing (HCP 9.4.10).",
     "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "expectedVersion": 3, "accessToken": "hcp_mt_x" }
   },

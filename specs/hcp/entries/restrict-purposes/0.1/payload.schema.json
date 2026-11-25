@@ -13,13 +13,12 @@
     },
     "permittedPurposes": {
       "type": ["array", "null"],
-      "minItems": 1,
       "maxItems": 256,
       "uniqueItems": true,
       "items": {
         "$ref": "../../../_shared/0.1/common.schema.json#/$defs/PurposeCode"
       },
-      "description": "HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. The maxItems of 256 and the minItems of 1 are framework bounds, not HCP requirements: an empty list would permit no purpose, which HCP does not define."
+      "description": "HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement."
     },
     "expectedVersion": {
       "type": "integer",
