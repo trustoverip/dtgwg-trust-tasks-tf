@@ -86,11 +86,11 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the audit log; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on the audit log; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)). HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1); this specification takes it that a carriage other than that binding may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and carries this one as a Trust Task on that reading, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 ## Authorization
 
-The authority is **the Authorizing Principal's right to inspect the audit log** (HCP 8, 8.3), which a Management Client exercises for them. It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Reading the audit log is a governance operation (HCP 8.3, 6.1.9): any caller other than a Management Client acting for the Context Subject, a delegate or a former delegate receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. Context Clients **MUST NOT** have read access to the audit log (HCP 8.3); a grant held by a Context Client never authorizes this task, whatever its scopes (HCP 6.1.9).
+The authority is **the Authorizing Principal's right to inspect the audit log** (HCP 8, 8.3), which a Management Client exercises for them. It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Reading the audit log is a governance operation (HCP 8.3, 6.1.9): any caller other than a Management Client acting for the Context Subject, a delegate or a former delegate receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. Context Clients **MUST NOT** have read access to the audit log (HCP 8.3); a grant held by a Context Client never authorizes this task, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 What the caller reads depends on whom the Management Client acts for (HCP 8.3, 17.7). The provider filters and redacts; the Management Client never receives an event, or a member of one, that its principal may not read.
 
@@ -301,10 +301,11 @@ A filter that matches nothing, or nothing the caller may read, is not an error: 
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 3 — pagination.** `cursor` and `limit` as HCP 9.5 names them, `limit` at most 1000 (a framework bound), and `nextCursor` absent, not null, on the last page.
 - **Question 29 — filter names.** `client`, `category`, `eventType`, `from` and `to`, each single-valued and optional.
 - **Question 30 — the result member and the date range.** The page's events are in `events`, oldest first, and `from` and `to` are both inclusive.
+- **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
 ## What HCP requires that a document cannot express
 
@@ -312,6 +313,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - The filtering and redaction of HCP 17.7 for delegates and former delegates, made against provider-held delegations and grants.
 - The disclosure of a declared durability window wherever the log is presented (HCP 8.4).
 - A cursor's opacity, and its validity for at least 300 seconds (HCP 9.5).
+- Carriage by the HTTP Binding: HCP carries governance operations only over that binding (HCP 1.6, 5.4, 9.1), and a Trust Task is not it. This specification carries the operation for a Management Client acting for the Authorizing Principal (HCP 6.1.9) instead, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 ## Security & Privacy
 

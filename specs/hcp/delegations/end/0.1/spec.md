@@ -80,13 +80,13 @@ HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorse
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on ending a delegation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** conform to the Delegated Authorization Profile (HCP 17.1, 9.4.13) and meet every requirement it places on ending a delegation; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)). HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1); this specification takes it that a carriage other than that binding may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and carries this one as a Trust Task on that reading, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 A provider that does not conform to the profile does not expose this operation (HCP 9.4.13): it **MUST NOT** advertise this task, and answers a request for it with `unsupportedType`, as [`hcp/delegations/list`](../../list/0.1/spec.md#conformance) explains.
 
 ## Authorization
 
-The authority, and the reason the delegation ends with, are fixed by **who the Management Client acts for**, which the provider establishes from the access token in `accessToken`, validated exactly as over HCP's HTTP binding. The request carries no reason; the provider records the one the caller's authority gives (HCP 17.6).
+The authority, and the reason the delegation ends with, are fixed by **who the Management Client acts for**, which the provider establishes from the access token in `accessToken`, validated exactly as over HCP's HTTP binding. The request carries no reason; the provider records the one the caller's authority gives (HCP 17.6). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 | Management Client acting for | May end | Reason recorded |
 |---|---|---|
@@ -214,16 +214,18 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
-- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 17 — notice to clients.** Each grant that ends with the delegation is announced with [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md#pending-hcp-confirmation), carrying `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended.
 - **Question 27 — an already-ended or unknown delegation.** Ending an ended delegation succeeds idempotently, with no second `delegation.ended` event; an unknown one is refused with `permissionDenied` (see [Repeated requests](#repeated-requests)).
 - **Question 32 — ending a sub-delegation.** HCP 17.10 governs where HCP 9.4.13 is narrower: the delegate who appointed a sub-delegation may end it (`ended-by-delegate`), and so may the Context Subject where the parent's basis is `appointed` (`ended-by-subject`) (see [Authorization](#authorization)).
+- **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
 ## What HCP requires that a document cannot express
 
 - The provider-held delegation and its grants, and the check of who may end it (HCP 9.4.13, 17.5, 17.10).
 - Ending every grant and sub-delegation under it, invalidating their evidence, and notifying each client (HCP 17.6, 6.2.2–6.2.4).
 - The `delegation.ended` and `grant.expired` audit events and their durability (HCP 8.1, 8.4).
+- Carriage by the HTTP Binding: HCP carries governance operations only over that binding (HCP 1.6, 5.4, 9.1), and a Trust Task is not it. This specification carries the operation for a Management Client acting for the Authorizing Principal (HCP 6.1.9) instead, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 ## Security & Privacy
 
