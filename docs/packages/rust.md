@@ -104,9 +104,11 @@ own shapes leave optional (each *pending HCP confirmation*, question 42):
 
 - `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
   `grantId` are required and nullable;
-- an export's `options` is required, with `includeVersions` and
-  `includeAudit`, which say whether `versions` and `audit` were asked for.
-  Read those, not whether the arrays are present;
+- the export `hcp/export` returns requires `options`, with `includeVersions`
+  and `includeAudit`, which say whether `versions` and `audit` were asked for.
+  Read those, not whether the arrays are present. `hcp/import` accepts an
+  export written to HCP's schema alone, where `options` or its members may be
+  absent, which means unknown, never inferred from the arrays;
 - get and query `directives` are required and nullable (null: the requester
   is not a Context Client);
 - a query's `categories` has `minItems: 1`, so a dropped `[]` cannot widen

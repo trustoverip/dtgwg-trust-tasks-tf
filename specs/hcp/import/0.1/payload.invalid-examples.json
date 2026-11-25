@@ -94,6 +94,27 @@
     }
   },
   {
+    "note": "An export option as a string — `options` may be absent, and so may each of its members, but one that is present is a boolean (HCP 5.4.1).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "options": { "includeAudit": "no" },
+        "entries": [],
+        "rules": []
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
     "variant": "response",
     "note": "An outcome HCP does not define — the outcomes are imported, converted, skipped and rejected (HCP 5.4.3).",
     "payload": {

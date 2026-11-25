@@ -8,8 +8,8 @@
   "required": ["export", "accessToken"],
   "properties": {
     "export": {
-      "$ref": "../../_shared/0.1/export.schema.json#/$defs/Export",
-      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19)."
+      "$ref": "#/$defs/ImportedExport",
+      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted."
     },
     "dryRun": {
       "type": "boolean",
@@ -56,6 +56,95 @@
           "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn" },
           "description": "Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
         }
+      }
+    },
+    "ImportedExport": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["@context", "type", "schema", "subject", "exportedBy", "exportedAt", "entries", "rules"],
+      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in one respect only: `options`, and each member of it, is OPTIONAL here, as in HCP's own shape, where the shared `Export` requires them (question 42). Where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
+      "properties": {
+        "@context": {
+          "type": ["array", "string"],
+          "maxItems": 16,
+          "description": "The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement."
+        },
+        "type": {
+          "type": "string",
+          "const": "ContextExport",
+          "description": "`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim."
+        },
+        "schema": {
+          "type": "string",
+          "const": "https://hcp.example/spec/export/2.0",
+          "description": "The export structure version, compared as an exact string (HCP 5.4.1, 1.7)."
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The Context Subject (HCP 5.4.1).",
+          "properties": {
+            "id": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The Context Subject's identifier." }
+          }
+        },
+        "exportedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The exporting HCP Provider (HCP 5.4.1)."
+        },
+        "exportedAt": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "When the export was made (HCP 5.4.1)."
+        },
+        "options": { "$ref": "#/$defs/ImportedExportOptions", "description": "HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either." },
+        "entries": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": { "type": "object", "additionalProperties": true },
+          "description": "The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names."
+        },
+        "versions": {
+          "type": "array",
+          "maxItems": 1000000,
+          "items": { "type": "object", "additionalProperties": true },
+          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array."
+        },
+        "rules": {
+          "type": "array",
+          "maxItems": 1000000,
+          "items": { "$ref": "../../_shared/0.1/standing-rule.schema.json#/$defs/StandingRule" },
+          "description": "The Context Subject's standing rules (HCP 5.4.1, 6.3)."
+        },
+        "directives": {
+          "type": "array",
+          "maxItems": 1000000,
+          "items": { "$ref": "../../_shared/0.1/directive.schema.json#/$defs/Directive" },
+          "description": "The Context Subject's directives (HCP 5.4.1, 6.4)."
+        },
+        "delegations": {
+          "type": "array",
+          "maxItems": 1000000,
+          "items": { "$ref": "../../_shared/0.1/delegation.schema.json#/$defs/Delegation" },
+          "description": "The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2)."
+        },
+        "audit": {
+          "type": "array",
+          "maxItems": 1000000,
+          "items": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditEvent" },
+          "description": "The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."
+        }
+      }
+    },
+    "ImportedExportOptions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.",
+      "properties": {
+        "excludeDeleted": { "type": "boolean", "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown." },
+        "includeVersions": { "type": "boolean", "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown." },
+        "includeAudit": { "type": "boolean", "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown." }
       }
     },
     "Outcome": {

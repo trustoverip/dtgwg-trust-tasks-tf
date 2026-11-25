@@ -103,7 +103,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 ## Definitions
 
 - **Management Client**, **Context Client**, **HCP Provider**, **Context Subject**, **Authorizing Principal**, **delegate**, **entry**, **category**, **standing rule**, **delegation** and **export** have their HCP 2.0-draft-3 meanings.
-- The export's shape is [`Export`](../../_shared/0.1/export.schema.json) in `hcp/_shared/0.1`. It is open, as HCP's own shape is, and its `entries` are left open, because an import accepts entries in any schema the provider accepts, HCP v1 forms included (HCP 5.4.3, 4.3); each entry is validated against the schema it names.
+- The export's shape is `ImportedExport`, a local definition in [`payload.schema.json`](payload.schema.json): HCP's own export shape (HCP 5.4.1), which is the shared [`Export`](../../_shared/0.1/export.schema.json) that [`hcp/export`](../../export/0.1/spec.md) returns except that `options`, and each of its members, is OPTIONAL. It is open, as HCP's own shape is, and its `entries` are left open, because an import accepts entries in any schema the provider accepts, HCP v1 forms included (HCP 5.4.3, 4.3); each entry is validated against the schema it names.
 
 ### HCP field mapping
 
@@ -131,7 +131,7 @@ As for [`hcp/entries/query`](../../entries/query/0.1/spec.md#parties), a provide
 
 The Management Client sends the export to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-- `export` (REQUIRED) is the HCP export to load, unchanged from the exporting provider. It is the shared [`Export`](../../_shared/0.1/export.schema.json), which requires `options`, with `includeVersions` and `includeAudit`, and whose `AuditEvent`s require `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each a value or null, as [`hcp/export`](../../export/0.1/spec.md#response) writes them. HCP's own shapes leave those members optional, so an export written to HCP's shape alone that omits one is refused with `malformedRequest`, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
+- `export` (REQUIRED) is the HCP export to load, unchanged from the exporting provider. An export written to HCP's export schema alone is accepted: `options`, which [`hcp/export`](../../export/0.1/spec.md#response) always writes, is OPTIONAL here, as in HCP's own shape, and so is each of its members (HCP 5.4.1). Where `options` is absent, or `includeVersions` or `includeAudit` within it is, it is unknown whether superseded versions or the audit log were requested, and the provider **MUST NOT** infer either, from the presence or absence of `versions` or `audit` or otherwise, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). Each `AuditEvent` in `audit` is still the shared [`AuditEvent`](../../_shared/0.1/audit-event.schema.json), which requires `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each a value or null, as [`hcp/export`](../../export/0.1/spec.md#response) writes them; HCP's own shape leaves those optional, so an export whose audit log omits one is refused with `malformedRequest`, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `dryRun` (OPTIONAL), where true, asks for the outcome for each entry and changes nothing. A Management Client **SHOULD** make a dry run first and show the person its outcomes, in particular every `rejected` one and every category the export uses that the provider does not hold, before it imports.
 - `categoryMap` (OPTIONAL) names, for each category the export uses that the provider does not hold, the category the provider holds that replaces it. Its keys are the categories being replaced, its values their replacements. Absent means no category is replaced, and an entry with a category the provider does not hold is rejected (HCP 5.4.3).
 - `accessToken` (REQUIRED) is the Management Client's token.
@@ -245,6 +245,82 @@ The Management Client sends the export to the provider. The payload is the top-l
 }
 ```
 
+### An export written to HCP's schema alone
+
+This export, from a provider that does not write `options`, says nothing of whether versions or the audit log were requested. It is accepted; the provider loads its entry and its standing rule, and does not infer from the absent `versions` and `audit` that either was, or was not, requested.
+
+```json
+{
+  "id": "urn:uuid:22e820a9-5559-492f-bea4-3b15802c1675",
+  "type": "https://trusttasks.org/spec/hcp/import/0.1#request",
+  "issuer": "did:web:wallet.person.example",
+  "recipient": "did:web:new-context.provider.example",
+  "issuedAt": "2026-11-25T11:00:00Z",
+  "threadId": "urn:uuid:64ff6764-9233-4953-af27-1c27eb0f6035",
+  "payload": {
+    "export": {
+      "@context": ["https://hcp.example/contexts/v2"],
+      "type": "ContextExport",
+      "schema": "https://hcp.example/spec/export/2.0",
+      "subject": { "id": "did:web:person.example" },
+      "exportedBy": "https://other-context.provider.example",
+      "exportedAt": "2026-11-25T10:30:00Z",
+      "entries": [
+        {
+          "@context": ["https://hcp.example/contexts/v2"],
+          "schema": "https://hcp.example/spec/entry/2.0",
+          "id": "urn:uuid:9f752f44-cf3e-469a-9def-a7253e13c969",
+          "type": ["ContextEntry"],
+          "subject": { "id": "did:web:person.example" },
+          "content": {
+            "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+            "value": "Prefers aisle seats on long flights.",
+            "language": "en"
+          },
+          "assertion": { "declarationType": "person-declared" },
+          "classification": { "categories": ["general_preferences"] },
+          "record": {
+            "status": "active",
+            "version": 1,
+            "provenance": {
+              "assertedBy": { "id": "did:web:person.example", "assurance": "authenticated" },
+              "assertedAt": "2026-10-02T08:00:00Z",
+              "source": "person-input",
+              "submittedByClient": {
+                "id": "wallet-app",
+                "name": "Person Wallet",
+                "operator": { "id": "wallet.person.example", "name": "Wallet Co" }
+              },
+              "authorizedUnder": "urn:uuid:7e702905-d484-487e-9c30-8f7fa67b6ac2",
+              "recordedByProvider": "https://other-context.provider.example",
+              "recordedAt": "2026-10-02T08:00:01Z"
+            }
+          }
+        }
+      ],
+      "rules": [
+        {
+          "ruleId": "urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b",
+          "effect": "deny",
+          "operators": ["ads.example"],
+          "setBy": "context-subject",
+          "createdAt": "2026-09-14T18:20:00Z"
+        }
+      ]
+    },
+    "accessToken": "hcp_mt_3c7e1a9f5b2d8e40"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T11:00:00Z",
+    "verificationMethod": "did:web:wallet.person.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "zr4yLz4W2AxhBML7C9Sf3J4GMWq4AeL3tW2Cm85PYHJK1fCGYGrjhVj7n8UPZPgRbojK5Tt75P1coLCsZezEfEXB"
+  }
+}
+```
+
 ## Response
 
 The provider answers with one outcome for each entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
@@ -337,7 +413,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 34 — entries that cannot be imported, and `skipped`.** An entry whose content credential fails verification, an entry in a schema the provider does not accept, and, under a delegation, an entry outside the delegation's scope, are each a `rejected` outcome, and the rest of the import proceeds; the scope is checked first, after `categoryMap`, and an out-of-scope entry gets the one fixed `reason` whether or not its `id` is held. A deleted entry is `skipped` where the provider chooses to omit it (see [Outcomes](#outcomes)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's import applies only the standing rules the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md), recorded as set by the delegate, and lists the others in `rulesNotApplied` (see [Authorization](#authorization)).
-- **Question 42 — presence signals the carriage adds.** The `export` taken is the one [`hcp/export`](../../export/0.1/spec.md) returns: its `options` is required, with `includeVersions` and `includeAudit`, and each `AuditEvent` in its `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null; an export that omits one is refused with `malformedRequest`, though HCP's own shapes leave them optional (HCP 5.4.1, 5.4.3, 8.2).
+- **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each `AuditEvent` in its `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null; an export whose audit log omits one is refused with `malformedRequest`, though HCP's own shape leaves them optional (HCP 5.4.1, 5.4.3, 8.2).
 
 ## What HCP requires that a document cannot express
 
