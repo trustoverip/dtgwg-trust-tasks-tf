@@ -346,7 +346,7 @@ The response's `accessToken` is a bearer secret: whoever presents it exercises t
 
 ### Correlation
 
-The provider learns which client asked for which categories, for which purposes, and about whom. The client learns the person's decision and, through `grantId`, a stable identifier for the grant, which it also sees in [`hcp/grants/revoked`](../../revoked/0.1/spec.md). `threadId` **SHOULD** be fresh per request. Every refusal looks the same, so a client cannot learn whether a person holds an account.
+The provider learns which client asked for which categories, for which purposes, and about whom. The client learns the person's decision and, through `grant.grantId`, a stable identifier for the grant, which it also sees in [`hcp/grants/revoked`](../../revoked/0.1/spec.md). `threadId` **SHOULD** be fresh per request. Every refusal looks the same, so a client cannot learn whether a person holds an account.
 
 ### Retention
 
