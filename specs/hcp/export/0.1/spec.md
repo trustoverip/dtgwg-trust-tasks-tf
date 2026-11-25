@@ -76,6 +76,19 @@ errorCodes:
       HCP 9.4.8), or asks again with narrower options (without versions or the audit log, or excluding deleted
       entries). Pending HCP confirmation (question 33 in the spec's "Pending HCP confirmation" section).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/export/properties/rules/items/properties/operators"
+    rule: "A standing rule carries `operators`, `requires`, or both."
+    source: "HCP 6.3"
+  - member: "/$defs/Response/properties/export/properties/delegations/items/properties/basis/properties/evidence"
+    rule: "Where `method` is `evidence`, `evidence` is present with at least one item."
+    source: "HCP 17.3"
+  - member: "/$defs/Response/properties/export/properties/delegations/items/properties/basis/properties/parent"
+    rule: "`parent` is present exactly where `method` is `delegated`."
+    source: "HCP 17.3, 17.10"
+  - member: "/$defs/Response/properties/export/properties/delegations/items/properties/basis/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
 related:
   - hcp/import
   - hcp/audit/read

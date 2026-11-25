@@ -58,6 +58,13 @@ errorCodes:
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
       Client's access token.
     retryable: false
+uncheckedRules:
+  - member: "/properties/operators"
+    rule: "The request carries `operators`, `requires`, or both; one with neither is refused with `malformedRequest`."
+    source: "HCP 6.3, 9.4.14"
+  - member: "/$defs/Response/properties/rule/properties/operators"
+    rule: "A standing rule carries `operators`, `requires`, or both."
+    source: "HCP 6.3"
 related:
   - hcp/rules/list
   - hcp/rules/remove

@@ -70,6 +70,28 @@ errorCodes:
       HCP `version-conflict` (HCP 5.5): `expectedVersion` is not the entry's current `record.version` (HCP 5.4). Nothing
       changes. The Management Client shows the person the current version before asking again.
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/entry/properties/type"
+    rule: "An entry's `type` array includes `ContextEntry`."
+    source: "HCP 4.2"
+  - member: "/$defs/Response/properties/entry/properties/content"
+    rule: "Under the General Context profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/$defs/Response/properties/entry/properties/content"
+    rule: "Under the VC Evidence profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/$defs/Response/properties/entry/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entry/properties/evidence"
+    rule: "At most one evidence item has `role` `content`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entry/properties/record/properties/relationships/items/properties/proposal"
+    rule: "Only a `contradicts` relationship carries a `proposal`."
+    source: "HCP 4.7.4"
 related:
   - hcp/entries/restrict-purposes
   - hcp/entries/confirm

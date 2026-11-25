@@ -66,6 +66,25 @@ errorCodes:
       HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
       Client's access token.
     retryable: false
+uncheckedRules:
+  - member: "/properties/export/properties/rules/items/properties/operators"
+    rule: "A standing rule carries `operators`, `requires`, or both."
+    source: "HCP 6.3"
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/evidence"
+    rule: "Where `method` is `evidence`, `evidence` is present with at least one item."
+    source: "HCP 17.3"
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/parent"
+    rule: "`parent` is present exactly where `method` is `delegated`."
+    source: "HCP 17.3, 17.10"
+  - member: "/properties/export/properties/delegations/items/properties/basis/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/properties/categoryMap"
+    rule: "Each key of `categoryMap` is a category used by entries in the export that the provider does not hold."
+    source: "HCP 5.4.3"
+  - member: "/$defs/Response/properties/outcomes/items/properties/reason"
+    rule: "A `rejected` outcome carries `reason`."
+    source: "HCP 5.4.3"
 related:
   - hcp/export
   - hcp/entries/set-categories

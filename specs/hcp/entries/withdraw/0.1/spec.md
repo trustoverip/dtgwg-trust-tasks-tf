@@ -57,6 +57,13 @@ errorCodes:
       revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
+uncheckedRules:
+  - member: "/properties/ref"
+    rule: "Exactly one of `ref` and `entryId` is present. A request with both or neither is refused with `malformedRequest` (pending HCP confirmation, question 6)."
+    source: "HCP 5.2.5"
+  - member: "/$defs/Response"
+    rule: "Exactly one of `ref` and `entryId` is present. It is the one the request used."
+    source: "HCP 5.2.5, 9.4.5"
 related:
   - hcp/entries/create
   - hcp/entries/revise

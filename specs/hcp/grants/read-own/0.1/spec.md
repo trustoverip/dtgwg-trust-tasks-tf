@@ -65,6 +65,16 @@ errorCodes:
       revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
       section).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/grant/properties/expiresAt"
+    rule: "`expiresAt` is an instant for a `temporary` grant and null for a `persistent` one."
+    source: "HCP 6.1.4, 6.1.5"
+  - member: "/$defs/Response/properties/grant/properties/access/items/properties/onwardSharing"
+    rule: "`onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low."
+    source: "HCP 6.1.5"
+  - member: "/$defs/Response/properties/grant/properties/access/items/properties/actions"
+    rule: "`provenance` is an action only alongside `read`."
+    source: "HCP 6.1.5, 7.4.1"
 related:
   - hcp/grants/relinquish
   - hcp/grants/revoked
