@@ -45,6 +45,12 @@ retention:
     An approval is recorded as a `grant.issued` audit event and a grant object the person can inspect and revoke (HCP
     6.1.5, 8.1). A decline need not be recorded (HCP 6.1.7).
     The response's access token is kept in no record of the exchange (see Security & Privacy, The access token).
+maxDocumentBytes:
+  response: 1048576
+  rationale: >-
+    The access token and one grant object, which is open as HCP's is, with envelope and proof. A grant issued
+    through this task holds at most 16 authorization details as the request bounds them; 1 MiB is the room
+    hcp/grants/read-own allows its grant. This is a framework bound, not an HCP requirement; HCP sets no size limit.
 related:
   - hcp/entries/query
   - hcp/grants/revoke
@@ -87,7 +93,7 @@ The person reaches the decision through the provider's own modality, never throu
 
 ### HCP field mapping
 
-HCP has no request schema for this task. The request members follow an OAuth authorization request with RFC 9396 authorization details, as HCP 13.3 names it, and the response members follow HCP's grant object (HCP 6.1.5, `schemas/2.0-draft-3/grant.json`).
+HCP has no request schema for this task. The request members follow an OAuth authorization request with RFC 9396 authorization details, as HCP 13.3 names it. The response carries the members of the OAuth token response (HCP 13.3, 13.4) beside HCP's grant object, whole and unrenamed (HCP 6.1.5, `schemas/2.0-draft-3/grant.json`), as [`hcp/grants/read-own`](../../read-own/0.1/spec.md) returns it.
 
 | HCP / OAuth field | Member | Notes |
 |---|---|---|
@@ -96,11 +102,12 @@ HCP has no request schema for this task. The request members follow an OAuth aut
 | `resource` (RFC 8707, HCP 13.3) | `recipient` | The provider the grant is for. |
 | `client_id` | `issuer` | See [Authorization](#authorization). |
 | `login_hint` (OpenID Connect) | `subjectHint` | Not in HCP. See [Finding the person](#finding-the-person). |
-| grant `grantType` (HCP 6.1.4) | `grantType` | As asked in the request; as elected in the response. |
-| grant `expiresAt`, temporary default and maximum (HCP 6.1.3) | `expiresIn` (request), `grantExpiresAt` (response) | `grantExpiresAt` is absent for a persistent grant, where HCP writes `null`. |
-| grant `requestingParty` (HCP 6.1.5) | `requestingParty` | Unchanged. |
-| token response `access_token`, `expires_in`, `authorization_details` (HCP 13.3) | `accessToken`, `tokenExpiresAt`, `access` | The token is opaque. `access` is what the person approved. |
-| grant `grantId`, `issuedAt` (HCP 6.1.5) | `grantId`, `grantedAt` | `issuedAt` is renamed so it is not read as the document's own `issuedAt`. |
+| grant `grantType` (HCP 6.1.4) | `grantType` (request), `grant.grantType` (response) | As asked in the request; as elected in the response. |
+| grant `expiresAt`, temporary default and maximum (HCP 6.1.3) | `expiresIn` (request), `grant.expiresAt` (response) | `grant.expiresAt` is `null` for a persistent grant, as HCP writes it. |
+| grant `requestingParty` (HCP 6.1.5) | `requestingParty` (request), `grant.requestingParty` (response) | Unchanged. |
+| token response `access_token`, `expires_in` (HCP 13.3, 13.4) | `accessToken`, `tokenExpiresAt` | The token is opaque. `expires_in` is carried as the instant it ends. |
+| token response `authorization_details` (HCP 13.3) | `grant.access` | What the person approved. |
+| the grant object (HCP 6.1.5) | `grant` | HCP's grant object with its own members, `grantId`, `issuedAt`, `expiresAt` and `status` among them, unrenamed: being inside `grant`, its `issuedAt` is not read as the document's. `authorizingPrincipal.delegation` is withheld from the client (HCP 17.4). |
 | refresh token (HCP 13.4) | not carried | Version 0.1 issues no refresh token; a client asks again, or the person makes the grant persistent. |
 
 ### Parties
@@ -211,7 +218,7 @@ A next step is not a decision and confers no authority ([SPEC §8.6](/SPEC.md#86
 Once the person approves, the provider answers the latest resubmission on the thread with this task's response. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json):
 
 - `accessToken` and `tokenExpiresAt`: the grant evidence. The client presents the token unchanged as `accessToken` in [`hcp/entries/query`](../../../entries/query/0.1/spec.md) and every other `hcp/*` task it sends under the grant. Its lifetime follows HCP 13.4 and never outlasts the grant.
-- `grantId`, `access`, `grantType`, `grantedAt` and, for a temporary grant, `grantExpiresAt`: the grant as the person approved it, which may be narrower than asked. `grantExpiresAt` is REQUIRED for a temporary grant and absent for a persistent one.
+- `grant`: the grant as the person approved it, as HCP's grant object (HCP 6.1.5), exactly as [`hcp/grants/read-own`](../../read-own/0.1/spec.md) would return it: its `access` may be narrower than asked, its `status` is `active`, and its `expiresAt` is the absolute expiry of a temporary grant and `null` for a persistent one (HCP 6.1.4). Its `client` is the client's registration, its `subject` the per-client pseudonym by which the client knows the person (HCP 3.4), and `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4). `tokenExpiresAt` is never after `grant.expiresAt`.
 
 The provider records the approval as a `grant.issued` audit event, with the modality and the `acr` of the person's authentication, and the grant object of HCP 6.1.5, before it sends the response (HCP 6.1.6). The response carries the token and the grant as HCP's token response and read-own-grant would, *pending HCP confirmation* ([question 25](#pending-hcp-confirmation)).
 
@@ -228,23 +235,34 @@ The provider records the approval as a `grant.issued` audit event, with the moda
   "payload": {
     "accessToken": "hcp_at_4d9a2c7e1b8f3a60",
     "tokenExpiresAt": "2026-11-25T11:01:30Z",
-    "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
-    "access": [
-      {
-        "type": "https://hcp.example/spec/authorization/context-access",
-        "actions": ["read"],
-        "categories": ["travel_preferences"],
-        "purposes": [
-          {
-            "code": "https://purposes.example/travel-booking",
-            "description": "Book trips that match how you like to travel"
-          }
-        ]
-      }
-    ],
-    "grantType": "temporary",
-    "grantedAt": "2026-11-25T10:01:30Z",
-    "grantExpiresAt": "2026-11-25T14:01:30Z"
+    "grant": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "subject": { "id": "hcp-sub-7b2e40d1" },
+      "authorizingPrincipal": { "id": "hcp-sub-7b2e40d1" },
+      "client": {
+        "id": "did:web:agent.booking.example",
+        "name": "Wayfare booking agent",
+        "operator": { "id": "booking.example", "name": "Wayfare Travel Ltd" }
+      },
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["travel_preferences"],
+          "purposes": [
+            {
+              "code": "https://purposes.example/travel-booking",
+              "description": "Book trips that match how you like to travel"
+            }
+          ]
+        }
+      ],
+      "scopes": ["hcp:travel_preferences:read"],
+      "grantType": "temporary",
+      "issuedAt": "2026-11-25T10:01:30Z",
+      "expiresAt": "2026-11-25T14:01:30Z",
+      "status": "active"
+    }
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -257,7 +275,7 @@ The provider records the approval as a `grant.issued` audit event, with the moda
 }
 ```
 
-In this example the person approved `travel_preferences` and not `general_preferences`; the client learns that from `access`.
+In this example the person approved `travel_preferences` and not `general_preferences`; the client learns that from `grant.access`.
 
 ## Errors
 
