@@ -186,26 +186,44 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "entries": [
       {
         "ref": "hcp-ref-a91c4f",
-        "useUntil": "2026-11-25T10:00:01Z",
-        "content": { "value": "Vegetarian; eats fish occasionally.", "language": "en" },
+        "version": 2,
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Vegetarian; eats fish occasionally.",
+          "language": "en"
+        },
         "assertion": { "declarationType": "person-declared" },
         "classification": { "categories": ["general_preferences"] },
-        "record": { "status": "active" }
+        "standing": { "assurance": "authenticated", "confirmed": true },
+        "useUntil": "2026-11-25T10:00:01Z"
       },
       {
         "ref": "hcp-ref-5e02bd",
-        "useUntil": "2026-11-24T22:00:01Z",
-        "content": { "value": "Severe peanut allergy.", "language": "en" },
+        "version": 1,
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Severe peanut allergy.",
+          "language": "en"
+        },
         "assertion": { "declarationType": "person-declared" },
         "classification": { "categories": ["health_context"] },
-        "record": { "status": "active" }
+        "standing": { "assurance": "authenticated", "confirmed": true },
+        "useUntil": "2026-11-24T22:00:01Z"
       }
     ],
     "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99",
-    "minimization": { "method": "relevance" },
+    "minimization": { "method": "lexical" },
     "categoriesSearched": ["general_preferences", "health_context"],
     "directives": [
-      { "action": "share", "effect": "deny" }
+      {
+        "directiveId": "urn:uuid:5b8c2e17-4a9d-4f3b-8e6a-1c0d9f7e2b44",
+        "action": "share",
+        "effect": "deny",
+        "text": "Never pass my health information to another agent.",
+        "categories": ["health_context"],
+        "setBy": "context-subject",
+        "createdAt": "2026-10-02T08:30:00Z"
+      }
     ],
     "respondedAt": "2026-11-24T10:00:01Z"
   },
