@@ -17,6 +17,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Holder to verifier: an OID4VP vp_token carrying the selectively-disclosed,
 // holder-bound presentation. Replies on the query thread.
+//
+// Deprecated: superseded by credential-exchange/present/0.2
 type Payload struct {
 	// The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC
 	// presentation: the consented disclosures plus a mandatory key-binding JWT over the
@@ -43,7 +45,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by credential-exchange/present/0.2"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

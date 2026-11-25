@@ -1,0 +1,96 @@
+[
+  {
+    "note": "`vp_token` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`vp_token` must be a keyed object or a string, not a bare array.",
+    "payload": {
+      "vp_token": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "note": "`vp_token` must not be a number.",
+    "payload": {
+      "vp_token": 42
+    }
+  },
+  {
+    "note": "A bare Data Integrity presentation object is not a keyed vp_token: its members are not arrays of presentations.",
+    "payload": {
+      "vp_token": {
+        "@context": [
+          "https://www.w3.org/ns/credentials/v2"
+        ],
+        "type": [
+          "VerifiablePresentation"
+        ],
+        "proof": {
+          "type": "DataIntegrityProof"
+        }
+      }
+    }
+  },
+  {
+    "note": "Each keyed value is an array of presentations, not a single presentation.",
+    "payload": {
+      "vp_token": {
+        "pid": "<jws>~<disclosure>~<kb-jwt>"
+      }
+    }
+  },
+  {
+    "note": "Each keyed value carries at least one presentation.",
+    "payload": {
+      "vp_token": {
+        "pid": []
+      }
+    }
+  },
+  {
+    "note": "A keyed vp_token answers at least one credential query.",
+    "payload": {
+      "vp_token": {}
+    }
+  },
+  {
+    "note": "A credential query id uses only alphanumerics, underscore and hyphen.",
+    "payload": {
+      "vp_token": {
+        "p id": [
+          "<jws>~<kb-jwt>"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A presentation is a string or an object, not a number.",
+    "payload": {
+      "vp_token": {
+        "pid": [
+          42
+        ]
+      }
+    }
+  },
+  {
+    "note": "The bare compatibility string is not empty.",
+    "payload": {
+      "vp_token": ""
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "vp_token": {
+        "pid": [
+          "<jws>~<disclosure>~<kb-jwt>"
+        ]
+      },
+      "__notARealMember__": true
+    }
+  }
+]

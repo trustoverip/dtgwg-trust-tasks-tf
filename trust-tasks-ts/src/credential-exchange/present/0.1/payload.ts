@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * Holder to verifier: an OID4VP vp_token carrying the selectively-disclosed, holder-bound presentation. Replies on the query thread.
+ *
+ * @deprecated superseded by credential-exchange/present/0.2
  */
 export interface CredentialExchangePresentPayload {
   /**
@@ -37,9 +39,13 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by credential-exchange/present/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by credential-exchange/present/0.2
+ */
 export type Payload = CredentialExchangePresentPayload;
 
 /**

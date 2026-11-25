@@ -53,9 +53,6 @@
       "missing-request": "Baseline (#1131): no request example when the lint landed.",
       "missing-response": "Baseline (#1131): no #response example when the lint landed."
     },
-    "credential-exchange/present/0.1": {
-      "missing-request": "Baseline (#1131): no request example when the lint landed."
-    },
     "credential-exchange/query/0.1": {
       "missing-request": "Baseline (#1131): no request example when the lint landed."
     },

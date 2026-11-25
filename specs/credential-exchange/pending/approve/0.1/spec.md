@@ -76,7 +76,7 @@ The response returns the `vp_token` to the approver rather than only sending it 
 
 Producer: send the `id` from [`pending/list`](../../list/0.1/). Nothing else — the payload rejects unknown members.
 
-Consumer: verify authorization; refuse an unknown or already-terminal id with `notFound` and an expired one with `expired`, **before** minting anything. Apply the same disclosure rules as [`present`](../../../present/0.1/), including the subset check on formats without claim-level selective disclosure. Deliver on the original thread, retire the deferral, and audit the approval against the approving identity.
+Consumer: verify authorization; refuse an unknown or already-terminal id with `notFound` and an expired one with `expired`, **before** minting anything. Apply the same disclosure rules as [`present`](../../../present/0.2/), including the subset check on formats without claim-level selective disclosure. Deliver on the original thread, retire the deferral, and audit the approval against the approving identity.
 
 ## Security & Privacy
 
@@ -89,7 +89,7 @@ asymmetry is the design: this document releases everything and accepts nothing, 
 anything it accepted would be an opportunity to alter what was consented to.
 
 The response carries the `vp_token`: the holder's own claims, selectively disclosed to a
-named audience, in the same shape [`present`](../../../present/0.1/) defines. It goes to
+named audience, in the same shape [`present`](../../../present/0.2/) defines. It goes to
 the verifier on the original thread and comes back to the approver as well, deliberately.
 The operator who authorized a disclosure should be able to see exactly what left the
 wallet rather than infer it from the summary they approved against — the two can differ
@@ -111,7 +111,7 @@ and both are durable.
 Both parties declare `identifierScope: pairwise` because operator and agent are
 components of one wallet and nothing here asks either to be recognisable elsewhere. The
 identifiers that do correlate are inside the `vp_token`, chosen at issuance and at
-[`present`](../../../present/0.1/), and this task cannot improve them: an approver
+[`present`](../../../present/0.2/), and this task cannot improve them: an approver
 consenting to a disclosure is also consenting to whatever holder identifier the
 credential carries, without being shown it.
 
@@ -134,7 +134,7 @@ leaves an irreversible release of the holder's claims with nothing attributable 
 That record is itself sensitive — it is a history of what this holder has disclosed and
 to whom — and inherits the protection of the wallet rather than of a log. On the far
 side, the verifier's copy of the `vp_token` is retained on
-[`present`](../../../present/0.1/)'s terms, bounded by the stated purpose and by nothing
+[`present`](../../../present/0.2/)'s terms, bounded by the stated purpose and by nothing
 this task can enforce.
 
 ### Consent/purpose
