@@ -49,8 +49,9 @@ value, so a null `did` on `vta/contexts/update-did` 1.2 writes `"did": null`
 cannot get that by leaving the argument out. That matches Rust, whose builder
 fails with "no value supplied for did" when the member is never set, and
 TypeScript, where `did: string | null` is a required property. Go is the
-outlier: its field is `*string` and a nil it never set writes `null`
-([go.md](go.md)). An *optional* nullable member is still written only when non-null,
+outlier: nothing makes a Go caller set the `*string` field, so a nil it never
+set is not caught when the code is built ([go.md](go.md) says what such a nil
+writes). An *optional* nullable member is still written only when non-null,
 so Dart cannot tell `null` from absent there: `acl/update` 0.3 reads
 `"label": null` as "clear the label", and a Dart client can only send "leave it
 unchanged" ([runtime-parity.md](../runtime-parity.md)). Both generators do
