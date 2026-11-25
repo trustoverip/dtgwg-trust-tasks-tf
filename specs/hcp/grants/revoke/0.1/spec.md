@@ -48,6 +48,7 @@ retention:
   rationale: >-
     The provider records a `grant.revoked` audit event (HCP 6.2.2), which is the person's record that access ended
     and when.
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -83,7 +84,7 @@ The authority is **the Authorizing Principal's own authority over their grants**
 
 Under the Delegated Authorization Profile, a Management Client may act for the Context Subject or for a delegate, within what HCP 17 allows each (HCP 6.1.9). A delegate may revoke any grant within the delegation's scope; the Context Subject may revoke every grant made for them, including every grant a delegate authorized, and that revocation is never conditioned on the delegate's agreement (HCP 17.5, 6.2.1). The provider applies those rules to the token, unchanged.
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -196,6 +197,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. A conformance identifier for the carriage is to be requested from the HCP editors. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 2 — a request under a revoked grant.** Read as `hcp:invalidToken`, since HCP 5.5 defines `invalid-token` as invalid authorization evidence and HCP 6.2.2 names no error (see [Revocation rules carried from HCP](#revocation-rules-carried-from-hcp)).
 - **Question 15 — repeated and unknown revocations.** An already-revoked grant succeeds idempotently with the empty response; an unknown `grantId`, or one the caller cannot see, gets `permissionDenied` with the same text (see [Repeated requests](#repeated-requests)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
 ## What HCP requires that a document cannot express
@@ -211,13 +213,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries a grant identifier and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. It carries no context. The response carries nothing. A producer **MUST NOT** put the token or any context in `ext`.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The provider learns which Management Client revoked which grant and when; that is the record the person needs. The `grantId` is known to the provider, the Management Client and the affected Context Client, and appears in the revocation notice; it joins the three documents by design. `threadId` **SHOULD** be fresh per revocation.
 
 ### Retention
 
-The provider keeps the `grant.revoked` audit event (HCP 6.2.2), readable by the Context Subject (HCP 8.3). The signed request is evidence of who ended the grant and when, and a provider **SHOULD** keep it with that event. The Management Client **MAY** keep the response as evidence that the provider accepted the revocation.
+The provider keeps the `grant.revoked` audit event (HCP 6.2.2), readable by the Context Subject (HCP 8.3). The signed request is evidence of who ended the grant and when, and a provider **SHOULD** keep it with that event, with `accessToken` removed (see [The access token](#the-access-token)). The Management Client **MAY** keep the response as evidence that the provider accepted the revocation.
 
 ### Consent/purpose
 

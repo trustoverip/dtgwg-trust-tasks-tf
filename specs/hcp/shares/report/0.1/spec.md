@@ -47,6 +47,7 @@ retention:
   rationale: >-
     The provider keeps the `context.shared` audit event, naming the entries by their `id`, whether or not the share
     was allowed, because the Context Subject is entitled to see it (HCP 5.2.8, 8.1).
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -83,6 +84,8 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 The report is made under **the grant under which the client shared**, evidenced by the access token in `accessToken` (HCP 9.4.16). A share is one the grant allowed only where the authorization detail covering the entries carries `onwardSharing`, every entry was eligible (HCP 7.4), `purpose` is one of the detail's purposes, and the recipient's `domain` is within the detail's `domains`, where present, and not in its `notTo` (HCP 5.2.8, 6.1.5). The provider checks this against its own state; the client's report is not taken as proof that the share was allowed.
 
 A share the grant did not allow is still recorded: the `context.shared` event records `permitted: false`, and the task fails with `permissionDenied` (HCP 5.2.8). The event is recorded either way, because the share has already happened and the Context Subject is entitled to see it.
+
+A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -185,6 +188,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`. A client whose grant was revoked after it shared has no way to report under HCP 2.0-draft-3; that gap is HCP's, and this task does not fill it.
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 26 — a re-delivered report.** It appends no second `context.shared` event (see [Repeated requests](#repeated-requests)).
 
 ## What HCP requires that a document cannot express
@@ -199,13 +203,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request says which of the person's entries, by grant-scoped `ref`, went to which organization, for which purpose and when, and carries the access token, a bearer secret. It carries no entry content. The response carries nothing. A producer **MUST NOT** put context or the token in `ext` or any `message`.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The report tells the provider which organization received the person's context; recording that for the person is the operation's purpose (HCP 5.2.8). The `refs` are grant-scoped and mean nothing to anyone but the provider (HCP 7.4). `threadId` **SHOULD** be fresh per report.
 
 ### Retention
 
-The provider keeps the `context.shared` audit event, readable by the Context Subject (HCP 8.3), whether or not the share was allowed (HCP 5.2.8). The signed report is the client's own account of the share, and a provider **SHOULD** keep it with that event.
+The provider keeps the `context.shared` audit event, readable by the Context Subject (HCP 8.3), whether or not the share was allowed (HCP 5.2.8). The signed report is the client's own account of the share, and a provider **SHOULD** keep it with that event, with `accessToken` removed (see [The access token](#the-access-token)).
 
 ### Consent/purpose
 

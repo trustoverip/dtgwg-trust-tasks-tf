@@ -49,6 +49,7 @@ retention:
   rationale: >-
     The provider keeps the withdrawn entry until it is hard-deleted, and the `context.withdrawn` audit event with the
     `reason` (HCP 5.2.5, 8.1).
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -85,6 +86,8 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). The entry **MUST** be one the grant lets the caller write, and a Context Client names only an entry disclosed to it under the same grant (HCP 5.2.2, 5.2.5); anything else is refused with `permissionDenied`, with one fixed `message` (HCP 5.5). A Context Client that names the entry by `entryId` is refused the same way, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
 
 This task never hard-deletes. HCP's HTTP binding hard-deletes on the same path with `hardDelete=true`, which only a Management Client acting for the Authorizing Principal may do (HCP 5.4.2, 9.4.5); that governance operation is not carried here.
+
+A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -196,6 +199,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
 - **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Authorization](#authorization)).
 - **Question 10 — `hardDeleted`, and withdrawing a withdrawn entry.** `hardDeleted` is carried as an OPTIONAL member that is always `false`; a new withdrawal of a `deleted` entry succeeds and is audited again (see [HCP field mapping](#hcp-field-mapping), [Repeated requests](#repeated-requests)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -208,6 +212,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 ### Data carried
 
 The request names one entry and carries a `reason` and the access token, a bearer secret. The response carries no context. The `reason` is recorded in the audit log for the person to read; a client **SHOULD** put no context in it beyond what the withdrawal needs, and **MUST NOT** put the token in `ext` or any `message`.
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

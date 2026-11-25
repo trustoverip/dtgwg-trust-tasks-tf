@@ -51,6 +51,7 @@ retention:
     The provider keeps the `context.read` audit event HCP requires for every read (HCP 8.1), so the person can see
     who read what. HCP's audit event records the `purpose` and `purposeDescription` but has no member for the query
     text (HCP 8.2). The client stops using each disclosed copy at its `useUntil` (HCP 7.6).
+    The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
   response: 2097152
   rationale: >-
@@ -93,7 +94,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the grant** the person gave the client: a category-scoped, purpose-bound and revocable HCP grant (HCP 6.1), held by the provider and evidenced by the access token in `accessToken`. The provider **MUST** check the grant on every request (HCP 6.2.2), exactly as it does over HCP's HTTP binding: the token must be valid, and the requested `categories` and `purpose` must be within the grant (HCP 5.2.1).
 
-Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client, so a stolen token sent from another VID is refused with `permissionDenied`; HCP itself does not bind the token to a VID.
+Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. Where the request carries a proof, a token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)); where it carries none, a provider that knows which VID it registered the client under **SHOULD** still check that the `issuer` is that client.
 
 Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and no `directives` are required. This specification reads HCP as letting a Management Client query and receive whole `Entry` objects with no `directives`, *pending HCP confirmation* ([question 5](#pending-hcp-confirmation)).
 
@@ -289,6 +290,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
 - **Question 4 — a re-delivered query.** It causes no second `context.read` audit event (HCP 8.1, 9.6; see [Repeated requests](#repeated-requests)).
 - **Question 5 — a Management Client as requester.** A Management Client may query and receive whole `Entry` objects, with no `directives` (HCP 5.1, 5.2.1, 7.4; see [Authorization](#authorization)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -307,9 +309,13 @@ The request carries the access token, a bearer secret, and the query text, which
 
 Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a signed assertion that any third party can verify. That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
-The provider sees which client queried, when, for which purpose and categories; that is inherent in a grant check and is what the audit log records. A disclosure carries no subject identifier, and names each entry only by a grant-scoped `ref` (HCP 7.4); the subject identifier the client does learn, in its grant, is a pseudonym specific to that client (HCP 3.4). So two clients cannot join their copies on an identifier HCP mints. A credential disclosed whole as evidence may still carry identifiers of its own (HCP 7.4). The access token is stable for the life of the grant and joins every query made under it; it must travel only to the provider. `threadId` joins a request to its response and **SHOULD** be fresh per query. Response size can reveal how much context matched; a provider **MAY** pad the response.
+The provider sees which client queried, when, for which purpose and categories; that is inherent in a grant check and is what the audit log records. A disclosure carries no subject identifier, and names each entry only by a grant-scoped `ref` (HCP 7.4); the subject identifier the client does learn, in its grant, is a pseudonym specific to that client (HCP 3.4). So two clients cannot join their copies on an identifier HCP mints. A credential disclosed whole as evidence may still carry identifiers of its own (HCP 7.4). The access token is stable for the life of the grant and joins every query made under it, which is one more reason it **MUST** travel only to the provider (see [The access token](#the-access-token)). `threadId` joins a request to its response and **SHOULD** be fresh per query. Response size can reveal how much context matched; a provider **MAY** pad the response.
 
 ### Retention
 

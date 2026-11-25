@@ -53,6 +53,7 @@ retention:
     The provider keeps the `context.exported` audit event, which records the options used (HCP 5.4.1, 8.2), so the
     person can see when their context left the provider. The export itself is the person's own copy, which they keep
     to move or archive their context.
+    The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
   response: 16777216
   rationale: >-
@@ -105,7 +106,7 @@ The authority is **the Context Subject's own authority over their data**, which 
 
 Under the Delegated Authorization Profile, a governance operation performed by a delegate reaches only entries in categories within the delegation's scope (HCP 17.4), so a delegate's export carries no entry outside that scope.
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -315,6 +316,7 @@ HCP requires a `context.exported` event for every export (HCP 5.4.1). Because th
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 33 — export size.** The export travels in one document bounded at the framework's 16 MiB ceiling; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
@@ -332,6 +334,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 The request carries the export options and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. The response carries the person's whole context: every entry the provider holds, every status included, which may hold High-sensitivity categories such as `health_context` and credentials as evidence; the person's standing rules, directives and delegations, which reveal whom they distrust and who acts for them; and, where asked, every superseded version and the audit log, which records every client that read their context. This is the most a provider ever releases in one document. A producer **MUST NOT** put context or the token in `ext` or in any `message`.
 
 Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the export reaches the Management Client as a signed assertion that any third party can verify, which makes a leaked copy more credible. A Management Client **MUST** hold the export only for the person, and **MUST NOT** pass it to anyone but a provider the person chose to import it into, or the person themselves.
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

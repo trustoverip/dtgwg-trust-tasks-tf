@@ -48,6 +48,7 @@ retention:
   rationale: >-
     The provider keeps every version until the entry is hard-deleted, and the `context.revised` audit event with the
     `reason` (HCP 5.2.4, 8.1).
+    The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
   request: 524288
   response: 524288
@@ -104,6 +105,8 @@ The authority is **the grant** (HCP 6.1), evidenced by the access token in `acce
 Only an issuer revises an `issuer-attested` entry (HCP 3.7, 4.2.6). A Context Client **MUST NOT** revise an entry whose current version the Context Subject has rejected (HCP 3.8, 5.2.4); a provider refuses such a revision with `permissionDenied`, *pending HCP confirmation* ([question 9](#pending-hcp-confirmation)).
 
 As for [`hcp/entries/create`](../../create/0.1/spec.md#authorization), the REQUIRED `proof` is not the authorization, and does not replace the provenance the provider records for the new version (HCP 3.5).
+
+A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -268,6 +271,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request)).
 - **Question 8 — `basis`, `permittedPurposes` and `proposal` on a revision.** Carried, as HCP's text says ("as for create", HCP 5.2.4, 4.7.4), although HCP's published revise request schema omits them (see [HCP field mapping](#hcp-field-mapping)).
 - **Question 9 — revising a rejected version.** A Context Client's revision of an entry whose current version the Context Subject rejected is refused with `permissionDenied` (see [Authorization](#authorization)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -281,6 +285,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 ### Data carried
 
 As for [`hcp/entries/create`](../../create/0.1/spec.md#data-carried): a revised assertion about the person, possibly a credential, and the access token. The `reason` is recorded in the audit log and the person reads it there; a client **SHOULD** write it for the person and put no more context in it than the revision needs. A `hcp:versionConflict` `message` says only that the version is not current, never what the current version is.
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

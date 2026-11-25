@@ -99,7 +99,7 @@ The authority is **the right of the Context Subject and of a delegate to read a 
 - A Management Client acting for a **delegate** receives only the delegations naming that delegate (HCP 9.4.13). A sub-delegation the delegate appointed names someone else as its delegate and is not among them; the delegate sees the record of its grants through [`hcp/audit/read`](../../../audit/read/0.1/spec.md) (HCP 17.7, 17.10).
 - **Neither may change a delegation**; a change is a new delegation, which the Authorization Service establishes (HCP 17.2). This task only reads.
 
-The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -252,6 +252,7 @@ A provider that does not conform to the Delegated Authorization Profile answers 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 31 — `status=ended`.** Additive: without `status`, only the delegations that hold; with `status: "ended"`, those and the delegations that have ended (see [Request](#request)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
@@ -267,6 +268,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 ### Data carried
 
 The request carries the Management Client's access token, a bearer secret that **MUST** travel only to the provider. The response carries who may act for the person and why: the delegate's identifier and name, the relationship, the basis, which may hold a credential of guardianship, a court order or a power of attorney whole, the High-sensitivity categories the basis covers, and when the delegation ends, which for a minor reveals when they come of age. A producer **MUST NOT** put the token or any part of a delegation in `ext` or in any `message`.
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

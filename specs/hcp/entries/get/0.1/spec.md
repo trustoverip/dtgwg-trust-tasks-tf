@@ -48,6 +48,7 @@ retention:
   rationale: >-
     The provider keeps the `context.read` audit event HCP requires for every read, with the stated purpose (HCP
     5.2.2, 8.1). The client stops using the disclosed copy at its `useUntil` (HCP 7.6).
+    The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
   response: 524288
   rationale: >-
@@ -90,7 +91,7 @@ The authority is **the grant** the person gave the client (HCP 6.1), evidenced b
 
 A Context Client names only entries disclosed to it under the same grant, since it knows no other `ref` (HCP 5.2.2). A Context Client that names an entry by `entryId` is refused with `permissionDenied`, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)).
 
-As for [`hcp/entries/query`](../../query/0.1/spec.md#authorization), neither the document's `proof` nor the `issuer` VID is the authorization; the token is. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client.
+As for [`hcp/entries/query`](../../query/0.1/spec.md#authorization), neither the document's `proof` nor the `issuer` VID is the authorization; the token is. Where the request carries a proof, a token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)); where it carries none, a provider that knows which VID it registered the client under **SHOULD** still check that the `issuer` is that client.
 
 ## Definitions
 
@@ -242,6 +243,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
 - **Question 4 — a re-delivered read.** It causes no second `context.read` audit event (see [Repeated requests](#repeated-requests)).
 - **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request), [Authorization](#authorization)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -254,6 +256,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 ### Data carried
 
 The request carries the access token, a bearer secret, and names one entry and a purpose. The response carries one entry of the person's context, possibly in a High-sensitivity category, possibly with a credential as evidence. A producer **MUST NOT** put context or the token in `ext` or in any `message`. Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the disclosure reaches the client as a signed assertion; a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover (HCP 3.12).
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

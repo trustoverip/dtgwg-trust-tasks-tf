@@ -51,6 +51,7 @@ retention:
   rationale: >-
     The provider sets the delegation's `ended` and appends `delegation.ended`, and `grant.expired` for each grant
     that ends (HCP 17.6, 8.1), which are the person's record of who ended the delegation and what it ended.
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -97,7 +98,7 @@ The authority, and the reason the delegation ends with, are fixed by **who the M
 
 Any other caller receives not authorized (HCP 9.4.13), carried as `permissionDenied`: among them the Context Subject for a delegation resting on any basis other than `appointed` (a court order, a parent's authority, an attested relationship), which ends only as HCP 17.6 sets out, though its grants can always be revoked with [`hcp/grants/revoke`](../../../grants/revoke/0.1/spec.md) (HCP 17.5). A grant held by a Context Client never authorizes this task, whatever its scopes (HCP 6.1.9).
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -216,6 +217,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 17 — notice to clients.** Each grant that ends with the delegation is announced with [`hcp/grants/revoked`](../../../grants/revoked/0.1/spec.md#pending-hcp-confirmation), carrying `reason: "delegation-ended"` and `revokedAt` the instant the delegation ended.
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 27 — an already-ended or unknown delegation.** Ending an ended delegation succeeds idempotently, with no second `delegation.ended` event; an unknown one is refused with `permissionDenied` (see [Repeated requests](#repeated-requests)).
 - **Question 32 — ending a sub-delegation.** HCP 17.10 governs where HCP 9.4.13 is narrower: the delegate who appointed a sub-delegation may end it (`ended-by-delegate`), and so may the Context Subject where the parent's basis is `appointed` (`ended-by-subject`) (see [Authorization](#authorization)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
@@ -233,13 +235,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries a delegation identifier and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. It carries no context and no reason. The response carries nothing. A producer **MUST NOT** put the token or any detail of the delegation in `ext`.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The provider learns which Management Client ended which delegation and when; that is the record the person needs. A `delegationId` is the same in every grant made under the delegation, which is why HCP never shows it to a Context Client (HCP 17.4); it is known only to the provider and the Management Clients of the Context Subject and the delegate. The notice each client receives names its own grant and `delegation-ended`, never the delegation or its reason. `threadId` **SHOULD** be fresh per request.
 
 ### Retention
 
-The provider keeps the delegation record with its `ended` member, the `delegation.ended` event, and a `grant.expired` event for each grant that ended (HCP 17.6, 8.1), readable by the Context Subject and, for the grants they authorized, by the former delegate (HCP 17.7). The signed request is evidence of who ended the delegation and when, and a provider **SHOULD** keep it with that event.
+The provider keeps the delegation record with its `ended` member, the `delegation.ended` event, and a `grant.expired` event for each grant that ended (HCP 17.6, 8.1), readable by the Context Subject and, for the grants they authorized, by the former delegate (HCP 17.7). The signed request is evidence of who ended the delegation and when, and a provider **SHOULD** keep it with that event, with `accessToken` removed (see [The access token](#the-access-token)).
 
 ### Consent/purpose
 

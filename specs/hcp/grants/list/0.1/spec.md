@@ -90,7 +90,7 @@ Over HCP's HTTP binding, `GET /v2/grants` called with a Context Client's token r
 
 Under the Delegated Authorization Profile, the Context Subject's Management Client is listed every grant made for them, whoever authorized it (HCP 6.1.5, 17.5). A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope, which includes every grant the delegate authorized under it, *pending HCP confirmation* ([question 20](#pending-hcp-confirmation)); HCP 9.4.6 says "all grants", and HCP 17.4 limits a delegate's governance operations to the delegation's scope.
 
-The `proof`, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The `proof`, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. Where the request carries a proof, a token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)); where it carries none, a provider that knows which VID it registered the client under **SHOULD** still check that the `issuer` is that client.
 
 ## Definitions
 
@@ -239,6 +239,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 3 — pagination.** The request takes `cursor` and `limit`, `limit` capped at 1000 by the carriage, and the response's `nextCursor` is absent, not null, when the set is exhausted; the cursor stays opaque and valid for at least 300 seconds (HCP 9.5).
 - **Question 19 — a Context Client's token.** A Context Client presenting its own token is listed only the grant under which that token was issued, as `GET /v2/grants` answers it over HCP's HTTP binding (HCP 9.4.6), rather than refused as a caller of a governance operation (HCP 6.1.9) (see [Authorization](#authorization)).
 - **Question 20 — a delegate's grant list.** A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope (see [Authorization](#authorization)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
 ## What HCP requires that a document cannot express
@@ -254,6 +255,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 ### Data carried
 
 The request carries a status filter, a cursor and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. The response carries grant objects: the clients and operators the person has authorized, the categories and purposes each may reach, which may name High-sensitivity categories such as `health_context` and so reveal, for instance, that the person deals with a health service, any delegate who authorized a grant, and the per-client pseudonym under which each client knows the person. It carries no context and no token. A producer **MUST NOT** put grant details or the token in `ext` or in any `message`.
+
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

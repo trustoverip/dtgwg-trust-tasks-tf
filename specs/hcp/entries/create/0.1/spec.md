@@ -48,6 +48,7 @@ retention:
   rationale: >-
     The provider keeps the entry and its provenance until it is hard-deleted, and the `context.created` audit event
     (HCP 4.2, 8.1).
+    The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
   request: 524288
   response: 524288
@@ -95,7 +96,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the grant** (HCP 6.1), evidenced by the access token in `accessToken`, which the provider checks on every request (HCP 6.2.2). Each category in `classification.categories` **MUST** be one the grant authorizes the caller to write; a write naming any other fails with not authorized (HCP 5.2.3), carried as `permissionDenied`. An `issuer-attested` write is accepted only from a client authenticated as the issuer, or authorized by it, and a write whose content is a credential is `issuer-attested`; any other is refused with `permissionDenied` (HCP 3.7, 5.2.3).
 
-The REQUIRED `proof` establishes which client VID sent the assertion and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization, and it does not replace the provenance the provider records (HCP 3.5): `submittedByClient` and `authorizedUnder` are still taken from the grant. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which client VID sent the assertion and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization, and it does not replace the provenance the provider records (HCP 3.5): `submittedByClient` and `authorizedUnder` are still taken from the grant. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -257,6 +258,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
 - **Question 7 — `classification.permittedPurposes` on a create.** Refused with `malformedRequest`, since only a governance operation sets it (see [Request](#request)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -272,13 +274,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries an assertion about the person, which may be in a High-sensitivity category, a credential with its proof, and the access token, a bearer secret. The response discloses the stored entry back to the client. A producer **MUST NOT** put content or the token in `ext` or in any `message`, and an `hcp:credentialInvalid` `message` names the failed check without status-list internals (HCP 5.5).
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The provider learns which client asserted what, when; that is the provenance HCP records. A Context Client receives the new entry only by its grant-scoped `ref` (HCP 7.4). The `subject.id` the client supplies is the per-client pseudonym from its grant (HCP 3.4), so it does not join clients. `threadId` **SHOULD** be fresh per create.
 
 ### Retention
 
-The provider keeps the entry until it is hard-deleted (HCP 5.4.2), with the `context.created` audit event (HCP 8.1). The signed request is evidence of what the client asserted, and a provider **MAY** keep it with the entry's provenance. The client's disclosed copy of the entry is subject to its `useUntil` like any other (HCP 7.6).
+The provider keeps the entry until it is hard-deleted (HCP 5.4.2), with the `context.created` audit event (HCP 8.1). The signed request is evidence of what the client asserted, and a provider **MAY** keep it with the entry's provenance, with `accessToken` removed (see [The access token](#the-access-token)). The client's disclosed copy of the entry is subject to its `useUntil` like any other (HCP 7.6).
 
 ### Consent/purpose
 

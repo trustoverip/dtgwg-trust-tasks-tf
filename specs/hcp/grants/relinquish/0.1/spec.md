@@ -47,6 +47,7 @@ retention:
   rationale: >-
     The provider records a `grant.revoked` audit event naming the client as initiator (HCP 3.9, 5.2.7), which is the
     person's record that access ended and why.
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -84,7 +85,7 @@ The authority is **the grant itself**, evidenced by the access token in `accessT
 
 Over HCP's HTTP binding the same `DELETE /v2/grants/{grantId}` with a Management Client's token revokes any grant (HCP 9.4.6). This task carries relinquishment only: a Management Client's token is refused with `permissionDenied`, and a Management Client revokes with `hcp/grants/revoke`.
 
-The REQUIRED `proof` establishes which client VID sent the document ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it is not the authorization. A provider that knows which VID it registered the client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which client VID sent the document ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it is not the authorization. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -188,6 +189,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`, which covers a second relinquishment with a new document (see [Repeated requests](#repeated-requests)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 
 ## What HCP requires that a document cannot express
 
@@ -201,13 +203,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries a grant identifier and the access token, a bearer secret that **MUST** travel only to the provider. It carries no context. The response carries nothing. A producer **MUST NOT** put the token in `ext`.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The provider learns that the client gave the grant up, and when; that is the record the person needs. The `grantId` joins this document to the client's other requests under the grant, by design. `threadId` **SHOULD** be fresh per request.
 
 ### Retention
 
-The provider keeps the `grant.revoked` audit event (HCP 5.2.7), readable by the Context Subject (HCP 8.3). The signed request is evidence of who ended the grant, and a provider **SHOULD** keep it with that event.
+The provider keeps the `grant.revoked` audit event (HCP 5.2.7), readable by the Context Subject (HCP 8.3). The signed request is evidence of who ended the grant, and a provider **SHOULD** keep it with that event, with `accessToken` removed (see [The access token](#the-access-token)).
 
 ### Consent/purpose
 

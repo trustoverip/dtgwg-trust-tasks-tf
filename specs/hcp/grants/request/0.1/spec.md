@@ -44,6 +44,7 @@ retention:
   rationale: >-
     An approval is recorded as a `grant.issued` audit event and a grant object the person can inspect and revoke (HCP
     6.1.5, 8.1). A decline need not be recorded (HCP 6.1.7).
+    The response's access token is kept in no record of the exchange (see Security & Privacy, The access token).
 related:
   - hcp/entries/query
   - hcp/grants/revoke
@@ -308,6 +309,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 The request carries the categories, actions and purposes asked for, and may carry a `subjectHint` that identifies the person to the provider; a client **MUST** send it only to the provider the person named. The response carries a bearer access token, which the client **MUST** keep as it keeps any HCP token and present only to the provider that issued it. Neither carries context. A producer **MUST NOT** put a token, a hint or any context in `ext`.
 
 The response is signed (REQUIRED), so the grant it describes is a third-party-verifiable assertion by the provider. That is its purpose: the client can show what it was granted. It does not authorize anyone but the client: the token is bound to the client by the provider's records, and HCP forbids passing it on (HCP 3.11).
+
+### The access token
+
+The response's `accessToken` is a bearer secret: whoever presents it exercises the grant. It **MUST** travel only to the client that asked for the grant, in the response addressed to it. The client keeps the token to use the grant but **MUST NOT** log it, and a record of the response it keeps as evidence of the grant keeps the document with `accessToken` removed, or a digest of the document, and never the token. The provider **MUST NOT** log the token, or keep it in any record of the exchange. Every `hcp/*` task that presents the token refuses it with `permissionDenied` when its request carries a `proof` from a VID other than this request's `issuer` (see [`hcp/entries/query`](../../../entries/query/0.1/spec.md#the-access-token)), *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
 
 ### Correlation
 

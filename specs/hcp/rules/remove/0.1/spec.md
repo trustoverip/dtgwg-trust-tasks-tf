@@ -47,6 +47,7 @@ retention:
   class: durable
   rationale: >-
     The provider appends a `rule.removed` audit event (HCP 6.3, 8.1), which is the person's record of the change.
+    The access token is not retained (see Security & Privacy, The access token).
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -82,7 +83,7 @@ The authority is **the Context Subject's own authority over their standing rules
 
 Under the Delegated Authorization Profile, the Context Subject can remove any standing rule, and a delegate can remove only the rules they set (HCP 6.3, 9.4.14); the provider checks the rule's `setBy` against the caller. A delegate's attempt to remove any other rule is refused with `permissionDenied`.
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
@@ -188,6 +189,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 27 — unknown and already-removed rules.** Refused with `permissionDenied`, with the same text as every other not-authorized refusal (see [Repeated requests](#repeated-requests)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 
@@ -204,13 +206,17 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries a rule identifier and the Management Client's access token, a bearer secret that **MUST** travel only to the provider. It carries no context. The response carries nothing. A producer **MUST NOT** put the token or any context in `ext`.
 
+### The access token
+
+`accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange: a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or an evidentiary record of the request keeps the document with `accessToken` removed, or a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), and never the token. Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP does not itself bind a token to a VID: this is a strengthening of the carriage, resting on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)).
+
 ### Correlation
 
 The provider learns which Management Client removed which rule and when; that is the record the person needs. The `ruleId` is known only to the provider and the person's Management Clients. `threadId` **SHOULD** be fresh per removal.
 
 ### Retention
 
-The provider keeps the `rule.removed` audit event (HCP 8.1), readable by the Context Subject (HCP 8.3). The signed request is evidence of who removed the rule and when, and a provider **SHOULD** keep it with that event.
+The provider keeps the `rule.removed` audit event (HCP 8.1), readable by the Context Subject (HCP 8.3). The signed request is evidence of who removed the rule and when, and a provider **SHOULD** keep it with that event, with `accessToken` removed (see [The access token](#the-access-token)).
 
 ### Consent/purpose
 
