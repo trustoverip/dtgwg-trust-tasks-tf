@@ -75,8 +75,9 @@ that does not reassemble. It saved 1.07 MiB of the `.crate`.
 
 ## Generated types fold empty and null into absent
 
-typify (`typify-impl` 0.6.2, `src/structs.rs`, `generate_serde_attr` and
-`has_default`) gives an **optional** member these serde attributes:
+Until the Rust generator fix described below is released, typify (`typify-impl` 0.6.2,
+`src/structs.rs`, `generate_serde_attr` and `has_default`) gives an **optional** member these
+serde attributes:
 
 - an array without `uniqueItems`: a bare `Vec` with `default` and
   `skip_serializing_if = "Vec::is_empty"`, so `[]` and absent decode alike and
@@ -94,10 +95,12 @@ when the sender kept them. Proofs are unaffected: they are verified over the
 document as received
 ([DEVELOPMENT.md](../DEVELOPMENT.md#extends-routing-a-newer-version-to-the-version-a-consumer-implements)).
 
-The generator is not changed for this: that would change field types in every
-family (a `feat(rs)!` workspace event), and still not tell null from absent.
-Where the difference carries meaning, the schema carries it instead. In the
-`hcp` family, each of these is *pending HCP confirmation* (question 42):
+Two changes address this, and neither depends on the other. Where the difference carries
+meaning, the `hcp` schemas carry presence explicitly, so the document itself says what was
+asked for or what is null, whatever library wrote it. Separately, a Rust generator fix (a
+`fix(rs)!` change with its own coordinated release) restores absent, empty and null fidelity
+for every family. In the `hcp` family, the schemas carry presence in these members, which HCP's
+own shapes leave optional (each *pending HCP confirmation*, question 42):
 
 - `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
   `grantId` are required and nullable;
