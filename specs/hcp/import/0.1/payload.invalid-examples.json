@@ -119,5 +119,20 @@
     "payload": {
       "dryRun": true
     }
+  },
+  {
+    "variant": "response",
+    "note": "A `rulesNotApplied` item that is not a rule identifier — each names a standing rule by its `ruleId`, a `urn:uuid:` (HCP 6.3).",
+    "payload": {
+      "outcomes": [
+        {
+          "id": "urn:uuid:13462b18-de39-4fcc-b94d-56b776184381",
+          "outcome": "imported"
+        }
+      ],
+      "rulesNotApplied": [
+        "deny-ads"
+      ]
+    }
   }
 ]
