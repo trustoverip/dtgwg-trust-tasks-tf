@@ -336,7 +336,7 @@ const ResponsePayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/
 var Spec = trusttasks.SpecPolicy{
 	TypeURI:             TypeURI,
 	IsBearer:            false,
-	IsProofRequired:     false,
+	IsProofRequired:     true,
 	IsRecipientRequired: true,
 	IsIssuedAtRequired:  true,
 	PayloadSchema:       PayloadSchemaJSON,
