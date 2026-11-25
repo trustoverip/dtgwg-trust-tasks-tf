@@ -1,0 +1,168 @@
+[
+  {
+    "note": "Missing identify — prove without the carried membership proof is meaningless.",
+    "payload": {}
+  },
+  {
+    "note": "identify must be a whole signed document (an object), not a bare DID string.",
+    "payload": {
+      "identify": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "Unknown member — an entered number outside the carried identify is rejected; only the DID-signed number counts.",
+    "payload": {
+      "identify": {},
+      "enteredNumber": "47"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Step 2 never carries the starter's IP address — additionalProperties: false on Requester rejects `ip`.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true,
+        "ip": "203.0.113.7"
+      },
+      "identifiedAs": "did:web:alice.example"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "sameNetwork is true, false or \"unknown\" — any other string is rejected.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": "maybe"
+      },
+      "identifiedAs": "did:web:alice.example"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An empty signingScope is refused — an offer of nothing is expressed by leaving the member out, so a grant can never carry a scope that reads as unbounded.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example",
+      "signingScope": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A family is a slug prefix of whole lowercase segments — a trailing slash, an absolute Type URI or a wildcard is not a family, so no offer can be widened by a pattern a consumer might read as a glob.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example",
+      "signingScope": [
+        "vtc/directory/",
+        "https://trusttasks.org/spec/vtc/groups",
+        "vtc/*"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A family is named once — duplicates are refused (uniqueItems), so the member is shown each family exactly once.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": "2026-10-10T10:02:40Z",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example",
+      "signingScope": [
+        "vtc/directory",
+        "vtc/directory"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "decisionClosesAt is an RFC 3339 date-time; an integer count of seconds (the 0.2 `decisionDeadline` form) is rejected.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionClosesAt": 1791626560,
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "requester": {
+        "location": "Sydney, Australia",
+        "browser": "Chrome",
+        "os": "macOS",
+        "createdAt": "2026-10-10T10:00:00Z",
+        "sameNetwork": true
+      },
+      "identifiedAs": "did:web:alice.example"
+    }
+  }
+]

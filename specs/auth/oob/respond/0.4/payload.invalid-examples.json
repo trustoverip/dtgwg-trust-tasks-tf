@@ -1,0 +1,21 @@
+[
+  {
+    "note": "Missing grant — respond without the carried decision is meaningless.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — a bare decision outside the signed grant is rejected.",
+    "payload": { "grant": {}, "decision": "approve" }
+  },
+  {
+    "variant": "response",
+    "note": "The response never carries session material — a `session` member is rejected by additionalProperties: false.",
+    "payload": { "status": "approved", "session": { "id": "s1" } }
+  },
+  {
+    "variant": "response",
+    "note": "status is approved or declined only.",
+    "payload": { "status": "pending" }
+  },
+  {"note": "`grant` must be a whole signed auth/oob/grant/0.3 document (an object), not a bare grant payload or id string.", "payload": {"grant": "urn:uuid:8d4e5f60-7182-4c9d-8e0f-2a3b4c5d6e01"}}
+]
