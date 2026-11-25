@@ -104,7 +104,15 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the Context Subject's own authority over their data**, which a Management Client exercises for them (HCP 5.4, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Export is a governance operation: the Context Subject's own export of their data is not a context operation, and is not available to a Context Client (HCP 5.1). Any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9); a Context Client's access is always query-scoped and minimized, and bulk retrieval of a Context Subject's entries by a Context Client is not supported (HCP 5.1). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
-Under the Delegated Authorization Profile, a governance operation performed by a delegate reaches only entries in categories within the delegation's scope (HCP 17.4), so a delegate's export carries no entry outside that scope.
+Under the Delegated Authorization Profile, a delegate's export carries no more than the delegate could read through the operation that reads each of its members, so that an export never shows a delegate what those operations withhold:
+
+- `entries`: only entries in categories within the delegation's scope, since a governance operation performed by a delegate reaches only those (HCP 17.4).
+- `versions`: only superseded versions of the entries returned, and of those only the versions whose own categories are all within the scope, since a version recorded before a change of categories may name one outside it, *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)).
+- `audit`: only the events HCP 17.7 lets a delegate read, as [`hcp/audit/read`](../../audit/read/0.1/spec.md#authorization) returns them: every event of a grant they authorized and of a governance operation performed for them, and the same for any sub-delegate they appointed, and never the events of grants the Context Subject authorized (HCP 17.7, 17.10). The audit option is "equivalent to the export already required by 8.3" (HCP 5.4.1), and HCP 8.3 gives a delegate only "the part 17.7 sets out".
+- `delegations`: only those [`hcp/delegations/list`](../../delegations/list/0.1/spec.md#authorization) returns a delegate: the delegations naming them (HCP 9.4.13), ended ones included, and the sub-delegations they appointed, *pending HCP confirmation* ([question 32](#pending-hcp-confirmation)).
+- `rules` and `directives`: only those [`hcp/rules/list`](../../rules/list/0.1/spec.md#authorization) and [`hcp/directives/list`](../../directives/list/0.1/spec.md#authorization) return a delegate: each whose `categories` are absent or all within the scope, a rule or directive naming any category outside it being left out whole, *pending HCP confirmation* ([question 28](#pending-hcp-confirmation)).
+
+The Context Subject's export carries every member whole (HCP 5.4.1, 17.5).
 
 The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
@@ -178,7 +186,7 @@ The provider answers with the export. The payload is the sub-schema reachable vi
 - `subject`, `exportedBy` and `exportedAt` are the Context Subject, the exporting provider and when the export was made. `options` records the options used.
 - `entries` is the current version of each entry exported, in the form of HCP 4.2, each carrying its status.
 - `versions` is present only where `includeVersions` was asked, and `audit` only where `includeAudit` was asked.
-- `rules`, `directives` and `delegations` are the Context Subject's standing rules, directives, and the delegations made for them.
+- `rules`, `directives` and `delegations` are the Context Subject's standing rules, directives, and the delegations made for them; a delegate's export carries only those [Authorization](#authorization) sets out.
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
@@ -317,13 +325,16 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
+- **Question 28 — a delegate's rules and directives.** A delegate's export carries each standing rule and directive whose `categories` are absent or all within the delegation's scope, as [`hcp/rules/list`](../../rules/list/0.1/spec.md) and [`hcp/directives/list`](../../directives/list/0.1/spec.md) return them; one naming any category outside the scope is left out whole.
+- **Question 32 — a delegate's sub-delegations.** A delegate's export carries the delegations naming them and the sub-delegations they appointed, as [`hcp/delegations/list`](../../delegations/list/0.1/spec.md) returns them.
 - **Question 33 — export size.** The export travels in one document bounded at the framework's 16 MiB ceiling; a larger export is refused with `hcp:exportTooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
+- **Question 40 — a delegate's export and import beyond entries.** A delegate's export carries only the superseded versions, of the entries it returns, whose own categories are all within the delegation's scope (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
 - Which entries are held, their statuses, and whether an entry was hard-deleted: the export is assembled from provider-held state (HCP 5.4.1, 5.4.2).
-- The scope check on a delegate's export (HCP 17.4).
+- The scoping of a delegate's export: its entries and versions to the delegation's scope (HCP 17.4), its audit log to what HCP 17.7 lets a delegate read, and its delegations, rules and directives to what the list operations return a delegate (HCP 9.4.13).
 - The `context.exported` audit event and its durability (HCP 8.1, 8.4).
 - Carriage by the HTTP Binding: HCP carries governance operations only over that binding (HCP 1.6, 5.4, 9.1), and a Trust Task is not it. This specification carries the operation for a Management Client acting for the Authorizing Principal (HCP 6.1.9) instead, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
