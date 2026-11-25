@@ -37,9 +37,9 @@ extension type const StandingRuleEffect(String value) {
 
 /// A deny rule the Context Subject sets across every grant, present and future (HCP
 /// 6.3). A standing rule never widens access. It carries `operators`, `requires`, or
-/// both: `operators` may be absent only where `requires` is present (HCP 6.3). That
-/// rule is not checked by the schema: the registry's Rust generator does not support
-/// the conditional keywords it needs, so a validator does not check it.
+/// both: `operators` may be absent only where `requires` is present (HCP 6.3). The
+/// schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own
+/// standing-rule schema does.
 class StandingRule {
   const StandingRule({
     required this.ruleId,

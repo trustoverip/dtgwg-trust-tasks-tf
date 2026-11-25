@@ -8,35 +8,37 @@ library;
 /// An RFC 3339 instant.
 typedef Instant = String;
 
-/// The export options (HCP 5.4.1). Absent or false means the default.
+/// The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are
+/// required, true where the option was requested and false otherwise, pending HCP
+/// confirmation (question 42); `excludeDeleted` absent or false means the default.
 class ExportOptions {
   const ExportOptions({
     this.excludeDeleted,
-    this.includeVersions,
-    this.includeAudit,
+    required this.includeVersions,
+    required this.includeAudit,
   });
 
   /// Read this payload from a decoded JSON object.
   factory ExportOptions.fromJson(Map<String, dynamic> json) => ExportOptions(
         excludeDeleted: json['excludeDeleted'] as bool?,
-        includeVersions: json['includeVersions'] as bool?,
-        includeAudit: json['includeAudit'] as bool?,
+        includeVersions: json['includeVersions'] as bool,
+        includeAudit: json['includeAudit'] as bool,
       );
 
   /// Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
   final bool? excludeDeleted;
 
   /// Also return superseded versions of each entry returned (HCP 5.4.1).
-  final bool? includeVersions;
+  final bool includeVersions;
 
   /// Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
-  final bool? includeAudit;
+  final bool includeAudit;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         if (excludeDeleted != null) 'excludeDeleted': excludeDeleted!,
-        if (includeVersions != null) 'includeVersions': includeVersions!,
-        if (includeAudit != null) 'includeAudit': includeAudit!,
+        'includeVersions': includeVersions,
+        'includeAudit': includeAudit,
       };
 }
 
@@ -69,9 +71,9 @@ extension type const StandingRuleEffect(String value) {
 
 /// A deny rule the Context Subject sets across every grant, present and future (HCP
 /// 6.3). A standing rule never widens access. It carries `operators`, `requires`, or
-/// both: `operators` may be absent only where `requires` is present (HCP 6.3). That
-/// rule is not checked by the schema: the registry's Rust generator does not support
-/// the conditional keywords it needs, so a validator does not check it.
+/// both: `operators` may be absent only where `requires` is present (HCP 6.3). The
+/// schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own
+/// standing-rule schema does.
 class StandingRule {
   const StandingRule({
     required this.ruleId,
@@ -777,7 +779,8 @@ class AuditParty {
         id: json['id'] as String,
       );
 
-  /// The participant's identifier.
+  /// The participant's identifier. The minLength and maxLength are framework bounds, not
+  /// HCP requirements.
   final String id;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -828,7 +831,8 @@ class AuditParticipantsInitiator {
   /// Their role (HCP 8.2). HCP's own values, carried verbatim.
   final AuditParticipantsInitiatorRole role;
 
-  /// Their identifier.
+  /// Their identifier. The minLength and maxLength are framework bounds, not HCP
+  /// requirements.
   final String id;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -929,7 +933,8 @@ class AuditDisclosedRevealedItem {
   /// The evidence item's index.
   final int evidence;
 
-  /// The claims revealed, each a JSON Pointer.
+  /// The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework
+  /// bounds, not HCP requirements.
   final List<String> claims;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -975,7 +980,8 @@ class AuditDisclosed {
   /// True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
   final bool? provenance;
 
-  /// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+  /// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The
+  /// maxItems is a framework bound, not an HCP requirement.
   final List<AuditDisclosedRevealedItem>? revealed;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -991,7 +997,12 @@ class AuditDisclosed {
 
 /// One audit event (HCP 8.2). The log names entries by their stable `id`, never by the
 /// `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3).
-/// The query text is never recorded (HCP 8.2).
+/// The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`,
+/// `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's
+/// template writes them: HCP's own shape leaves them optional, and the carriage
+/// requires them so that a null always travels and is never confused with an absent
+/// member, pending HCP confirmation (question 42). An event redacted for a former
+/// delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
 class AuditEvent {
   const AuditEvent({
     required this.eventId,
@@ -1038,7 +1049,8 @@ class AuditEvent {
 
   /// The event type, one of those HCP 8.1 lists (such as `context.read`,
   /// `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the
-  /// event types of a later draft are not refused.
+  /// event types of a later draft are not refused. The minLength and maxLength are
+  /// framework bounds, not HCP requirements.
   final String eventType;
 
   /// When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event
@@ -1048,26 +1060,33 @@ class AuditEvent {
   /// Who took part (HCP 8.2, 3.9).
   final AuditParticipants participants;
 
-  /// The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the
-  /// conflicted entry (HCP 8.2).
+  /// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2).
+  /// For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event
+  /// redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
   final String? entryId;
 
   /// For conflict events, the authoritative entry (or the other entry where neither or
-  /// both are authoritative); null for every other event type (HCP 8.2).
+  /// both are authoritative); null for every other event type (HCP 8.2). Required, and
+  /// null in an event redacted for a former delegate (HCP 17.7), pending HCP
+  /// confirmation (question 42).
   final String? relatedEntryId;
 
   /// The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP
   /// requirement.
   final List<Category>? categories;
 
-  /// The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+  /// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required,
+  /// pending HCP confirmation (question 42). The maxLength is a framework bound, not an
+  /// HCP requirement.
   final String? purpose;
 
-  /// The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP
+  /// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP
+  /// confirmation (question 42). The maxLength is a framework bound, not an HCP
   /// requirement.
   final String? purposeDescription;
 
-  /// The grant concerned, or null (HCP 8.2).
+  /// The grant concerned, or null where the event concerns none (HCP 8.2). Required,
+  /// pending HCP confirmation (question 42).
   final String? grantId;
 
   /// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A
@@ -1122,7 +1141,11 @@ class ExportSubject {
 /// standing rules, directives and delegations, and optionally superseded versions and
 /// the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP
 /// 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets
-/// none.
+/// none. Those on `rules`, `directives` and `delegations` are set so that the
+/// document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more
+/// than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the
+/// list operations bound none: an export too large for one document is refused with
+/// `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
 class Export {
   const Export({
     required this.context,
@@ -1131,7 +1154,7 @@ class Export {
     required this.subject,
     required this.exportedBy,
     required this.exportedAt,
-    this.options,
+    required this.options,
     required this.entries,
     this.versions,
     required this.rules,
@@ -1149,9 +1172,8 @@ class Export {
             ExportSubject.fromJson(json['subject'] as Map<String, dynamic>),
         exportedBy: json['exportedBy'] as String,
         exportedAt: json['exportedAt'] as String,
-        options: json['options'] == null
-            ? null
-            : ExportOptions.fromJson(json['options'] as Map<String, dynamic>),
+        options:
+            ExportOptions.fromJson(json['options'] as Map<String, dynamic>),
         entries: (json['entries'] as List<dynamic>)
             .map((e) => e as Map<String, dynamic>)
             .toList(),
@@ -1200,8 +1222,12 @@ class Export {
   /// When the export was made (HCP 5.4.1).
   final Instant exportedAt;
 
-  /// The options requested (HCP 5.4.1).
-  final ExportOptions? options;
+  /// The options requested (HCP 5.4.1). Required, with `includeVersions` and
+  /// `includeAudit`, so that the export itself says whether `versions` and `audit` were
+  /// requested: an empty or absent `versions` or `audit` under a true option means
+  /// requested and none, under a false one not requested. HCP's own shape leaves
+  /// `options` optional; pending HCP confirmation (question 42).
+  final ExportOptions options;
 
   /// The current version of each entry exported, whatever its `record.status` (HCP
   /// 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see
@@ -1212,7 +1238,7 @@ class Export {
   final List<Map<String, dynamic>> entries;
 
   /// Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP
-  /// 5.4.1).
+  /// 5.4.1), which `options.includeVersions` records.
   final List<Map<String, dynamic>>? versions;
 
   /// The Context Subject's standing rules (HCP 5.4.1, 6.3).
@@ -1226,7 +1252,7 @@ class Export {
   final List<Delegation>? delegations;
 
   /// The audit log, as events in the structure of HCP 8.2. Present only where requested
-  /// (HCP 5.4.1).
+  /// (HCP 5.4.1), which `options.includeAudit` records.
   final List<AuditEvent>? audit;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -1237,7 +1263,7 @@ class Export {
         'subject': subject.toJson(),
         'exportedBy': exportedBy,
         'exportedAt': exportedAt,
-        if (options != null) 'options': options!.toJson(),
+        'options': options.toJson(),
         'entries': entries,
         if (versions != null) 'versions': versions!,
         'rules': rules.map((e) => e.toJson()).toList(),

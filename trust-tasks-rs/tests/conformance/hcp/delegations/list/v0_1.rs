@@ -86,6 +86,18 @@ fn rejects_invalid_response_examples() {
             "A member in the response besides `delegations` — the list is not paginated, so there is no `nextCursor` (HCP 9.4.13).",
             "{\n  \"delegations\": [],\n  \"nextCursor\": \"abc\"\n}",
         ),
+        (
+            "A delegation whose `scope.actions` holds `provenance` — a delegate may authorize only read and write (HCP 17.2, 6.1.5).",
+            "{\n  \"delegations\": [\n    {\n      \"basis\": {\n        \"description\": \"Appointed by the person.\",\n        \"establishedAt\": \"2026-02-01T10:00:00Z\",\n        \"establishedBy\": \"https://auth.provider.example\",\n        \"method\": \"appointed\"\n      },\n      \"delegate\": {\n        \"id\": \"person-a91\",\n        \"name\": \"Dana Rivera\"\n      },\n      \"delegationId\": \"urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20\",\n      \"relationship\": \"caregiver\",\n      \"scope\": {\n        \"actions\": [\n          \"read\",\n          \"provenance\"\n        ],\n        \"categories\": [\n          \"general_preferences\"\n        ]\n      },\n      \"subject\": {\n        \"id\": \"subject-7f2c\"\n      },\n      \"term\": {\n        \"atMajority\": false,\n        \"endsAt\": \"2027-02-01T10:00:00Z\"\n      }\n    }\n  ]\n}",
+        ),
+        (
+            "A delegation `basis.method` HCP does not define — HCP defines appointed, attested, evidence, delegated and unspecified (HCP 17.3).",
+            "{\n  \"delegations\": [\n    {\n      \"basis\": {\n        \"description\": \"Appointed by the person.\",\n        \"establishedAt\": \"2026-02-01T10:00:00Z\",\n        \"establishedBy\": \"https://auth.provider.example\",\n        \"method\": \"court-order\"\n      },\n      \"delegate\": {\n        \"id\": \"person-a91\",\n        \"name\": \"Dana Rivera\"\n      },\n      \"delegationId\": \"urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20\",\n      \"relationship\": \"caregiver\",\n      \"scope\": {\n        \"actions\": [\n          \"read\"\n        ],\n        \"categories\": [\n          \"general_preferences\"\n        ]\n      },\n      \"subject\": {\n        \"id\": \"subject-7f2c\"\n      },\n      \"term\": {\n        \"atMajority\": false,\n        \"endsAt\": \"2027-02-01T10:00:00Z\"\n      }\n    }\n  ]\n}",
+        ),
+        (
+            "A `term` without `atMajority` — a delegation states whether it ends at the age of majority (HCP 17.2).",
+            "{\n  \"delegations\": [\n    {\n      \"basis\": {\n        \"description\": \"Appointed by the person.\",\n        \"establishedAt\": \"2026-02-01T10:00:00Z\",\n        \"establishedBy\": \"https://auth.provider.example\",\n        \"method\": \"appointed\"\n      },\n      \"delegate\": {\n        \"id\": \"person-a91\",\n        \"name\": \"Dana Rivera\"\n      },\n      \"delegationId\": \"urn:uuid:4c6e8a0b-2d3f-4b5c-9e7a-1c3e5a7c9e20\",\n      \"relationship\": \"caregiver\",\n      \"scope\": {\n        \"actions\": [\n          \"read\"\n        ],\n        \"categories\": [\n          \"general_preferences\"\n        ]\n      },\n      \"subject\": {\n        \"id\": \"subject-7f2c\"\n      },\n      \"term\": {\n        \"endsAt\": \"2027-02-01T10:00:00Z\"\n      }\n    }\n  ]\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

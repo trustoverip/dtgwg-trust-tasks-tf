@@ -65,8 +65,8 @@ fn rejects_invalid_examples() {
             "{\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n  \"noticeId\": \"urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09\",\n  \"revokedAt\": 1795604401\n}",
         ),
         (
-            "A SET `events` wrapper in the payload — the Type URI replaces it.",
-            "{\n  \"events\": {\n    \"https://hcp.example/spec/events/grant-revoked\": {\n      \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n      \"revokedAt\": \"2026-11-24T11:00:01Z\"\n    }\n  }\n}",
+            "A SET `events` wrapper in the payload, beside the members it would wrap — the Type URI replaces it, and the payload admits no other member.",
+            "{\n  \"events\": {\n    \"https://hcp.example/spec/events/grant-revoked\": {\n      \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n      \"revokedAt\": \"2026-11-24T11:00:01Z\"\n    }\n  },\n  \"grantId\": \"urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f\",\n  \"noticeId\": \"urn:uuid:f1e2d3c4-b5a6-4978-8a6b-5c4d3e2f1a09\",\n  \"revokedAt\": \"2026-11-24T11:00:01Z\"\n}",
         ),
         (
             "`reason` outside the enumeration — the delegation's own reason for ending (HCP 17.6) is never sent; only `revoked` or `delegation-ended`.",

@@ -11,18 +11,17 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
  */
 export interface HCPRestrictEntryPurposesPayload {
   /**
-   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).
+   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
    */
   entryId: Urn;
   /**
-   * HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. The maxItems of 256 and the minItems of 1 are framework bounds, not HCP requirements: an empty list would permit no purpose, which HCP does not define.
+   * HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement.
    *
-   * @minItems 1
    * @maxItems 256
    */
-  permittedPurposes: [PurposeCode, ...PurposeCode[]] | null;
+  permittedPurposes: PurposeCode[] | null;
   /**
-   * HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
+   * HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
    */
   expectedVersion: number;
   /**
@@ -101,25 +100,24 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "properties": {
     "entryId": {
       "$ref": "#/$defs/Urn",
-      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."
     },
     "permittedPurposes": {
       "type": [
         "array",
         "null"
       ],
-      "minItems": 1,
       "maxItems": 256,
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/PurposeCode"
       },
-      "description": "HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. The maxItems of 256 and the minItems of 1 are framework bounds, not HCP requirements: an empty list would permit no purpose, which HCP does not define."
+      "description": "HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement."
     },
     "expectedVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
     },
     "accessToken": {
       "type": "string",
@@ -868,5 +866,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
-  maxDocumentBytes: 262144,
+  maxDocumentBytes: 524288,
 } as const;

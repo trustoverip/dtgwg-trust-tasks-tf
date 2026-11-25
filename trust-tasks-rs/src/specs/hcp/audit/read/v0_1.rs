@@ -43,7 +43,7 @@ pub struct AuditDisclosed {
     ///True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub provenance: ::std::option::Option<bool>,
-    ///Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+    ///Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub revealed: ::std::vec::Vec<AuditDisclosedRevealedItem>,
     ///The use-until time the disclosure was given (HCP 7.6).
@@ -62,7 +62,7 @@ impl AuditDisclosed {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct AuditDisclosedRevealedItem {
-    ///The claims revealed, each a JSON Pointer.
+    ///The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
     pub claims: ::std::vec::Vec<AuditDisclosedRevealedItemClaimsItem>,
     ///The evidence item's index.
     pub evidence: u64,
@@ -131,7 +131,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditDisclosedRevealedItemClaimsItem {
             })
     }
 }
-///One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).
+///One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
@@ -145,44 +145,27 @@ pub struct AuditEvent {
     ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub disclosed: ::std::vec::Vec<AuditDisclosed>,
-    ///The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2).
-    #[serde(
-        rename = "entryId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
+    #[serde(rename = "entryId")]
     pub entry_id: ::std::option::Option<AuditEventEntryId>,
     ///The event's identifier (HCP 8.2).
     #[serde(rename = "eventId")]
     pub event_id: Urn,
-    ///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused.
+    ///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
     #[serde(rename = "eventType")]
     pub event_type: AuditEventEventType,
-    ///The grant concerned, or null (HCP 8.2).
-    #[serde(
-        rename = "grantId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    ///The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
+    #[serde(rename = "grantId")]
     pub grant_id: ::std::option::Option<AuditEventGrantId>,
     ///Who took part (HCP 8.2, 3.9).
     pub participants: AuditParticipants,
-    ///The purpose code stated, or null (HCP 8.2, 6.1.5.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
     pub purpose: ::std::option::Option<AuditEventPurpose>,
-    ///The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement.
-    #[serde(
-        rename = "purposeDescription",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    ///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
+    #[serde(rename = "purposeDescription")]
     pub purpose_description: ::std::option::Option<AuditEventPurposeDescription>,
-    ///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2).
-    #[serde(
-        rename = "relatedEntryId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
+    ///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
+    #[serde(rename = "relatedEntryId")]
     pub related_entry_id: ::std::option::Option<AuditEventRelatedEntryId>,
     ///When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).
     pub timestamp: Instant,
@@ -192,7 +175,7 @@ impl AuditEvent {
         Default::default()
     }
 }
-///The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2).
+///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -262,7 +245,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditEventEntryId {
             })
     }
 }
-///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused.
+///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -324,7 +307,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditEventEventType {
             })
     }
 }
-///The grant concerned, or null (HCP 8.2).
+///The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -394,7 +377,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditEventGrantId {
             })
     }
 }
-///The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -460,7 +443,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditEventPurpose {
             })
     }
 }
-///The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement.
+///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -519,7 +502,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditEventPurposeDescription {
             })
     }
 }
-///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2).
+///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -639,7 +622,7 @@ impl AuditParticipants {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct AuditParticipantsInitiator {
-    ///Their identifier.
+    ///Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
     pub id: AuditParticipantsInitiatorId,
     ///Their role (HCP 8.2). HCP's own values, carried verbatim.
     pub role: AuditParticipantsInitiatorRole,
@@ -649,7 +632,7 @@ impl AuditParticipantsInitiator {
         Default::default()
     }
 }
-///Their identifier.
+///Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -785,7 +768,7 @@ impl ::std::convert::TryFrom<::std::string::String> for AuditParticipantsInitiat
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct AuditParty {
-    ///The participant's identifier.
+    ///The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
     pub id: AuditPartyId,
 }
 impl AuditParty {
@@ -793,7 +776,7 @@ impl AuditParty {
         Default::default()
     }
 }
-///The participant's identifier.
+///The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -982,7 +965,7 @@ pub struct Payload {
     ///Only events whose `categories` include this category (HCP 8.3: "filter by ... category"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub category: ::std::option::Option<Category>,
-    ///Only events in which this HCP Client took part, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
+    ///Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub client: ::std::option::Option<PayloadClient>,
     ///HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement.
@@ -1072,7 +1055,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAccessToken {
             })
     }
 }
-///Only events in which this HCP Client took part, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
+///Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1153,8 +1136,8 @@ impl ::std::convert::From<PayloadCursor> for ::std::string::String {
 impl ::std::str::FromStr for PayloadCursor {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
         }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
@@ -1264,7 +1247,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEventType {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    ///The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read, with the members it withholds left out. Empty when nothing matches.
+    ///The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches.
     pub events: ::std::vec::Vec<AuditEvent>,
     ///HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement.
     #[serde(
@@ -1298,8 +1281,8 @@ impl ::std::convert::From<ResponseNextCursor> for ::std::string::String {
 impl ::std::str::FromStr for ResponseNextCursor {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
         }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
@@ -1611,14 +1594,14 @@ pub mod builder {
                 categories: Ok(Default::default()),
                 data: Ok(Default::default()),
                 disclosed: Ok(Default::default()),
-                entry_id: Ok(Default::default()),
+                entry_id: Err("no value supplied for entry_id".to_string()),
                 event_id: Err("no value supplied for event_id".to_string()),
                 event_type: Err("no value supplied for event_type".to_string()),
-                grant_id: Ok(Default::default()),
+                grant_id: Err("no value supplied for grant_id".to_string()),
                 participants: Err("no value supplied for participants".to_string()),
-                purpose: Ok(Default::default()),
-                purpose_description: Ok(Default::default()),
-                related_entry_id: Ok(Default::default()),
+                purpose: Err("no value supplied for purpose".to_string()),
+                purpose_description: Err("no value supplied for purpose_description".to_string()),
+                related_entry_id: Err("no value supplied for related_entry_id".to_string()),
                 timestamp: Err("no value supplied for timestamp".to_string()),
             }
         }
@@ -2212,10 +2195,11 @@ pub mod builder {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/hcp/audit/read/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/audit/read/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"category\":{\"$ref\":\"#/$defs/Category\",\"description\":\"Only events whose `categories` include this category (HCP 8.3: \\\"filter by ... category\\\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).\"},\"client\":{\"description\":\"Only events in which this HCP Client took part, by its client identifier (HCP 8.3: \\\"filter by HCP Client\\\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"eventType\":{\"description\":\"Only events of this type, one of those HCP 8.1 lists, such as `context.read` (HCP 8.3: \\\"filter by ... event type\\\"; named after the audit event's own `eventType`, HCP 8.2). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or after this instant: the lower bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"},\"limit\":{\"description\":\"HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or before this instant: the upper bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — Read Audit Log — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/audit/read/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"category\":{\"$ref\":\"#/$defs/Category\",\"description\":\"Only events whose `categories` include this category (HCP 8.3: \\\"filter by ... category\\\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).\"},\"client\":{\"description\":\"Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: \\\"filter by HCP Client\\\"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"eventType\":{\"description\":\"Only events of this type, one of those HCP 8.1 lists, such as `context.read` (HCP 8.3: \\\"filter by ... event type\\\"; named after the audit event's own `eventType`, HCP 8.2). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or after this instant: the lower bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"},\"limit\":{\"description\":\"HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or before this instant: the upper bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — Read Audit Log — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2225,7 +2209,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(2097152usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"AuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry a retrieval disclosed (HCP 8.2).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable `id`.\"},\"provenance\":{\"description\":\"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).\",\"items\":{\"additionalProperties\":true,\"description\":\"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed, each a JSON Pointer.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"evidence\":{\"description\":\"The evidence item's index.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The use-until time the disclosure was given (HCP 7.6).\"},\"version\":{\"description\":\"The version disclosed.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"},\"AuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null (HCP 8.2).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null (HCP 8.2, 6.1.5.2).\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\"],\"type\":\"object\"},\"AuditParticipants\":{\"additionalProperties\":true,\"description\":\"The participants in an audit event (HCP 8.2, 3.9). No event names \\\"system\\\" (HCP 8.2).\",\"properties\":{\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Authorizing Principal (HCP 3.9).\"},\"clientOperator\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Client Operator, where a client took part (HCP 3.9).\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 8.2). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The model, where one took part (HCP 3.9).\"},\"provider\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The HCP Provider (HCP 8.2).\"},\"requestingParty\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Requesting Party, where there is one (HCP 3.9).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval, on a read (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"},\"AuditParty\":{\"additionalProperties\":true,\"description\":\"A participant named by its identifier (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The participant's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of the audit log, as the caller may read it (HCP 8.3, 17.7). Failures use trust-task-error, not this shape.\",\"properties\":{\"events\":{\"description\":\"The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read, with the members it withholds left out. Empty when nothing matches.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"events\"],\"title\":\"HCP — Read Audit Log — response payload\",\"type\":\"object\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"AuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry a retrieval disclosed (HCP 8.2).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable `id`.\"},\"provenance\":{\"description\":\"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"additionalProperties\":true,\"description\":\"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"evidence\":{\"description\":\"The evidence item's index.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The use-until time the disclosure was given (HCP 7.6).\"},\"version\":{\"description\":\"The version disclosed.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"},\"AuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\",\"entryId\",\"relatedEntryId\",\"purpose\",\"purposeDescription\",\"grantId\"],\"type\":\"object\"},\"AuditParticipants\":{\"additionalProperties\":true,\"description\":\"The participants in an audit event (HCP 8.2, 3.9). No event names \\\"system\\\" (HCP 8.2).\",\"properties\":{\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Authorizing Principal (HCP 3.9).\"},\"clientOperator\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Client Operator, where a client took part (HCP 3.9).\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 8.2). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The model, where one took part (HCP 3.9).\"},\"provider\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The HCP Provider (HCP 8.2).\"},\"requestingParty\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Requesting Party, where there is one (HCP 3.9).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval, on a read (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"},\"AuditParty\":{\"additionalProperties\":true,\"description\":\"A participant named by its identifier (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of the audit log, as the caller may read it (HCP 8.3, 17.7). Failures use trust-task-error, not this shape.\",\"properties\":{\"events\":{\"description\":\"The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"events\"],\"title\":\"HCP — Read Audit Log — response payload\",\"type\":\"object\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

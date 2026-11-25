@@ -40,19 +40,19 @@ fn rejects_invalid_examples() {
         ),
         (
             "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
         (
             "A `categoryMap` value that is not a category — each replacement is an HCP category (HCP 4.5, 5.4.3).",
-            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categoryMap\": {\n    \"https://categories.example/fitness\": \"General Preferences\"\n  },\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categoryMap\": {\n    \"https://categories.example/fitness\": \"General Preferences\"\n  },\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
         (
             "An export with the wrong `type` — an HCP export is a `ContextExport` (HCP 5.4.1).",
-            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextBackup\"\n  }\n}",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextBackup\"\n  }\n}",
         ),
         (
             "`dryRun` as a string — HCP's `dryRun` is a boolean (HCP 5.4.3).",
-            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"dryRun\": \"yes\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"dryRun\": \"yes\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
@@ -93,6 +93,10 @@ fn rejects_invalid_response_examples() {
         (
             "Missing `outcomes` — the result has one outcome for each entry in the export (HCP 5.4.3).",
             "{\n  \"dryRun\": true\n}",
+        ),
+        (
+            "A `rulesNotApplied` item that is not a rule identifier — each names a standing rule by its `ruleId`, a `urn:uuid:` (HCP 6.3).",
+            "{\n  \"outcomes\": [\n    {\n      \"id\": \"urn:uuid:13462b18-de39-4fcc-b94d-56b776184381\",\n      \"outcome\": \"imported\"\n    }\n  ],\n  \"rulesNotApplied\": [\n    \"deny-ads\"\n  ]\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

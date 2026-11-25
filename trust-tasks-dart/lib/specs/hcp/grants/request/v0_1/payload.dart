@@ -37,14 +37,15 @@ typedef Category = String;
 typedef PurposeCode = String;
 
 /// An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.
-class Purpose {
-  const Purpose({
+class RequestedPurpose {
+  const RequestedPurpose({
     required this.code,
     this.description,
   });
 
   /// Read this payload from a decoded JSON object.
-  factory Purpose.fromJson(Map<String, dynamic> json) => Purpose(
+  factory RequestedPurpose.fromJson(Map<String, dynamic> json) =>
+      RequestedPurpose(
         code: json['code'] as String,
         description: json['description'] as String?,
       );
@@ -52,7 +53,8 @@ class Purpose {
   final PurposeCode code;
 
   /// What the purpose means, in words the person can read. The provider shows its own
-  /// description where it has one. The maxLength is a framework bound.
+  /// description where it has one. The maxLength, the same as the shared grant's purpose
+  /// description, is a framework bound, not an HCP requirement.
   final String? description;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -112,7 +114,8 @@ class AccessRequest {
         purposes: json['purposes'] == null
             ? null
             : (json['purposes'] as List<dynamic>)
-                .map((e) => Purpose.fromJson(e as Map<String, dynamic>))
+                .map(
+                    (e) => RequestedPurpose.fromJson(e as Map<String, dynamic>))
                 .toList(),
         narrowedTo: json['narrowedTo'] as Map<String, dynamic>?,
         onwardSharing: json['onwardSharing'] == null
@@ -135,7 +138,7 @@ class AccessRequest {
   /// HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent
   /// means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of
   /// 32 is a framework bound, not an HCP requirement.
-  final List<Purpose>? purposes;
+  final List<RequestedPurpose>? purposes;
 
   /// HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key
   /// the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule
@@ -165,36 +168,35 @@ class AccessRequest {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const RequestingPartyType(String value) {
-  static const RequestingPartyType person = RequestingPartyType('person');
-  static const RequestingPartyType organization =
-      RequestingPartyType('organization');
+extension type const ProposedRequestingPartyType(String value) {
+  static const ProposedRequestingPartyType person =
+      ProposedRequestingPartyType('person');
+  static const ProposedRequestingPartyType organization =
+      ProposedRequestingPartyType('organization');
 
   /// Every value this specification's schema permits.
-  static const List<RequestingPartyType> values = <RequestingPartyType>[
-    person,
-    organization
-  ];
+  static const List<ProposedRequestingPartyType> values =
+      <ProposedRequestingPartyType>[person, organization];
 }
 
 /// HCP `requestingParty` (HCP 6.1.5).
-class RequestingParty {
-  const RequestingParty({
+class ProposedRequestingParty {
+  const ProposedRequestingParty({
     required this.type,
     required this.id,
     this.name,
   });
 
   /// Read this payload from a decoded JSON object.
-  factory RequestingParty.fromJson(Map<String, dynamic> json) =>
-      RequestingParty(
-        type: RequestingPartyType(json['type'] as String),
+  factory ProposedRequestingParty.fromJson(Map<String, dynamic> json) =>
+      ProposedRequestingParty(
+        type: ProposedRequestingPartyType(json['type'] as String),
         id: json['id'] as String,
         name: json['name'] as String?,
       );
 
   /// HCP's own values, carried verbatim.
-  final RequestingPartyType type;
+  final ProposedRequestingPartyType type;
 
   /// HCP `requestingParty.id`: an identifier for the party.
   final String id;
@@ -211,10 +213,317 @@ class RequestingParty {
       };
 }
 
-/// One authorization detail as the person approved it (HCP 6.1.5 `access\[\]`). Every
-/// approved detail carries at least one purpose (HCP 6.1.5.2).
-class GrantedAccess {
-  const GrantedAccess({
+/// An RFC 3339 instant.
+typedef Instant = String;
+
+/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+/// HCP uses for entry, grant, directive and retrieval identifiers.
+typedef Urn = String;
+
+/// An actor a grant binds, named by identifier (HCP 3.4).
+class GrantParty {
+  const GrantParty({
+    required this.id,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory GrantParty.fromJson(Map<String, dynamic> json) => GrantParty(
+        id: json['id'] as String,
+      );
+
+  /// Its identifier; for the Context Subject, a pseudonym specific to the client (HCP
+  /// 3.4). The minLength is a framework bound, not an HCP requirement.
+  final String id;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+      };
+}
+
+/// The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries
+/// the same pseudonym as `subject`; under the Delegated Authorization Profile it is
+/// the delegate (HCP 17.4).
+class AuthorizingPrincipal {
+  const AuthorizingPrincipal({
+    required this.id,
+    this.delegation,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AuthorizingPrincipal.fromJson(Map<String, dynamic> json) =>
+      AuthorizingPrincipal(
+        id: json['id'] as String,
+        delegation: json['delegation'] as String?,
+      );
+
+  /// Its identifier.
+  final String id;
+
+  /// The delegation under which a delegate authorized the grant; present only then (HCP
+  /// 6.1.5, 17.4).
+  final String? delegation;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        if (delegation != null) 'delegation': delegation!,
+      };
+}
+
+/// An organization, by identifier and a name a person can recognize.
+class Named {
+  const Named({
+    required this.id,
+    required this.name,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Named.fromJson(Map<String, dynamic> json) => Named(
+        id: json['id'] as String,
+        name: json['name'] as String,
+      );
+
+  /// Its identifier.
+  final String id;
+
+  /// Its name. The minLength is a framework bound, not an HCP requirement.
+  final String name;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+      };
+}
+
+/// A record the client declared at registration that the law requires it to keep of
+/// what it receives (HCP 6.2.5).
+class LegalRetention {
+  const LegalRetention({
+    required this.record,
+    required this.obligation,
+    required this.period,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory LegalRetention.fromJson(Map<String, dynamic> json) => LegalRetention(
+        record: json['record'] as String,
+        obligation: json['obligation'] as String,
+        period: json['period'] as String,
+      );
+
+  /// The record kept.
+  final String record;
+
+  /// The law or rule that requires it.
+  final String obligation;
+
+  /// How long it is kept.
+  final String period;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'record': record,
+        'obligation': obligation,
+        'period': period,
+      };
+}
+
+/// An absolute URI with no whitespace, as HCP writes every custom value at an
+/// extension point (HCP A.3).
+typedef Uri = String;
+
+/// The client a grant was issued to (HCP 6.1.5).
+class GrantClient {
+  const GrantClient({
+    required this.id,
+    required this.name,
+    required this.operator,
+    this.legalRetention,
+    this.claims,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory GrantClient.fromJson(Map<String, dynamic> json) => GrantClient(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        operator: Named.fromJson(json['operator'] as Map<String, dynamic>),
+        legalRetention: json['legalRetention'] == null
+            ? null
+            : LegalRetention.fromJson(
+                json['legalRetention'] as Map<String, dynamic>),
+        claims: json['claims'] == null
+            ? null
+            : (json['claims'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+      );
+
+  /// Its client identifier.
+  final String id;
+
+  /// A name the person can recognize (HCP 6.1.5).
+  final String name;
+
+  /// The Client Operator (HCP 3.2.8).
+  final Named operator;
+
+  /// Present only where the client declared a legal obligation to keep what it receives
+  /// (HCP 6.2.5).
+  final LegalRetention? legalRetention;
+
+  /// The client conformance claims it declared at registration (HCP 18.1); absent where
+  /// it declared none.
+  final List<Uri>? claims;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'operator': operator.toJson(),
+        if (legalRetention != null) 'legalRetention': legalRetention!.toJson(),
+        if (claims != null) 'claims': claims!,
+      };
+}
+
+/// A person or an organization. HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RequestingPartyType(String value) {
+  static const RequestingPartyType person = RequestingPartyType('person');
+  static const RequestingPartyType organization =
+      RequestingPartyType('organization');
+
+  /// Every value this specification's schema permits.
+  static const List<RequestingPartyType> values = <RequestingPartyType>[
+    person,
+    organization
+  ];
+}
+
+/// The Requesting Party (HCP 3.2.7).
+class RequestingParty {
+  const RequestingParty({
+    required this.type,
+    required this.id,
+    this.name,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RequestingParty.fromJson(Map<String, dynamic> json) =>
+      RequestingParty(
+        type: RequestingPartyType(json['type'] as String),
+        id: json['id'] as String,
+        name: json['name'] as String?,
+      );
+
+  /// A person or an organization. HCP's own values, carried verbatim.
+  final RequestingPartyType type;
+
+  /// Its identifier.
+  final String id;
+
+  /// Its name.
+  final String? name;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'type': type.value,
+        'id': id,
+        if (name != null) 'name': name!,
+      };
+}
+
+/// A purpose with a description the person can read (HCP 6.1.5.2).
+class Purpose {
+  const Purpose({
+    required this.code,
+    required this.description,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Purpose.fromJson(Map<String, dynamic> json) => Purpose(
+        code: json['code'] as String,
+        description: json['description'] as String,
+      );
+
+  /// The purpose code.
+  final PurposeCode code;
+
+  /// The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).
+  final String description;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'code': code,
+        'description': description,
+      };
+}
+
+/// Present only where the Authorizing Principal elected onward sharing for the detail
+/// (HCP 3.12, 6.1.5).
+class OnwardSharing {
+  const OnwardSharing({
+    this.domains,
+    this.notTo,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory OnwardSharing.fromJson(Map<String, dynamic> json) => OnwardSharing(
+        domains: json['domains'] == null
+            ? null
+            : (json['domains'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        notTo: json['notTo'] == null
+            ? null
+            : (json['notTo'] as List<dynamic>).map((e) => e as String).toList(),
+      );
+
+  /// Where present, the DNS domains of the organizations the client may share with (HCP
+  /// 6.1.5).
+  final List<String>? domains;
+
+  /// Set by the provider: each DNS domain or operator a standing rule denies any of the
+  /// detail's categories (HCP 6.1.5, 6.3).
+  final List<String>? notTo;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (domains != null) 'domains': domains!,
+        if (notTo != null) 'notTo': notTo!,
+      };
+}
+
+/// AccessDetailActionsItem is a closed set of string values defined by this
+/// specification's schema.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const AccessDetailActionsItem(String value) {
+  static const AccessDetailActionsItem read = AccessDetailActionsItem('read');
+  static const AccessDetailActionsItem write = AccessDetailActionsItem('write');
+  static const AccessDetailActionsItem provenance =
+      AccessDetailActionsItem('provenance');
+
+  /// Every value this specification's schema permits.
+  static const List<AccessDetailActionsItem> values = <AccessDetailActionsItem>[
+    read,
+    write,
+    provenance
+  ];
+}
+
+/// An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396
+/// authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that
+/// includes `read` and all of whose categories have a default sensitivity of Low (HCP
+/// 6.1.5); not checked by the schema.
+class AccessDetail {
+  const AccessDetail({
     required this.type,
     required this.actions,
     required this.categories,
@@ -224,10 +533,10 @@ class GrantedAccess {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory GrantedAccess.fromJson(Map<String, dynamic> json) => GrantedAccess(
+  factory AccessDetail.fromJson(Map<String, dynamic> json) => AccessDetail(
         type: json['type'] as String,
         actions: (json['actions'] as List<dynamic>)
-            .map((e) => GrantAction(e as String))
+            .map((e) => AccessDetailActionsItem(e as String))
             .toList(),
         categories: (json['categories'] as List<dynamic>)
             .map((e) => e as String)
@@ -236,28 +545,32 @@ class GrantedAccess {
             .map((e) => Purpose.fromJson(e as Map<String, dynamic>))
             .toList(),
         narrowedTo: json['narrowedTo'] as Map<String, dynamic>?,
-        onwardSharing: json['onwardSharing'] as Map<String, dynamic>?,
+        onwardSharing: json['onwardSharing'] == null
+            ? null
+            : OnwardSharing.fromJson(
+                json['onwardSharing'] as Map<String, dynamic>),
       );
 
-  /// HCP's authorization-detail type, carried verbatim.
+  /// The HCP authorization detail type (HCP 6.1.5).
   final String type;
 
-  /// HCP `actions` as approved (HCP 6.1.5).
-  final List<GrantAction> actions;
+  /// What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5,
+  /// 7.4.1); not checked by the schema.
+  final List<AccessDetailActionsItem> actions;
 
-  /// HCP `categories` as approved (HCP 6.1.5); may be fewer than asked.
+  /// The categories the detail covers (HCP 4.5).
   final List<Category> categories;
 
-  /// HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may
-  /// name.
+  /// The purposes the person approved for these categories; never empty (HCP 6.1.5.2).
   final List<Purpose> purposes;
 
-  /// HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3).
+  /// An implementation-defined narrowing below category grain, which only narrows (HCP
+  /// 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id`
+  /// (HCP 5.2.6).
   final Map<String, dynamic>? narrowedTo;
 
-  /// HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5),
-  /// with `domains` and the provider-set `notTo` as HCP defines them.
-  final Map<String, dynamic>? onwardSharing;
+  /// The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).
+  final OnwardSharing? onwardSharing;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -266,99 +579,187 @@ class GrantedAccess {
         'categories': categories,
         'purposes': purposes.map((e) => e.toJson()).toList(),
         if (narrowedTo != null) 'narrowedTo': narrowedTo!,
-        if (onwardSharing != null) 'onwardSharing': onwardSharing!,
+        if (onwardSharing != null) 'onwardSharing': onwardSharing!.toJson(),
       };
 }
 
-/// An RFC 3339 instant.
-typedef Instant = String;
-
-/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
-/// HCP uses for entry, grant, directive and retrieval identifiers.
-typedef Urn = String;
-
-/// HCP `grantType` as the person chose it (HCP 6.1.4).
+/// Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const ResponseGrantType(String value) {
-  static const ResponseGrantType temporary = ResponseGrantType('temporary');
-  static const ResponseGrantType persistent = ResponseGrantType('persistent');
+extension type const GrantGrantType(String value) {
+  static const GrantGrantType temporary = GrantGrantType('temporary');
+  static const GrantGrantType persistent = GrantGrantType('persistent');
 
   /// Every value this specification's schema permits.
-  static const List<ResponseGrantType> values = <ResponseGrantType>[
+  static const List<GrantGrantType> values = <GrantGrantType>[
     temporary,
     persistent
   ];
 }
 
-/// The person approved: the grant evidence and the grant as approved. Sent only after
-/// the person's affirmative act (HCP 6.1.6); while they decide the provider answers
-/// trust-task-next-step, and a decline is trust-task-error permissionDenied — never
-/// this shape.
+/// `expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1).
+/// HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const GrantStatus(String value) {
+  static const GrantStatus active = GrantStatus('active');
+  static const GrantStatus revoked = GrantStatus('revoked');
+  static const GrantStatus expired = GrantStatus('expired');
+
+  /// Every value this specification's schema permits.
+  static const List<GrantStatus> values = <GrantStatus>[
+    active,
+    revoked,
+    expired
+  ];
+}
+
+/// A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for
+/// a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema
+/// conditional: the registry's Rust generator does not support `if`/`then`/`else`, so
+/// it is not checked by the schema. An HCP Provider never discloses a grant issued to
+/// one HCP Client to any other (HCP 6.1.5).
+class Grant {
+  const Grant({
+    required this.grantId,
+    required this.subject,
+    required this.authorizingPrincipal,
+    required this.client,
+    this.requestingParty,
+    required this.access,
+    this.scopes,
+    required this.grantType,
+    required this.issuedAt,
+    this.expiresAt,
+    required this.status,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Grant.fromJson(Map<String, dynamic> json) => Grant(
+        grantId: json['grantId'] as String,
+        subject: GrantParty.fromJson(json['subject'] as Map<String, dynamic>),
+        authorizingPrincipal: AuthorizingPrincipal.fromJson(
+            json['authorizingPrincipal'] as Map<String, dynamic>),
+        client: GrantClient.fromJson(json['client'] as Map<String, dynamic>),
+        requestingParty: json['requestingParty'] == null
+            ? null
+            : RequestingParty.fromJson(
+                json['requestingParty'] as Map<String, dynamic>),
+        access: (json['access'] as List<dynamic>)
+            .map((e) => AccessDetail.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        scopes: json['scopes'] == null
+            ? null
+            : (json['scopes'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        grantType: GrantGrantType(json['grantType'] as String),
+        issuedAt: json['issuedAt'] as String,
+        expiresAt: json['expiresAt'] as String?,
+        status: GrantStatus(json['status'] as String),
+      );
+
+  /// Stable for the life of the grant; the `grantId` recorded in audit events (HCP
+  /// 6.1.5, 8.2).
+  final Urn grantId;
+
+  /// The Context Subject, by a pseudonym specific to the client (HCP 3.4).
+  final GrantParty subject;
+
+  /// Who authorized the grant (HCP 3.4, 6.1.5).
+  final AuthorizingPrincipal authorizingPrincipal;
+
+  /// The HCP Client the grant was issued to (HCP 6.1.5).
+  final GrantClient client;
+
+  /// The party on whose behalf the client requested access, where there is one (HCP
+  /// 3.2.7, 3.4).
+  final RequestingParty? requestingParty;
+
+  /// What the grant authorizes: one or more authorization details (HCP 6.1.5).
+  final List<AccessDetail> access;
+
+  /// Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP
+  /// 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).
+  final List<String>? scopes;
+
+  /// Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
+  final GrantGrantType grantType;
+
+  /// When the grant was issued.
+  final Instant issuedAt;
+
+  /// For a temporary grant, its absolute expiry, never null; for a persistent grant,
+  /// null (HCP 6.1.4, 6.1.5).
+  final String? expiresAt;
+
+  /// `expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1).
+  /// HCP's own values, carried verbatim.
+  final GrantStatus status;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'grantId': grantId,
+        'subject': subject.toJson(),
+        'authorizingPrincipal': authorizingPrincipal.toJson(),
+        'client': client.toJson(),
+        if (requestingParty != null)
+          'requestingParty': requestingParty!.toJson(),
+        'access': access.map((e) => e.toJson()).toList(),
+        if (scopes != null) 'scopes': scopes!,
+        'grantType': grantType.value,
+        'issuedAt': issuedAt,
+        if (expiresAt != null) 'expiresAt': expiresAt!,
+        'status': status.value,
+      };
+}
+
+/// The person approved: the grant evidence, as HCP's OAuth token response carries it
+/// (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5).
+/// Sent only after the person's affirmative act (HCP 6.1.6); while they decide the
+/// provider answers trust-task-next-step, and a decline is trust-task-error
+/// permissionDenied — never this shape.
 class Response {
   const Response({
     required this.accessToken,
     required this.tokenExpiresAt,
-    required this.grantId,
-    required this.access,
-    required this.grantType,
-    required this.grantedAt,
-    this.grantExpiresAt,
+    required this.grant,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Response.fromJson(Map<String, dynamic> json) => Response(
         accessToken: json['accessToken'] as String,
         tokenExpiresAt: json['tokenExpiresAt'] as String,
-        grantId: json['grantId'] as String,
-        access: (json['access'] as List<dynamic>)
-            .map((e) => GrantedAccess.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        grantType: ResponseGrantType(json['grantType'] as String),
-        grantedAt: json['grantedAt'] as String,
-        grantExpiresAt: json['grantExpiresAt'] as String?,
+        grant: Grant.fromJson(json['grant'] as Map<String, dynamic>),
       );
 
-  /// The HCP access token for the new grant, opaque to the client. The client presents
-  /// it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it
-  /// sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24
-  /// hours).
+  /// The HCP access token for the new grant (the token response's `access_token`, HCP
+  /// 13.3), opaque to the client. The client presents it unchanged as `accessToken` in
+  /// hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime
+  /// follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework
+  /// bound, not an HCP requirement.
   final String accessToken;
 
-  /// When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after
-  /// `grantExpiresAt`.
+  /// When `accessToken` stops being accepted (the token response's `expires_in`, HCP
+  /// 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.
   final Instant tokenExpiresAt;
 
-  /// HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier
-  /// hcp/grants/revoke and hcp/grants/revoked name.
-  final Urn grantId;
-
-  /// HCP `access` as the person approved it, which may be narrower than asked (HCP
-  /// 6.1.5, 13.3: the token response carries the authorization details granted).
-  final List<GrantedAccess> access;
-
-  /// HCP `grantType` as the person chose it (HCP 6.1.4).
-  final ResponseGrantType grantType;
-
-  /// HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document's own
-  /// `issuedAt`.
-  final Instant grantedAt;
-
-  /// HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and
-  /// absent for a persistent one, where HCP writes null.
-  final Instant? grantExpiresAt;
+  /// The grant as the person approved it, as HCP's grant object (HCP 6.1.5) and as
+  /// hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the
+  /// token response carries the authorization details granted), `status` is `active`,
+  /// and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation`
+  /// is withheld, as from any Context Client reading its own grant (HCP 17.4).
+  final Grant grant;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'accessToken': accessToken,
         'tokenExpiresAt': tokenExpiresAt,
-        'grantId': grantId,
-        'access': access.map((e) => e.toJson()).toList(),
-        'grantType': grantType.value,
-        'grantedAt': grantedAt,
-        if (grantExpiresAt != null) 'grantExpiresAt': grantExpiresAt!,
+        'grant': grant.toJson(),
       };
 }
 
@@ -411,7 +812,7 @@ class Payload {
         subjectHint: json['subjectHint'] as String?,
         requestingParty: json['requestingParty'] == null
             ? null
-            : RequestingParty.fromJson(
+            : ProposedRequestingParty.fromJson(
                 json['requestingParty'] as Map<String, dynamic>),
       );
 
@@ -440,7 +841,7 @@ class Payload {
   /// HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf
   /// the client asks, where it differs from the Context Subject. Shown to the person
   /// before they act (HCP 6.1.6).
-  final RequestingParty? requestingParty;
+  final ProposedRequestingParty? requestingParty;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -486,11 +887,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/request/0.1","title":"HCP — Request Grant — payload","description":"A Context Client asks an HCP Provider for a grant over a person\'s context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["access"],"properties":{"access":{"type":"array","minItems":1,"maxItems":16,"items":{"\$ref":"#/\$defs/AccessRequest"},"description":"What the client asks to be granted: one or more HCP authorization details (HCP 6.1.5 `access`, HCP 13.3). The provider shows each to the person before they act (HCP 6.1.6). The maxItems of 16 is a framework bound, not an HCP requirement."},"grantType":{"type":"string","enum":["temporary","persistent"],"description":"The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP\'s default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation."},"expiresIn":{"type":"integer","minimum":60,"maximum":86400,"description":"For a temporary grant, the lifetime the client asks for, in seconds. Absent means HCP\'s default of 4 hours; HCP\'s maximum is 24 hours (HCP 6.1.3). The provider MAY grant less and never more. Ignored for a persistent grant."},"subjectHint":{"type":"string","minLength":1,"maxLength":256,"description":"An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification\'s Errors). Pending HCP confirmation."},"requestingParty":{"\$ref":"#/\$defs/RequestingParty","description":"HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6)."}},"\$defs":{"AccessRequest":{"type":"object","additionalProperties":false,"required":["type","actions","categories"],"description":"One HCP authorization detail as requested (HCP 6.1.5, 13.3).","properties":{"type":{"type":"string","const":"https://hcp.example/spec/authorization/context-access","description":"HCP\'s authorization-detail type, carried verbatim (HCP 6.1.5)."},"actions":{"type":"array","minItems":1,"maxItems":3,"uniqueItems":true,"items":{"\$ref":"#/\$defs/GrantAction"},"description":"HCP `actions`: what the client may do with the categories. `provenance` only alongside `read` (HCP 6.1.5, 7.4.1)."},"categories":{"type":"array","minItems":1,"maxItems":256,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categories` the detail covers (HCP 4.5, 6.1.5). The maxItems of 256 is a framework bound, not an HCP requirement."},"purposes":{"type":"array","minItems":1,"maxItems":32,"items":{"\$ref":"#/\$defs/Purpose"},"description":"HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement."},"narrowedTo":{"type":"object","description":"HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule 2)."},"onwardSharing":{"\$ref":"#/\$defs/OnwardSharingRequest","description":"HCP `onwardSharing` (HCP 3.12, 6.1.4, 6.1.5): asks that the person be offered onward sharing for this detail, as a separate act after they confirm the grant. Only in a detail that includes `read` and whose categories are all of Low default sensitivity; otherwise malformedRequest (HCP 6.1.5)."}}},"GrantAction":{"type":"string","enum":["read","write","provenance"],"description":"An HCP grant action (HCP 6.1.5). HCP\'s own values, carried verbatim."},"Purpose":{"type":"object","additionalProperties":false,"required":["code"],"description":"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.","properties":{"code":{"\$ref":"#/\$defs/PurposeCode"},"description":{"type":"string","minLength":1,"maxLength":1024,"description":"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound."}}},"OnwardSharingRequest":{"type":"object","additionalProperties":false,"description":"A request for onward sharing (HCP 6.1.5). `notTo` is set by the provider, never asked for.","properties":{"domains":{"type":"array","minItems":1,"maxItems":64,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":253},"description":"DNS domains the client proposes to limit onward sharing to. The person may narrow them further (HCP 6.1.4)."}}},"RequestingParty":{"type":"object","additionalProperties":false,"required":["type","id"],"description":"HCP `requestingParty` (HCP 6.1.5).","properties":{"type":{"type":"string","enum":["person","organization"],"description":"HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"HCP `requestingParty.id`: an identifier for the party."},"name":{"type":"string","minLength":1,"maxLength":256,"description":"HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6)."}}},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/request/0.1","title":"HCP — Request Grant — payload","description":"A Context Client asks an HCP Provider for a grant over a person\'s context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["access"],"properties":{"access":{"type":"array","minItems":1,"maxItems":16,"items":{"\$ref":"#/\$defs/AccessRequest"},"description":"What the client asks to be granted: one or more HCP authorization details (HCP 6.1.5 `access`, HCP 13.3). The provider shows each to the person before they act (HCP 6.1.6). The maxItems of 16 is a framework bound, not an HCP requirement."},"grantType":{"type":"string","enum":["temporary","persistent"],"description":"The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP\'s default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation."},"expiresIn":{"type":"integer","minimum":60,"maximum":86400,"description":"For a temporary grant, the lifetime the client asks for, in seconds. Absent means HCP\'s default of 4 hours; HCP\'s maximum is 24 hours (HCP 6.1.3). The provider MAY grant less and never more. Ignored for a persistent grant."},"subjectHint":{"type":"string","minLength":1,"maxLength":256,"description":"An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification\'s Errors). Pending HCP confirmation."},"requestingParty":{"\$ref":"#/\$defs/ProposedRequestingParty","description":"HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6)."}},"\$defs":{"AccessRequest":{"type":"object","additionalProperties":false,"required":["type","actions","categories"],"description":"One HCP authorization detail as requested (HCP 6.1.5, 13.3).","properties":{"type":{"type":"string","const":"https://hcp.example/spec/authorization/context-access","description":"HCP\'s authorization-detail type, carried verbatim (HCP 6.1.5)."},"actions":{"type":"array","minItems":1,"maxItems":3,"uniqueItems":true,"items":{"\$ref":"#/\$defs/GrantAction"},"description":"HCP `actions`: what the client may do with the categories. `provenance` only alongside `read` (HCP 6.1.5, 7.4.1)."},"categories":{"type":"array","minItems":1,"maxItems":256,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categories` the detail covers (HCP 4.5, 6.1.5). The maxItems of 256 is a framework bound, not an HCP requirement."},"purposes":{"type":"array","minItems":1,"maxItems":32,"items":{"\$ref":"#/\$defs/RequestedPurpose"},"description":"HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement."},"narrowedTo":{"type":"object","description":"HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule 2)."},"onwardSharing":{"\$ref":"#/\$defs/OnwardSharingRequest","description":"HCP `onwardSharing` (HCP 3.12, 6.1.4, 6.1.5): asks that the person be offered onward sharing for this detail, as a separate act after they confirm the grant. Only in a detail that includes `read` and whose categories are all of Low default sensitivity; otherwise malformedRequest (HCP 6.1.5)."}}},"GrantAction":{"type":"string","enum":["read","write","provenance"],"description":"An HCP grant action (HCP 6.1.5). HCP\'s own values, carried verbatim."},"RequestedPurpose":{"type":"object","additionalProperties":false,"required":["code"],"description":"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.","properties":{"code":{"\$ref":"#/\$defs/PurposeCode"},"description":{"type":"string","minLength":1,"maxLength":4096,"description":"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant\'s purpose description, is a framework bound, not an HCP requirement."}}},"OnwardSharingRequest":{"type":"object","additionalProperties":false,"description":"A request for onward sharing (HCP 6.1.5). `notTo` is set by the provider, never asked for.","properties":{"domains":{"type":"array","minItems":1,"maxItems":64,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":253},"description":"DNS domains the client proposes to limit onward sharing to. The person may narrow them further (HCP 6.1.4)."}}},"ProposedRequestingParty":{"type":"object","additionalProperties":false,"required":["type","id"],"description":"HCP `requestingParty` (HCP 6.1.5).","properties":{"type":{"type":"string","enum":["person","organization"],"description":"HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"HCP `requestingParty.id`: an identifier for the party."},"name":{"type":"string","minLength":1,"maxLength":256,"description":"HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6)."}}},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"GrantAction":{"type":"string","enum":["read","write","provenance"],"description":"An HCP grant action (HCP 6.1.5). HCP\'s own values, carried verbatim."},"Purpose":{"type":"object","additionalProperties":false,"required":["code"],"description":"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.","properties":{"code":{"\$ref":"#/\$defs/PurposeCode"},"description":{"type":"string","minLength":1,"maxLength":1024,"description":"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound."}}},"GrantedAccess":{"type":"object","additionalProperties":false,"required":["type","actions","categories","purposes"],"description":"One authorization detail as the person approved it (HCP 6.1.5 `access[]`). Every approved detail carries at least one purpose (HCP 6.1.5.2).","properties":{"type":{"type":"string","const":"https://hcp.example/spec/authorization/context-access","description":"HCP\'s authorization-detail type, carried verbatim."},"actions":{"type":"array","minItems":1,"maxItems":3,"uniqueItems":true,"items":{"\$ref":"#/\$defs/GrantAction"},"description":"HCP `actions` as approved (HCP 6.1.5)."},"categories":{"type":"array","minItems":1,"maxItems":256,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categories` as approved (HCP 6.1.5); may be fewer than asked."},"purposes":{"type":"array","minItems":1,"maxItems":32,"items":{"\$ref":"#/\$defs/Purpose"},"description":"HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may name."},"narrowedTo":{"type":"object","description":"HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3)."},"onwardSharing":{"type":"object","additionalProperties":true,"description":"HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5), with `domains` and the provider-set `notTo` as HCP defines them."}}},"Response":{"\$anchor":"response","title":"HCP — Request Grant — response payload","type":"object","additionalProperties":false,"required":["accessToken","tokenExpiresAt","grantId","access","grantType","grantedAt"],"description":"The person approved: the grant evidence and the grant as approved. Sent only after the person\'s affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.","properties":{"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours)."},"tokenExpiresAt":{"\$ref":"#/\$defs/Instant","description":"When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after `grantExpiresAt`."},"grantId":{"\$ref":"#/\$defs/Urn","description":"HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier hcp/grants/revoke and hcp/grants/revoked name."},"access":{"type":"array","minItems":1,"maxItems":16,"items":{"\$ref":"#/\$defs/GrantedAccess"},"description":"HCP `access` as the person approved it, which may be narrower than asked (HCP 6.1.5, 13.3: the token response carries the authorization details granted)."},"grantType":{"type":"string","enum":["temporary","persistent"],"description":"HCP `grantType` as the person chose it (HCP 6.1.4)."},"grantedAt":{"\$ref":"#/\$defs/Instant","description":"HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document\'s own `issuedAt`."},"grantExpiresAt":{"\$ref":"#/\$defs/Instant","description":"HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and absent for a persistent one, where HCP writes null."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"HCP — Request Grant — response payload","type":"object","additionalProperties":false,"required":["accessToken","tokenExpiresAt","grant"],"description":"The person approved: the grant evidence, as HCP\'s OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP\'s grant object (HCP 6.1.5). Sent only after the person\'s affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.","properties":{"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The HCP access token for the new grant (the token response\'s `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement."},"tokenExpiresAt":{"\$ref":"#/\$defs/Instant","description":"When `accessToken` stops being accepted (the token response\'s `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant\'s `expiresAt`."},"grant":{"\$ref":"#/\$defs/Grant","description":"The grant as the person approved it, as HCP\'s grant object (HCP 6.1.5) and as hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the token response carries the authorization details granted), `status` is `active`, and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4)."}}},"Grant":{"type":"object","additionalProperties":true,"required":["grantId","subject","authorizingPrincipal","client","access","grantType","issuedAt","expiresAt","status"],"description":"A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).","properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2)."},"subject":{"\$ref":"#/\$defs/GrantParty","description":"The Context Subject, by a pseudonym specific to the client (HCP 3.4)."},"authorizingPrincipal":{"\$ref":"#/\$defs/AuthorizingPrincipal","description":"Who authorized the grant (HCP 3.4, 6.1.5)."},"client":{"\$ref":"#/\$defs/GrantClient","description":"The HCP Client the grant was issued to (HCP 6.1.5)."},"requestingParty":{"\$ref":"#/\$defs/RequestingParty","description":"The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4)."},"access":{"type":"array","minItems":1,"items":{"\$ref":"#/\$defs/AccessDetail"},"description":"What the grant authorizes: one or more authorization details (HCP 6.1.5)."},"scopes":{"type":"array","items":{"type":"string","maxLength":2048,"pattern":"^hcp:[^:]+(:[^:]+)*:(read|write)\$"},"description":"Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5)."},"grantType":{"type":"string","enum":["temporary","persistent"],"description":"Temporary or persistent (HCP 6.1.4). HCP\'s own values, carried verbatim."},"issuedAt":{"\$ref":"#/\$defs/Instant","description":"When the grant was issued."},"expiresAt":{"type":["string","null"],"format":"date-time","description":"For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5)."},"status":{"type":"string","enum":["active","revoked","expired"],"description":"`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP\'s own values, carried verbatim."}}},"AccessDetail":{"type":"object","additionalProperties":true,"required":["type","actions","categories","purposes"],"description":"An authorization detail (HCP 6.1.5); under HCP\'s OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.","properties":{"type":{"type":"string","const":"https://hcp.example/spec/authorization/context-access","description":"The HCP authorization detail type (HCP 6.1.5)."},"actions":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","enum":["read","write","provenance"]},"description":"What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema."},"categories":{"type":"array","minItems":1,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories the detail covers (HCP 4.5)."},"purposes":{"type":"array","minItems":1,"items":{"\$ref":"#/\$defs/Purpose"},"description":"The purposes the person approved for these categories; never empty (HCP 6.1.5.2)."},"narrowedTo":{"type":"object","additionalProperties":true,"description":"An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6)."},"onwardSharing":{"\$ref":"#/\$defs/OnwardSharing","description":"The onward sharing the person elected for the detail (HCP 3.12, 6.1.5)."}}},"OnwardSharing":{"type":"object","additionalProperties":true,"description":"Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).","properties":{"domains":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":253},"description":"Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5)."},"notTo":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"Set by the provider: each DNS domain or operator a standing rule denies any of the detail\'s categories (HCP 6.1.5, 6.3)."}}},"Purpose":{"type":"object","additionalProperties":true,"required":["code","description"],"description":"A purpose with a description the person can read (HCP 6.1.5.2).","properties":{"code":{"\$ref":"#/\$defs/PurposeCode","description":"The purpose code."},"description":{"type":"string","minLength":1,"maxLength":4096,"description":"The description shown to the person before approval (HCP 6.1.5.2, 6.1.6)."}}},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"RequestingParty":{"type":"object","additionalProperties":true,"required":["type","id"],"description":"The Requesting Party (HCP 3.2.7).","properties":{"type":{"type":"string","enum":["person","organization"],"description":"A person or an organization. HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Its identifier."},"name":{"type":"string","maxLength":1024,"description":"Its name."}}},"GrantClient":{"type":"object","additionalProperties":true,"required":["id","name","operator"],"description":"The client a grant was issued to (HCP 6.1.5).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Its client identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"A name the person can recognize (HCP 6.1.5)."},"operator":{"\$ref":"#/\$defs/Named","description":"The Client Operator (HCP 3.2.8)."},"legalRetention":{"\$ref":"#/\$defs/LegalRetention","description":"Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5)."},"claims":{"type":"array","uniqueItems":true,"items":{"\$ref":"#/\$defs/Uri"},"description":"The client conformance claims it declared at registration (HCP 18.1); absent where it declared none."}}},"LegalRetention":{"type":"object","additionalProperties":true,"required":["record","obligation","period"],"description":"A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).","properties":{"record":{"type":"string","maxLength":4096,"description":"The record kept."},"obligation":{"type":"string","maxLength":4096,"description":"The law or rule that requires it."},"period":{"type":"string","maxLength":1024,"description":"How long it is kept."}}},"Named":{"type":"object","additionalProperties":true,"required":["id","name"],"description":"An organization, by identifier and a name a person can recognize.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Its identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"Its name. The minLength is a framework bound, not an HCP requirement."}}},"Uri":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3)."},"AuthorizingPrincipal":{"type":"object","additionalProperties":true,"required":["id"],"description":"The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Its identifier."},"delegation":{"type":"string","minLength":1,"maxLength":2048,"description":"The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4)."}}},"GrantParty":{"type":"object","additionalProperties":true,"required":["id"],"description":"An actor a grant binds, named by identifier (HCP 3.4).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.
@@ -518,4 +919,5 @@ const SpecPolicy responseSpec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: responsePayloadSchemaJson,
+  maxDocumentBytes: 1048576,
 );

@@ -24,7 +24,7 @@ export interface HCPListDelegationsPayload {
  */
 export interface HCPListDelegationsResponsePayload {
   /**
-   * HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; only the delegations naming the delegate, for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.
+   * HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.
    */
   delegations: Delegation[];
 }
@@ -121,7 +121,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "items": {
             "$ref": "#/$defs/Delegation"
           },
-          "description": "HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; only the delegations naming the delegate, for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none."
+          "description": "HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none."
         }
       }
     },
@@ -444,7 +444,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

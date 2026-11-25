@@ -2424,6 +2424,12 @@ export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_
  */
 export type Slot = string;
 /**
+ * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.
+ */
+export type StandingRule = {
+  [k: string]: unknown | undefined;
+};
+/**
  * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
  */
 export type State = "active" | "dismissed";
@@ -6369,7 +6375,7 @@ export interface AuditDisclosed {
    */
   provenance?: boolean;
   /**
-   * Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+   * Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
    *
    * @maxItems 16
    */
@@ -6382,7 +6388,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6397,7 +6403,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6410,48 +6416,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        }
-      ]
-    | [
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6466,7 +6431,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6479,7 +6444,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6492,20 +6457,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6520,7 +6472,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6533,7 +6485,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6546,7 +6498,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6559,20 +6511,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6587,7 +6526,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6600,7 +6539,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6613,7 +6552,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6626,7 +6565,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6639,20 +6578,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6667,7 +6593,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6680,7 +6606,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6693,7 +6619,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6706,7 +6632,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6719,7 +6645,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6732,20 +6658,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6760,7 +6673,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6773,7 +6686,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6786,7 +6699,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6799,7 +6712,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6812,7 +6725,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6825,7 +6738,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6838,20 +6751,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6866,7 +6766,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6879,7 +6779,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6892,7 +6792,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6905,7 +6805,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6918,7 +6818,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6931,7 +6831,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6944,7 +6844,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6957,20 +6857,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6985,7 +6872,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -6998,7 +6885,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7011,7 +6898,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7024,7 +6911,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7037,7 +6924,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7050,7 +6937,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7063,7 +6950,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7076,7 +6963,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7089,20 +6976,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7117,7 +6991,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7130,7 +7004,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7143,7 +7017,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7156,7 +7030,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7169,7 +7043,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7182,7 +7056,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7195,7 +7069,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7208,7 +7082,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7221,7 +7095,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7234,20 +7108,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7262,7 +7123,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7275,7 +7136,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7288,7 +7149,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7301,7 +7162,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7314,7 +7175,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7327,7 +7188,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7340,7 +7201,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7353,7 +7214,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7366,7 +7227,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7379,7 +7240,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7392,20 +7253,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7420,7 +7268,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7433,7 +7281,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7446,7 +7294,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7459,7 +7307,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7472,7 +7320,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7485,7 +7333,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7498,7 +7346,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7511,7 +7359,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7524,7 +7372,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7537,7 +7385,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7550,7 +7398,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7563,20 +7411,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7591,7 +7426,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7604,7 +7439,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7617,7 +7452,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7630,7 +7465,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7643,7 +7478,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7656,7 +7491,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7669,7 +7504,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7682,7 +7517,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7695,7 +7530,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7708,7 +7543,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7721,7 +7556,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7734,7 +7569,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7747,20 +7582,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7775,7 +7597,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7788,7 +7610,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7801,7 +7623,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7814,7 +7636,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7827,7 +7649,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7840,7 +7662,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7853,7 +7675,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7866,7 +7688,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7879,7 +7701,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7892,7 +7714,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7905,7 +7727,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7918,7 +7740,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7931,7 +7753,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7944,20 +7766,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
-           *
-           * @maxItems 256
-           */
-          claims: string[];
-          [k: string]: unknown | undefined;
-        },
-        {
-          /**
-           * The evidence item's index.
-           */
-          evidence: number;
-          /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7972,7 +7781,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7985,7 +7794,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -7998,7 +7807,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8011,7 +7820,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8024,7 +7833,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8037,7 +7846,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8050,7 +7859,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8063,7 +7872,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8076,7 +7885,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8089,7 +7898,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8102,7 +7911,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8115,7 +7924,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8128,7 +7937,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8141,7 +7950,7 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8154,7 +7963,22 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8167,7 +7991,189 @@ export interface AuditDisclosed {
            */
           evidence: number;
           /**
-           * The claims revealed, each a JSON Pointer.
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
            *
            * @maxItems 256
            */
@@ -8281,7 +8287,7 @@ export interface AuditEvent {
   reason?: string;
 }
 /**
- * One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).
+ * One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
  */
 export interface AuditEvent_HcpV0_1 {
   /**
@@ -8289,7 +8295,7 @@ export interface AuditEvent_HcpV0_1 {
    */
   eventId: Urn;
   /**
-   * The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused.
+   * The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
    */
   eventType: string;
   /**
@@ -8301,13 +8307,13 @@ export interface AuditEvent_HcpV0_1 {
    */
   participants: AuditParticipants;
   /**
-   * The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2).
+   * The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
    */
-  entryId?: string | null;
+  entryId: string | null;
   /**
-   * For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2).
+   * For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
    */
-  relatedEntryId?: string | null;
+  relatedEntryId: string | null;
   /**
    * The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
    *
@@ -8315,17 +8321,17 @@ export interface AuditEvent_HcpV0_1 {
    */
   categories?: Category[];
   /**
-   * The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+   * The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
    */
-  purpose?: string | null;
+  purpose: string | null;
   /**
-   * The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement.
+   * The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
    */
-  purposeDescription?: string | null;
+  purposeDescription: string | null;
   /**
-   * The grant concerned, or null (HCP 8.2).
+   * The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
    */
-  grantId?: string | null;
+  grantId: string | null;
   /**
    * Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
    *
@@ -8569,7 +8575,7 @@ export interface AuditParticipants {
      */
     role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
     /**
-     * Their identifier.
+     * Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
      */
     id: string;
     [k: string]: unknown | undefined;
@@ -8605,7 +8611,7 @@ export interface AuditParticipants {
  */
 export interface AuditParty {
   /**
-   * The participant's identifier.
+   * The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
    */
   id: string;
   [k: string]: unknown | undefined;
@@ -13062,7 +13068,7 @@ export interface EvidenceItem {
   [k: string]: unknown | undefined;
 }
 /**
- * An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.
+ * An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
  */
 export interface Export {
   /**
@@ -13178,9 +13184,9 @@ export interface Export {
    */
   exportedAt: Instant;
   /**
-   * The options requested (HCP 5.4.1).
+   * The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42).
    */
-  options?: ExportOptions;
+  options: ExportOptions;
   /**
    * The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
    *
@@ -13190,7 +13196,7 @@ export interface Export {
     [k: string]: unknown | undefined;
   }[];
   /**
-   * Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1).
+   * Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.
    *
    * @maxItems 1000000
    */
@@ -13200,23 +13206,23 @@ export interface Export {
   /**
    * The Context Subject's standing rules (HCP 5.4.1, 6.3).
    *
-   * @maxItems 1024
+   * @maxItems 1000000
    */
   rules: StandingRule[];
   /**
    * The Context Subject's directives (HCP 5.4.1, 6.4).
    *
-   * @maxItems 1024
+   * @maxItems 1000000
    */
   directives?: Directive[];
   /**
    * The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
    *
-   * @maxItems 256
+   * @maxItems 1000000
    */
   delegations?: Delegation[];
   /**
-   * The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1).
+   * The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.
    *
    * @maxItems 1000000
    */
@@ -13224,7 +13230,7 @@ export interface Export {
   [k: string]: unknown | undefined;
 }
 /**
- * The export options (HCP 5.4.1). Absent or false means the default.
+ * The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.
  */
 export interface ExportOptions {
   /**
@@ -13234,11 +13240,11 @@ export interface ExportOptions {
   /**
    * Also return superseded versions of each entry returned (HCP 5.4.1).
    */
-  includeVersions?: boolean;
+  includeVersions: boolean;
   /**
    * Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
    */
-  includeAudit?: boolean;
+  includeAudit: boolean;
   [k: string]: unknown | undefined;
 }
 /**
@@ -13776,7 +13782,7 @@ export interface GrantClient {
  */
 export interface GrantParty {
   /**
-   * Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4).
+   * Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.
    */
   id: string;
   [k: string]: unknown | undefined;
@@ -15835,7 +15841,7 @@ export interface Named {
    */
   id: string;
   /**
-   * Its name.
+   * Its name. The minLength is a framework bound, not an HCP requirement.
    */
   name: string;
   [k: string]: unknown | undefined;
@@ -19786,49 +19792,6 @@ export interface Standing {
    * True where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8).
    */
   confirmed: boolean;
-  [k: string]: unknown | undefined;
-}
-/**
- * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). That rule is not checked by the schema: the registry's Rust generator does not support the conditional keywords it needs, so a validator does not check it.
- */
-export interface StandingRule {
-  /**
-   * Stable for the life of the rule (HCP 6.3).
-   */
-  ruleId: Urn;
-  /**
-   * `deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
-   */
-  effect: "deny";
-  /**
-   * The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
-   *
-   * @minItems 1
-   * @maxItems 256
-   */
-  operators?: [string, ...string[]];
-  /**
-   * Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-   *
-   * @minItems 1
-   * @maxItems 64
-   */
-  requires?: [Uri, ...Uri[]];
-  /**
-   * The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-   *
-   * @minItems 1
-   * @maxItems 256
-   */
-  categories?: [Category, ...Category[]];
-  /**
-   * Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
-   */
-  setBy: string;
-  /**
-   * Set by the provider: when the rule was set (HCP 6.3).
-   */
-  createdAt: Instant;
   [k: string]: unknown | undefined;
 }
 /**

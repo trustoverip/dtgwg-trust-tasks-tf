@@ -1107,21 +1107,21 @@ class Payload {
       );
 
   /// HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's
-  /// stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).
+  /// stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
   final Urn entryId;
 
   /// HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the
   /// purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a
   /// purpose it lists that `assertion.permittedPurposes` does not list has no effect
   /// (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's
-  /// own value, carried verbatim. The maxItems of 256 and the minItems of 1 are
-  /// framework bounds, not HCP requirements: an empty list would permit no purpose,
-  /// which HCP does not define.
+  /// own value, carried verbatim. An empty list permits no purpose: the entry may then
+  /// be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an
+  /// HCP requirement.
   final List<PurposeCode>? permittedPurposes;
 
   /// HCP `expectedVersion`: the `record.version` the Management Client showed the
-  /// Authorizing Principal. Where it is not the entry's current version, the operation
-  /// fails with version conflict and changes nothing (HCP 5.4, 5.5).
+  /// Context Subject. Where it is not the entry's current version, the operation fails
+  /// with version conflict and changes nothing (HCP 5.4, 5.5).
   final int expectedVersion;
 
   /// The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP
@@ -1173,7 +1173,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1","title":"HCP — Restrict Entry Purposes — payload","description":"The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal\'s narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["entryId","permittedPurposes","expectedVersion","accessToken"],"properties":{"entryId":{"\$ref":"#/\$defs/Urn","description":"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry\'s stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."},"permittedPurposes":{"type":["array","null"],"minItems":1,"maxItems":256,"uniqueItems":true,"items":{"\$ref":"#/\$defs/PurposeCode"},"description":"HCP `permittedPurposes`: the entry\'s new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal\'s narrowing (HCP 9.4.10); HCP\'s own value, carried verbatim. The maxItems of 256 and the minItems of 1 are framework bounds, not HCP requirements: an empty list would permit no purpose, which HCP does not define."},"expectedVersion":{"type":"integer","minimum":1,"description":"HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry\'s current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."}},"\$defs":{"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1","title":"HCP — Restrict Entry Purposes — payload","description":"The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal\'s narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["entryId","permittedPurposes","expectedVersion","accessToken"],"properties":{"entryId":{"\$ref":"#/\$defs/Urn","description":"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry\'s stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."},"permittedPurposes":{"type":["array","null"],"maxItems":256,"uniqueItems":true,"items":{"\$ref":"#/\$defs/PurposeCode"},"description":"HCP `permittedPurposes`: the entry\'s new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal\'s narrowing (HCP 9.4.10); HCP\'s own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement."},"expectedVersion":{"type":"integer","minimum":1,"description":"HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry\'s current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."}},"\$defs":{"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
@@ -1205,5 +1205,5 @@ const SpecPolicy responseSpec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: responsePayloadSchemaJson,
-  maxDocumentBytes: 262144,
+  maxDocumentBytes: 524288,
 );

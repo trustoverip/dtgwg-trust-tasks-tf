@@ -200,7 +200,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "cursor": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 1024,
+      "maxLength": 2048,
       "description": "HCP `cursor` (HCP 9.5, 9.4.12): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement."
     },
     "limit": {
@@ -251,7 +251,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "nextCursor": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 1024,
+          "maxLength": 2048,
           "description": "HCP `nextCursor` (HCP 9.5, 9.4.12): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted or the provider does not paginate: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement."
         }
       }
@@ -474,7 +474,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

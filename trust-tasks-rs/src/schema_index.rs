@@ -24092,6 +24092,15 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         "https://trusttasks.org/spec/hcp/export/0.1#response" => <crate::specs::hcp::export::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/list/0.1#response" => <crate::specs::hcp::grants::list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/read-own/0.1#response" => <crate::specs::hcp::grants::read_own::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/request/0.1#response" => <crate::specs::hcp::grants::request::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/import/0.1" => <crate::specs::hcp::import::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]

@@ -50,6 +50,10 @@ fn rejects_invalid_examples() {
             "A `hardDelete` flag in the payload — HCP's query parameter is carried by the Type URI, not a member; a withdraw is a different task.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n  \"hardDelete\": true\n}",
         ),
+        (
+            "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n  \"ref\": \"hcp-ref-c73e19\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {
@@ -89,6 +93,10 @@ fn rejects_invalid_response_examples() {
         (
             "HCP's `timestamp` instead of `respondedAt` — the carriage renames it.",
             "{\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n  \"hardDeleted\": true,\n  \"timestamp\": \"2026-11-25T09:00:01Z\"\n}",
+        ),
+        (
+            "Missing `entryId` — the result names the entry removed (HCP 9.4.5).",
+            "{\n  \"hardDeleted\": true,\n  \"respondedAt\": \"2026-11-25T09:00:01Z\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

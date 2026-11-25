@@ -70,6 +70,18 @@ fn rejects_invalid_examples() {
             "Missing `accessToken` — the token is the evidence of the grant.",
             "{\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"expectedVersion\": 1,\n  \"reason\": \"Correction.\",\n  \"ref\": \"hcp-ref-c73e19\"\n}",
         ),
+        (
+            "Non-urn `entryId` — HCP entry identifiers are urn:uuid.",
+            "{\n  \"accessToken\": \"hcp_at_x\",\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"entryId\": \"entry-42\",\n  \"expectedVersion\": 1,\n  \"reason\": \"Correction.\"\n}",
+        ),
+        (
+            "Empty `ref` — the `ref` names the entry to revise, and an empty one names none (HCP 5.2.4, 7.4).",
+            "{\n  \"accessToken\": \"hcp_at_x\",\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"expectedVersion\": 1,\n  \"reason\": \"Correction.\",\n  \"ref\": \"\"\n}",
+        ),
+        (
+            "A revised `confidence` HCP does not define — HCP defines high, medium and low (HCP 4.2, 5.2.4).",
+            "{\n  \"accessToken\": \"hcp_at_x\",\n  \"assertion\": {\n    \"confidence\": \"certain\",\n    \"declarationType\": \"model-inferred\"\n  },\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"expectedVersion\": 1,\n  \"reason\": \"Correction.\",\n  \"ref\": \"hcp-ref-c73e19\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

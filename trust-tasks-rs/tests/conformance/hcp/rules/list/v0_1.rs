@@ -86,6 +86,10 @@ fn rejects_invalid_response_examples() {
             "A rule without `ruleId` — the provider sets one on every rule (HCP 6.3).",
             "{\n  \"rules\": [\n    {\n      \"createdAt\": \"2026-11-25T10:00:01Z\",\n      \"effect\": \"deny\",\n      \"operators\": [\n        \"ads.example\"\n      ],\n      \"setBy\": \"context-subject\"\n    }\n  ]\n}",
         ),
+        (
+            "A rule with neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14).",
+            "{\n  \"rules\": [\n    {\n      \"categories\": [\n        \"health_context\"\n      ],\n      \"createdAt\": \"2026-11-25T10:00:01Z\",\n      \"effect\": \"deny\",\n      \"ruleId\": \"urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b\",\n      \"setBy\": \"context-subject\"\n    }\n  ]\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

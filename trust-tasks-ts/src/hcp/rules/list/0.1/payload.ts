@@ -3,7 +3,7 @@
  * Source: specs/hcp/rules/list/0.1/payload.schema.json
  */
 
-import type { Category, Instant, StandingRule, Uri, Urn } from "../../../../_shared/components.js";
+import type { StandingRule } from "../../../../_shared/components.js";
 
 
 /**
@@ -26,7 +26,7 @@ export interface HCPListStandingRulesResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Category, Instant, StandingRule, Uri, Urn };
+export type { StandingRule };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/rules/list/0.1" as const;
@@ -123,7 +123,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "setBy",
         "createdAt"
       ],
-      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). That rule is not checked by the schema: the registry's Rust generator does not support the conditional keywords it needs, so a validator does not check it.",
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.",
       "properties": {
         "ruleId": {
           "$ref": "#/$defs/Urn",
@@ -175,7 +175,19 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Instant",
           "description": "Set by the provider: when the rule was set (HCP 6.3)."
         }
-      }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "operators"
+          ]
+        },
+        {
+          "required": [
+            "requires"
+          ]
+        }
+      ]
     },
     "Instant": {
       "type": "string",
@@ -214,7 +226,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: true,
+  isProofRequired: false,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

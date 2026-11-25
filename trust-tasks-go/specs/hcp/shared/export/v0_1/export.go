@@ -18,6 +18,11 @@ type ExportSubject struct {
 // their standing rules, directives and delegations, and optionally superseded versions
 // and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP
 // 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.
+// Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB
+// `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as
+// HCP 5.4.1 lists every rule, directive and delegation and the list operations bound
+// none: an export too large for one document is refused with `hcp:exportTooLarge`
+// (hcp/export), never cut short by an item count.
 type Export struct {
 	// The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP
 	// 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
@@ -38,8 +43,12 @@ type Export struct {
 	// When the export was made (HCP 5.4.1).
 	ExportedAt Instant `json:"exportedAt"`
 
-	// The options requested (HCP 5.4.1).
-	Options *ExportOptions `json:"options,omitempty"`
+	// The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`,
+	// so that the export itself says whether `versions` and `audit` were requested: an empty
+	// or absent `versions` or `audit` under a true option means requested and none, under a
+	// false one not requested. HCP's own shape leaves `options` optional; pending HCP
+	// confirmation (question 42).
+	Options ExportOptions `json:"options"`
 
 	// The current version of each entry exported, whatever its `record.status` (HCP 5.4.1).
 	// An export a provider writes carries each in the form of HCP 4.2 (see
@@ -49,7 +58,7 @@ type Export struct {
 	Entries []map[string]json.RawMessage `json:"entries"`
 
 	// Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP
-	// 5.4.1).
+	// 5.4.1), which `options.includeVersions` records.
 	Versions *[]map[string]json.RawMessage `json:"versions,omitempty"`
 
 	// The Context Subject's standing rules (HCP 5.4.1, 6.3).
@@ -63,32 +72,40 @@ type Export struct {
 	Delegations *[]Delegation `json:"delegations,omitempty"`
 
 	// The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP
-	// 5.4.1).
+	// 5.4.1), which `options.includeAudit` records.
 	Audit *[]AuditEvent `json:"audit,omitempty"`
 }
 
-// ExportOptions The export options (HCP 5.4.1). Absent or false means the default.
+// ExportOptions The export options used (HCP 5.4.1). `includeVersions` and `includeAudit`
+// are required, true where the option was requested and false otherwise, pending HCP
+// confirmation (question 42); `excludeDeleted` absent or false means the default.
 type ExportOptions struct {
 	// Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
 	ExcludeDeleted *bool `json:"excludeDeleted,omitempty"`
 
 	// Also return superseded versions of each entry returned (HCP 5.4.1).
-	IncludeVersions *bool `json:"includeVersions,omitempty"`
+	IncludeVersions bool `json:"includeVersions"`
 
 	// Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
-	IncludeAudit *bool `json:"includeAudit,omitempty"`
+	IncludeAudit bool `json:"includeAudit"`
 }
 
 // AuditEvent One audit event (HCP 8.2). The log names entries by their stable `id`, never
 // by the `ref` a client received, because the log is the Context Subject's (HCP 8.2,
-// 8.3). The query text is never recorded (HCP 8.2).
+// 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`,
+// `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as
+// HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage
+// requires them so that a null always travels and is never confused with an absent
+// member, pending HCP confirmation (question 42). An event redacted for a former delegate
+// carries `entryId` and `relatedEntryId` as null (HCP 17.7).
 type AuditEvent struct {
 	// The event's identifier (HCP 8.2).
 	EventID Urn `json:"eventId"`
 
 	// The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`,
 	// `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a
-	// later draft are not refused.
+	// later draft are not refused. The minLength and maxLength are framework bounds, not HCP
+	// requirements.
 	EventType string `json:"eventType"`
 
 	// When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is
@@ -98,26 +115,32 @@ type AuditEvent struct {
 	// Who took part (HCP 8.2, 3.9).
 	Participants AuditParticipants `json:"participants"`
 
-	// The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the
-	// conflicted entry (HCP 8.2).
+	// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For
+	// conflict events, the conflicted entry (HCP 8.2). Required, and null in an event
+	// redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
 	EntryID *string `json:"entryId,omitempty"`
 
 	// For conflict events, the authoritative entry (or the other entry where neither or both
-	// are authoritative); null for every other event type (HCP 8.2).
+	// are authoritative); null for every other event type (HCP 8.2). Required, and null in an
+	// event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question
+	// 42).
 	RelatedEntryID *string `json:"relatedEntryId,omitempty"`
 
 	// The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP
 	// requirement.
 	Categories *[]Category `json:"categories,omitempty"`
 
-	// The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+	// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending
+	// HCP confirmation (question 42). The maxLength is a framework bound, not an HCP
+	// requirement.
 	Purpose *string `json:"purpose,omitempty"`
 
-	// The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP
-	// requirement.
+	// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP
+	// confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
 	PurposeDescription *string `json:"purposeDescription,omitempty"`
 
-	// The grant concerned, or null (HCP 8.2).
+	// The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending
+	// HCP confirmation (question 42).
 	GrantID *string `json:"grantId,omitempty"`
 
 	// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval
@@ -136,7 +159,8 @@ type AuditDisclosedRevealedItem struct {
 	// The evidence item's index.
 	Evidence int64 `json:"evidence"`
 
-	// The claims revealed, each a JSON Pointer.
+	// The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework
+	// bounds, not HCP requirements.
 	Claims []string `json:"claims"`
 }
 
@@ -154,7 +178,8 @@ type AuditDisclosed struct {
 	// True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
 	Provenance *bool `json:"provenance,omitempty"`
 
-	// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+	// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The
+	// maxItems is a framework bound, not an HCP requirement.
 	Revealed *[]AuditDisclosedRevealedItem `json:"revealed,omitempty"`
 }
 
@@ -182,7 +207,8 @@ type AuditParticipantsInitiator struct {
 	// Their role (HCP 8.2). HCP's own values, carried verbatim.
 	Role AuditParticipantsInitiatorRole `json:"role"`
 
-	// Their identifier.
+	// Their identifier. The minLength and maxLength are framework bounds, not HCP
+	// requirements.
 	ID string `json:"id"`
 }
 
@@ -213,7 +239,8 @@ type AuditParticipants struct {
 
 // AuditParty A participant named by its identifier (HCP 8.2).
 type AuditParty struct {
-	// The participant's identifier.
+	// The participant's identifier. The minLength and maxLength are framework bounds, not HCP
+	// requirements.
 	ID string `json:"id"`
 }
 
@@ -518,8 +545,8 @@ const (
 // StandingRule A deny rule the Context Subject sets across every grant, present and
 // future (HCP 6.3). A standing rule never widens access. It carries `operators`,
 // `requires`, or both: `operators` may be absent only where `requires` is present (HCP
-// 6.3). That rule is not checked by the schema: the registry's Rust generator does not
-// support the conditional keywords it needs, so a validator does not check it.
+// 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as
+// HCP's own standing-rule schema does.
 type StandingRule struct {
 	// Stable for the life of the rule (HCP 6.3).
 	RuleID Urn `json:"ruleId"`

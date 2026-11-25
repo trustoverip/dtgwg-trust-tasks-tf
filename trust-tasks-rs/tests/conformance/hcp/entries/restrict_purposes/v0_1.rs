@@ -16,6 +16,15 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:4f8a2c1e-7b3d-4e9a-a5c6-2d1f0e9b8a73\",\n  \"type\": \"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T09:05:00Z\",\n  \"threadId\": \"urn:uuid:9c3e5a7b-2d4f-4a6c-8e1b-3f5a7c9e1b2d\",\n  \"payload\": {\n    \"entryId\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n    \"permittedPurposes\": [],\n    \"expectedVersion\": 3,\n    \"accessToken\": \"hcp_mt_7a2d9c4e1b6f3058\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T09:05:00Z\",\n    \"verificationMethod\": \"did:web:wallet.person.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3Kp8wR2mVdN6yT1cH5qL9sB4fX7gJ2aWe8uM3oZbD6iQ1kF5tG9yS4xP7wA2rE6jC3fU8lN1pV5vY9zH4bK7cR2\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:c152cb25-2302-4954-a91b-e51647c30c41\",\n  \"type\": \"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1#response\",\n  \"issuer\": \"did:web:context.provider.example\",\n  \"recipient\": \"did:web:wallet.person.example\",\n  \"issuedAt\": \"2026-11-25T09:00:01Z\",\n  \"threadId\": \"urn:uuid:06ac83ac-1608-4a11-9c5f-62774a997a2f\",\n  \"payload\": {\n    \"entry\": {\n      \"schema\": \"https://hcp.example/spec/entry/2.0\",\n      \"id\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n      \"type\": [\"ContextEntry\"],\n      \"subject\": { \"id\": \"https://context.provider.example/subjects/p-7f3a9c\", \"relationship\": null },\n      \"content\": {\n        \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n        \"value\": \"Takes 10 mg of lisinopril each morning.\",\n        \"language\": \"en\"\n      },\n      \"assertion\": { \"declarationType\": \"person-declared\" },\n      \"classification\": {\n        \"categories\": [\"health_context\"],\n        \"permittedPurposes\": [\"https://purposes.example/care-coordination\"]\n      },\n      \"record\": {\n        \"status\": \"active\",\n        \"version\": 3,\n        \"provenance\": {\n          \"assertedBy\": { \"id\": \"https://context.provider.example/subjects/p-7f3a9c\", \"assurance\": \"authenticated\" },\n          \"assertedAt\": \"2026-10-03T07:45:00Z\",\n          \"source\": \"person-input\",\n          \"submittedByClient\": {\n            \"id\": \"https://wallet.person.example/clients/app\",\n            \"name\": \"Person Wallet\",\n            \"operator\": { \"id\": \"https://wallet.person.example\", \"name\": \"Person Wallet Co\" }\n          },\n          \"authorizedUnder\": \"urn:uuid:6d0e0734-8161-42bb-89a9-056debd5ed4e\",\n          \"recordedByProvider\": \"https://context.provider.example\",\n          \"recordedAt\": \"2026-10-03T07:45:01Z\"\n        }\n      }\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T09:00:01Z\",\n    \"verificationMethod\": \"did:web:context.provider.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2Xv9pT4mKcR7nB3hW1xL8sY5dF2gJ6aZe9uQ4oVnC7iN1kB5tH3yD8xS2wE6rA9jU4fG1lO7pK2vX5zM8bT6cQ3\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
@@ -35,10 +44,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Empty `permittedPurposes` — it would permit no purpose, which HCP does not define; null removes the narrowing instead (HCP 9.4.10). A framework bound.",
-            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n  \"expectedVersion\": 3,\n  \"permittedPurposes\": []\n}",
-        ),
-        (
             "Missing `permittedPurposes` — the request states the new list, or null to remove the narrowing (HCP 9.4.10).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n  \"expectedVersion\": 3\n}",
         ),
@@ -53,6 +58,10 @@ fn rejects_invalid_examples() {
         (
             "Missing `expectedVersion` — HCP 5.4 requires every restriction of purposes to carry it.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n  \"permittedPurposes\": [\n    \"https://purposes.example/care-coordination\"\n  ]\n}",
+        ),
+        (
+            "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae\",\n  \"expectedVersion\": 1,\n  \"permittedPurposes\": [\n    \"https://purposes.example/care-coordination\"\n  ],\n  \"ref\": \"hcp-ref-c73e19\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

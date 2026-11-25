@@ -32,6 +32,105 @@ pub mod error {
         }
     }
 }
+///An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct AccessDetail {
+    ///What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.
+    pub actions: Vec<AccessDetailActionsItem>,
+    ///The categories the detail covers (HCP 4.5).
+    pub categories: Vec<Category>,
+    ///An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).
+    #[serde(
+        rename = "narrowedTo",
+        default,
+        skip_serializing_if = "::serde_json::Map::is_empty"
+    )]
+    pub narrowed_to: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).
+    #[serde(
+        rename = "onwardSharing",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub onward_sharing: ::std::option::Option<OnwardSharing>,
+    ///The purposes the person approved for these categories; never empty (HCP 6.1.5.2).
+    pub purposes: ::std::vec::Vec<Purpose>,
+    ///The HCP authorization detail type (HCP 6.1.5).
+    #[serde(rename = "type")]
+    pub type_: ::std::string::String,
+}
+impl AccessDetail {
+    pub fn builder() -> builder::AccessDetail {
+        Default::default()
+    }
+}
+///`AccessDetailActionsItem`
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum AccessDetailActionsItem {
+    #[serde(rename = "read")]
+    Read,
+    #[serde(rename = "write")]
+    Write,
+    #[serde(rename = "provenance")]
+    Provenance,
+}
+impl ::std::fmt::Display for AccessDetailActionsItem {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Read => f.write_str("read"),
+            Self::Write => f.write_str("write"),
+            Self::Provenance => f.write_str("provenance"),
+        }
+    }
+}
+impl ::std::str::FromStr for AccessDetailActionsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "read" => Ok(Self::Read),
+            "write" => Ok(Self::Write),
+            "provenance" => Ok(Self::Provenance),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccessDetailActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccessDetailActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccessDetailActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///One HCP authorization detail as requested (HCP 6.1.5, 13.3).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -58,7 +157,7 @@ pub struct AccessRequest {
     pub onward_sharing: ::std::option::Option<OnwardSharingRequest>,
     ///HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub purposes: ::std::vec::Vec<Purpose>,
+    pub purposes: ::std::vec::Vec<RequestedPurpose>,
     ///HCP's authorization-detail type, carried verbatim (HCP 6.1.5).
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
@@ -66,6 +165,146 @@ pub struct AccessRequest {
 impl AccessRequest {
     pub fn builder() -> builder::AccessRequest {
         Default::default()
+    }
+}
+///The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct AuthorizingPrincipal {
+    ///The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub delegation: ::std::option::Option<AuthorizingPrincipalDelegation>,
+    ///Its identifier.
+    pub id: AuthorizingPrincipalId,
+}
+impl AuthorizingPrincipal {
+    pub fn builder() -> builder::AuthorizingPrincipal {
+        Default::default()
+    }
+}
+///The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AuthorizingPrincipalDelegation(::std::string::String);
+impl ::std::ops::Deref for AuthorizingPrincipalDelegation {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AuthorizingPrincipalDelegation> for ::std::string::String {
+    fn from(value: AuthorizingPrincipalDelegation) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AuthorizingPrincipalDelegation {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AuthorizingPrincipalDelegation {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AuthorizingPrincipalDelegation {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AuthorizingPrincipalDelegation {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AuthorizingPrincipalDelegation {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Its identifier.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AuthorizingPrincipalId(::std::string::String);
+impl ::std::ops::Deref for AuthorizingPrincipalId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AuthorizingPrincipalId> for ::std::string::String {
+    fn from(value: AuthorizingPrincipalId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AuthorizingPrincipalId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AuthorizingPrincipalId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AuthorizingPrincipalId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AuthorizingPrincipalId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AuthorizingPrincipalId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
@@ -139,6 +378,50 @@ impl<'de> ::serde::Deserialize<'de> for Category {
             })
     }
 }
+///A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct Grant {
+    ///What the grant authorizes: one or more authorization details (HCP 6.1.5).
+    pub access: ::std::vec::Vec<AccessDetail>,
+    ///Who authorized the grant (HCP 3.4, 6.1.5).
+    #[serde(rename = "authorizingPrincipal")]
+    pub authorizing_principal: AuthorizingPrincipal,
+    ///The HCP Client the grant was issued to (HCP 6.1.5).
+    pub client: GrantClient,
+    ///For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5).
+    #[serde(rename = "expiresAt")]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2).
+    #[serde(rename = "grantId")]
+    pub grant_id: Urn,
+    ///Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
+    #[serde(rename = "grantType")]
+    pub grant_type: GrantGrantType,
+    ///When the grant was issued.
+    #[serde(rename = "issuedAt")]
+    pub issued_at: Instant,
+    ///The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4).
+    #[serde(
+        rename = "requestingParty",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub requesting_party: ::std::option::Option<RequestingParty>,
+    ///Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub scopes: ::std::vec::Vec<GrantScopesItem>,
+    ///`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.
+    pub status: GrantStatus,
+    ///The Context Subject, by a pseudonym specific to the client (HCP 3.4).
+    pub subject: GrantParty,
+}
+impl Grant {
+    pub fn builder() -> builder::Grant {
+        Default::default()
+    }
+}
 ///An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim.
 ///
 #[derive(
@@ -204,39 +487,422 @@ impl ::std::convert::TryFrom<::std::string::String> for GrantAction {
         value.parse()
     }
 }
-///One authorization detail as the person approved it (HCP 6.1.5 `access[]`). Every approved detail carries at least one purpose (HCP 6.1.5.2).
+///The client a grant was issued to (HCP 6.1.5).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub struct GrantedAccess {
-    ///HCP `actions` as approved (HCP 6.1.5).
-    pub actions: Vec<GrantAction>,
-    ///HCP `categories` as approved (HCP 6.1.5); may be fewer than asked.
-    pub categories: Vec<Category>,
-    ///HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3).
+pub struct GrantClient {
+    ///The client conformance claims it declared at registration (HCP 18.1); absent where it declared none.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub claims: ::std::option::Option<Vec<Uri>>,
+    ///Its client identifier.
+    pub id: GrantClientId,
+    ///Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5).
     #[serde(
-        rename = "narrowedTo",
+        rename = "legalRetention",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub narrowed_to: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5), with `domains` and the provider-set `notTo` as HCP defines them.
-    #[serde(
-        rename = "onwardSharing",
-        default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
-    )]
-    pub onward_sharing: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may name.
-    pub purposes: ::std::vec::Vec<Purpose>,
-    ///HCP's authorization-detail type, carried verbatim.
-    #[serde(rename = "type")]
-    pub type_: ::std::string::String,
+    pub legal_retention: ::std::option::Option<LegalRetention>,
+    ///A name the person can recognize (HCP 6.1.5).
+    pub name: GrantClientName,
+    ///The Client Operator (HCP 3.2.8).
+    pub operator: Named,
 }
-impl GrantedAccess {
-    pub fn builder() -> builder::GrantedAccess {
+impl GrantClient {
+    pub fn builder() -> builder::GrantClient {
         Default::default()
+    }
+}
+///Its client identifier.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GrantClientId(::std::string::String);
+impl ::std::ops::Deref for GrantClientId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GrantClientId> for ::std::string::String {
+    fn from(value: GrantClientId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GrantClientId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GrantClientId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A name the person can recognize (HCP 6.1.5).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GrantClientName(::std::string::String);
+impl ::std::ops::Deref for GrantClientName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GrantClientName> for ::std::string::String {
+    fn from(value: GrantClientName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GrantClientName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantClientName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantClientName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantClientName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GrantClientName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum GrantGrantType {
+    #[serde(rename = "temporary")]
+    Temporary,
+    #[serde(rename = "persistent")]
+    Persistent,
+}
+impl ::std::fmt::Display for GrantGrantType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Temporary => f.write_str("temporary"),
+            Self::Persistent => f.write_str("persistent"),
+        }
+    }
+}
+impl ::std::str::FromStr for GrantGrantType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "temporary" => Ok(Self::Temporary),
+            "persistent" => Ok(Self::Persistent),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantGrantType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantGrantType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantGrantType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///An actor a grant binds, named by identifier (HCP 3.4).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct GrantParty {
+    ///Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.
+    pub id: GrantPartyId,
+}
+impl GrantParty {
+    pub fn builder() -> builder::GrantParty {
+        Default::default()
+    }
+}
+///Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GrantPartyId(::std::string::String);
+impl ::std::ops::Deref for GrantPartyId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GrantPartyId> for ::std::string::String {
+    fn from(value: GrantPartyId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GrantPartyId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GrantPartyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`GrantScopesItem`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GrantScopesItem(::std::string::String);
+impl ::std::ops::Deref for GrantScopesItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GrantScopesItem> for ::std::string::String {
+    fn from(value: GrantScopesItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GrantScopesItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^hcp:[^:]+(:[^:]+)*:(read|write)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^hcp:[^:]+(:[^:]+)*:(read|write)$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GrantScopesItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum GrantStatus {
+    #[serde(rename = "active")]
+    Active,
+    #[serde(rename = "revoked")]
+    Revoked,
+    #[serde(rename = "expired")]
+    Expired,
+}
+impl ::std::fmt::Display for GrantStatus {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Active => f.write_str("active"),
+            Self::Revoked => f.write_str("revoked"),
+            Self::Expired => f.write_str("expired"),
+        }
+    }
+}
+impl ::std::str::FromStr for GrantStatus {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "active" => Ok(Self::Active),
+            "revoked" => Ok(Self::Revoked),
+            "expired" => Ok(Self::Expired),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for GrantStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GrantStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GrantStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///An RFC 3339 instant.
@@ -281,6 +947,492 @@ impl ::std::convert::TryFrom<String> for Instant {
 impl ::std::fmt::Display for Instant {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+///A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct LegalRetention {
+    ///The law or rule that requires it.
+    pub obligation: LegalRetentionObligation,
+    ///How long it is kept.
+    pub period: LegalRetentionPeriod,
+    ///The record kept.
+    pub record: LegalRetentionRecord,
+}
+impl LegalRetention {
+    pub fn builder() -> builder::LegalRetention {
+        Default::default()
+    }
+}
+///The law or rule that requires it.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct LegalRetentionObligation(::std::string::String);
+impl ::std::ops::Deref for LegalRetentionObligation {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<LegalRetentionObligation> for ::std::string::String {
+    fn from(value: LegalRetentionObligation) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for LegalRetentionObligation {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for LegalRetentionObligation {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for LegalRetentionObligation {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for LegalRetentionObligation {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for LegalRetentionObligation {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///How long it is kept.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct LegalRetentionPeriod(::std::string::String);
+impl ::std::ops::Deref for LegalRetentionPeriod {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<LegalRetentionPeriod> for ::std::string::String {
+    fn from(value: LegalRetentionPeriod) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for LegalRetentionPeriod {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for LegalRetentionPeriod {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for LegalRetentionPeriod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for LegalRetentionPeriod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for LegalRetentionPeriod {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The record kept.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct LegalRetentionRecord(::std::string::String);
+impl ::std::ops::Deref for LegalRetentionRecord {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<LegalRetentionRecord> for ::std::string::String {
+    fn from(value: LegalRetentionRecord) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for LegalRetentionRecord {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for LegalRetentionRecord {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for LegalRetentionRecord {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for LegalRetentionRecord {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for LegalRetentionRecord {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///An organization, by identifier and a name a person can recognize.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct Named {
+    ///Its identifier.
+    pub id: NamedId,
+    ///Its name. The minLength is a framework bound, not an HCP requirement.
+    pub name: NamedName,
+}
+impl Named {
+    pub fn builder() -> builder::Named {
+        Default::default()
+    }
+}
+///Its identifier.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct NamedId(::std::string::String);
+impl ::std::ops::Deref for NamedId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<NamedId> for ::std::string::String {
+    fn from(value: NamedId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for NamedId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for NamedId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for NamedId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for NamedId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for NamedId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Its name. The minLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct NamedName(::std::string::String);
+impl ::std::ops::Deref for NamedName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<NamedName> for ::std::string::String {
+    fn from(value: NamedName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for NamedName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for NamedName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for NamedName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for NamedName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for NamedName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct OnwardSharing {
+    ///Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub domains: ::std::option::Option<Vec<OnwardSharingDomainsItem>>,
+    ///Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3).
+    #[serde(
+        rename = "notTo",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub not_to: ::std::option::Option<Vec<OnwardSharingNotToItem>>,
+}
+impl ::std::default::Default for OnwardSharing {
+    fn default() -> Self {
+        Self {
+            domains: Default::default(),
+            not_to: Default::default(),
+        }
+    }
+}
+impl OnwardSharing {
+    pub fn builder() -> builder::OnwardSharing {
+        Default::default()
+    }
+}
+///`OnwardSharingDomainsItem`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct OnwardSharingDomainsItem(::std::string::String);
+impl ::std::ops::Deref for OnwardSharingDomainsItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<OnwardSharingDomainsItem> for ::std::string::String {
+    fn from(value: OnwardSharingDomainsItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for OnwardSharingDomainsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 253usize {
+            return Err("longer than 253 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for OnwardSharingDomainsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for OnwardSharingDomainsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for OnwardSharingDomainsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for OnwardSharingDomainsItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`OnwardSharingNotToItem`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct OnwardSharingNotToItem(::std::string::String);
+impl ::std::ops::Deref for OnwardSharingNotToItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<OnwardSharingNotToItem> for ::std::string::String {
+    fn from(value: OnwardSharingNotToItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for OnwardSharingNotToItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for OnwardSharingNotToItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for OnwardSharingNotToItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for OnwardSharingNotToItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for OnwardSharingNotToItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///A request for onward sharing (HCP 6.1.5). `notTo` is set by the provider, never asked for.
@@ -395,7 +1547,7 @@ pub struct Payload {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub requesting_party: ::std::option::Option<RequestingParty>,
+    pub requesting_party: ::std::option::Option<ProposedRequestingParty>,
     ///An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation.
     #[serde(
         rename = "subjectHint",
@@ -532,16 +1684,220 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectHint {
             })
     }
 }
-///An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.
+///HCP `requestingParty` (HCP 6.1.5).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub struct Purpose {
-    pub code: PurposeCode,
-    ///What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound.
+pub struct ProposedRequestingParty {
+    ///HCP `requestingParty.id`: an identifier for the party.
+    pub id: ProposedRequestingPartyId,
+    ///HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<PurposeDescription>,
+    pub name: ::std::option::Option<ProposedRequestingPartyName>,
+    ///HCP's own values, carried verbatim.
+    #[serde(rename = "type")]
+    pub type_: ProposedRequestingPartyType,
+}
+impl ProposedRequestingParty {
+    pub fn builder() -> builder::ProposedRequestingParty {
+        Default::default()
+    }
+}
+///HCP `requestingParty.id`: an identifier for the party.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ProposedRequestingPartyId(::std::string::String);
+impl ::std::ops::Deref for ProposedRequestingPartyId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ProposedRequestingPartyId> for ::std::string::String {
+    fn from(value: ProposedRequestingPartyId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ProposedRequestingPartyId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ProposedRequestingPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ProposedRequestingPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ProposedRequestingPartyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ProposedRequestingPartyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ProposedRequestingPartyName(::std::string::String);
+impl ::std::ops::Deref for ProposedRequestingPartyName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ProposedRequestingPartyName> for ::std::string::String {
+    fn from(value: ProposedRequestingPartyName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ProposedRequestingPartyName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ProposedRequestingPartyName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ProposedRequestingPartyName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ProposedRequestingPartyName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ProposedRequestingPartyName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///HCP's own values, carried verbatim.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ProposedRequestingPartyType {
+    #[serde(rename = "person")]
+    Person,
+    #[serde(rename = "organization")]
+    Organization,
+}
+impl ::std::fmt::Display for ProposedRequestingPartyType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Person => f.write_str("person"),
+            Self::Organization => f.write_str("organization"),
+        }
+    }
+}
+impl ::std::str::FromStr for ProposedRequestingPartyType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "person" => Ok(Self::Person),
+            "organization" => Ok(Self::Organization),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ProposedRequestingPartyType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ProposedRequestingPartyType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ProposedRequestingPartyType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///A purpose with a description the person can read (HCP 6.1.5.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct Purpose {
+    ///The purpose code.
+    pub code: PurposeCode,
+    ///The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).
+    pub description: PurposeDescription,
 }
 impl Purpose {
     pub fn builder() -> builder::Purpose {
@@ -582,7 +1938,7 @@ impl ::std::fmt::Display for PurposeCode {
         self.0.fmt(f)
     }
 }
-///What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound.
+///The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -601,8 +1957,8 @@ impl ::std::convert::From<PurposeDescription> for ::std::string::String {
 impl ::std::str::FromStr for PurposeDescription {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
         }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
@@ -644,18 +2000,95 @@ impl<'de> ::serde::Deserialize<'de> for PurposeDescription {
             })
     }
 }
-///HCP `requestingParty` (HCP 6.1.5).
+///An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
+pub struct RequestedPurpose {
+    pub code: PurposeCode,
+    ///What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub description: ::std::option::Option<RequestedPurposeDescription>,
+}
+impl RequestedPurpose {
+    pub fn builder() -> builder::RequestedPurpose {
+        Default::default()
+    }
+}
+///What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RequestedPurposeDescription(::std::string::String);
+impl ::std::ops::Deref for RequestedPurposeDescription {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RequestedPurposeDescription> for ::std::string::String {
+    fn from(value: RequestedPurposeDescription) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RequestedPurposeDescription {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RequestedPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RequestedPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RequestedPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RequestedPurposeDescription {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The Requesting Party (HCP 3.2.7).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
 pub struct RequestingParty {
-    ///HCP `requestingParty.id`: an identifier for the party.
+    ///Its identifier.
     pub id: RequestingPartyId,
-    ///HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).
+    ///Its name.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub name: ::std::option::Option<RequestingPartyName>,
-    ///HCP's own values, carried verbatim.
+    ///A person or an organization. HCP's own values, carried verbatim.
     #[serde(rename = "type")]
     pub type_: RequestingPartyType,
 }
@@ -664,7 +2097,7 @@ impl RequestingParty {
         Default::default()
     }
 }
-///HCP `requestingParty.id`: an identifier for the party.
+///Its identifier.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -726,7 +2159,7 @@ impl<'de> ::serde::Deserialize<'de> for RequestingPartyId {
             })
     }
 }
-///HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).
+///Its name.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -745,11 +2178,8 @@ impl ::std::convert::From<RequestingPartyName> for ::std::string::String {
 impl ::std::str::FromStr for RequestingPartyName {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 256usize {
-            return Err("longer than 256 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
         }
         Ok(Self(value.to_string()))
     }
@@ -788,7 +2218,7 @@ impl<'de> ::serde::Deserialize<'de> for RequestingPartyName {
             })
     }
 }
-///HCP's own values, carried verbatim.
+///A person or an organization. HCP's own values, carried verbatim.
 ///
 #[derive(
     ::serde::Deserialize,
@@ -849,34 +2279,18 @@ impl ::std::convert::TryFrom<::std::string::String> for RequestingPartyType {
         value.parse()
     }
 }
-///The person approved: the grant evidence and the grant as approved. Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
+///The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    ///HCP `access` as the person approved it, which may be narrower than asked (HCP 6.1.5, 13.3: the token response carries the authorization details granted).
-    pub access: ::std::vec::Vec<GrantedAccess>,
-    ///The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours).
+    ///The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.
     #[serde(rename = "accessToken")]
     pub access_token: ResponseAccessToken,
-    ///HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and absent for a persistent one, where HCP writes null.
-    #[serde(
-        rename = "grantExpiresAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub grant_expires_at: ::std::option::Option<Instant>,
-    ///HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier hcp/grants/revoke and hcp/grants/revoked name.
-    #[serde(rename = "grantId")]
-    pub grant_id: Urn,
-    ///HCP `grantType` as the person chose it (HCP 6.1.4).
-    #[serde(rename = "grantType")]
-    pub grant_type: ResponseGrantType,
-    ///HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document's own `issuedAt`.
-    #[serde(rename = "grantedAt")]
-    pub granted_at: Instant,
-    ///When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after `grantExpiresAt`.
+    ///The grant as the person approved it, as HCP's grant object (HCP 6.1.5) and as hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the token response carries the authorization details granted), `status` is `active`, and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4).
+    pub grant: Grant,
+    ///When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.
     #[serde(rename = "tokenExpiresAt")]
     pub token_expires_at: Instant,
 }
@@ -885,7 +2299,7 @@ impl Response {
         Default::default()
     }
 }
-///The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours).
+///The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -947,65 +2361,38 @@ impl<'de> ::serde::Deserialize<'de> for ResponseAccessToken {
             })
     }
 }
-///HCP `grantType` as the person chose it (HCP 6.1.4).
+///An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).
 ///
 #[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
+    ::serde::Deserialize, ::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd,
 )]
-#[non_exhaustive]
-pub enum ResponseGrantType {
-    #[serde(rename = "temporary")]
-    Temporary,
-    #[serde(rename = "persistent")]
-    Persistent,
+#[serde(transparent)]
+pub struct Uri(pub ::std::string::String);
+impl ::std::ops::Deref for Uri {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
 }
-impl ::std::fmt::Display for ResponseGrantType {
+impl ::std::convert::From<Uri> for ::std::string::String {
+    fn from(value: Uri) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::string::String> for Uri {
+    fn from(value: ::std::string::String) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for Uri {
+    type Err = ::std::convert::Infallible;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::fmt::Display for Uri {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Temporary => f.write_str("temporary"),
-            Self::Persistent => f.write_str("persistent"),
-        }
-    }
-}
-impl ::std::str::FromStr for ResponseGrantType {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "temporary" => Ok(Self::Temporary),
-            "persistent" => Ok(Self::Persistent),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for ResponseGrantType {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for ResponseGrantType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for ResponseGrantType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
+        self.0.fmt(f)
     }
 }
 ///An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.
@@ -1081,6 +2468,124 @@ impl<'de> ::serde::Deserialize<'de> for Urn {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
+    pub struct AccessDetail {
+        actions: ::std::result::Result<Vec<super::AccessDetailActionsItem>, ::std::string::String>,
+        categories: ::std::result::Result<Vec<super::Category>, ::std::string::String>,
+        narrowed_to: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        onward_sharing: ::std::result::Result<
+            ::std::option::Option<super::OnwardSharing>,
+            ::std::string::String,
+        >,
+        purposes: ::std::result::Result<::std::vec::Vec<super::Purpose>, ::std::string::String>,
+        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for AccessDetail {
+        fn default() -> Self {
+            Self {
+                actions: Err("no value supplied for actions".to_string()),
+                categories: Err("no value supplied for categories".to_string()),
+                narrowed_to: Ok(Default::default()),
+                onward_sharing: Ok(Default::default()),
+                purposes: Err("no value supplied for purposes".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl AccessDetail {
+        pub fn actions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::AccessDetailActionsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actions: {e}"));
+            self
+        }
+        pub fn categories<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::Category>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.categories = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for categories: {e}"));
+            self
+        }
+        pub fn narrowed_to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.narrowed_to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for narrowed_to: {e}"));
+            self
+        }
+        pub fn onward_sharing<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::OnwardSharing>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.onward_sharing = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for onward_sharing: {e}"));
+            self
+        }
+        pub fn purposes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Purpose>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purposes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purposes: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AccessDetail> for super::AccessDetail {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AccessDetail,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                actions: value.actions?,
+                categories: value.categories?,
+                narrowed_to: value.narrowed_to?,
+                onward_sharing: value.onward_sharing?,
+                purposes: value.purposes?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AccessDetail> for AccessDetail {
+        fn from(value: super::AccessDetail) -> Self {
+            Self {
+                actions: Ok(value.actions),
+                categories: Ok(value.categories),
+                narrowed_to: Ok(value.narrowed_to),
+                onward_sharing: Ok(value.onward_sharing),
+                purposes: Ok(value.purposes),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct AccessRequest {
         actions: ::std::result::Result<Vec<super::GrantAction>, ::std::string::String>,
         categories: ::std::result::Result<Vec<super::Category>, ::std::string::String>,
@@ -1092,7 +2597,8 @@ pub mod builder {
             ::std::option::Option<super::OnwardSharingRequest>,
             ::std::string::String,
         >,
-        purposes: ::std::result::Result<::std::vec::Vec<super::Purpose>, ::std::string::String>,
+        purposes:
+            ::std::result::Result<::std::vec::Vec<super::RequestedPurpose>, ::std::string::String>,
         type_: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for AccessRequest {
@@ -1152,7 +2658,7 @@ pub mod builder {
         }
         pub fn purposes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Purpose>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RequestedPurpose>>,
             T::Error: ::std::fmt::Display,
         {
             self.purposes = value
@@ -1199,122 +2705,567 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct GrantedAccess {
-        actions: ::std::result::Result<Vec<super::GrantAction>, ::std::string::String>,
-        categories: ::std::result::Result<Vec<super::Category>, ::std::string::String>,
-        narrowed_to: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub struct AuthorizingPrincipal {
+        delegation: ::std::result::Result<
+            ::std::option::Option<super::AuthorizingPrincipalDelegation>,
             ::std::string::String,
         >,
-        onward_sharing: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            ::std::string::String,
-        >,
-        purposes: ::std::result::Result<::std::vec::Vec<super::Purpose>, ::std::string::String>,
-        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+        id: ::std::result::Result<super::AuthorizingPrincipalId, ::std::string::String>,
     }
-    impl ::std::default::Default for GrantedAccess {
+    impl ::std::default::Default for AuthorizingPrincipal {
         fn default() -> Self {
             Self {
-                actions: Err("no value supplied for actions".to_string()),
-                categories: Err("no value supplied for categories".to_string()),
-                narrowed_to: Ok(Default::default()),
-                onward_sharing: Ok(Default::default()),
-                purposes: Err("no value supplied for purposes".to_string()),
-                type_: Err("no value supplied for type_".to_string()),
+                delegation: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
             }
         }
     }
-    impl GrantedAccess {
-        pub fn actions<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<Vec<super::GrantAction>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.actions = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for actions: {e}"));
-            self
-        }
-        pub fn categories<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.categories = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for categories: {e}"));
-            self
-        }
-        pub fn narrowed_to<T>(mut self, value: T) -> Self
+    impl AuthorizingPrincipal {
+        pub fn delegation<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<super::AuthorizingPrincipalDelegation>,
             >,
             T::Error: ::std::fmt::Display,
         {
-            self.narrowed_to = value
+            self.delegation = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for narrowed_to: {e}"));
+                .map_err(|e| format!("error converting supplied value for delegation: {e}"));
             self
         }
-        pub fn onward_sharing<T>(mut self, value: T) -> Self
+        pub fn id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            >,
+            T: ::std::convert::TryInto<super::AuthorizingPrincipalId>,
             T::Error: ::std::fmt::Display,
         {
-            self.onward_sharing = value
+            self.id = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for onward_sharing: {e}"));
-            self
-        }
-        pub fn purposes<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Purpose>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.purposes = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for purposes: {e}"));
-            self
-        }
-        pub fn type_<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.type_ = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
             self
         }
     }
-    impl ::std::convert::TryFrom<GrantedAccess> for super::GrantedAccess {
+    impl ::std::convert::TryFrom<AuthorizingPrincipal> for super::AuthorizingPrincipal {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: GrantedAccess,
+            value: AuthorizingPrincipal,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
-                actions: value.actions?,
-                categories: value.categories?,
-                narrowed_to: value.narrowed_to?,
-                onward_sharing: value.onward_sharing?,
-                purposes: value.purposes?,
-                type_: value.type_?,
+                delegation: value.delegation?,
+                id: value.id?,
             })
         }
     }
-    impl ::std::convert::From<super::GrantedAccess> for GrantedAccess {
-        fn from(value: super::GrantedAccess) -> Self {
+    impl ::std::convert::From<super::AuthorizingPrincipal> for AuthorizingPrincipal {
+        fn from(value: super::AuthorizingPrincipal) -> Self {
             Self {
-                actions: Ok(value.actions),
-                categories: Ok(value.categories),
-                narrowed_to: Ok(value.narrowed_to),
-                onward_sharing: Ok(value.onward_sharing),
-                purposes: Ok(value.purposes),
-                type_: Ok(value.type_),
+                delegation: Ok(value.delegation),
+                id: Ok(value.id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Grant {
+        access: ::std::result::Result<::std::vec::Vec<super::AccessDetail>, ::std::string::String>,
+        authorizing_principal:
+            ::std::result::Result<super::AuthorizingPrincipal, ::std::string::String>,
+        client: ::std::result::Result<super::GrantClient, ::std::string::String>,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        grant_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        grant_type: ::std::result::Result<super::GrantGrantType, ::std::string::String>,
+        issued_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        requesting_party: ::std::result::Result<
+            ::std::option::Option<super::RequestingParty>,
+            ::std::string::String,
+        >,
+        scopes:
+            ::std::result::Result<::std::vec::Vec<super::GrantScopesItem>, ::std::string::String>,
+        status: ::std::result::Result<super::GrantStatus, ::std::string::String>,
+        subject: ::std::result::Result<super::GrantParty, ::std::string::String>,
+    }
+    impl ::std::default::Default for Grant {
+        fn default() -> Self {
+            Self {
+                access: Err("no value supplied for access".to_string()),
+                authorizing_principal: Err(
+                    "no value supplied for authorizing_principal".to_string()
+                ),
+                client: Err("no value supplied for client".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
+                grant_id: Err("no value supplied for grant_id".to_string()),
+                grant_type: Err("no value supplied for grant_type".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                requesting_party: Ok(Default::default()),
+                scopes: Ok(Default::default()),
+                status: Err("no value supplied for status".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+            }
+        }
+    }
+    impl Grant {
+        pub fn access<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AccessDetail>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.access = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for access: {e}"));
+            self
+        }
+        pub fn authorizing_principal<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuthorizingPrincipal>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authorizing_principal = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authorizing_principal: {e}")
+            });
+            self
+        }
+        pub fn client<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantClient>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn grant_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.grant_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for grant_id: {e}"));
+            self
+        }
+        pub fn grant_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantGrantType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.grant_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for grant_type: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn requesting_party<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RequestingParty>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requesting_party = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requesting_party: {e}"));
+            self
+        }
+        pub fn scopes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::GrantScopesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scopes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantStatus>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantParty>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Grant> for super::Grant {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Grant) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                access: value.access?,
+                authorizing_principal: value.authorizing_principal?,
+                client: value.client?,
+                expires_at: value.expires_at?,
+                grant_id: value.grant_id?,
+                grant_type: value.grant_type?,
+                issued_at: value.issued_at?,
+                requesting_party: value.requesting_party?,
+                scopes: value.scopes?,
+                status: value.status?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Grant> for Grant {
+        fn from(value: super::Grant) -> Self {
+            Self {
+                access: Ok(value.access),
+                authorizing_principal: Ok(value.authorizing_principal),
+                client: Ok(value.client),
+                expires_at: Ok(value.expires_at),
+                grant_id: Ok(value.grant_id),
+                grant_type: Ok(value.grant_type),
+                issued_at: Ok(value.issued_at),
+                requesting_party: Ok(value.requesting_party),
+                scopes: Ok(value.scopes),
+                status: Ok(value.status),
+                subject: Ok(value.subject),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct GrantClient {
+        claims:
+            ::std::result::Result<::std::option::Option<Vec<super::Uri>>, ::std::string::String>,
+        id: ::std::result::Result<super::GrantClientId, ::std::string::String>,
+        legal_retention: ::std::result::Result<
+            ::std::option::Option<super::LegalRetention>,
+            ::std::string::String,
+        >,
+        name: ::std::result::Result<super::GrantClientName, ::std::string::String>,
+        operator: ::std::result::Result<super::Named, ::std::string::String>,
+    }
+    impl ::std::default::Default for GrantClient {
+        fn default() -> Self {
+            Self {
+                claims: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                legal_retention: Ok(Default::default()),
+                name: Err("no value supplied for name".to_string()),
+                operator: Err("no value supplied for operator".to_string()),
+            }
+        }
+    }
+    impl GrantClient {
+        pub fn claims<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::Uri>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claims = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claims: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantClientId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn legal_retention<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::LegalRetention>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.legal_retention = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for legal_retention: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantClientName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn operator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Named>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operator: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<GrantClient> for super::GrantClient {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: GrantClient,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claims: value.claims?,
+                id: value.id?,
+                legal_retention: value.legal_retention?,
+                name: value.name?,
+                operator: value.operator?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::GrantClient> for GrantClient {
+        fn from(value: super::GrantClient) -> Self {
+            Self {
+                claims: Ok(value.claims),
+                id: Ok(value.id),
+                legal_retention: Ok(value.legal_retention),
+                name: Ok(value.name),
+                operator: Ok(value.operator),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct GrantParty {
+        id: ::std::result::Result<super::GrantPartyId, ::std::string::String>,
+    }
+    impl ::std::default::Default for GrantParty {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl GrantParty {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GrantPartyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<GrantParty> for super::GrantParty {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: GrantParty,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::GrantParty> for GrantParty {
+        fn from(value: super::GrantParty) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct LegalRetention {
+        obligation: ::std::result::Result<super::LegalRetentionObligation, ::std::string::String>,
+        period: ::std::result::Result<super::LegalRetentionPeriod, ::std::string::String>,
+        record: ::std::result::Result<super::LegalRetentionRecord, ::std::string::String>,
+    }
+    impl ::std::default::Default for LegalRetention {
+        fn default() -> Self {
+            Self {
+                obligation: Err("no value supplied for obligation".to_string()),
+                period: Err("no value supplied for period".to_string()),
+                record: Err("no value supplied for record".to_string()),
+            }
+        }
+    }
+    impl LegalRetention {
+        pub fn obligation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::LegalRetentionObligation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.obligation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for obligation: {e}"));
+            self
+        }
+        pub fn period<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::LegalRetentionPeriod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.period = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for period: {e}"));
+            self
+        }
+        pub fn record<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::LegalRetentionRecord>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.record = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for record: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<LegalRetention> for super::LegalRetention {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: LegalRetention,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                obligation: value.obligation?,
+                period: value.period?,
+                record: value.record?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::LegalRetention> for LegalRetention {
+        fn from(value: super::LegalRetention) -> Self {
+            Self {
+                obligation: Ok(value.obligation),
+                period: Ok(value.period),
+                record: Ok(value.record),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Named {
+        id: ::std::result::Result<super::NamedId, ::std::string::String>,
+        name: ::std::result::Result<super::NamedName, ::std::string::String>,
+    }
+    impl ::std::default::Default for Named {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl Named {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::NamedId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::NamedName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Named> for super::Named {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Named) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Named> for Named {
+        fn from(value: super::Named) -> Self {
+            Self {
+                id: Ok(value.id),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct OnwardSharing {
+        domains: ::std::result::Result<
+            ::std::option::Option<Vec<super::OnwardSharingDomainsItem>>,
+            ::std::string::String,
+        >,
+        not_to: ::std::result::Result<
+            ::std::option::Option<Vec<super::OnwardSharingNotToItem>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for OnwardSharing {
+        fn default() -> Self {
+            Self {
+                domains: Ok(Default::default()),
+                not_to: Ok(Default::default()),
+            }
+        }
+    }
+    impl OnwardSharing {
+        pub fn domains<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::OnwardSharingDomainsItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domains = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domains: {e}"));
+            self
+        }
+        pub fn not_to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::OnwardSharingNotToItem>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.not_to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for not_to: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<OnwardSharing> for super::OnwardSharing {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: OnwardSharing,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                domains: value.domains?,
+                not_to: value.not_to?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::OnwardSharing> for OnwardSharing {
+        fn from(value: super::OnwardSharing) -> Self {
+            Self {
+                domains: Ok(value.domains),
+                not_to: Ok(value.not_to),
             }
         }
     }
@@ -1372,7 +3323,7 @@ pub mod builder {
             ::std::string::String,
         >,
         requesting_party: ::std::result::Result<
-            ::std::option::Option<super::RequestingParty>,
+            ::std::option::Option<super::ProposedRequestingParty>,
             ::std::string::String,
         >,
         subject_hint: ::std::result::Result<
@@ -1424,7 +3375,7 @@ pub mod builder {
         }
         pub fn requesting_party<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::RequestingParty>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ProposedRequestingParty>>,
             T::Error: ::std::fmt::Display,
         {
             self.requesting_party = value
@@ -1467,18 +3418,86 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct Purpose {
-        code: ::std::result::Result<super::PurposeCode, ::std::string::String>,
-        description: ::std::result::Result<
-            ::std::option::Option<super::PurposeDescription>,
+    pub struct ProposedRequestingParty {
+        id: ::std::result::Result<super::ProposedRequestingPartyId, ::std::string::String>,
+        name: ::std::result::Result<
+            ::std::option::Option<super::ProposedRequestingPartyName>,
             ::std::string::String,
         >,
+        type_: ::std::result::Result<super::ProposedRequestingPartyType, ::std::string::String>,
+    }
+    impl ::std::default::Default for ProposedRequestingParty {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                name: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl ProposedRequestingParty {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProposedRequestingPartyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProposedRequestingPartyName>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProposedRequestingPartyType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ProposedRequestingParty> for super::ProposedRequestingParty {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ProposedRequestingParty,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                name: value.name?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ProposedRequestingParty> for ProposedRequestingParty {
+        fn from(value: super::ProposedRequestingParty) -> Self {
+            Self {
+                id: Ok(value.id),
+                name: Ok(value.name),
+                type_: Ok(value.type_),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Purpose {
+        code: ::std::result::Result<super::PurposeCode, ::std::string::String>,
+        description: ::std::result::Result<super::PurposeDescription, ::std::string::String>,
     }
     impl ::std::default::Default for Purpose {
         fn default() -> Self {
             Self {
                 code: Err("no value supplied for code".to_string()),
-                description: Ok(Default::default()),
+                description: Err("no value supplied for description".to_string()),
             }
         }
     }
@@ -1495,7 +3514,7 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::PurposeDescription>>,
+            T: ::std::convert::TryInto<super::PurposeDescription>,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -1515,6 +3534,63 @@ pub mod builder {
     }
     impl ::std::convert::From<super::Purpose> for Purpose {
         fn from(value: super::Purpose) -> Self {
+            Self {
+                code: Ok(value.code),
+                description: Ok(value.description),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RequestedPurpose {
+        code: ::std::result::Result<super::PurposeCode, ::std::string::String>,
+        description: ::std::result::Result<
+            ::std::option::Option<super::RequestedPurposeDescription>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RequestedPurpose {
+        fn default() -> Self {
+            Self {
+                code: Err("no value supplied for code".to_string()),
+                description: Ok(Default::default()),
+            }
+        }
+    }
+    impl RequestedPurpose {
+        pub fn code<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PurposeCode>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.code = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for code: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RequestedPurposeDescription>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RequestedPurpose> for super::RequestedPurpose {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RequestedPurpose,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                code: value.code?,
+                description: value.description?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RequestedPurpose> for RequestedPurpose {
+        fn from(value: super::RequestedPurpose) -> Self {
             Self {
                 code: Ok(value.code),
                 description: Ok(value.description),
@@ -1594,39 +3670,20 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
-        access: ::std::result::Result<::std::vec::Vec<super::GrantedAccess>, ::std::string::String>,
         access_token: ::std::result::Result<super::ResponseAccessToken, ::std::string::String>,
-        grant_expires_at:
-            ::std::result::Result<::std::option::Option<super::Instant>, ::std::string::String>,
-        grant_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        grant_type: ::std::result::Result<super::ResponseGrantType, ::std::string::String>,
-        granted_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        grant: ::std::result::Result<super::Grant, ::std::string::String>,
         token_expires_at: ::std::result::Result<super::Instant, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
-                access: Err("no value supplied for access".to_string()),
                 access_token: Err("no value supplied for access_token".to_string()),
-                grant_expires_at: Ok(Default::default()),
-                grant_id: Err("no value supplied for grant_id".to_string()),
-                grant_type: Err("no value supplied for grant_type".to_string()),
-                granted_at: Err("no value supplied for granted_at".to_string()),
+                grant: Err("no value supplied for grant".to_string()),
                 token_expires_at: Err("no value supplied for token_expires_at".to_string()),
             }
         }
     }
     impl Response {
-        pub fn access<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::GrantedAccess>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.access = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for access: {e}"));
-            self
-        }
         pub fn access_token<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::ResponseAccessToken>,
@@ -1637,44 +3694,14 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for access_token: {e}"));
             self
         }
-        pub fn grant_expires_at<T>(mut self, value: T) -> Self
+        pub fn grant<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Instant>>,
+            T: ::std::convert::TryInto<super::Grant>,
             T::Error: ::std::fmt::Display,
         {
-            self.grant_expires_at = value
+            self.grant = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for grant_expires_at: {e}"));
-            self
-        }
-        pub fn grant_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.grant_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for grant_id: {e}"));
-            self
-        }
-        pub fn grant_type<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ResponseGrantType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.grant_type = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for grant_type: {e}"));
-            self
-        }
-        pub fn granted_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.granted_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for granted_at: {e}"));
+                .map_err(|e| format!("error converting supplied value for grant: {e}"));
             self
         }
         pub fn token_expires_at<T>(mut self, value: T) -> Self
@@ -1692,12 +3719,8 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
-                access: value.access?,
                 access_token: value.access_token?,
-                grant_expires_at: value.grant_expires_at?,
-                grant_id: value.grant_id?,
-                grant_type: value.grant_type?,
-                granted_at: value.granted_at?,
+                grant: value.grant?,
                 token_expires_at: value.token_expires_at?,
             })
         }
@@ -1705,12 +3728,8 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
-                access: Ok(value.access),
                 access_token: Ok(value.access_token),
-                grant_expires_at: Ok(value.grant_expires_at),
-                grant_id: Ok(value.grant_id),
-                grant_type: Ok(value.grant_type),
-                granted_at: Ok(value.granted_at),
+                grant: Ok(value.grant),
                 token_expires_at: Ok(value.token_expires_at),
             }
         }
@@ -1722,16 +3741,17 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"AccessRequest\":{\"additionalProperties\":false,\"description\":\"One HCP authorization detail as requested (HCP 6.1.5, 13.3).\",\"properties\":{\"actions\":{\"description\":\"HCP `actions`: what the client may do with the categories. `provenance` only alongside `read` (HCP 6.1.5, 7.4.1).\",\"items\":{\"$ref\":\"#/$defs/GrantAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"HCP `categories` the detail covers (HCP 4.5, 6.1.5). The maxItems of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"description\":\"HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule 2).\",\"type\":\"object\"},\"onwardSharing\":{\"$ref\":\"#/$defs/OnwardSharingRequest\",\"description\":\"HCP `onwardSharing` (HCP 3.12, 6.1.4, 6.1.5): asks that the person be offered onward sharing for this detail, as a separate act after they confirm the grant. Only in a detail that includes `read` and whose categories are all of Low default sensitivity; otherwise malformedRequest (HCP 6.1.5).\"},\"purposes\":{\"description\":\"HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Purpose\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"HCP's authorization-detail type, carried verbatim (HCP 6.1.5).\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"GrantAction\":{\"description\":\"An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim.\",\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"OnwardSharingRequest\":{\"additionalProperties\":false,\"description\":\"A request for onward sharing (HCP 6.1.5). `notTo` is set by the provider, never asked for.\",\"properties\":{\"domains\":{\"description\":\"DNS domains the client proposes to limit onward sharing to. The person may narrow them further (HCP 6.1.4).\",\"items\":{\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"type\":\"object\"},\"Purpose\":{\"additionalProperties\":false,\"description\":\"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.\",\"properties\":{\"code\":{\"$ref\":\"#/$defs/PurposeCode\"},\"description\":{\"description\":\"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"code\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"RequestingParty\":{\"additionalProperties\":false,\"description\":\"HCP `requestingParty` (HCP 6.1.5).\",\"properties\":{\"id\":{\"description\":\"HCP `requestingParty.id`: an identifier for the party.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"type\":{\"description\":\"HCP's own values, carried verbatim.\",\"enum\":[\"person\",\"organization\"],\"type\":\"string\"}},\"required\":[\"type\",\"id\"],\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"access\":{\"description\":\"What the client asks to be granted: one or more HCP authorization details (HCP 6.1.5 `access`, HCP 13.3). The provider shows each to the person before they act (HCP 6.1.6). The maxItems of 16 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/AccessRequest\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"expiresIn\":{\"description\":\"For a temporary grant, the lifetime the client asks for, in seconds. Absent means HCP's default of 4 hours; HCP's maximum is 24 hours (HCP 6.1.3). The provider MAY grant less and never more. Ignored for a persistent grant.\",\"maximum\":86400,\"minimum\":60,\"type\":\"integer\"},\"grantType\":{\"description\":\"The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation.\",\"enum\":[\"temporary\",\"persistent\"],\"type\":\"string\"},\"requestingParty\":{\"$ref\":\"#/$defs/RequestingParty\",\"description\":\"HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6).\"},\"subjectHint\":{\"description\":\"An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"access\"],\"title\":\"HCP — Request Grant — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"AccessRequest\":{\"additionalProperties\":false,\"description\":\"One HCP authorization detail as requested (HCP 6.1.5, 13.3).\",\"properties\":{\"actions\":{\"description\":\"HCP `actions`: what the client may do with the categories. `provenance` only alongside `read` (HCP 6.1.5, 7.4.1).\",\"items\":{\"$ref\":\"#/$defs/GrantAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"HCP `categories` the detail covers (HCP 4.5, 6.1.5). The maxItems of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"description\":\"HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule 2).\",\"type\":\"object\"},\"onwardSharing\":{\"$ref\":\"#/$defs/OnwardSharingRequest\",\"description\":\"HCP `onwardSharing` (HCP 3.12, 6.1.4, 6.1.5): asks that the person be offered onward sharing for this detail, as a separate act after they confirm the grant. Only in a detail that includes `read` and whose categories are all of Low default sensitivity; otherwise malformedRequest (HCP 6.1.5).\"},\"purposes\":{\"description\":\"HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/RequestedPurpose\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"HCP's authorization-detail type, carried verbatim (HCP 6.1.5).\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"GrantAction\":{\"description\":\"An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim.\",\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"OnwardSharingRequest\":{\"additionalProperties\":false,\"description\":\"A request for onward sharing (HCP 6.1.5). `notTo` is set by the provider, never asked for.\",\"properties\":{\"domains\":{\"description\":\"DNS domains the client proposes to limit onward sharing to. The person may narrow them further (HCP 6.1.4).\",\"items\":{\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"type\":\"object\"},\"ProposedRequestingParty\":{\"additionalProperties\":false,\"description\":\"HCP `requestingParty` (HCP 6.1.5).\",\"properties\":{\"id\":{\"description\":\"HCP `requestingParty.id`: an identifier for the party.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"type\":{\"description\":\"HCP's own values, carried verbatim.\",\"enum\":[\"person\",\"organization\"],\"type\":\"string\"}},\"required\":[\"type\",\"id\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"RequestedPurpose\":{\"additionalProperties\":false,\"description\":\"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.\",\"properties\":{\"code\":{\"$ref\":\"#/$defs/PurposeCode\"},\"description\":{\"description\":\"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"code\"],\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"access\":{\"description\":\"What the client asks to be granted: one or more HCP authorization details (HCP 6.1.5 `access`, HCP 13.3). The provider shows each to the person before they act (HCP 6.1.6). The maxItems of 16 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/AccessRequest\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"expiresIn\":{\"description\":\"For a temporary grant, the lifetime the client asks for, in seconds. Absent means HCP's default of 4 hours; HCP's maximum is 24 hours (HCP 6.1.3). The provider MAY grant less and never more. Ignored for a persistent grant.\",\"maximum\":86400,\"minimum\":60,\"type\":\"integer\"},\"grantType\":{\"description\":\"The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation.\",\"enum\":[\"temporary\",\"persistent\"],\"type\":\"string\"},\"requestingParty\":{\"$ref\":\"#/$defs/ProposedRequestingParty\",\"description\":\"HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6).\"},\"subjectHint\":{\"description\":\"An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"access\"],\"title\":\"HCP — Request Grant — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/hcp/grants/request/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
     const IS_ISSUED_AT_REQUIRED: bool = true;
+    const MAX_DOCUMENT_BYTES: Option<usize> = Some(1048576usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"GrantAction\":{\"description\":\"An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim.\",\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"GrantedAccess\":{\"additionalProperties\":false,\"description\":\"One authorization detail as the person approved it (HCP 6.1.5 `access[]`). Every approved detail carries at least one purpose (HCP 6.1.5.2).\",\"properties\":{\"actions\":{\"description\":\"HCP `actions` as approved (HCP 6.1.5).\",\"items\":{\"$ref\":\"#/$defs/GrantAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"HCP `categories` as approved (HCP 6.1.5); may be fewer than asked.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"description\":\"HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3).\",\"type\":\"object\"},\"onwardSharing\":{\"additionalProperties\":true,\"description\":\"HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5), with `domains` and the provider-set `notTo` as HCP defines them.\",\"type\":\"object\"},\"purposes\":{\"description\":\"HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may name.\",\"items\":{\"$ref\":\"#/$defs/Purpose\"},\"maxItems\":32,\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"HCP's authorization-detail type, carried verbatim.\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\",\"purposes\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Purpose\":{\"additionalProperties\":false,\"description\":\"An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.\",\"properties\":{\"code\":{\"$ref\":\"#/$defs/PurposeCode\"},\"description\":{\"description\":\"What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"code\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The person approved: the grant evidence and the grant as approved. Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.\",\"properties\":{\"access\":{\"description\":\"HCP `access` as the person approved it, which may be narrower than asked (HCP 6.1.5, 13.3: the token response carries the authorization details granted).\",\"items\":{\"$ref\":\"#/$defs/GrantedAccess\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"accessToken\":{\"description\":\"The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grantExpiresAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and absent for a persistent one, where HCP writes null.\"},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier hcp/grants/revoke and hcp/grants/revoked name.\"},\"grantType\":{\"description\":\"HCP `grantType` as the person chose it (HCP 6.1.4).\",\"enum\":[\"temporary\",\"persistent\"],\"type\":\"string\"},\"grantedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document's own `issuedAt`.\"},\"tokenExpiresAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after `grantExpiresAt`.\"}},\"required\":[\"accessToken\",\"tokenExpiresAt\",\"grantId\",\"access\",\"grantType\",\"grantedAt\"],\"title\":\"HCP — Request Grant — response payload\",\"type\":\"object\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"AccessDetail\":{\"additionalProperties\":true,\"description\":\"An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.\",\"properties\":{\"actions\":{\"description\":\"What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.\",\"items\":{\"enum\":[\"read\",\"write\",\"provenance\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories the detail covers (HCP 4.5).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"narrowedTo\":{\"additionalProperties\":true,\"description\":\"An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).\",\"type\":\"object\"},\"onwardSharing\":{\"$ref\":\"#/$defs/OnwardSharing\",\"description\":\"The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).\"},\"purposes\":{\"description\":\"The purposes the person approved for these categories; never empty (HCP 6.1.5.2).\",\"items\":{\"$ref\":\"#/$defs/Purpose\"},\"minItems\":1,\"type\":\"array\"},\"type\":{\"const\":\"https://hcp.example/spec/authorization/context-access\",\"description\":\"The HCP authorization detail type (HCP 6.1.5).\",\"type\":\"string\"}},\"required\":[\"type\",\"actions\",\"categories\",\"purposes\"],\"type\":\"object\"},\"AuthorizingPrincipal\":{\"additionalProperties\":true,\"description\":\"The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).\",\"properties\":{\"delegation\":{\"description\":\"The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Grant\":{\"additionalProperties\":true,\"description\":\"A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).\",\"properties\":{\"access\":{\"description\":\"What the grant authorizes: one or more authorization details (HCP 6.1.5).\",\"items\":{\"$ref\":\"#/$defs/AccessDetail\"},\"minItems\":1,\"type\":\"array\"},\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuthorizingPrincipal\",\"description\":\"Who authorized the grant (HCP 3.4, 6.1.5).\"},\"client\":{\"$ref\":\"#/$defs/GrantClient\",\"description\":\"The HCP Client the grant was issued to (HCP 6.1.5).\"},\"expiresAt\":{\"description\":\"For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2).\"},\"grantType\":{\"description\":\"Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.\",\"enum\":[\"temporary\",\"persistent\"],\"type\":\"string\"},\"issuedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the grant was issued.\"},\"requestingParty\":{\"$ref\":\"#/$defs/RequestingParty\",\"description\":\"The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4).\"},\"scopes\":{\"description\":\"Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).\",\"items\":{\"maxLength\":2048,\"pattern\":\"^hcp:[^:]+(:[^:]+)*:(read|write)$\",\"type\":\"string\"},\"type\":\"array\"},\"status\":{\"description\":\"`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"revoked\",\"expired\"],\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/GrantParty\",\"description\":\"The Context Subject, by a pseudonym specific to the client (HCP 3.4).\"}},\"required\":[\"grantId\",\"subject\",\"authorizingPrincipal\",\"client\",\"access\",\"grantType\",\"issuedAt\",\"expiresAt\",\"status\"],\"type\":\"object\"},\"GrantClient\":{\"additionalProperties\":true,\"description\":\"The client a grant was issued to (HCP 6.1.5).\",\"properties\":{\"claims\":{\"description\":\"The client conformance claims it declared at registration (HCP 18.1); absent where it declared none.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"type\":\"array\",\"uniqueItems\":true},\"id\":{\"description\":\"Its client identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"legalRetention\":{\"$ref\":\"#/$defs/LegalRetention\",\"description\":\"Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5).\"},\"name\":{\"description\":\"A name the person can recognize (HCP 6.1.5).\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"$ref\":\"#/$defs/Named\",\"description\":\"The Client Operator (HCP 3.2.8).\"}},\"required\":[\"id\",\"name\",\"operator\"],\"type\":\"object\"},\"GrantParty\":{\"additionalProperties\":true,\"description\":\"An actor a grant binds, named by identifier (HCP 3.4).\",\"properties\":{\"id\":{\"description\":\"Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"LegalRetention\":{\"additionalProperties\":true,\"description\":\"A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).\",\"properties\":{\"obligation\":{\"description\":\"The law or rule that requires it.\",\"maxLength\":4096,\"type\":\"string\"},\"period\":{\"description\":\"How long it is kept.\",\"maxLength\":1024,\"type\":\"string\"},\"record\":{\"description\":\"The record kept.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"record\",\"obligation\",\"period\"],\"type\":\"object\"},\"Named\":{\"additionalProperties\":true,\"description\":\"An organization, by identifier and a name a person can recognize.\",\"properties\":{\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Its name. The minLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"OnwardSharing\":{\"additionalProperties\":true,\"description\":\"Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).\",\"properties\":{\"domains\":{\"description\":\"Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5).\",\"items\":{\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"notTo\":{\"description\":\"Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3).\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"type\":\"object\"},\"Purpose\":{\"additionalProperties\":true,\"description\":\"A purpose with a description the person can read (HCP 6.1.5.2).\",\"properties\":{\"code\":{\"$ref\":\"#/$defs/PurposeCode\",\"description\":\"The purpose code.\"},\"description\":{\"description\":\"The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"code\",\"description\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"RequestingParty\":{\"additionalProperties\":true,\"description\":\"The Requesting Party (HCP 3.2.7).\",\"properties\":{\"id\":{\"description\":\"Its identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Its name.\",\"maxLength\":1024,\"type\":\"string\"},\"type\":{\"description\":\"A person or an organization. HCP's own values, carried verbatim.\",\"enum\":[\"person\",\"organization\"],\"type\":\"string\"}},\"required\":[\"type\",\"id\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.\",\"properties\":{\"accessToken\":{\"description\":\"The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grant\":{\"$ref\":\"#/$defs/Grant\",\"description\":\"The grant as the person approved it, as HCP's grant object (HCP 6.1.5) and as hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the token response carries the authorization details granted), `status` is `active`, and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4).\"},\"tokenExpiresAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.\"}},\"required\":[\"accessToken\",\"tokenExpiresAt\",\"grant\"],\"title\":\"HCP — Request Grant — response payload\",\"type\":\"object\"},\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

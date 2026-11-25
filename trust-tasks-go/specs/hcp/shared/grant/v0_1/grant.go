@@ -76,6 +76,7 @@ type Grant struct {
 // GrantParty An actor a grant binds, named by identifier (HCP 3.4).
 type GrantParty struct {
 	// Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4).
+	// The minLength is a framework bound, not an HCP requirement.
 	ID string `json:"id"`
 }
 
@@ -96,7 +97,7 @@ type Named struct {
 	// Its identifier.
 	ID string `json:"id"`
 
-	// Its name.
+	// Its name. The minLength is a framework bound, not an HCP requirement.
 	Name string `json:"name"`
 }
 

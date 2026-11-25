@@ -11,7 +11,7 @@ import type { Instant, Urn } from "../../../../_shared/components.js";
  */
 export interface HCPWithdrawEntryPayload {
   /**
-   * HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`.
+   * HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement.
    */
   ref?: string;
   /**
@@ -32,7 +32,7 @@ export interface HCPWithdrawEntryPayload {
  */
 export interface HCPWithdrawEntryResponsePayload {
   /**
-   * HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5).
+   * HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5). The maxLength is a framework bound, not an HCP requirement.
    */
   ref?: string;
   /**
@@ -114,7 +114,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`."
+      "description": "HCP `ref`: the entry to withdraw, by the grant-scoped reference a Context Client was given (HCP 5.2.5, 7.4). Exactly one of `ref` and `entryId` is present; not checked by the schema, and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement."
     },
     "entryId": {
       "$ref": "#/$defs/Urn",
@@ -162,7 +162,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5)."
+          "description": "HCP `ref`: the `ref` the Context Client named, returned as named; never the entry's `id` (HCP 9.4.5). The maxLength is a framework bound, not an HCP requirement."
         },
         "entryId": {
           "$ref": "#/$defs/Urn",

@@ -21,7 +21,7 @@ class GrantParty {
       );
 
   /// Its identifier; for the Context Subject, a pseudonym specific to the client (HCP
-  /// 3.4).
+  /// 3.4). The minLength is a framework bound, not an HCP requirement.
   final String id;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -76,7 +76,7 @@ class Named {
   /// Its identifier.
   final String id;
 
-  /// Its name.
+  /// Its name. The minLength is a framework bound, not an HCP requirement.
   final String name;
 
   /// Serialize to a JSON-encodable map, omitting absent members.

@@ -18,8 +18,8 @@ const (
 // StandingRule A deny rule the Context Subject sets across every grant, present and
 // future (HCP 6.3). A standing rule never widens access. It carries `operators`,
 // `requires`, or both: `operators` may be absent only where `requires` is present (HCP
-// 6.3). That rule is not checked by the schema: the registry's Rust generator does not
-// support the conditional keywords it needs, so a validator does not check it.
+// 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as
+// HCP's own standing-rule schema does.
 type StandingRule struct {
 	// Stable for the life of the rule (HCP 6.3).
 	RuleID Urn `json:"ruleId"`

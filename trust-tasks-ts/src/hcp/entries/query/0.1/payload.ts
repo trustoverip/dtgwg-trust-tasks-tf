@@ -15,11 +15,12 @@ export interface HCPQueryContextPayload {
    */
   query: string;
   /**
-   * HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement.
+   * HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). Never empty: HCP gives an empty list no meaning, and a library that drops an empty list would turn it into a query of every category, so the carriage refuses it, pending HCP confirmation (question 42). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement.
    *
+   * @minItems 1
    * @maxItems 256
    */
-  categories?: Category[];
+  categories?: [Category, ...Category[]];
   /**
    * HCP `purpose`: a purpose code, an absolute URI, that the grant approved for the categories queried (HCP 5.2.1, 6.1.5.2).
    */
@@ -291,9 +292,9 @@ export interface HCPQueryContextResponsePayload {
    */
   categoriesSearched: Category[];
   /**
-   * HCP `directives`: every directive whose `operators` match the client's Client Operator and whose `categories` include a category of an entry disclosed or are absent (HCP 6.4). Every result to a Context Client carries it, empty when none applies (HCP 6.4, 5.2.1).
+   * HCP `directives`: every directive whose `operators` match the client's Client Operator and whose `categories` include a category of an entry disclosed or are absent (HCP 6.4). Every result to a Context Client carries it, empty when none applies (HCP 6.4, 5.2.1). Null where the requester is not a Context Client, to whom HCP delivers no directives (question 5). HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that "none applies" is never confused with "not a Context Client", pending HCP confirmation (question 42).
    */
-  directives?: Directive[];
+  directives: Directive[] | null;
   /**
    * HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.1).
    */
@@ -366,11 +367,12 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     },
     "categories": {
       "type": "array",
+      "minItems": 1,
       "maxItems": 256,
       "items": {
         "$ref": "#/$defs/Category"
       },
-      "description": "HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement."
+      "description": "HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). Never empty: HCP gives an empty list no meaning, and a library that drops an empty list would turn it into a query of every category, so the carriage refuses it, pending HCP confirmation (question 42). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement."
     },
     "purpose": {
       "$ref": "#/$defs/PurposeCode",
@@ -427,6 +429,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "retrievalId",
         "minimization",
         "categoriesSearched",
+        "directives",
         "respondedAt"
       ],
       "description": "The HCP Query result (HCP 5.2.1): the entries in relevance order (HCP 7.3), with the minimization report and, for a Context Client, the directives that apply. Failures use trust-task-error, not this shape.",
@@ -462,11 +465,14 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "HCP `categoriesSearched`: the categories named in the request, or, where it named none, every category the grant can read for the purpose named (HCP 5.2.1)."
         },
         "directives": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "$ref": "#/$defs/Directive"
           },
-          "description": "HCP `directives`: every directive whose `operators` match the client's Client Operator and whose `categories` include a category of an entry disclosed or are absent (HCP 6.4). Every result to a Context Client carries it, empty when none applies (HCP 6.4, 5.2.1)."
+          "description": "HCP `directives`: every directive whose `operators` match the client's Client Operator and whose `categories` include a category of an entry disclosed or are absent (HCP 6.4). Every result to a Context Client carries it, empty when none applies (HCP 6.4, 5.2.1). Null where the requester is not a Context Client, to whom HCP delivers no directives (question 5). HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that \"none applies\" is never confused with \"not a Context Client\", pending HCP confirmation (question 42)."
         },
         "respondedAt": {
           "$ref": "#/$defs/Instant",
@@ -1492,5 +1498,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
-  maxDocumentBytes: 2097152,
+  maxDocumentBytes: 12582912,
 } as const;

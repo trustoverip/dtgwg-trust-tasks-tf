@@ -54,6 +54,10 @@ fn rejects_invalid_examples() {
             "A `hardDelete` flag — hard deletion is a governance operation, not a withdrawal (HCP 5.4.2, 9.4.5).",
             "{\n  \"accessToken\": \"hcp_at_x\",\n  \"hardDelete\": true,\n  \"reason\": \"The person asked to forget it.\",\n  \"ref\": \"hcp-ref-c73e19\"\n}",
         ),
+        (
+            "`reason` longer than 1024 characters (here 1025) — the maxLength is a framework bound, not an HCP requirement.",
+            "{\n  \"accessToken\": \"hcp_at_x\",\n  \"reason\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n  \"ref\": \"hcp-ref-c73e19\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {
@@ -93,6 +97,10 @@ fn rejects_invalid_response_examples() {
         (
             "Missing `respondedAt` — the result carries HCP's `timestamp` (HCP 5.2.5).",
             "{\n  \"ref\": \"hcp-ref-c73e19\",\n  \"status\": \"deleted\"\n}",
+        ),
+        (
+            "Missing `status` — the result carries the entry's new status, `deleted` (HCP 5.2.5, 9.4.5).",
+            "{\n  \"ref\": \"hcp-ref-c73e19\",\n  \"respondedAt\": \"2026-11-25T09:00:01Z\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

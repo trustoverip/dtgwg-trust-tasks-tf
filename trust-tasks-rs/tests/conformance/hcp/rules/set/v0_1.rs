@@ -47,6 +47,10 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"effect\": \"deny\",\n  \"operators\": [\n    \"ads.example\"\n  ]\n}",
         ),
         (
+            "Neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14); a rule with neither would deny every operator.",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categories\": [\n    \"health_context\"\n  ]\n}",
+        ),
+        (
             "Empty `operators` — absent means every operator; an empty array names none (minItems 1).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"operators\": [],\n  \"requires\": [\n    \"https://hcp.example/spec/clients/directives/2.0\"\n  ]\n}",
         ),

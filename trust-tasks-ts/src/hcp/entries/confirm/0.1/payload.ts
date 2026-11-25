@@ -11,7 +11,7 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
  */
 export interface HCPConfirmOrRejectEntryPayload {
   /**
-   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).
+   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
    */
   entryId: Urn;
   /**
@@ -98,7 +98,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "properties": {
     "entryId": {
       "$ref": "#/$defs/Urn",
-      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."
     },
     "disposition": {
       "type": "string",
@@ -852,5 +852,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
-  maxDocumentBytes: 262144,
+  maxDocumentBytes: 524288,
 } as const;

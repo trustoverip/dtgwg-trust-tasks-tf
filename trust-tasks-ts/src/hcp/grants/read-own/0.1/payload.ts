@@ -525,7 +525,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 1024,
-          "description": "Its name."
+          "description": "Its name. The minLength is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -571,7 +571,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4)."
+          "description": "Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement."
         }
       }
     }
@@ -605,4 +605,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 5242880,
 } as const;

@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::hcp::export::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:6d55146a-7760-4fd1-b22f-8099f3bac805\",\n  \"type\": \"https://trusttasks.org/spec/hcp/export/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T09:00:00Z\",\n  \"threadId\": \"urn:uuid:534fe5bb-f155-4f4f-8b5d-daa9a354f432\",\n  \"payload\": {\n    \"excludeDeleted\": true,\n    \"accessToken\": \"hcp_mt_8f3a1c9e7b2d4f60\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:6d55146a-7760-4fd1-b22f-8099f3bac805\",\n  \"type\": \"https://trusttasks.org/spec/hcp/export/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T09:00:00Z\",\n  \"threadId\": \"urn:uuid:534fe5bb-f155-4f4f-8b5d-daa9a354f432\",\n  \"payload\": {\n    \"excludeDeleted\": true,\n    \"accessToken\": \"hcp_mt_8f3a1c9e7b2d4f60\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T09:00:00Z\",\n    \"verificationMethod\": \"did:web:wallet.person.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3Kp8vR2mXcN6wB4hT9qL1sY7dF3gJ5aZe2uP8oVkC4iM6nD1tH9yW5xS3wE7rA2jU8fG4lO6pK1vX9zN5bR3cQ7\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -80,15 +80,27 @@ fn rejects_invalid_response_examples() {
     let fixtures: &[(&str, &str)] = &[
         (
             "A member beside `export` — the payload carries only the export, whose own `options` member records the options used (HCP 5.4.1).",
-            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  },\n  \"options\": {\n    \"excludeDeleted\": true\n  }\n}",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  },\n  \"options\": {\n    \"excludeDeleted\": true\n  }\n}",
         ),
         (
             "An export without `rules` — HCP's export always carries the Context Subject's standing rules (HCP 5.4.1).",
-            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+        ),
+        (
+            "A standing rule with neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14).",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [\n      {\n        \"categories\": [\n          \"health_context\"\n        ],\n        \"createdAt\": \"2026-11-25T09:00:00Z\",\n        \"effect\": \"deny\",\n        \"ruleId\": \"urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b\",\n        \"setBy\": \"context-subject\"\n      }\n    ],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
         (
             "A different export `schema` — HCP 2.0-draft-3's export structure is `https://hcp.example/spec/export/2.0`, compared as an exact string (HCP 5.4.1, 1.7).",
-            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/1.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/1.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+        ),
+        (
+            "An export without `options` — the carriage requires it, so that the export says whether `versions` and `audit` were asked for (HCP 5.4.1; question 42).",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+        ),
+        (
+            "An export whose `options` omits `includeAudit` — the carriage requires `includeVersions` and `includeAudit`, each true or false (HCP 5.4.1; question 42).",
+            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

@@ -11,7 +11,7 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
  */
 export interface HCPChangeEntryCategoriesPayload {
   /**
-   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).
+   * HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
    */
   entryId: Urn;
   /**
@@ -22,7 +22,7 @@ export interface HCPChangeEntryCategoriesPayload {
    */
   categories: [Category, ...Category[]];
   /**
-   * HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
+   * HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
    */
   expectedVersion: number;
   /**
@@ -101,7 +101,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "properties": {
     "entryId": {
       "$ref": "#/$defs/Urn",
-      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."
     },
     "categories": {
       "type": "array",
@@ -116,7 +116,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "expectedVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
     },
     "accessToken": {
       "type": "string",
@@ -864,5 +864,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
-  maxDocumentBytes: 262144,
+  maxDocumentBytes: 524288,
 } as const;

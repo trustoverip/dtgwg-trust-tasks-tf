@@ -54,6 +54,10 @@ fn rejects_invalid_examples() {
             "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
             "{\n  \"disposition\": \"rejected\",\n  \"entryId\": \"urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561\",\n  \"expectedVersion\": 2\n}",
         ),
+        (
+            "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"disposition\": \"confirmed\",\n  \"entryId\": \"urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561\",\n  \"expectedVersion\": 1,\n  \"ref\": \"hcp-ref-c73e19\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

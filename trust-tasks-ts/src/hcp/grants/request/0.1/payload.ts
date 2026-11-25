@@ -3,7 +3,7 @@
  * Source: specs/hcp/grants/request/0.1/payload.schema.json
  */
 
-import type { Category, Instant, PurposeCode, Urn } from "../../../../_shared/components.js";
+import type { AccessDetail, AuthorizingPrincipal, Category, Grant, GrantClient, GrantParty, Instant, LegalRetention, Named, OnwardSharing, Purpose_HcpV0_1 as Purpose, PurposeCode, RequestingParty, Uri, Urn } from "../../../../_shared/components.js";
 
 
 /**
@@ -167,7 +167,7 @@ export interface HCPRequestGrantPayload {
    * An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation.
    */
   subjectHint?: string;
-  requestingParty?: RequestingParty;
+  requestingParty?: ProposedRequestingParty;
 }
 /**
  * One HCP authorization detail as requested (HCP 6.1.5, 13.3).
@@ -197,7 +197,7 @@ export interface AccessRequest {
    * @minItems 1
    * @maxItems 32
    */
-  purposes?: [Purpose, ...Purpose[]];
+  purposes?: [RequestedPurpose, ...RequestedPurpose[]];
   /**
    * HCP `narrowedTo` (HCP 6.1.5.1): implementation-defined keys that only narrow. A key the provider does not support is refused with malformedRequest (HCP 6.1.5.1 rule 2).
    */
@@ -207,10 +207,10 @@ export interface AccessRequest {
 /**
  * An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.
  */
-export interface Purpose {
+export interface RequestedPurpose {
   code: PurposeCode;
   /**
-   * What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound.
+   * What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.
    */
   description?: string;
 }
@@ -229,7 +229,7 @@ export interface OnwardSharingRequest {
 /**
  * HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6).
  */
-export interface RequestingParty {
+export interface ProposedRequestingParty {
   /**
    * HCP's own values, carried verbatim.
    */
@@ -244,217 +244,25 @@ export interface RequestingParty {
   name?: string;
 }
 /**
- * The person approved: the grant evidence and the grant as approved. Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
+ * The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
  */
 export interface HCPRequestGrantResponsePayload {
   /**
-   * The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours).
+   * The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
   /**
-   * When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after `grantExpiresAt`.
+   * When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.
    */
   tokenExpiresAt: Instant;
   /**
-   * HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier hcp/grants/revoke and hcp/grants/revoked name.
+   * The grant as the person approved it, as HCP's grant object (HCP 6.1.5) and as hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the token response carries the authorization details granted), `status` is `active`, and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4).
    */
-  grantId: Urn;
-  /**
-   * HCP `access` as the person approved it, which may be narrower than asked (HCP 6.1.5, 13.3: the token response carries the authorization details granted).
-   *
-   * @minItems 1
-   * @maxItems 16
-   */
-  access:
-    | [GrantedAccess]
-    | [GrantedAccess, GrantedAccess]
-    | [GrantedAccess, GrantedAccess, GrantedAccess]
-    | [GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess]
-    | [GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess]
-    | [GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess]
-    | [GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess, GrantedAccess]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ]
-    | [
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess,
-        GrantedAccess
-      ];
-  /**
-   * HCP `grantType` as the person chose it (HCP 6.1.4).
-   */
-  grantType: "temporary" | "persistent";
-  /**
-   * HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document's own `issuedAt`.
-   */
-  grantedAt: Instant;
-  /**
-   * HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and absent for a persistent one, where HCP writes null.
-   */
-  grantExpiresAt?: Instant;
-}
-/**
- * One authorization detail as the person approved it (HCP 6.1.5 `access[]`). Every approved detail carries at least one purpose (HCP 6.1.5.2).
- */
-export interface GrantedAccess {
-  /**
-   * HCP's authorization-detail type, carried verbatim.
-   */
-  type: "https://hcp.example/spec/authorization/context-access";
-  /**
-   * HCP `actions` as approved (HCP 6.1.5).
-   *
-   * @minItems 1
-   * @maxItems 3
-   */
-  actions: [GrantAction] | [GrantAction, GrantAction] | [GrantAction, GrantAction, GrantAction];
-  /**
-   * HCP `categories` as approved (HCP 6.1.5); may be fewer than asked.
-   *
-   * @minItems 1
-   * @maxItems 256
-   */
-  categories: [Category, ...Category[]];
-  /**
-   * HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may name.
-   *
-   * @minItems 1
-   * @maxItems 32
-   */
-  purposes: [Purpose, ...Purpose[]];
-  /**
-   * HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3).
-   */
-  narrowedTo?: {};
-  /**
-   * HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5), with `domains` and the provider-set `notTo` as HCP defines them.
-   */
-  onwardSharing?: {
-    [k: string]: unknown | undefined;
-  };
+  grant: Grant;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Category, Instant, PurposeCode, Urn };
+export type { AccessDetail, AuthorizingPrincipal, Category, Grant, GrantClient, GrantParty, Instant, LegalRetention, Named, OnwardSharing, Purpose, PurposeCode, RequestingParty, Uri, Urn };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/grants/request/0.1" as const;
@@ -539,7 +347,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation."
     },
     "requestingParty": {
-      "$ref": "#/$defs/RequestingParty",
+      "$ref": "#/$defs/ProposedRequestingParty",
       "description": "HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6)."
     }
   },
@@ -584,7 +392,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "minItems": 1,
           "maxItems": 32,
           "items": {
-            "$ref": "#/$defs/Purpose"
+            "$ref": "#/$defs/RequestedPurpose"
           },
           "description": "HCP `purposes` the client asks to use the categories for (HCP 6.1.5.2). Absent means the person chooses them before approving (HCP 6.1.5.2, 13.3). The maxItems of 32 is a framework bound, not an HCP requirement."
         },
@@ -607,7 +415,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       ],
       "description": "An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim."
     },
-    "Purpose": {
+    "RequestedPurpose": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -621,8 +429,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "description": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 1024,
-          "description": "What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound."
+          "maxLength": 4096,
+          "description": "What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -645,7 +453,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "RequestingParty": {
+    "ProposedRequestingParty": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -676,13 +484,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Category": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2048,
-      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
-    },
     "PurposeCode": {
       "type": "string",
       "format": "uri",
@@ -690,6 +491,13 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 2048,
       "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
       "description": "An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."
+    },
+    "Category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
     }
   }
 };
@@ -699,90 +507,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "GrantAction": {
-      "type": "string",
-      "enum": [
-        "read",
-        "write",
-        "provenance"
-      ],
-      "description": "An HCP grant action (HCP 6.1.5). HCP's own values, carried verbatim."
-    },
-    "Purpose": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "code"
-      ],
-      "description": "An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.",
-      "properties": {
-        "code": {
-          "$ref": "#/$defs/PurposeCode"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024,
-          "description": "What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength is a framework bound."
-        }
-      }
-    },
-    "GrantedAccess": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "actions",
-        "categories",
-        "purposes"
-      ],
-      "description": "One authorization detail as the person approved it (HCP 6.1.5 `access[]`). Every approved detail carries at least one purpose (HCP 6.1.5.2).",
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "https://hcp.example/spec/authorization/context-access",
-          "description": "HCP's authorization-detail type, carried verbatim."
-        },
-        "actions": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 3,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/GrantAction"
-          },
-          "description": "HCP `actions` as approved (HCP 6.1.5)."
-        },
-        "categories": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 256,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Category"
-          },
-          "description": "HCP `categories` as approved (HCP 6.1.5); may be fewer than asked."
-        },
-        "purposes": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/Purpose"
-          },
-          "description": "HCP `purposes` as approved (HCP 6.1.5.2): the purposes a query under this grant may name."
-        },
-        "narrowedTo": {
-          "type": "object",
-          "description": "HCP `narrowedTo`, present wherever the grant is narrowed (HCP 6.1.5.1 rule 3)."
-        },
-        "onwardSharing": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "HCP `onwardSharing`, present only where the person elected it (HCP 6.1.4, 6.1.5), with `domains` and the provider-set `notTo` as HCP defines them."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "HCP — Request Grant — response payload",
@@ -791,35 +515,78 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "required": [
         "accessToken",
         "tokenExpiresAt",
-        "grantId",
-        "access",
-        "grantType",
-        "grantedAt"
+        "grant"
       ],
-      "description": "The person approved: the grant evidence and the grant as approved. Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.",
+      "description": "The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.",
       "properties": {
         "accessToken": {
           "type": "string",
           "minLength": 1,
           "maxLength": 8192,
-          "description": "The HCP access token for the new grant, opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours)."
+          "description": "The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement."
         },
         "tokenExpiresAt": {
           "$ref": "#/$defs/Instant",
-          "description": "When `accessToken` stops being accepted (HCP 13.4), in whole seconds. Never after `grantExpiresAt`."
+          "description": "When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`."
         },
+        "grant": {
+          "$ref": "#/$defs/Grant",
+          "description": "The grant as the person approved it, as HCP's grant object (HCP 6.1.5) and as hcp/grants/read-own returns it: `access` may be narrower than asked (HCP 13.3: the token response carries the authorization details granted), `status` is `active`, and `expiresAt` is null for a persistent grant. `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4)."
+        }
+      }
+    },
+    "Grant": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "grantId",
+        "subject",
+        "authorizingPrincipal",
+        "client",
+        "access",
+        "grantType",
+        "issuedAt",
+        "expiresAt",
+        "status"
+      ],
+      "description": "A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).",
+      "properties": {
         "grantId": {
           "$ref": "#/$defs/Urn",
-          "description": "HCP `grantId` (HCP 6.1.5): stable for the life of the grant, and the identifier hcp/grants/revoke and hcp/grants/revoked name."
+          "description": "Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2)."
+        },
+        "subject": {
+          "$ref": "#/$defs/GrantParty",
+          "description": "The Context Subject, by a pseudonym specific to the client (HCP 3.4)."
+        },
+        "authorizingPrincipal": {
+          "$ref": "#/$defs/AuthorizingPrincipal",
+          "description": "Who authorized the grant (HCP 3.4, 6.1.5)."
+        },
+        "client": {
+          "$ref": "#/$defs/GrantClient",
+          "description": "The HCP Client the grant was issued to (HCP 6.1.5)."
+        },
+        "requestingParty": {
+          "$ref": "#/$defs/RequestingParty",
+          "description": "The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4)."
         },
         "access": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 16,
           "items": {
-            "$ref": "#/$defs/GrantedAccess"
+            "$ref": "#/$defs/AccessDetail"
           },
-          "description": "HCP `access` as the person approved it, which may be narrower than asked (HCP 6.1.5, 13.3: the token response carries the authorization details granted)."
+          "description": "What the grant authorizes: one or more authorization details (HCP 6.1.5)."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^hcp:[^:]+(:[^:]+)*:(read|write)$"
+          },
+          "description": "Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5)."
         },
         "grantType": {
           "type": "string",
@@ -827,15 +594,315 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "temporary",
             "persistent"
           ],
-          "description": "HCP `grantType` as the person chose it (HCP 6.1.4)."
+          "description": "Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim."
         },
-        "grantedAt": {
+        "issuedAt": {
           "$ref": "#/$defs/Instant",
-          "description": "HCP grant `issuedAt` (HCP 6.1.5), renamed so it is not read as the document's own `issuedAt`."
+          "description": "When the grant was issued."
         },
-        "grantExpiresAt": {
-          "$ref": "#/$defs/Instant",
-          "description": "HCP grant `expiresAt` (HCP 6.1.3, 6.1.4): REQUIRED for a temporary grant, and absent for a persistent one, where HCP writes null."
+        "expiresAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5)."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "revoked",
+            "expired"
+          ],
+          "description": "`expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim."
+        }
+      }
+    },
+    "AccessDetail": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "actions",
+        "categories",
+        "purposes"
+      ],
+      "description": "An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "https://hcp.example/spec/authorization/context-access",
+          "description": "The HCP authorization detail type (HCP 6.1.5)."
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write",
+              "provenance"
+            ]
+          },
+          "description": "What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Category"
+          },
+          "description": "The categories the detail covers (HCP 4.5)."
+        },
+        "purposes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Purpose"
+          },
+          "description": "The purposes the person approved for these categories; never empty (HCP 6.1.5.2)."
+        },
+        "narrowedTo": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6)."
+        },
+        "onwardSharing": {
+          "$ref": "#/$defs/OnwardSharing",
+          "description": "The onward sharing the person elected for the detail (HCP 3.12, 6.1.5)."
+        }
+      }
+    },
+    "OnwardSharing": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).",
+      "properties": {
+        "domains": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253
+          },
+          "description": "Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5)."
+        },
+        "notTo": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "description": "Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3)."
+        }
+      }
+    },
+    "Purpose": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "description"
+      ],
+      "description": "A purpose with a description the person can read (HCP 6.1.5.2).",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/PurposeCode",
+          "description": "The purpose code."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "The description shown to the person before approval (HCP 6.1.5.2, 6.1.6)."
+        }
+      }
+    },
+    "PurposeCode": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+      "description": "An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."
+    },
+    "Category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+    },
+    "RequestingParty": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "id"
+      ],
+      "description": "The Requesting Party (HCP 3.2.7).",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "person",
+            "organization"
+          ],
+          "description": "A person or an organization. HCP's own values, carried verbatim."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Its identifier."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Its name."
+        }
+      }
+    },
+    "GrantClient": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name",
+        "operator"
+      ],
+      "description": "The client a grant was issued to (HCP 6.1.5).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Its client identifier."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "A name the person can recognize (HCP 6.1.5)."
+        },
+        "operator": {
+          "$ref": "#/$defs/Named",
+          "description": "The Client Operator (HCP 3.2.8)."
+        },
+        "legalRetention": {
+          "$ref": "#/$defs/LegalRetention",
+          "description": "Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5)."
+        },
+        "claims": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Uri"
+          },
+          "description": "The client conformance claims it declared at registration (HCP 18.1); absent where it declared none."
+        }
+      }
+    },
+    "LegalRetention": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "record",
+        "obligation",
+        "period"
+      ],
+      "description": "A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).",
+      "properties": {
+        "record": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "The record kept."
+        },
+        "obligation": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "The law or rule that requires it."
+        },
+        "period": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "How long it is kept."
+        }
+      }
+    },
+    "Named": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name"
+      ],
+      "description": "An organization, by identifier and a name a person can recognize.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Its identifier."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Its name. The minLength is a framework bound, not an HCP requirement."
+        }
+      }
+    },
+    "Uri": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+      "description": "An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3)."
+    },
+    "AuthorizingPrincipal": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id"
+      ],
+      "description": "The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Its identifier."
+        },
+        "delegation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4)."
+        }
+      }
+    },
+    "GrantParty": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id"
+      ],
+      "description": "An actor a grant binds, named by identifier (HCP 3.4).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4). The minLength is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -848,21 +915,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
       "description": "An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."
-    },
-    "Category": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2048,
-      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
-    },
-    "PurposeCode": {
-      "type": "string",
-      "format": "uri",
-      "minLength": 1,
-      "maxLength": 2048,
-      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-      "description": "An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."
     }
   }
 };
@@ -894,4 +946,5 @@ export const RESPONSE_SPEC = {
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
+  maxDocumentBytes: 1048576,
 } as const;

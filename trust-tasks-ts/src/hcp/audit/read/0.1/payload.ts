@@ -15,7 +15,7 @@ export interface HCPReadAuditLogPayload {
    */
   accessToken: string;
   /**
-   * Only events in which this HCP Client took part, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
+   * Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
    */
   client?: string;
   /**
@@ -48,7 +48,7 @@ export interface HCPReadAuditLogPayload {
  */
 export interface HCPReadAuditLogResponsePayload {
   /**
-   * The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read, with the members it withholds left out. Empty when nothing matches.
+   * The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches.
    */
   events: AuditEvent[];
   /**
@@ -123,7 +123,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "Only events in which this HCP Client took part, by its client identifier (HCP 8.3: \"filter by HCP Client\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement."
+      "description": "Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: \"filter by HCP Client\"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement."
     },
     "category": {
       "$ref": "#/$defs/Category",
@@ -146,7 +146,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "cursor": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 1024,
+      "maxLength": 2048,
       "description": "HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement."
     },
     "limit": {
@@ -192,12 +192,12 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "items": {
             "$ref": "#/$defs/AuditEvent"
           },
-          "description": "The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read, with the members it withholds left out. Empty when nothing matches."
+          "description": "The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches."
         },
         "nextCursor": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 1024,
+          "maxLength": 2048,
           "description": "HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement."
         }
       }
@@ -209,9 +209,14 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "eventId",
         "eventType",
         "timestamp",
-        "participants"
+        "participants",
+        "entryId",
+        "relatedEntryId",
+        "purpose",
+        "purposeDescription",
+        "grantId"
       ],
-      "description": "One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).",
+      "description": "One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).",
       "properties": {
         "eventId": {
           "$ref": "#/$defs/Urn",
@@ -221,7 +226,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "description": "The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused."
+          "description": "The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements."
         },
         "timestamp": {
           "$ref": "#/$defs/Instant",
@@ -237,7 +242,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2)."
+          "description": "The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
         },
         "relatedEntryId": {
           "type": [
@@ -245,7 +250,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2)."
+          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
         },
         "categories": {
           "type": "array",
@@ -262,7 +267,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           ],
           "maxLength": 2048,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The purpose code stated, or null (HCP 8.2, 6.1.5.2)."
+          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
         },
         "purposeDescription": {
           "type": [
@@ -270,7 +275,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "maxLength": 4096,
-          "description": "The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
         },
         "grantId": {
           "type": [
@@ -278,7 +283,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The grant concerned, or null (HCP 8.2)."
+          "description": "The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42)."
         },
         "disclosed": {
           "type": "array",
@@ -346,11 +351,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
                   "type": "string",
                   "maxLength": 2048
                 },
-                "description": "The claims revealed, each a JSON Pointer."
+                "description": "The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements."
               }
             }
           },
-          "description": "Present only where a credential was disclosed in derived form (HCP 8.2, 14.9)."
+          "description": "Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -396,7 +401,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
               "type": "string",
               "minLength": 1,
               "maxLength": 2048,
-              "description": "Their identifier."
+              "description": "Their identifier. The minLength and maxLength are framework bounds, not HCP requirements."
             }
           }
         },
@@ -438,7 +443,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "The participant's identifier."
+          "description": "The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements."
         }
       }
     },
@@ -461,7 +466,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

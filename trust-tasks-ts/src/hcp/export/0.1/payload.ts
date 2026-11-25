@@ -3,7 +3,7 @@
  * Source: specs/hcp/export/0.1/payload.schema.json
  */
 
-import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Uri, Urn } from "../../../_shared/components.js";
+import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn } from "../../../_shared/components.js";
 
 
 /**
@@ -38,7 +38,7 @@ export interface HCPExportResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuditDisclosed, AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Uri, Urn };
+export type { AuditDisclosed, AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/export/0.1" as const;
@@ -145,10 +145,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "subject",
         "exportedBy",
         "exportedAt",
+        "options",
         "entries",
         "rules"
       ],
-      "description": "An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.",
+      "description": "An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.",
       "properties": {
         "@context": {
           "type": [
@@ -196,7 +197,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "options": {
           "$ref": "#/$defs/ExportOptions",
-          "description": "The options requested (HCP 5.4.1)."
+          "description": "The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42)."
         },
         "entries": {
           "type": "array",
@@ -214,11 +215,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "type": "object",
             "additionalProperties": true
           },
-          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1)."
+          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records."
         },
         "rules": {
           "type": "array",
-          "maxItems": 1024,
+          "maxItems": 1000000,
           "items": {
             "$ref": "#/$defs/StandingRule"
           },
@@ -226,7 +227,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "directives": {
           "type": "array",
-          "maxItems": 1024,
+          "maxItems": 1000000,
           "items": {
             "$ref": "#/$defs/Directive"
           },
@@ -234,7 +235,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "delegations": {
           "type": "array",
-          "maxItems": 256,
+          "maxItems": 1000000,
           "items": {
             "$ref": "#/$defs/Delegation"
           },
@@ -246,14 +247,18 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "items": {
             "$ref": "#/$defs/AuditEvent"
           },
-          "description": "The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1)."
+          "description": "The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records."
         }
       }
     },
     "ExportOptions": {
       "type": "object",
       "additionalProperties": true,
-      "description": "The export options (HCP 5.4.1). Absent or false means the default.",
+      "required": [
+        "includeVersions",
+        "includeAudit"
+      ],
+      "description": "The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.",
       "properties": {
         "excludeDeleted": {
           "type": "boolean",
@@ -276,9 +281,14 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "eventId",
         "eventType",
         "timestamp",
-        "participants"
+        "participants",
+        "entryId",
+        "relatedEntryId",
+        "purpose",
+        "purposeDescription",
+        "grantId"
       ],
-      "description": "One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).",
+      "description": "One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).",
       "properties": {
         "eventId": {
           "$ref": "#/$defs/Urn",
@@ -288,7 +298,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "description": "The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused."
+          "description": "The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements."
         },
         "timestamp": {
           "$ref": "#/$defs/Instant",
@@ -304,7 +314,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2)."
+          "description": "The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
         },
         "relatedEntryId": {
           "type": [
@@ -312,7 +322,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2)."
+          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
         },
         "categories": {
           "type": "array",
@@ -329,7 +339,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           ],
           "maxLength": 2048,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The purpose code stated, or null (HCP 8.2, 6.1.5.2)."
+          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
         },
         "purposeDescription": {
           "type": [
@@ -337,7 +347,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "maxLength": 4096,
-          "description": "The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
         },
         "grantId": {
           "type": [
@@ -345,7 +355,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The grant concerned, or null (HCP 8.2)."
+          "description": "The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42)."
         },
         "disclosed": {
           "type": "array",
@@ -413,11 +423,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
                   "type": "string",
                   "maxLength": 2048
                 },
-                "description": "The claims revealed, each a JSON Pointer."
+                "description": "The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements."
               }
             }
           },
-          "description": "Present only where a credential was disclosed in derived form (HCP 8.2, 14.9)."
+          "description": "Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -463,7 +473,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
               "type": "string",
               "minLength": 1,
               "maxLength": 2048,
-              "description": "Their identifier."
+              "description": "Their identifier. The minLength and maxLength are framework bounds, not HCP requirements."
             }
           }
         },
@@ -505,7 +515,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "The participant's identifier."
+          "description": "The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements."
         }
       }
     },
@@ -886,7 +896,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "setBy",
         "createdAt"
       ],
-      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). That rule is not checked by the schema: the registry's Rust generator does not support the conditional keywords it needs, so a validator does not check it.",
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.",
       "properties": {
         "ruleId": {
           "$ref": "#/$defs/Urn",
@@ -938,7 +948,19 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Instant",
           "description": "Set by the provider: when the rule was set (HCP 6.3)."
         }
-      }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "operators"
+          ]
+        },
+        {
+          "required": [
+            "requires"
+          ]
+        }
+      ]
     },
     "Uri": {
       "type": "string",
@@ -960,7 +982,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

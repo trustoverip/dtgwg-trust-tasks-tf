@@ -12,7 +12,7 @@ import type { Instant, PurposeCode } from "../../../../_shared/components.js";
 export interface HCPReportOnwardSharingPayload {
   recipient: ShareRecipient;
   /**
-   * HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256 is a framework bound, not an HCP requirement.
+   * HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256, and each item's maxLength, are framework bounds, not HCP requirements.
    *
    * @minItems 1
    * @maxItems 256
@@ -123,7 +123,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "minLength": 1,
         "maxLength": 2048
       },
-      "description": "HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256 is a framework bound, not an HCP requirement."
+      "description": "HCP `refs`: the `ref` of each entry the client drew on (HCP 5.2.8, 7.4). The bound of 256, and each item's maxLength, are framework bounds, not HCP requirements."
     },
     "purpose": {
       "$ref": "#/$defs/PurposeCode",

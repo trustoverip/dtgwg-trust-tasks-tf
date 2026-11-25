@@ -23,7 +23,8 @@ class AuditParty {
         id: json['id'] as String,
       );
 
-  /// The participant's identifier.
+  /// The participant's identifier. The minLength and maxLength are framework bounds, not
+  /// HCP requirements.
   final String id;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -74,7 +75,8 @@ class AuditParticipantsInitiator {
   /// Their role (HCP 8.2). HCP's own values, carried verbatim.
   final AuditParticipantsInitiatorRole role;
 
-  /// Their identifier.
+  /// Their identifier. The minLength and maxLength are framework bounds, not HCP
+  /// requirements.
   final String id;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -182,7 +184,8 @@ class AuditDisclosedRevealedItem {
   /// The evidence item's index.
   final int evidence;
 
-  /// The claims revealed, each a JSON Pointer.
+  /// The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework
+  /// bounds, not HCP requirements.
   final List<String> claims;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -228,7 +231,8 @@ class AuditDisclosed {
   /// True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
   final bool? provenance;
 
-  /// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+  /// Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The
+  /// maxItems is a framework bound, not an HCP requirement.
   final List<AuditDisclosedRevealedItem>? revealed;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -244,7 +248,12 @@ class AuditDisclosed {
 
 /// One audit event (HCP 8.2). The log names entries by their stable `id`, never by the
 /// `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3).
-/// The query text is never recorded (HCP 8.2).
+/// The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`,
+/// `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's
+/// template writes them: HCP's own shape leaves them optional, and the carriage
+/// requires them so that a null always travels and is never confused with an absent
+/// member, pending HCP confirmation (question 42). An event redacted for a former
+/// delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
 class AuditEvent {
   const AuditEvent({
     required this.eventId,
@@ -291,7 +300,8 @@ class AuditEvent {
 
   /// The event type, one of those HCP 8.1 lists (such as `context.read`,
   /// `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the
-  /// event types of a later draft are not refused.
+  /// event types of a later draft are not refused. The minLength and maxLength are
+  /// framework bounds, not HCP requirements.
   final String eventType;
 
   /// When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event
@@ -301,26 +311,33 @@ class AuditEvent {
   /// Who took part (HCP 8.2, 3.9).
   final AuditParticipants participants;
 
-  /// The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the
-  /// conflicted entry (HCP 8.2).
+  /// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2).
+  /// For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event
+  /// redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
   final String? entryId;
 
   /// For conflict events, the authoritative entry (or the other entry where neither or
-  /// both are authoritative); null for every other event type (HCP 8.2).
+  /// both are authoritative); null for every other event type (HCP 8.2). Required, and
+  /// null in an event redacted for a former delegate (HCP 17.7), pending HCP
+  /// confirmation (question 42).
   final String? relatedEntryId;
 
   /// The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP
   /// requirement.
   final List<Category>? categories;
 
-  /// The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+  /// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required,
+  /// pending HCP confirmation (question 42). The maxLength is a framework bound, not an
+  /// HCP requirement.
   final String? purpose;
 
-  /// The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP
+  /// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP
+  /// confirmation (question 42). The maxLength is a framework bound, not an HCP
   /// requirement.
   final String? purposeDescription;
 
-  /// The grant concerned, or null (HCP 8.2).
+  /// The grant concerned, or null where the event concerns none (HCP 8.2). Required,
+  /// pending HCP confirmation (question 42).
   final String? grantId;
 
   /// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A

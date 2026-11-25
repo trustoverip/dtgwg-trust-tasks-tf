@@ -3,15 +3,17 @@
  * Source: specs/hcp/rules/set/0.1/payload.schema.json
  */
 
-import type { Category, Instant, StandingRule, Uri, Urn } from "../../../../_shared/components.js";
+import type { Category, StandingRule, Uri } from "../../../../_shared/components.js";
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; that rule is not checked by the schema (the registry's Rust generator does not support the conditional keywords it needs). The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; the schema checks it with an `anyOf` of the two `required` clauses. The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
-export interface HCPSetStandingRulePayload {
+export type HCPSetStandingRulePayload = {
+  [k: string]: unknown | undefined;
+} & {
   /**
-   * HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires` (not checked by the schema). The maxItems is a framework bound, not an HCP requirement.
+   * HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement.
    *
    * @minItems 1
    * @maxItems 256
@@ -35,7 +37,8 @@ export interface HCPSetStandingRulePayload {
    * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
    */
   accessToken: string;
-}
+};
+
 /**
  * The rule is set. Carries HCP's `201` result, the rule with its `ruleId` and `createdAt` (HCP 9.4.14), wrapped in `rule`. Failures use trust-task-error, not this shape.
  */
@@ -47,7 +50,7 @@ export interface HCPSetStandingRuleResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Category, Instant, StandingRule, Uri, Urn };
+export type { Category, StandingRule, Uri };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/rules/set/0.1" as const;
@@ -95,7 +98,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/rules/set/0.1",
   "title": "HCP — Set Standing Rule — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; that rule is not checked by the schema (the registry's Rust generator does not support the conditional keywords it needs). The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; the schema checks it with an `anyOf` of the two `required` clauses. The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -111,7 +114,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "minLength": 1,
         "maxLength": 2048
       },
-      "description": "HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires` (not checked by the schema). The maxItems is a framework bound, not an HCP requirement."
+      "description": "HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement."
     },
     "requires": {
       "type": "array",
@@ -138,6 +141,18 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
     }
   },
+  "anyOf": [
+    {
+      "required": [
+        "operators"
+      ]
+    },
+    {
+      "required": [
+        "requires"
+      ]
+    }
+  ],
   "$defs": {
     "Category": {
       "type": "string",
@@ -187,7 +202,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "setBy",
         "createdAt"
       ],
-      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). That rule is not checked by the schema: the registry's Rust generator does not support the conditional keywords it needs, so a validator does not check it.",
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.",
       "properties": {
         "ruleId": {
           "$ref": "#/$defs/Urn",
@@ -239,7 +254,19 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Instant",
           "description": "Set by the provider: when the rule was set (HCP 6.3)."
         }
-      }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "operators"
+          ]
+        },
+        {
+          "required": [
+            "requires"
+          ]
+        }
+      ]
     },
     "Instant": {
       "type": "string",

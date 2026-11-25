@@ -11,7 +11,7 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
  */
 export interface HCPGetEntryPayload {
   /**
-   * HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`.
+   * HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement.
    */
   ref?: string;
   /**
@@ -52,9 +52,9 @@ export interface HCPGetEntryResponsePayload {
    */
   minimization: MinimizationReport;
   /**
-   * HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies.
+   * HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies. Null where the requester is not a Context Client, to whom HCP delivers no directives. HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that "none applies" is never confused with "not a Context Client", pending HCP confirmation (question 42).
    */
-  directives?: Directive[];
+  directives: Directive[] | null;
   /**
    * HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.2).
    */
@@ -122,7 +122,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`."
+      "description": "HCP `ref`: the grant-scoped reference a Context Client was given when the entry was disclosed to it (HCP 5.2.2, 7.4). Exactly one of `ref` and `entryId` is present; that rule is not checked by the schema (a schema `oneOf` would complicate every generated library), and a request with both or neither fails with `malformedRequest`. The maxLength is a framework bound, not an HCP requirement."
     },
     "entryId": {
       "$ref": "#/$defs/Urn",
@@ -180,6 +180,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "entry",
         "retrievalId",
         "minimization",
+        "directives",
         "respondedAt"
       ],
       "description": "The HCP Get entry result (HCP 5.2.2): the entry, inside a result so that the minimization report has somewhere to sit. Failures use trust-task-error, not this shape.",
@@ -204,11 +205,14 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "HCP `minimization`: the minimization report (HCP 7.5). Its `method` is `none`, since the caller named a single entry (HCP 5.2.2, 9.4.2)."
         },
         "directives": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "$ref": "#/$defs/Directive"
           },
-          "description": "HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies."
+          "description": "HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies. Null where the requester is not a Context Client, to whom HCP delivers no directives. HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that \"none applies\" is never confused with \"not a Context Client\", pending HCP confirmation (question 42)."
         },
         "respondedAt": {
           "$ref": "#/$defs/Instant",
