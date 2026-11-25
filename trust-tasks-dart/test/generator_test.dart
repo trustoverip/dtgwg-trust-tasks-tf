@@ -390,6 +390,66 @@ void main() {
     });
   });
 
+  group('required nullable', () {
+    // A required member whose schema admits null keeps its key when null:
+    // `"did": null` is a statement (vta/contexts/update-did 1.2), and a
+    // document without the key fails its own schema's `required`.
+    // scripts/build-dart-bindings.mjs is pinned by
+    // test/required_nullable_test.dart.
+    String library() {
+      final b = vaultGet()
+        ..['schema'] = {
+          r'$defs': {
+            'Grant': {
+              'type': 'object',
+              'properties': {
+                'a': {'type': 'string'},
+              },
+            },
+          },
+          'type': 'object',
+          'required': ['id', 'did', 'grant'],
+          'properties': {
+            'id': {'type': 'string'},
+            'did': {
+              'type': ['string', 'null'],
+            },
+            'grant': {
+              'type': ['object', 'null'],
+              'properties': {
+                'a': {'type': 'string'},
+              },
+            },
+            'label': {
+              'type': ['string', 'null'],
+            },
+          },
+        }
+        ..['responseSchema'] = null
+        ..['propertyOrder'] = <String, dynamic>{}
+        ..remove('defsOrder');
+      return generateLibrary(Bundle.parse(jsonEncode(b)), source: 'test');
+    }
+
+    test('is nullable and written whatever its value', () {
+      final lib = library();
+      expect(lib, contains('final String? did;'));
+      expect(lib, contains("        'did': did,"));
+      expect(lib, isNot(contains("if (did != null) 'did'")));
+      expect(lib, contains('final PayloadGrant? grant;'));
+      expect(lib, contains("        'grant': grant?.toJson(),"));
+      expect(lib, isNot(contains("if (grant != null) 'grant'")));
+    });
+
+    test('a required plain and an optional nullable member are unchanged', () {
+      final lib = library();
+      expect(lib, contains('final String id;'));
+      expect(lib, contains("        'id': id,"));
+      expect(lib, contains('final String? label;'));
+      expect(lib, contains("if (label != null) 'label': label!,"));
+    });
+  });
+
   group('generate', () {
     test('writes exactly the locked tasks, deterministically', () async {
       final dir = workspace();
