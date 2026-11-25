@@ -40,6 +40,19 @@ because a Dart library is a file and not a directory. Four things are its own:
 Paths are snake_cased for Dart's `file_names` lint, so the slug
 `acl/change-role` becomes `lib/specs/acl/change_role/v0_3/payload.dart`.
 
+**A required member whose schema admits `null` always keeps its key.** Its
+field is nullable (`final String? did;`), and `toJson` writes it whatever its
+value, so a null `did` on `vta/contexts/update-did` 1.2 writes `"did": null`
+("no DID of its own") instead of leaving the key out and failing the schema's
+`required`. An *optional* nullable member is still written only when non-null,
+so Dart cannot tell `null` from absent there: `acl/update` 0.3 reads
+`"label": null` as "clear the label", and a Dart client can only send "leave it
+unchanged" ([runtime-parity.md](../runtime-parity.md)). Both generators do
+this independently: `scripts/build-dart-bindings.mjs` (pinned by
+`test/required_nullable_test.dart`) and the per-module generator in
+`lib/src/generator/emit.dart` (the `required nullable` group in
+`test/generator_test.dart`).
+
 ### The hand-written Dart packages beside it
 
 `trust-tasks-dart-proof` publishes as `trust_tasks_proof`: a Data Integrity
