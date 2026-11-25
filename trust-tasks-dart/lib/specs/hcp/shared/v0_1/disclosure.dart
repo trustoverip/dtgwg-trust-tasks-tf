@@ -5,46 +5,252 @@
     'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
 library;
 
-/// An RFC 3339 instant.
-typedef Instant = String;
+/// An absolute URI with no whitespace, as HCP writes every custom value at an
+/// extension point (HCP A.3).
+typedef Uri = String;
 
-/// Entry content. Its shape is set by the content profile: the General Context profile
-/// (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and
-/// `language`; the VC Evidence profile points at an evidence item instead (HCP section
-/// 4).
+/// Entry content. `profile` names its shape (HCP 4.2). Under the General Context
+/// profile it carries `value` and optionally `language` (HCP 11.2); under the VC
+/// Evidence profile it carries `evidence`, the index of the evidence item holding the
+/// credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General
+/// Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden.
+/// This rule is stated here and not as a schema conditional: the registry's Rust
+/// generator does not support `if`/`then`/`else`, so a validator does not check it.
 class Content {
   const Content({
+    required this.profile,
     this.value,
     this.language,
+    this.evidence,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Content.fromJson(Map<String, dynamic> json) => Content(
+        profile: json['profile'] as String,
         value: json['value'],
         language: json['language'] as String?,
+        evidence: json['evidence'] as int?,
       );
 
-  /// The context itself under the General Context profile: a string, or an object whose
-  /// shape the profile leaves to the entry type.
+  /// The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0`
+  /// or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a
+  /// custom profile (HCP A.3).
+  final Uri profile;
+
+  /// The statement, under the General Context profile: a string or a structured object
+  /// (HCP 11.2).
   final Object? value;
 
-  /// The language of `value`, as a BCP 47 language tag. Absent when the profile or value
-  /// has none.
+  /// The BCP 47 language tag of a string `value`, under the General Context profile (HCP
+  /// 11.2). Optional; may be null.
   final String? language;
+
+  /// Under the VC Evidence profile, the index in `evidence` of the item whose credential
+  /// is the content (HCP 4.2.2).
+  final int? evidence;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
+        'profile': profile,
         if (value != null) 'value': value!,
         if (language != null) 'language': language!,
+        if (evidence != null) 'evidence': evidence!,
+      };
+}
+
+/// An RFC 3339 instant.
+typedef Instant = String;
+
+/// `content`: the item's credential is the entry's content (VC Evidence profile).
+/// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemRole(String value) {
+  static const EvidenceItemRole content = EvidenceItemRole('content');
+  static const EvidenceItemRole supports = EvidenceItemRole('supports');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemRole> values = <EvidenceItemRole>[
+    content,
+    supports
+  ];
+}
+
+/// The outcome.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemVerificationResult(String value) {
+  static const EvidenceItemVerificationResult verified =
+      EvidenceItemVerificationResult('verified');
+  static const EvidenceItemVerificationResult failed =
+      EvidenceItemVerificationResult('failed');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemVerificationResult> values =
+      <EvidenceItemVerificationResult>[verified, failed];
+}
+
+/// Who verified: the provider, or the Context Subject's trust domain under end-to-end
+/// encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemVerificationBy(String value) {
+  static const EvidenceItemVerificationBy provider =
+      EvidenceItemVerificationBy('provider');
+  static const EvidenceItemVerificationBy trustDomain =
+      EvidenceItemVerificationBy('trust-domain');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemVerificationBy> values =
+      <EvidenceItemVerificationBy>[provider, trustDomain];
+}
+
+/// The provider's record of its most recent verification of the credential (HCP
+/// 4.2.2). Set only by the provider.
+class EvidenceItemVerification {
+  const EvidenceItemVerification({
+    required this.result,
+    required this.at,
+    this.by,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EvidenceItemVerification.fromJson(Map<String, dynamic> json) =>
+      EvidenceItemVerification(
+        result: EvidenceItemVerificationResult(json['result'] as String),
+        at: json['at'] as String,
+        by: json['by'] == null
+            ? null
+            : EvidenceItemVerificationBy(json['by'] as String),
+      );
+
+  /// The outcome.
+  final EvidenceItemVerificationResult result;
+
+  /// When the provider verified.
+  final Instant at;
+
+  /// Who verified: the provider, or the Context Subject's trust domain under end-to-end
+  /// encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+  final EvidenceItemVerificationBy? by;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'result': result.value,
+        'at': at,
+        if (by != null) 'by': by!.value,
+      };
+}
+
+/// One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is
+/// preserved and never raises assurance (HCP A.3). An item whose type is
+/// `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`,
+/// `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2).
+/// This rule is stated here and not as a schema conditional: the registry's Rust
+/// generator does not support `if`/`then`/`else`, so a validator does not check it.
+class EvidenceItem {
+  const EvidenceItem({
+    required this.role,
+    required this.type,
+    this.credential,
+    this.verification,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EvidenceItem.fromJson(Map<String, dynamic> json) => EvidenceItem(
+        role: EvidenceItemRole(json['role'] as String),
+        type: json['type'] as String,
+        credential: json['credential'],
+        verification: json['verification'] == null
+            ? null
+            : EvidenceItemVerification.fromJson(
+                json['verification'] as Map<String, dynamic>),
+      );
+
+  /// `content`: the item's credential is the entry's content (VC Evidence profile).
+  /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+  final EvidenceItemRole role;
+
+  /// The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
+  final String type;
+
+  /// The credential: for `verifiable-credential`, a W3C Verifiable Credential with
+  /// `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs
+  /// its contents (HCP 4.2.2, 14.2).
+  final Object? credential;
+
+  /// The provider's record of its most recent verification of the credential (HCP
+  /// 4.2.2). Set only by the provider.
+  final EvidenceItemVerification? verification;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'role': role.value,
+        'type': type,
+        if (credential != null) 'credential': credential!,
+        if (verification != null) 'verification': verification!.toJson(),
+      };
+}
+
+/// An evidence item as disclosed (HCP 7.4). An item carrying a derived credential adds
+/// `revealed`.
+typedef DisclosedEvidenceItem = Object?;
+
+/// What an assertion was drawn from (HCP 4.2.5). It identifies no party but the
+/// Context Subject.
+class Basis {
+  const Basis({
+    this.drawnFrom,
+    this.task,
+    this.setting,
+    this.rationale,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Basis.fromJson(Map<String, dynamic> json) => Basis(
+        drawnFrom: json['drawnFrom'] == null
+            ? null
+            : (json['drawnFrom'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        task: json['task'] as String?,
+        setting: json['setting'] as String?,
+        rationale: json['rationale'] as String?,
+      );
+
+  /// The sources the assertion was drawn from.
+  final List<String>? drawnFrom;
+
+  /// The task during which the assertion was made.
+  final String? task;
+
+  /// The setting in which the assertion was made.
+  final String? setting;
+
+  /// Why the asserter drew the conclusion.
+  final String? rationale;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (drawnFrom != null) 'drawnFrom': drawnFrom!,
+        if (task != null) 'task': task!,
+        if (setting != null) 'setting': setting!,
+        if (rationale != null) 'rationale': rationale!,
       };
 }
 
 /// An HCP purpose code: an absolute URI naming the purpose for which context is
-/// requested or may be used.
+/// requested or may be used (HCP 6.1.5.2).
 typedef PurposeCode = String;
 
-/// Who declared the content: the person, a model inferring it, or an issuer attesting
-/// it. HCP's own values, carried verbatim.
+/// What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values,
+/// carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -62,8 +268,11 @@ extension type const AssertionDeclarationType(String value) {
       <AssertionDeclarationType>[personDeclared, modelInferred, issuerAttested];
 }
 
-/// How the entry's content was declared (HCP 4.2.5). HCP requires `confidence` when
-/// `declarationType` is `model-inferred`.
+/// What the submitting client states about the assertion (HCP 4.2). `confidence` is
+/// REQUIRED and non-null when `declarationType` is `model-inferred`, and null or
+/// absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema
+/// conditional: the registry's Rust generator does not support `if`/`then`/`else`, so
+/// a validator does not check it.
 class Assertion {
   const Assertion({
     required this.declarationType,
@@ -79,7 +288,9 @@ class Assertion {
             AssertionDeclarationType(json['declarationType'] as String),
         confidence: json['confidence'] as String?,
         validUntil: json['validUntil'] as String?,
-        basis: json['basis'] as Map<String, dynamic>?,
+        basis: json['basis'] == null
+            ? null
+            : Basis.fromJson(json['basis'] as Map<String, dynamic>),
         permittedPurposes: json['permittedPurposes'] == null
             ? null
             : (json['permittedPurposes'] as List<dynamic>)
@@ -87,24 +298,23 @@ class Assertion {
                 .toList(),
       );
 
-  /// Who declared the content: the person, a model inferring it, or an issuer attesting
-  /// it. HCP's own values, carried verbatim.
+  /// What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values,
+  /// carried verbatim.
   final AssertionDeclarationType declarationType;
 
-  /// The asserter's confidence in an inferred assertion. REQUIRED by HCP when
-  /// `declarationType` is `model-inferred`; null or absent otherwise.
+  /// How confident an inferring model is (HCP 4.2, 4.4).
   final String? confidence;
 
-  /// The instant after which the assertion no longer holds. Absent when it states no
-  /// end.
-  final Instant? validUntil;
+  /// The instant after which the content no longer holds; absent or null means it does
+  /// not expire (HCP 4.2). Not the instant after which a disclosed copy stops being
+  /// usable, which is a disclosure's `useUntil` (HCP 7.6).
+  final String? validUntil;
 
-  /// What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task,
-  /// the setting and the rationale. Carried as HCP defines it.
-  final Map<String, dynamic>? basis;
+  /// What the assertion was drawn from (HCP 4.2.5).
+  final Basis? basis;
 
-  /// Purposes the asserter permits the content to be used for. Absent when the assertion
-  /// sets none.
+  /// The purposes the asserter permits the entry to be used for; absent means no limit
+  /// (HCP 4.2.6).
   final List<PurposeCode>? permittedPurposes;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -112,19 +322,20 @@ class Assertion {
         'declarationType': declarationType.value,
         if (confidence != null) 'confidence': confidence!,
         if (validUntil != null) 'validUntil': validUntil!,
-        if (basis != null) 'basis': basis!,
+        if (basis != null) 'basis': basis!.toJson(),
         if (permittedPurposes != null) 'permittedPurposes': permittedPurposes!,
       };
 }
 
 /// An HCP context category (HCP 4.5), the primary unit of access control: either a
-/// name from HCP's category registry, such as `general_preferences` or
-/// `health_context`, or a custom category written as an absolute URI. A custom
-/// category is not portable between providers without bilateral agreement (HCP 4.5).
+/// slug from HCP's category registry, such as `general_preferences` or
+/// `health_context`, or a custom category written as an absolute URI under a domain
+/// its definer controls. A custom category is not portable between providers without
+/// bilateral agreement (HCP 4.5).
 typedef Category = String;
 
-/// The entry's classification (HCP 4.5). A grant reaches an entry when it covers any
-/// one of the entry's categories.
+/// HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it
+/// covers any one of the entry's categories (HCP 4.5).
 class Classification {
   const Classification({
     required this.categories,
@@ -145,14 +356,16 @@ class Classification {
                 .toList(),
       );
 
-  /// The entry's categories; at least one (HCP 4.5).
+  /// One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only
+  /// the categories the requesting grant covers (HCP 7.4).
   final List<Category> categories;
 
-  /// A hint at the aspect of the person the entry describes. A hint only; it grants and
-  /// limits nothing (HCP 4.5).
+  /// A free-form identifier of the dimension the entry addresses, scoped within its
+  /// categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
   final String? dimension;
 
-  /// Purposes the entry may be disclosed for. Absent when the classification sets none.
+  /// The Authorizing Principal's narrowing of the entry's purposes; absent means no
+  /// limit (HCP 4.2.6).
   final List<PurposeCode>? permittedPurposes;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -163,207 +376,311 @@ class Classification {
       };
 }
 
-/// The entry's provenance (HCP section 4): `assertedBy`, `assertedAt`, `source`,
-/// `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`,
-/// `recordedAt` and `confirmations`. The instants are declared here; the other members
-/// are carried as HCP defines them.
-class Provenance {
-  const Provenance({
-    this.assertedAt,
-    this.recordedAt,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory Provenance.fromJson(Map<String, dynamic> json) => Provenance(
-        assertedAt: json['assertedAt'] as String?,
-        recordedAt: json['recordedAt'] as String?,
-      );
-
-  /// When the asserter made the assertion.
-  final Instant? assertedAt;
-
-  /// When the provider recorded the entry.
-  final Instant? recordedAt;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        if (assertedAt != null) 'assertedAt': assertedAt!,
-        if (recordedAt != null) 'recordedAt': recordedAt!,
-      };
-}
-
-/// The entry's lifecycle status, as HCP defines it.
+/// How a Context Asserter's identity was established (HCP 3.6). HCP's own values,
+/// carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const RecordStatus(String value) {
-  static const RecordStatus active = RecordStatus('active');
-  static const RecordStatus deprecated = RecordStatus('deprecated');
-  static const RecordStatus conflicted = RecordStatus('conflicted');
-  static const RecordStatus expired = RecordStatus('expired');
-  static const RecordStatus revoked = RecordStatus('revoked');
-  static const RecordStatus suspended = RecordStatus('suspended');
-  static const RecordStatus deleted = RecordStatus('deleted');
+extension type const Assurance(String value) {
+  static const Assurance unverified = Assurance('unverified');
+  static const Assurance authenticated = Assurance('authenticated');
+  static const Assurance cryptographicallyVerified =
+      Assurance('cryptographically-verified');
 
   /// Every value this specification's schema permits.
-  static const List<RecordStatus> values = <RecordStatus>[
-    active,
-    deprecated,
-    conflicted,
-    expired,
-    revoked,
-    suspended,
-    deleted
+  static const List<Assurance> values = <Assurance>[
+    unverified,
+    authenticated,
+    cryptographicallyVerified
   ];
 }
 
-/// The provider's record of the entry: its status, version, provenance, relationships,
-/// conversion and metadata. Members other than `status` and `provenance` are carried
-/// as HCP defines them.
-class Record {
-  const Record({
-    required this.status,
-    this.provenance,
+/// The standing of the disclosed version (HCP 7.4).
+class Standing {
+  const Standing({
+    required this.assurance,
+    required this.confirmed,
   });
 
   /// Read this payload from a decoded JSON object.
-  factory Record.fromJson(Map<String, dynamic> json) => Record(
-        status: RecordStatus(json['status'] as String),
-        provenance: json['provenance'] == null
-            ? null
-            : Provenance.fromJson(json['provenance'] as Map<String, dynamic>),
+  factory Standing.fromJson(Map<String, dynamic> json) => Standing(
+        assurance: Assurance(json['assurance'] as String),
+        confirmed: json['confirmed'] as bool,
       );
 
-  /// The entry's lifecycle status, as HCP defines it.
-  final RecordStatus status;
+  /// The stored `record.provenance.assertedBy.assurance`.
+  final Assurance assurance;
 
-  /// Who asserted the entry, under which grant it was submitted, and who recorded it.
-  final Provenance? provenance;
+  /// True where the most recent confirmation record on the version disclosed is
+  /// `confirmed` (HCP 7.4, 3.8).
+  final bool confirmed;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'status': status.value,
-        if (provenance != null) 'provenance': provenance!.toJson(),
+        'assurance': assurance.value,
+        'confirmed': confirmed,
       };
 }
 
-/// `content`: the item is the entry's content (VC Evidence profile). `supports`: the
-/// item backs content stated elsewhere in the entry.
+/// How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const EvidenceItemRole(String value) {
-  static const EvidenceItemRole content = EvidenceItemRole('content');
-  static const EvidenceItemRole supports = EvidenceItemRole('supports');
+extension type const RelationshipType(String value) {
+  static const RelationshipType derivedFrom = RelationshipType('derivedFrom');
+  static const RelationshipType supersedes = RelationshipType('supersedes');
+  static const RelationshipType contradicts = RelationshipType('contradicts');
+  static const RelationshipType duplicates = RelationshipType('duplicates');
 
   /// Every value this specification's schema permits.
-  static const List<EvidenceItemRole> values = <EvidenceItemRole>[
-    content,
-    supports
+  static const List<RelationshipType> values = <RelationshipType>[
+    derivedFrom,
+    supersedes,
+    contradicts,
+    duplicates
   ];
 }
 
-/// One evidence item on an entry (HCP section 4).
-class EvidenceItem {
-  const EvidenceItem({
-    required this.role,
+/// A relationship as disclosed (HCP 7.4).
+class DisclosedRelationship {
+  const DisclosedRelationship({
     required this.type,
+    required this.target,
   });
 
   /// Read this payload from a decoded JSON object.
-  factory EvidenceItem.fromJson(Map<String, dynamic> json) => EvidenceItem(
-        role: EvidenceItemRole(json['role'] as String),
-        type: json['type'] as String,
+  factory DisclosedRelationship.fromJson(Map<String, dynamic> json) =>
+      DisclosedRelationship(
+        type: RelationshipType(json['type'] as String),
+        target: json['target'] as String,
       );
 
-  /// `content`: the item is the entry's content (VC Evidence profile). `supports`: the
-  /// item backs content stated elsewhere in the entry.
-  final EvidenceItemRole role;
+  /// The kind of relationship.
+  final RelationshipType type;
 
-  /// The evidence type, such as `verifiable-credential`, as HCP defines it.
-  final String type;
+  /// The `ref` of the related entry, disclosed in the same response.
+  final String target;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'role': role.value,
-        'type': type,
+        'type': type.value,
+        'target': target,
       };
 }
 
-/// A disclosed copy of an entry. It carries a grant-scoped `ref` in place of the
-/// entry's stable `id` (HCP 7.4), and the instant until which the client may use the
-/// copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives
-/// them.
+/// The names of the client that submitted the version disclosed and of its Client
+/// Operator.
+class DisclosedProvenanceSubmittedBy {
+  const DisclosedProvenanceSubmittedBy({
+    required this.name,
+    required this.operator,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DisclosedProvenanceSubmittedBy.fromJson(Map<String, dynamic> json) =>
+      DisclosedProvenanceSubmittedBy(
+        name: json['name'] as String,
+        operator: json['operator'] as String,
+      );
+
+  /// The client's name.
+  final String name;
+
+  /// The Client Operator's name.
+  final String operator;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'name': name,
+        'operator': operator,
+      };
+}
+
+/// The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's
+/// own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const DisclosedProvenanceSource(String value) {
+  static const DisclosedProvenanceSource conversation =
+      DisclosedProvenanceSource('conversation');
+  static const DisclosedProvenanceSource document =
+      DisclosedProvenanceSource('document');
+  static const DisclosedProvenanceSource personInput =
+      DisclosedProvenanceSource('person-input');
+  static const DisclosedProvenanceSource integration =
+      DisclosedProvenanceSource('integration');
+
+  /// Every value this specification's schema permits.
+  static const List<DisclosedProvenanceSource> values =
+      <DisclosedProvenanceSource>[
+    conversation,
+    document,
+    personInput,
+    integration
+  ];
+}
+
+/// Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an
+/// identifier of a client, a Client Operator, a grant, a conversation or a document,
+/// nor `confirmedBy`.
+class DisclosedProvenance {
+  const DisclosedProvenance({
+    required this.submittedBy,
+    required this.source,
+    required this.assertedAt,
+    required this.recordedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DisclosedProvenance.fromJson(Map<String, dynamic> json) =>
+      DisclosedProvenance(
+        submittedBy: DisclosedProvenanceSubmittedBy.fromJson(
+            json['submittedBy'] as Map<String, dynamic>),
+        source: DisclosedProvenanceSource(json['source'] as String),
+        assertedAt: json['assertedAt'] as String,
+        recordedAt: json['recordedAt'] as String,
+      );
+
+  /// The names of the client that submitted the version disclosed and of its Client
+  /// Operator.
+  final DisclosedProvenanceSubmittedBy submittedBy;
+
+  /// The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's
+  /// own values, carried verbatim.
+  final DisclosedProvenanceSource source;
+
+  /// When the assertion was made.
+  final Instant assertedAt;
+
+  /// When the provider recorded the version.
+  final Instant recordedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'submittedBy': submittedBy.toJson(),
+        'source': source.value,
+        'assertedAt': assertedAt,
+        'recordedAt': recordedAt,
+      };
+}
+
+/// A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`,
+/// never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the
+/// whole of `record` (status, provenance, relationships, conversion, metadata): those
+/// members describe the person's activity with other systems, which no grant
+/// authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it
+/// receives in `standing`.
 class Disclosure {
   const Disclosure({
     required this.ref,
-    required this.useUntil,
-    this.content,
-    this.assertion,
-    this.classification,
-    this.record,
+    required this.version,
+    required this.content,
     this.evidence,
+    required this.assertion,
+    required this.classification,
+    required this.standing,
+    required this.useUntil,
+    this.onwardSharing,
+    this.relationships,
+    this.provenance,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Disclosure.fromJson(Map<String, dynamic> json) => Disclosure(
         ref: json['ref'] as String,
-        useUntil: json['useUntil'] as String,
-        content: json['content'] == null
-            ? null
-            : Content.fromJson(json['content'] as Map<String, dynamic>),
-        assertion: json['assertion'] == null
-            ? null
-            : Assertion.fromJson(json['assertion'] as Map<String, dynamic>),
-        classification: json['classification'] == null
-            ? null
-            : Classification.fromJson(
-                json['classification'] as Map<String, dynamic>),
-        record: json['record'] == null
-            ? null
-            : Record.fromJson(json['record'] as Map<String, dynamic>),
+        version: json['version'] as int,
+        content: Content.fromJson(json['content'] as Map<String, dynamic>),
         evidence: json['evidence'] == null
             ? null
-            : (json['evidence'] as List<dynamic>)
-                .map((e) => EvidenceItem.fromJson(e as Map<String, dynamic>))
+            : (json['evidence'] as List<dynamic>).map((e) => e).toList(),
+        assertion:
+            Assertion.fromJson(json['assertion'] as Map<String, dynamic>),
+        classification: Classification.fromJson(
+            json['classification'] as Map<String, dynamic>),
+        standing: Standing.fromJson(json['standing'] as Map<String, dynamic>),
+        useUntil: json['useUntil'] as String,
+        onwardSharing: json['onwardSharing'],
+        relationships: json['relationships'] == null
+            ? null
+            : (json['relationships'] as List<dynamic>)
+                .map((e) =>
+                    DisclosedRelationship.fromJson(e as Map<String, dynamic>))
                 .toList(),
+        provenance: json['provenance'] == null
+            ? null
+            : DisclosedProvenance.fromJson(
+                json['provenance'] as Map<String, dynamic>),
       );
 
-  /// The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and
-  /// different across grants, so two clients cannot join their copies on it.
+  /// A reference to the entry, opaque to the client, stable for one grant and one entry
+  /// and different under every other grant, and never derivable into the entry's `id`
+  /// (HCP 7.4). The client names the entry by it in get entry, revise and withdraw;
+  /// under any other grant it fails with not authorized.
   final String ref;
 
-  /// The instant after which the client MUST NOT use this copy (HCP 7.6): at least one
-  /// hour and at most 30 days after disclosure, and at most 24 hours for
-  /// High-sensitivity context.
+  /// The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).
+  final int version;
+
+  /// The content, as stored for the version disclosed (HCP 7.4).
+  final Content content;
+
+  /// The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2),
+  /// including each item's `verification`, except that a credential may be disclosed in
+  /// derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The
+  /// one-`content`-item rule is stated here and not in the schema: the registry's Rust
+  /// generator does not support `contains`, so a validator does not check it.
+  final List<DisclosedEvidenceItem>? evidence;
+
+  /// The assertion, as stored for the version disclosed, including `basis` and
+  /// `permittedPurposes` (HCP 7.4).
+  final Assertion assertion;
+
+  /// Only the entry's categories the requesting grant covers, with its dimension and its
+  /// `permittedPurposes` where present; its other categories are withheld (HCP 7.4).
+  final Classification classification;
+
+  /// What the client needs to judge the entry's standing (HCP 7.4, 3.8).
+  final Standing standing;
+
+  /// The instant after which the client MUST NOT use the copy, or pass it on, without
+  /// fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest
+  /// explicit time that applies (such as `assertion.validUntil`), else a heuristic of at
+  /// least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of
+  /// High default sensitivity, or 1 hour where the client has no registered notification
+  /// endpoint (HCP 7.6).
   final Instant useUntil;
 
-  /// The disclosed content.
-  final Content? content;
+  /// Present, and true, only where the client may share from this entry under HCP 3.12:
+  /// the detail of the grant that reaches the entry carries `onwardSharing` and every
+  /// category of the entry has a default sensitivity of Low. Omitted otherwise (HCP
+  /// 7.4).
+  final Object? onwardSharing;
 
-  /// How the content was declared.
-  final Assertion? assertion;
+  /// Only the relationships whose target is disclosed in the same response, with the
+  /// target named by its `ref` (HCP 7.4, 4.2.3).
+  final List<DisclosedRelationship>? relationships;
 
-  /// The entry's categories and purpose limits.
-  final Classification? classification;
-
-  /// The entry's status and provenance as disclosed.
-  final Record? record;
-
-  /// Evidence items disclosed with the entry. Absent when none is disclosed.
-  final List<EvidenceItem>? evidence;
+  /// Present only where the requesting grant includes the `provenance` action for a
+  /// category of the entry (HCP 7.4.1).
+  final DisclosedProvenance? provenance;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'ref': ref,
+        'version': version,
+        'content': content.toJson(),
+        if (evidence != null) 'evidence': evidence!,
+        'assertion': assertion.toJson(),
+        'classification': classification.toJson(),
+        'standing': standing.toJson(),
         'useUntil': useUntil,
-        if (content != null) 'content': content!.toJson(),
-        if (assertion != null) 'assertion': assertion!.toJson(),
-        if (classification != null) 'classification': classification!.toJson(),
-        if (record != null) 'record': record!.toJson(),
-        if (evidence != null)
-          'evidence': evidence!.map((e) => e.toJson()).toList(),
+        if (onwardSharing != null) 'onwardSharing': onwardSharing!,
+        if (relationships != null)
+          'relationships': relationships!.map((e) => e.toJson()).toList(),
+        if (provenance != null) 'provenance': provenance!.toJson(),
       };
 }

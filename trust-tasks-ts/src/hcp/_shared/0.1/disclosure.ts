@@ -4,7 +4,7 @@
  */
 
 /**
- * The Human Context Protocol (HCP) 2.0-draft-3 disclosure: an entry as a Context Client receives it (HCP 7.4, 7.6), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Open, as HCP's objects are (HCP Appendix A.3). Where this schema and the HCP text differ, the HCP text governs.
+ * The Human Context Protocol (HCP) 2.0-draft-3 disclosure: an entry as a Context Client receives it, never the stored entry (HCP 7.4), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are. Where this schema and the HCP text differ, the HCP text governs.
  */
 export interface HCPDisclosure {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface HCPDisclosure {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Disclosure_HcpV0_1 as Disclosure } from "../../../_shared/components.js";
+export type { DisclosedEvidenceItem, DisclosedProvenance, DisclosedRelationship, Disclosure_HcpV0_1 as Disclosure, Standing } from "../../../_shared/components.js";

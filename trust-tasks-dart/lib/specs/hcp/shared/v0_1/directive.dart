@@ -5,8 +5,23 @@
     'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
 library;
 
-/// What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's
-/// own values, carried verbatim. A `permit` never widens the grant.
+/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+/// HCP uses for entry, grant, directive and retrieval identifiers.
+typedef Urn = String;
+
+/// An HCP context category (HCP 4.5), the primary unit of access control: either a
+/// slug from HCP's category registry, such as `general_preferences` or
+/// `health_context`, or a custom category written as an absolute URI under a domain
+/// its definer controls. A custom category is not portable between providers without
+/// bilateral agreement (HCP 4.5).
+typedef Category = String;
+
+/// An RFC 3339 instant.
+typedef Instant = String;
+
+/// `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain
+/// the Context Subject's confirmation each time before taking it. `permit`: the client
+/// may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -24,35 +39,87 @@ extension type const DirectiveEffect(String value) {
   ];
 }
 
-/// A directive the person set on what a client may do with disclosed context (HCP
-/// 6.4). A directive only narrows what a grant allows, and the provider delivers every
-/// applicable directive with every read result. Members other than the action and
-/// effect are carried as HCP defines them.
+/// What a client may do with context it received, or on the Context Subject's behalf
+/// (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant
+/// does not. Where two that apply disagree, `deny` prevails over `ask-first`, and
+/// `ask-first` over `permit` (HCP 6.4).
 class Directive {
   const Directive({
-    this.action,
-    this.effect,
+    required this.directiveId,
+    required this.action,
+    required this.effect,
+    required this.text,
+    this.categories,
+    this.operators,
+    required this.setBy,
+    required this.createdAt,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Directive.fromJson(Map<String, dynamic> json) => Directive(
-        action: json['action'] as String?,
-        effect: json['effect'] == null
+        directiveId: json['directiveId'] as String,
+        action: json['action'] as String,
+        effect: DirectiveEffect(json['effect'] as String),
+        text: json['text'] as String,
+        categories: json['categories'] == null
             ? null
-            : DirectiveEffect(json['effect'] as String),
+            : (json['categories'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        operators: json['operators'] == null
+            ? null
+            : (json['operators'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        setBy: json['setBy'] as String,
+        createdAt: json['createdAt'] as String,
       );
 
-  /// The action the directive governs: `share`, `sign` or `transact`, or an absolute URI
-  /// naming another action.
-  final String? action;
+  /// Stable for the life of the directive (HCP 6.4).
+  final Urn directiveId;
 
-  /// What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's
-  /// own values, carried verbatim. A `permit` never widens the grant.
-  final DirectiveEffect? effect;
+  /// What the directive governs: `share` (passing received context to another agent),
+  /// `sign` (signing, agreeing to or committing to anything on the Context Subject's
+  /// behalf), `transact` (spending, buying or entering a contract on their behalf), or
+  /// an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an
+  /// action it does not recognize as a permission; it reads the directive from `text`.
+  final String action;
+
+  /// `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain
+  /// the Context Subject's confirmation each time before taking it. `permit`: the client
+  /// may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
+  final DirectiveEffect effect;
+
+  /// The directive in the Context Subject's words (HCP 6.4). A client presents it to a
+  /// model as data, never as instructions (HCP 7.4). The maxLength is a framework bound,
+  /// not an HCP requirement.
+  final String text;
+
+  /// The categories whose context the directive governs; absent means every category,
+  /// held now or later (HCP 6.4).
+  final List<Category>? categories;
+
+  /// The Client Operators the directive applies to, each a DNS domain or an operator
+  /// identifier, matched as for standing rules; absent means every operator (HCP 6.4,
+  /// 6.3).
+  final List<String>? operators;
+
+  /// Set by the provider: `context-subject`, or the `delegationId` of the delegate who
+  /// set it (HCP 6.4, 6.3).
+  final String setBy;
+
+  /// Set by the provider: when the directive was set (HCP 6.4).
+  final Instant createdAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (action != null) 'action': action!,
-        if (effect != null) 'effect': effect!.value,
+        'directiveId': directiveId,
+        'action': action,
+        'effect': effect.value,
+        'text': text,
+        if (categories != null) 'categories': categories!,
+        if (operators != null) 'operators': operators!,
+        'setBy': setBy,
+        'createdAt': createdAt,
       };
 }

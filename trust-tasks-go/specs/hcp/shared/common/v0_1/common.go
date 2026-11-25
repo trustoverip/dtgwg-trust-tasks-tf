@@ -6,19 +6,59 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package hcpsharedcommonv0_1
 
-// Urn An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers,
-// grant identifiers and retrieval identifiers.
+// Urn An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+// HCP uses for entry, grant, directive and retrieval identifiers.
 type Urn = string
 
+// URI An absolute URI with no whitespace, as HCP writes every custom value at an
+// extension point (HCP A.3).
+type URI = string
+
 // Category An HCP context category (HCP 4.5), the primary unit of access control: either
-// a name from HCP's category registry, such as `general_preferences` or `health_context`,
-// or a custom category written as an absolute URI. A custom category is not portable
-// between providers without bilateral agreement (HCP 4.5).
+// a slug from HCP's category registry, such as `general_preferences` or `health_context`,
+// or a custom category written as an absolute URI under a domain its definer controls. A
+// custom category is not portable between providers without bilateral agreement (HCP
+// 4.5).
 type Category = string
 
 // PurposeCode An HCP purpose code: an absolute URI naming the purpose for which context
-// is requested or may be used.
+// is requested or may be used (HCP 6.1.5.2).
 type PurposeCode = string
 
 // Instant An RFC 3339 instant.
 type Instant = string
+
+// Assurance How a Context Asserter's identity was established (HCP 3.6). HCP's own
+// values, carried verbatim.
+type Assurance string
+
+// Values Assurance may take, per this specification's schema.
+const (
+	AssuranceUnverified                Assurance = "unverified"
+	AssuranceAuthenticated             Assurance = "authenticated"
+	AssuranceCryptographicallyVerified Assurance = "cryptographically-verified"
+)
+
+// RelationshipType How one entry relates to another (HCP 4.2.3). HCP's own values,
+// carried verbatim.
+type RelationshipType string
+
+// Values RelationshipType may take, per this specification's schema.
+const (
+	RelationshipTypeDerivedFrom RelationshipType = "derivedFrom"
+	RelationshipTypeSupersedes  RelationshipType = "supersedes"
+	RelationshipTypeContradicts RelationshipType = "contradicts"
+	RelationshipTypeDuplicates  RelationshipType = "duplicates"
+)
+
+// MinimizationReport The minimization report a query or get-entry result carries (HCP
+// 7.5). It MUST NOT carry the number of entries considered, the number available within
+// scope, or any other measure of what was withheld (HCP 7.5); no schema can check that by
+// name.
+type MinimizationReport struct {
+	// The relevance method that determined the final ordering (HCP 7.3): the method the
+	// provider declares as `minimization_method` in its discovery document (HCP 19.3), such
+	// as `lexical`, `semantic` or `llm`, or `none` for a get-entry result. The set of values
+	// is open.
+	Method string `json:"method"`
+}

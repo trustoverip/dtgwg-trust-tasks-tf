@@ -4,7 +4,7 @@
  */
 
 /**
- * The Human Context Protocol (HCP) 2.0-draft-3 context entry (HCP section 4) and its parts, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Objects are open, as HCP's are (HCP Appendix A.3): a member HCP defines that is not declared here, or that a later draft adds, is preserved rather than rejected, so an entry round-trips intact. Only members whose shape the HCP text fixes are declared. Where this schema and the HCP text differ, the HCP text governs.
+ * The Human Context Protocol (HCP) 2.0-draft-3 entry (HCP 4.2) and its parts, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Objects are open: a provider preserves entry members HCP does not define (HCP 4.2, A.3), and HCP's own shapes leave every object open, so an undeclared member is carried, never rejected. Where this schema and the HCP text differ, the HCP text governs.
  */
 export interface HCPContextEntry {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface HCPContextEntry {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Assertion, Classification, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Provenance_HcpV0_1 as Provenance, Record } from "../../../_shared/components.js";
+export type { Assertion, Basis, Classification, ClientDescription, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Provenance_HcpV0_1 as Provenance, Record, Relationship } from "../../../_shared/components.js";

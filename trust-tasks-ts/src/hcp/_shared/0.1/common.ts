@@ -4,7 +4,7 @@
  */
 
 /**
- * Common value shapes of the Human Context Protocol (HCP) 2.0-draft-3, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Where this schema and the HCP text differ, the HCP text governs.
+ * Common value shapes of the Human Context Protocol (HCP) 2.0-draft-3, shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Where this schema and the HCP text differ, the HCP text governs.
  */
 export interface HCPCommonDefinitions {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface HCPCommonDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Category, Instant, PurposeCode, Urn } from "../../../_shared/components.js";
+export type { Assurance, Category, Instant, MinimizationReport, PurposeCode, RelationshipType, Uri, Urn } from "../../../_shared/components.js";

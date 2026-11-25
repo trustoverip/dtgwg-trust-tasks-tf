@@ -7,46 +7,252 @@ library;
 
 import 'package:trust_tasks/trust_tasks.dart';
 
-/// An RFC 3339 instant.
-typedef Instant = String;
+/// An absolute URI with no whitespace, as HCP writes every custom value at an
+/// extension point (HCP A.3).
+typedef Uri = String;
 
-/// Entry content. Its shape is set by the content profile: the General Context profile
-/// (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and
-/// `language`; the VC Evidence profile points at an evidence item instead (HCP section
-/// 4).
+/// Entry content. `profile` names its shape (HCP 4.2). Under the General Context
+/// profile it carries `value` and optionally `language` (HCP 11.2); under the VC
+/// Evidence profile it carries `evidence`, the index of the evidence item holding the
+/// credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General
+/// Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden.
+/// This rule is stated here and not as a schema conditional: the registry's Rust
+/// generator does not support `if`/`then`/`else`, so a validator does not check it.
 class Content {
   const Content({
+    required this.profile,
     this.value,
     this.language,
+    this.evidence,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Content.fromJson(Map<String, dynamic> json) => Content(
+        profile: json['profile'] as String,
         value: json['value'],
         language: json['language'] as String?,
+        evidence: json['evidence'] as int?,
       );
 
-  /// The context itself under the General Context profile: a string, or an object whose
-  /// shape the profile leaves to the entry type.
+  /// The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0`
+  /// or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a
+  /// custom profile (HCP A.3).
+  final Uri profile;
+
+  /// The statement, under the General Context profile: a string or a structured object
+  /// (HCP 11.2).
   final Object? value;
 
-  /// The language of `value`, as a BCP 47 language tag. Absent when the profile or value
-  /// has none.
+  /// The BCP 47 language tag of a string `value`, under the General Context profile (HCP
+  /// 11.2). Optional; may be null.
   final String? language;
+
+  /// Under the VC Evidence profile, the index in `evidence` of the item whose credential
+  /// is the content (HCP 4.2.2).
+  final int? evidence;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
+        'profile': profile,
         if (value != null) 'value': value!,
         if (language != null) 'language': language!,
+        if (evidence != null) 'evidence': evidence!,
+      };
+}
+
+/// An RFC 3339 instant.
+typedef Instant = String;
+
+/// `content`: the item's credential is the entry's content (VC Evidence profile).
+/// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemRole(String value) {
+  static const EvidenceItemRole content = EvidenceItemRole('content');
+  static const EvidenceItemRole supports = EvidenceItemRole('supports');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemRole> values = <EvidenceItemRole>[
+    content,
+    supports
+  ];
+}
+
+/// The outcome.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemVerificationResult(String value) {
+  static const EvidenceItemVerificationResult verified =
+      EvidenceItemVerificationResult('verified');
+  static const EvidenceItemVerificationResult failed =
+      EvidenceItemVerificationResult('failed');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemVerificationResult> values =
+      <EvidenceItemVerificationResult>[verified, failed];
+}
+
+/// Who verified: the provider, or the Context Subject's trust domain under end-to-end
+/// encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const EvidenceItemVerificationBy(String value) {
+  static const EvidenceItemVerificationBy provider =
+      EvidenceItemVerificationBy('provider');
+  static const EvidenceItemVerificationBy trustDomain =
+      EvidenceItemVerificationBy('trust-domain');
+
+  /// Every value this specification's schema permits.
+  static const List<EvidenceItemVerificationBy> values =
+      <EvidenceItemVerificationBy>[provider, trustDomain];
+}
+
+/// The provider's record of its most recent verification of the credential (HCP
+/// 4.2.2). Set only by the provider.
+class EvidenceItemVerification {
+  const EvidenceItemVerification({
+    required this.result,
+    required this.at,
+    this.by,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EvidenceItemVerification.fromJson(Map<String, dynamic> json) =>
+      EvidenceItemVerification(
+        result: EvidenceItemVerificationResult(json['result'] as String),
+        at: json['at'] as String,
+        by: json['by'] == null
+            ? null
+            : EvidenceItemVerificationBy(json['by'] as String),
+      );
+
+  /// The outcome.
+  final EvidenceItemVerificationResult result;
+
+  /// When the provider verified.
+  final Instant at;
+
+  /// Who verified: the provider, or the Context Subject's trust domain under end-to-end
+  /// encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+  final EvidenceItemVerificationBy? by;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'result': result.value,
+        'at': at,
+        if (by != null) 'by': by!.value,
+      };
+}
+
+/// One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is
+/// preserved and never raises assurance (HCP A.3). An item whose type is
+/// `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`,
+/// `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2).
+/// This rule is stated here and not as a schema conditional: the registry's Rust
+/// generator does not support `if`/`then`/`else`, so a validator does not check it.
+class EvidenceItem {
+  const EvidenceItem({
+    required this.role,
+    required this.type,
+    this.credential,
+    this.verification,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EvidenceItem.fromJson(Map<String, dynamic> json) => EvidenceItem(
+        role: EvidenceItemRole(json['role'] as String),
+        type: json['type'] as String,
+        credential: json['credential'],
+        verification: json['verification'] == null
+            ? null
+            : EvidenceItemVerification.fromJson(
+                json['verification'] as Map<String, dynamic>),
+      );
+
+  /// `content`: the item's credential is the entry's content (VC Evidence profile).
+  /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+  final EvidenceItemRole role;
+
+  /// The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
+  final String type;
+
+  /// The credential: for `verifiable-credential`, a W3C Verifiable Credential with
+  /// `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs
+  /// its contents (HCP 4.2.2, 14.2).
+  final Object? credential;
+
+  /// The provider's record of its most recent verification of the credential (HCP
+  /// 4.2.2). Set only by the provider.
+  final EvidenceItemVerification? verification;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'role': role.value,
+        'type': type,
+        if (credential != null) 'credential': credential!,
+        if (verification != null) 'verification': verification!.toJson(),
+      };
+}
+
+/// An evidence item as disclosed (HCP 7.4). An item carrying a derived credential adds
+/// `revealed`.
+typedef DisclosedEvidenceItem = Object?;
+
+/// What an assertion was drawn from (HCP 4.2.5). It identifies no party but the
+/// Context Subject.
+class Basis {
+  const Basis({
+    this.drawnFrom,
+    this.task,
+    this.setting,
+    this.rationale,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Basis.fromJson(Map<String, dynamic> json) => Basis(
+        drawnFrom: json['drawnFrom'] == null
+            ? null
+            : (json['drawnFrom'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        task: json['task'] as String?,
+        setting: json['setting'] as String?,
+        rationale: json['rationale'] as String?,
+      );
+
+  /// The sources the assertion was drawn from.
+  final List<String>? drawnFrom;
+
+  /// The task during which the assertion was made.
+  final String? task;
+
+  /// The setting in which the assertion was made.
+  final String? setting;
+
+  /// Why the asserter drew the conclusion.
+  final String? rationale;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (drawnFrom != null) 'drawnFrom': drawnFrom!,
+        if (task != null) 'task': task!,
+        if (setting != null) 'setting': setting!,
+        if (rationale != null) 'rationale': rationale!,
       };
 }
 
 /// An HCP purpose code: an absolute URI naming the purpose for which context is
-/// requested or may be used.
+/// requested or may be used (HCP 6.1.5.2).
 typedef PurposeCode = String;
 
-/// Who declared the content: the person, a model inferring it, or an issuer attesting
-/// it. HCP's own values, carried verbatim.
+/// What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values,
+/// carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -64,8 +270,11 @@ extension type const AssertionDeclarationType(String value) {
       <AssertionDeclarationType>[personDeclared, modelInferred, issuerAttested];
 }
 
-/// How the entry's content was declared (HCP 4.2.5). HCP requires `confidence` when
-/// `declarationType` is `model-inferred`.
+/// What the submitting client states about the assertion (HCP 4.2). `confidence` is
+/// REQUIRED and non-null when `declarationType` is `model-inferred`, and null or
+/// absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema
+/// conditional: the registry's Rust generator does not support `if`/`then`/`else`, so
+/// a validator does not check it.
 class Assertion {
   const Assertion({
     required this.declarationType,
@@ -81,7 +290,9 @@ class Assertion {
             AssertionDeclarationType(json['declarationType'] as String),
         confidence: json['confidence'] as String?,
         validUntil: json['validUntil'] as String?,
-        basis: json['basis'] as Map<String, dynamic>?,
+        basis: json['basis'] == null
+            ? null
+            : Basis.fromJson(json['basis'] as Map<String, dynamic>),
         permittedPurposes: json['permittedPurposes'] == null
             ? null
             : (json['permittedPurposes'] as List<dynamic>)
@@ -89,24 +300,23 @@ class Assertion {
                 .toList(),
       );
 
-  /// Who declared the content: the person, a model inferring it, or an issuer attesting
-  /// it. HCP's own values, carried verbatim.
+  /// What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values,
+  /// carried verbatim.
   final AssertionDeclarationType declarationType;
 
-  /// The asserter's confidence in an inferred assertion. REQUIRED by HCP when
-  /// `declarationType` is `model-inferred`; null or absent otherwise.
+  /// How confident an inferring model is (HCP 4.2, 4.4).
   final String? confidence;
 
-  /// The instant after which the assertion no longer holds. Absent when it states no
-  /// end.
-  final Instant? validUntil;
+  /// The instant after which the content no longer holds; absent or null means it does
+  /// not expire (HCP 4.2). Not the instant after which a disclosed copy stops being
+  /// usable, which is a disclosure's `useUntil` (HCP 7.6).
+  final String? validUntil;
 
-  /// What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task,
-  /// the setting and the rationale. Carried as HCP defines it.
-  final Map<String, dynamic>? basis;
+  /// What the assertion was drawn from (HCP 4.2.5).
+  final Basis? basis;
 
-  /// Purposes the asserter permits the content to be used for. Absent when the assertion
-  /// sets none.
+  /// The purposes the asserter permits the entry to be used for; absent means no limit
+  /// (HCP 4.2.6).
   final List<PurposeCode>? permittedPurposes;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -114,19 +324,20 @@ class Assertion {
         'declarationType': declarationType.value,
         if (confidence != null) 'confidence': confidence!,
         if (validUntil != null) 'validUntil': validUntil!,
-        if (basis != null) 'basis': basis!,
+        if (basis != null) 'basis': basis!.toJson(),
         if (permittedPurposes != null) 'permittedPurposes': permittedPurposes!,
       };
 }
 
 /// An HCP context category (HCP 4.5), the primary unit of access control: either a
-/// name from HCP's category registry, such as `general_preferences` or
-/// `health_context`, or a custom category written as an absolute URI. A custom
-/// category is not portable between providers without bilateral agreement (HCP 4.5).
+/// slug from HCP's category registry, such as `general_preferences` or
+/// `health_context`, or a custom category written as an absolute URI under a domain
+/// its definer controls. A custom category is not portable between providers without
+/// bilateral agreement (HCP 4.5).
 typedef Category = String;
 
-/// The entry's classification (HCP 4.5). A grant reaches an entry when it covers any
-/// one of the entry's categories.
+/// HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it
+/// covers any one of the entry's categories (HCP 4.5).
 class Classification {
   const Classification({
     required this.categories,
@@ -147,14 +358,16 @@ class Classification {
                 .toList(),
       );
 
-  /// The entry's categories; at least one (HCP 4.5).
+  /// One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only
+  /// the categories the requesting grant covers (HCP 7.4).
   final List<Category> categories;
 
-  /// A hint at the aspect of the person the entry describes. A hint only; it grants and
-  /// limits nothing (HCP 4.5).
+  /// A free-form identifier of the dimension the entry addresses, scoped within its
+  /// categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
   final String? dimension;
 
-  /// Purposes the entry may be disclosed for. Absent when the classification sets none.
+  /// The Authorizing Principal's narrowing of the entry's purposes; absent means no
+  /// limit (HCP 4.2.6).
   final List<PurposeCode>? permittedPurposes;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -165,36 +378,735 @@ class Classification {
       };
 }
 
-/// The entry's provenance (HCP section 4): `assertedBy`, `assertedAt`, `source`,
-/// `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`,
-/// `recordedAt` and `confirmations`. The instants are declared here; the other members
-/// are carried as HCP defines them.
+/// How a Context Asserter's identity was established (HCP 3.6). HCP's own values,
+/// carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const Assurance(String value) {
+  static const Assurance unverified = Assurance('unverified');
+  static const Assurance authenticated = Assurance('authenticated');
+  static const Assurance cryptographicallyVerified =
+      Assurance('cryptographically-verified');
+
+  /// Every value this specification's schema permits.
+  static const List<Assurance> values = <Assurance>[
+    unverified,
+    authenticated,
+    cryptographicallyVerified
+  ];
+}
+
+/// The standing of the disclosed version (HCP 7.4).
+class Standing {
+  const Standing({
+    required this.assurance,
+    required this.confirmed,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Standing.fromJson(Map<String, dynamic> json) => Standing(
+        assurance: Assurance(json['assurance'] as String),
+        confirmed: json['confirmed'] as bool,
+      );
+
+  /// The stored `record.provenance.assertedBy.assurance`.
+  final Assurance assurance;
+
+  /// True where the most recent confirmation record on the version disclosed is
+  /// `confirmed` (HCP 7.4, 3.8).
+  final bool confirmed;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'assurance': assurance.value,
+        'confirmed': confirmed,
+      };
+}
+
+/// How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RelationshipType(String value) {
+  static const RelationshipType derivedFrom = RelationshipType('derivedFrom');
+  static const RelationshipType supersedes = RelationshipType('supersedes');
+  static const RelationshipType contradicts = RelationshipType('contradicts');
+  static const RelationshipType duplicates = RelationshipType('duplicates');
+
+  /// Every value this specification's schema permits.
+  static const List<RelationshipType> values = <RelationshipType>[
+    derivedFrom,
+    supersedes,
+    contradicts,
+    duplicates
+  ];
+}
+
+/// A relationship as disclosed (HCP 7.4).
+class DisclosedRelationship {
+  const DisclosedRelationship({
+    required this.type,
+    required this.target,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DisclosedRelationship.fromJson(Map<String, dynamic> json) =>
+      DisclosedRelationship(
+        type: RelationshipType(json['type'] as String),
+        target: json['target'] as String,
+      );
+
+  /// The kind of relationship.
+  final RelationshipType type;
+
+  /// The `ref` of the related entry, disclosed in the same response.
+  final String target;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'type': type.value,
+        'target': target,
+      };
+}
+
+/// The names of the client that submitted the version disclosed and of its Client
+/// Operator.
+class DisclosedProvenanceSubmittedBy {
+  const DisclosedProvenanceSubmittedBy({
+    required this.name,
+    required this.operator,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DisclosedProvenanceSubmittedBy.fromJson(Map<String, dynamic> json) =>
+      DisclosedProvenanceSubmittedBy(
+        name: json['name'] as String,
+        operator: json['operator'] as String,
+      );
+
+  /// The client's name.
+  final String name;
+
+  /// The Client Operator's name.
+  final String operator;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'name': name,
+        'operator': operator,
+      };
+}
+
+/// The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's
+/// own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const DisclosedProvenanceSource(String value) {
+  static const DisclosedProvenanceSource conversation =
+      DisclosedProvenanceSource('conversation');
+  static const DisclosedProvenanceSource document =
+      DisclosedProvenanceSource('document');
+  static const DisclosedProvenanceSource personInput =
+      DisclosedProvenanceSource('person-input');
+  static const DisclosedProvenanceSource integration =
+      DisclosedProvenanceSource('integration');
+
+  /// Every value this specification's schema permits.
+  static const List<DisclosedProvenanceSource> values =
+      <DisclosedProvenanceSource>[
+    conversation,
+    document,
+    personInput,
+    integration
+  ];
+}
+
+/// Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an
+/// identifier of a client, a Client Operator, a grant, a conversation or a document,
+/// nor `confirmedBy`.
+class DisclosedProvenance {
+  const DisclosedProvenance({
+    required this.submittedBy,
+    required this.source,
+    required this.assertedAt,
+    required this.recordedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DisclosedProvenance.fromJson(Map<String, dynamic> json) =>
+      DisclosedProvenance(
+        submittedBy: DisclosedProvenanceSubmittedBy.fromJson(
+            json['submittedBy'] as Map<String, dynamic>),
+        source: DisclosedProvenanceSource(json['source'] as String),
+        assertedAt: json['assertedAt'] as String,
+        recordedAt: json['recordedAt'] as String,
+      );
+
+  /// The names of the client that submitted the version disclosed and of its Client
+  /// Operator.
+  final DisclosedProvenanceSubmittedBy submittedBy;
+
+  /// The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's
+  /// own values, carried verbatim.
+  final DisclosedProvenanceSource source;
+
+  /// When the assertion was made.
+  final Instant assertedAt;
+
+  /// When the provider recorded the version.
+  final Instant recordedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'submittedBy': submittedBy.toJson(),
+        'source': source.value,
+        'assertedAt': assertedAt,
+        'recordedAt': recordedAt,
+      };
+}
+
+/// A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`,
+/// never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the
+/// whole of `record` (status, provenance, relationships, conversion, metadata): those
+/// members describe the person's activity with other systems, which no grant
+/// authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it
+/// receives in `standing`.
+class Disclosure {
+  const Disclosure({
+    required this.ref,
+    required this.version,
+    required this.content,
+    this.evidence,
+    required this.assertion,
+    required this.classification,
+    required this.standing,
+    required this.useUntil,
+    this.onwardSharing,
+    this.relationships,
+    this.provenance,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Disclosure.fromJson(Map<String, dynamic> json) => Disclosure(
+        ref: json['ref'] as String,
+        version: json['version'] as int,
+        content: Content.fromJson(json['content'] as Map<String, dynamic>),
+        evidence: json['evidence'] == null
+            ? null
+            : (json['evidence'] as List<dynamic>).map((e) => e).toList(),
+        assertion:
+            Assertion.fromJson(json['assertion'] as Map<String, dynamic>),
+        classification: Classification.fromJson(
+            json['classification'] as Map<String, dynamic>),
+        standing: Standing.fromJson(json['standing'] as Map<String, dynamic>),
+        useUntil: json['useUntil'] as String,
+        onwardSharing: json['onwardSharing'],
+        relationships: json['relationships'] == null
+            ? null
+            : (json['relationships'] as List<dynamic>)
+                .map((e) =>
+                    DisclosedRelationship.fromJson(e as Map<String, dynamic>))
+                .toList(),
+        provenance: json['provenance'] == null
+            ? null
+            : DisclosedProvenance.fromJson(
+                json['provenance'] as Map<String, dynamic>),
+      );
+
+  /// A reference to the entry, opaque to the client, stable for one grant and one entry
+  /// and different under every other grant, and never derivable into the entry's `id`
+  /// (HCP 7.4). The client names the entry by it in get entry, revise and withdraw;
+  /// under any other grant it fails with not authorized.
+  final String ref;
+
+  /// The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).
+  final int version;
+
+  /// The content, as stored for the version disclosed (HCP 7.4).
+  final Content content;
+
+  /// The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2),
+  /// including each item's `verification`, except that a credential may be disclosed in
+  /// derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The
+  /// one-`content`-item rule is stated here and not in the schema: the registry's Rust
+  /// generator does not support `contains`, so a validator does not check it.
+  final List<DisclosedEvidenceItem>? evidence;
+
+  /// The assertion, as stored for the version disclosed, including `basis` and
+  /// `permittedPurposes` (HCP 7.4).
+  final Assertion assertion;
+
+  /// Only the entry's categories the requesting grant covers, with its dimension and its
+  /// `permittedPurposes` where present; its other categories are withheld (HCP 7.4).
+  final Classification classification;
+
+  /// What the client needs to judge the entry's standing (HCP 7.4, 3.8).
+  final Standing standing;
+
+  /// The instant after which the client MUST NOT use the copy, or pass it on, without
+  /// fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest
+  /// explicit time that applies (such as `assertion.validUntil`), else a heuristic of at
+  /// least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of
+  /// High default sensitivity, or 1 hour where the client has no registered notification
+  /// endpoint (HCP 7.6).
+  final Instant useUntil;
+
+  /// Present, and true, only where the client may share from this entry under HCP 3.12:
+  /// the detail of the grant that reaches the entry carries `onwardSharing` and every
+  /// category of the entry has a default sensitivity of Low. Omitted otherwise (HCP
+  /// 7.4).
+  final Object? onwardSharing;
+
+  /// Only the relationships whose target is disclosed in the same response, with the
+  /// target named by its `ref` (HCP 7.4, 4.2.3).
+  final List<DisclosedRelationship>? relationships;
+
+  /// Present only where the requesting grant includes the `provenance` action for a
+  /// category of the entry (HCP 7.4.1).
+  final DisclosedProvenance? provenance;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'ref': ref,
+        'version': version,
+        'content': content.toJson(),
+        if (evidence != null) 'evidence': evidence!,
+        'assertion': assertion.toJson(),
+        'classification': classification.toJson(),
+        'standing': standing.toJson(),
+        'useUntil': useUntil,
+        if (onwardSharing != null) 'onwardSharing': onwardSharing!,
+        if (relationships != null)
+          'relationships': relationships!.map((e) => e.toJson()).toList(),
+        if (provenance != null) 'provenance': provenance!.toJson(),
+      };
+}
+
+/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+/// HCP uses for entry, grant, directive and retrieval identifiers.
+typedef Urn = String;
+
+/// The subject of an entry (HCP 4.2).
+class EntrySubject {
+  const EntrySubject({
+    required this.id,
+    this.relationship,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EntrySubject.fromJson(Map<String, dynamic> json) => EntrySubject(
+        id: json['id'] as String,
+        relationship: json['relationship'],
+      );
+
+  /// A URI identifying the Context Subject of the HCP instance that holds the entry,
+  /// possibly a pseudonym the provider issues (HCP 4.2).
+  final String id;
+
+  /// Reserved by HCP (HCP 4.2, 11.3); null where present.
+  final Object? relationship;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        if (relationship != null) 'relationship': relationship!,
+      };
+}
+
+/// The Client Operator.
+class ClientDescriptionOperator {
+  const ClientDescriptionOperator({
+    required this.id,
+    required this.name,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ClientDescriptionOperator.fromJson(Map<String, dynamic> json) =>
+      ClientDescriptionOperator(
+        id: json['id'] as String,
+        name: json['name'] as String,
+      );
+
+  /// The operator's identifier.
+  final String id;
+
+  /// The operator's name.
+  final String name;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+      };
+}
+
+/// An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).
+class ClientDescription {
+  const ClientDescription({
+    required this.id,
+    required this.name,
+    required this.operator,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ClientDescription.fromJson(Map<String, dynamic> json) =>
+      ClientDescription(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        operator: ClientDescriptionOperator.fromJson(
+            json['operator'] as Map<String, dynamic>),
+      );
+
+  /// The client's identifier.
+  final String id;
+
+  /// The client's name.
+  final String name;
+
+  /// The Client Operator.
+  final ClientDescriptionOperator operator;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'operator': operator.toJson(),
+      };
+}
+
+/// What the client attested under. HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ProvenanceAssertedByViaKind(String value) {
+  static const ProvenanceAssertedByViaKind authorizationCredential =
+      ProvenanceAssertedByViaKind('authorization-credential');
+  static const ProvenanceAssertedByViaKind arrangement =
+      ProvenanceAssertedByViaKind('arrangement');
+
+  /// Every value this specification's schema permits.
+  static const List<ProvenanceAssertedByViaKind> values =
+      <ProvenanceAssertedByViaKind>[authorizationCredential, arrangement];
+}
+
+/// Present only where a client attested for an issuer under the issuer's authorization
+/// (HCP 3.7).
+class ProvenanceAssertedByVia {
+  const ProvenanceAssertedByVia({
+    required this.kind,
+    required this.id,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProvenanceAssertedByVia.fromJson(Map<String, dynamic> json) =>
+      ProvenanceAssertedByVia(
+        kind: ProvenanceAssertedByViaKind(json['kind'] as String),
+        id: json['id'] as String,
+      );
+
+  /// What the client attested under. HCP's own values, carried verbatim.
+  final ProvenanceAssertedByViaKind kind;
+
+  /// The identifier of the attestation authorization or the recorded arrangement.
+  final String id;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': kind.value,
+        'id': id,
+      };
+}
+
+/// The Context Asserter (HCP 3.5, 3.6).
+class ProvenanceAssertedBy {
+  const ProvenanceAssertedBy({
+    required this.id,
+    required this.assurance,
+    this.via,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProvenanceAssertedBy.fromJson(Map<String, dynamic> json) =>
+      ProvenanceAssertedBy(
+        id: json['id'] as String,
+        assurance: Assurance(json['assurance'] as String),
+        via: json['via'] == null
+            ? null
+            : ProvenanceAssertedByVia.fromJson(
+                json['via'] as Map<String, dynamic>),
+      );
+
+  /// The Context Asserter's identifier.
+  final String id;
+
+  /// How the asserter's identity was established.
+  final Assurance assurance;
+
+  /// Present only where a client attested for an issuer under the issuer's authorization
+  /// (HCP 3.7).
+  final ProvenanceAssertedByVia? via;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'assurance': assurance.value,
+        if (via != null) 'via': via!.toJson(),
+      };
+}
+
+/// Whether the Context Subject confirmed or rejected the version.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ProvenanceConfirmationsItemDisposition(String value) {
+  static const ProvenanceConfirmationsItemDisposition confirmed =
+      ProvenanceConfirmationsItemDisposition('confirmed');
+  static const ProvenanceConfirmationsItemDisposition rejected =
+      ProvenanceConfirmationsItemDisposition('rejected');
+
+  /// Every value this specification's schema permits.
+  static const List<ProvenanceConfirmationsItemDisposition> values =
+      <ProvenanceConfirmationsItemDisposition>[confirmed, rejected];
+}
+
+/// Who confirmed or rejected it.
+class ProvenanceConfirmationsItemConfirmedBy {
+  const ProvenanceConfirmationsItemConfirmedBy({
+    required this.id,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProvenanceConfirmationsItemConfirmedBy.fromJson(
+          Map<String, dynamic> json) =>
+      ProvenanceConfirmationsItemConfirmedBy(
+        id: json['id'] as String,
+      );
+
+  /// Their identifier.
+  final String id;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+      };
+}
+
+/// ProvenanceConfirmationsItem, generated from its schema.
+class ProvenanceConfirmationsItem {
+  const ProvenanceConfirmationsItem({
+    required this.disposition,
+    required this.confirmedBy,
+    required this.confirmedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProvenanceConfirmationsItem.fromJson(Map<String, dynamic> json) =>
+      ProvenanceConfirmationsItem(
+        disposition: ProvenanceConfirmationsItemDisposition(
+            json['disposition'] as String),
+        confirmedBy: ProvenanceConfirmationsItemConfirmedBy.fromJson(
+            json['confirmedBy'] as Map<String, dynamic>),
+        confirmedAt: json['confirmedAt'] as String,
+      );
+
+  /// Whether the Context Subject confirmed or rejected the version.
+  final ProvenanceConfirmationsItemDisposition disposition;
+
+  /// Who confirmed or rejected it.
+  final ProvenanceConfirmationsItemConfirmedBy confirmedBy;
+
+  /// When.
+  final Instant confirmedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'disposition': disposition.value,
+        'confirmedBy': confirmedBy.toJson(),
+        'confirmedAt': confirmedAt,
+      };
+}
+
+/// The provenance of one version of an entry (HCP 4.2, 3.5).
 class Provenance {
   const Provenance({
-    this.assertedAt,
-    this.recordedAt,
+    required this.assertedBy,
+    required this.assertedAt,
+    required this.source,
+    required this.submittedByClient,
+    required this.authorizedUnder,
+    required this.recordedByProvider,
+    required this.recordedAt,
+    this.confirmations,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Provenance.fromJson(Map<String, dynamic> json) => Provenance(
-        assertedAt: json['assertedAt'] as String?,
-        recordedAt: json['recordedAt'] as String?,
+        assertedBy: ProvenanceAssertedBy.fromJson(
+            json['assertedBy'] as Map<String, dynamic>),
+        assertedAt: json['assertedAt'] as String,
+        source: json['source'] as String,
+        submittedByClient: ClientDescription.fromJson(
+            json['submittedByClient'] as Map<String, dynamic>),
+        authorizedUnder: json['authorizedUnder'] as String,
+        recordedByProvider: json['recordedByProvider'] as String,
+        recordedAt: json['recordedAt'] as String,
+        confirmations: json['confirmations'] == null
+            ? null
+            : (json['confirmations'] as List<dynamic>)
+                .map((e) => ProvenanceConfirmationsItem.fromJson(
+                    e as Map<String, dynamic>))
+                .toList(),
       );
 
-  /// When the asserter made the assertion.
-  final Instant? assertedAt;
+  /// The Context Asserter (HCP 3.5, 3.6).
+  final ProvenanceAssertedBy assertedBy;
 
-  /// When the provider recorded the entry.
-  final Instant? recordedAt;
+  /// When the assertion was made, as the submitting client states it.
+  final Instant assertedAt;
+
+  /// The origin of the entry, as the submitting client states it: a conversation or
+  /// document identifier, `person-input` or `integration` (HCP 4.2).
+  final String source;
+
+  /// The HCP Client that submitted this version, and its Client Operator (HCP 3.5).
+  final ClientDescription submittedByClient;
+
+  /// The grant under which this version was written.
+  final String authorizedUnder;
+
+  /// The HCP Provider that recorded this version.
+  final String recordedByProvider;
+
+  /// When the provider recorded this version.
+  final Instant recordedAt;
+
+  /// Confirmation records for this version (HCP 3.8). Absent or empty when there are
+  /// none.
+  final List<ProvenanceConfirmationsItem>? confirmations;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (assertedAt != null) 'assertedAt': assertedAt!,
-        if (recordedAt != null) 'recordedAt': recordedAt!,
+        'assertedBy': assertedBy.toJson(),
+        'assertedAt': assertedAt,
+        'source': source,
+        'submittedByClient': submittedByClient.toJson(),
+        'authorizedUnder': authorizedUnder,
+        'recordedByProvider': recordedByProvider,
+        'recordedAt': recordedAt,
+        if (confirmations != null)
+          'confirmations': confirmations!.map((e) => e.toJson()).toList(),
       };
 }
 
-/// The entry's lifecycle status, as HCP defines it.
+/// Their role (HCP 3.9). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RelationshipAssertedByRole(String value) {
+  static const RelationshipAssertedByRole managementClient =
+      RelationshipAssertedByRole('management-client');
+  static const RelationshipAssertedByRole contextClient =
+      RelationshipAssertedByRole('context-client');
+  static const RelationshipAssertedByRole authorizationService =
+      RelationshipAssertedByRole('authorization-service');
+  static const RelationshipAssertedByRole hcpProvider =
+      RelationshipAssertedByRole('hcp-provider');
+
+  /// Every value this specification's schema permits.
+  static const List<RelationshipAssertedByRole> values =
+      <RelationshipAssertedByRole>[
+    managementClient,
+    contextClient,
+    authorizationService,
+    hcpProvider
+  ];
+}
+
+/// Who asserted the relationship.
+class RelationshipAssertedBy {
+  const RelationshipAssertedBy({
+    required this.role,
+    required this.id,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RelationshipAssertedBy.fromJson(Map<String, dynamic> json) =>
+      RelationshipAssertedBy(
+        role: RelationshipAssertedByRole(json['role'] as String),
+        id: json['id'] as String,
+      );
+
+  /// Their role (HCP 3.9). HCP's own values, carried verbatim.
+  final RelationshipAssertedByRole role;
+
+  /// Their identifier.
+  final String id;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'role': role.value,
+        'id': id,
+      };
+}
+
+/// A relationship from this entry to another (HCP 4.2.3). Only a `contradicts`
+/// relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines
+/// it. This rule is stated here and not as a schema conditional: the registry's Rust
+/// generator does not support `if`/`then`/`else`, so a validator does not check it.
+class Relationship {
+  const Relationship({
+    required this.type,
+    required this.target,
+    required this.assertedBy,
+    required this.recordedAt,
+    this.proposal,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Relationship.fromJson(Map<String, dynamic> json) => Relationship(
+        type: RelationshipType(json['type'] as String),
+        target: json['target'] as String,
+        assertedBy: RelationshipAssertedBy.fromJson(
+            json['assertedBy'] as Map<String, dynamic>),
+        recordedAt: json['recordedAt'] as String,
+        proposal: json['proposal'] as Map<String, dynamic>?,
+      );
+
+  /// The kind of relationship.
+  final RelationshipType type;
+
+  /// The related entry's `id`.
+  final String target;
+
+  /// Who asserted the relationship.
+  final RelationshipAssertedBy assertedBy;
+
+  /// When the provider recorded the relationship.
+  final Instant recordedAt;
+
+  /// A proposal for resolving a conflict, which changes nothing until the Context
+  /// Subject acts (HCP 4.7.4).
+  final Map<String, dynamic>? proposal;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'type': type.value,
+        'target': target,
+        'assertedBy': assertedBy.toJson(),
+        'recordedAt': recordedAt,
+        if (proposal != null) 'proposal': proposal!,
+      };
+}
+
+/// The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -220,186 +1132,114 @@ extension type const RecordStatus(String value) {
   ];
 }
 
-/// The provider's record of the entry: its status, version, provenance, relationships,
-/// conversion and metadata. Members other than `status` and `provenance` are carried
-/// as HCP defines them.
+/// Present only on an entry converted from HCP v1 (HCP 4.3).
+class RecordConversion {
+  const RecordConversion({
+    required this.from,
+    required this.convertedAt,
+    required this.convertedBy,
+    this.unmapped,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordConversion.fromJson(Map<String, dynamic> json) =>
+      RecordConversion(
+        from: json['from'] as String,
+        convertedAt: json['convertedAt'] as String,
+        convertedBy: json['convertedBy'] as String,
+        unmapped: json['unmapped'] as Map<String, dynamic>?,
+      );
+
+  /// What the entry was converted from.
+  final String from;
+
+  /// When it was converted.
+  final Instant convertedAt;
+
+  /// Who converted it.
+  final String convertedBy;
+
+  /// v1 members the conversion did not map.
+  final Map<String, dynamic>? unmapped;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'from': from,
+        'convertedAt': convertedAt,
+        'convertedBy': convertedBy,
+        if (unmapped != null) 'unmapped': unmapped!,
+      };
+}
+
+/// The provider's record of the entry (HCP 4.2). Withheld from a Context Client in
+/// full (HCP 7.4).
 class Record {
   const Record({
     required this.status,
-    this.provenance,
+    required this.version,
+    required this.provenance,
+    this.relationships,
+    this.conversion,
+    this.metadata,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Record.fromJson(Map<String, dynamic> json) => Record(
         status: RecordStatus(json['status'] as String),
-        provenance: json['provenance'] == null
+        version: json['version'] as int,
+        provenance:
+            Provenance.fromJson(json['provenance'] as Map<String, dynamic>),
+        relationships: json['relationships'] == null
             ? null
-            : Provenance.fromJson(json['provenance'] as Map<String, dynamic>),
+            : (json['relationships'] as List<dynamic>)
+                .map((e) => Relationship.fromJson(e as Map<String, dynamic>))
+                .toList(),
+        conversion: json['conversion'] == null
+            ? null
+            : RecordConversion.fromJson(
+                json['conversion'] as Map<String, dynamic>),
+        metadata: json['metadata'] as Map<String, dynamic>?,
       );
 
-  /// The entry's lifecycle status, as HCP defines it.
+  /// The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.
   final RecordStatus status;
 
-  /// Who asserted the entry, under which grant it was submitted, and who recorded it.
-  final Provenance? provenance;
+  /// The revision number: starts at 1 and increments by exactly 1 on each revision (HCP
+  /// 4.2).
+  final int version;
+
+  /// Who asserted, submitted, authorized, recorded and confirmed this version (HCP
+  /// 3.5–3.8).
+  final Provenance provenance;
+
+  /// Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.
+  final List<Relationship>? relationships;
+
+  /// Present only on an entry converted from HCP v1 (HCP 4.3).
+  final RecordConversion? conversion;
+
+  /// Free-form data the implementation attaches for its own purposes; carries no HCP
+  /// meaning (HCP 4.2).
+  final Map<String, dynamic>? metadata;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'status': status.value,
-        if (provenance != null) 'provenance': provenance!.toJson(),
+        'version': version,
+        'provenance': provenance.toJson(),
+        if (relationships != null)
+          'relationships': relationships!.map((e) => e.toJson()).toList(),
+        if (conversion != null) 'conversion': conversion!.toJson(),
+        if (metadata != null) 'metadata': metadata!,
       };
 }
 
-/// `content`: the item is the entry's content (VC Evidence profile). `supports`: the
-/// item backs content stated elsewhere in the entry.
-///
-/// An extension type rather than an enum: a value from a newer MINOR of this
-/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
-/// Compare against the constants below, and treat anything else as unrecognised.
-extension type const EvidenceItemRole(String value) {
-  static const EvidenceItemRole content = EvidenceItemRole('content');
-  static const EvidenceItemRole supports = EvidenceItemRole('supports');
-
-  /// Every value this specification's schema permits.
-  static const List<EvidenceItemRole> values = <EvidenceItemRole>[
-    content,
-    supports
-  ];
-}
-
-/// One evidence item on an entry (HCP section 4).
-class EvidenceItem {
-  const EvidenceItem({
-    required this.role,
-    required this.type,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory EvidenceItem.fromJson(Map<String, dynamic> json) => EvidenceItem(
-        role: EvidenceItemRole(json['role'] as String),
-        type: json['type'] as String,
-      );
-
-  /// `content`: the item is the entry's content (VC Evidence profile). `supports`: the
-  /// item backs content stated elsewhere in the entry.
-  final EvidenceItemRole role;
-
-  /// The evidence type, such as `verifiable-credential`, as HCP defines it.
-  final String type;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'role': role.value,
-        'type': type,
-      };
-}
-
-/// A disclosed copy of an entry. It carries a grant-scoped `ref` in place of the
-/// entry's stable `id` (HCP 7.4), and the instant until which the client may use the
-/// copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives
-/// them.
-class Disclosure {
-  const Disclosure({
-    required this.ref,
-    required this.useUntil,
-    this.content,
-    this.assertion,
-    this.classification,
-    this.record,
-    this.evidence,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory Disclosure.fromJson(Map<String, dynamic> json) => Disclosure(
-        ref: json['ref'] as String,
-        useUntil: json['useUntil'] as String,
-        content: json['content'] == null
-            ? null
-            : Content.fromJson(json['content'] as Map<String, dynamic>),
-        assertion: json['assertion'] == null
-            ? null
-            : Assertion.fromJson(json['assertion'] as Map<String, dynamic>),
-        classification: json['classification'] == null
-            ? null
-            : Classification.fromJson(
-                json['classification'] as Map<String, dynamic>),
-        record: json['record'] == null
-            ? null
-            : Record.fromJson(json['record'] as Map<String, dynamic>),
-        evidence: json['evidence'] == null
-            ? null
-            : (json['evidence'] as List<dynamic>)
-                .map((e) => EvidenceItem.fromJson(e as Map<String, dynamic>))
-                .toList(),
-      );
-
-  /// The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and
-  /// different across grants, so two clients cannot join their copies on it.
-  final String ref;
-
-  /// The instant after which the client MUST NOT use this copy (HCP 7.6): at least one
-  /// hour and at most 30 days after disclosure, and at most 24 hours for
-  /// High-sensitivity context.
-  final Instant useUntil;
-
-  /// The disclosed content.
-  final Content? content;
-
-  /// How the content was declared.
-  final Assertion? assertion;
-
-  /// The entry's categories and purpose limits.
-  final Classification? classification;
-
-  /// The entry's status and provenance as disclosed.
-  final Record? record;
-
-  /// Evidence items disclosed with the entry. Absent when none is disclosed.
-  final List<EvidenceItem>? evidence;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'ref': ref,
-        'useUntil': useUntil,
-        if (content != null) 'content': content!.toJson(),
-        if (assertion != null) 'assertion': assertion!.toJson(),
-        if (classification != null) 'classification': classification!.toJson(),
-        if (record != null) 'record': record!.toJson(),
-        if (evidence != null)
-          'evidence': evidence!.map((e) => e.toJson()).toList(),
-      };
-}
-
-/// An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers,
-/// grant identifiers and retrieval identifiers.
-typedef Urn = String;
-
-/// The subject of an entry.
-class EntrySubject {
-  const EntrySubject({
-    required this.id,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory EntrySubject.fromJson(Map<String, dynamic> json) => EntrySubject(
-        id: json['id'] as String,
-      );
-
-  /// The subject's identifier as presented to the reader. A Context Client sees a
-  /// per-client pseudonym (HCP 3.4), never an identifier shared across clients.
-  final String id;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-      };
-}
-
-/// An HCP context entry (HCP section 4), carried verbatim. A Context Client normally
-/// receives a Disclosure, which carries a grant-scoped `ref` in place of `id` (HCP
-/// 7.4); the stable `id` reaches only the parties HCP lets see it.
+/// An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client
+/// never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry,
+/// with its stable `id`, reaches only the Context Subject's own access (HCP 7.4).
 class Entry {
   const Entry({
+    this.context,
     required this.schema,
     required this.id,
     required this.type,
@@ -407,60 +1247,73 @@ class Entry {
     required this.content,
     required this.assertion,
     required this.classification,
-    required this.record,
     this.evidence,
+    required this.record,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Entry.fromJson(Map<String, dynamic> json) => Entry(
+        context: json['@context'],
         schema: json['schema'] as String,
         id: json['id'] as String,
-        type: json['type'] as String,
+        type: (json['type'] as List<dynamic>).map((e) => e as String).toList(),
         subject: EntrySubject.fromJson(json['subject'] as Map<String, dynamic>),
         content: Content.fromJson(json['content'] as Map<String, dynamic>),
         assertion:
             Assertion.fromJson(json['assertion'] as Map<String, dynamic>),
         classification: Classification.fromJson(
             json['classification'] as Map<String, dynamic>),
-        record: Record.fromJson(json['record'] as Map<String, dynamic>),
         evidence: json['evidence'] == null
             ? null
             : (json['evidence'] as List<dynamic>)
                 .map((e) => EvidenceItem.fromJson(e as Map<String, dynamic>))
                 .toList(),
+        record: Record.fromJson(json['record'] as Map<String, dynamic>),
       );
 
-  /// The HCP entry schema identifier the entry conforms to, as HCP defines it.
+  /// The entry's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3
+  /// (HCP 4.2).
+  final Object? context;
+
+  /// The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP
+  /// 2.0-draft-3 defines this one value.
   final String schema;
 
-  /// The entry's stable identifier (HCP section 4). Never disclosed to a Context Client,
-  /// which sees a `ref` instead (HCP 7.4).
+  /// The entry's stable identifier, the same across all its versions (HCP 4.2). Never
+  /// disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).
   final Urn id;
 
-  /// The entry type, as HCP defines it.
-  final String type;
+  /// The entry's types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated
+  /// here and not in the schema: the registry's Rust generator does not support
+  /// `contains`, so a validator does not check it.
+  final List<String> type;
 
   /// The Context Subject the entry is about.
   final EntrySubject subject;
 
-  /// What the entry says, shaped by the content profile the entry uses (HCP section 4).
+  /// What is said about the Context Subject, shaped by its content profile (HCP 4.2).
   final Content content;
 
-  /// Who declared the content, how, and with what confidence (HCP 4.2.5).
+  /// What the submitting client states about the assertion (HCP 4.2, 4.4).
   final Assertion assertion;
 
-  /// The entry's categories and purpose limits (HCP 4.5).
+  /// HCP's classification of the entry: its categories, dimension and purpose limits
+  /// (HCP 4.2, 4.5).
   final Classification classification;
 
-  /// The entry's status, version and provenance as recorded by the provider.
-  final Record record;
-
-  /// Evidence items backing the entry, such as a verifiable credential. At most one item
-  /// has role `content` (HCP section 4). Absent when the entry carries no evidence.
+  /// Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty
+  /// when the entry carries none. This rule is stated here and not in the schema: the
+  /// registry's Rust generator does not support `contains`, so a validator does not
+  /// check it.
   final List<EvidenceItem>? evidence;
+
+  /// The provider's record of the entry: status, version, provenance, relationships,
+  /// conversion and metadata (HCP 4.2).
+  final Record record;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
+        if (context != null) '@context': context!,
         'schema': schema,
         'id': id,
         'type': type,
@@ -468,14 +1321,41 @@ class Entry {
         'content': content.toJson(),
         'assertion': assertion.toJson(),
         'classification': classification.toJson(),
-        'record': record.toJson(),
         if (evidence != null)
           'evidence': evidence!.map((e) => e.toJson()).toList(),
+        'record': record.toJson(),
       };
 }
 
-/// What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's
-/// own values, carried verbatim. A `permit` never widens the grant.
+/// The minimization report a query or get-entry result carries (HCP 7.5). It MUST NOT
+/// carry the number of entries considered, the number available within scope, or any
+/// other measure of what was withheld (HCP 7.5); no schema can check that by name.
+class MinimizationReport {
+  const MinimizationReport({
+    required this.method,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory MinimizationReport.fromJson(Map<String, dynamic> json) =>
+      MinimizationReport(
+        method: json['method'] as String,
+      );
+
+  /// The relevance method that determined the final ordering (HCP 7.3): the method the
+  /// provider declares as `minimization_method` in its discovery document (HCP 19.3),
+  /// such as `lexical`, `semantic` or `llm`, or `none` for a get-entry result. The set
+  /// of values is open.
+  final String method;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'method': method,
+      };
+}
+
+/// `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain
+/// the Context Subject's confirmation each time before taking it. `permit`: the client
+/// may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -493,42 +1373,94 @@ extension type const DirectiveEffect(String value) {
   ];
 }
 
-/// A directive the person set on what a client may do with disclosed context (HCP
-/// 6.4). A directive only narrows what a grant allows, and the provider delivers every
-/// applicable directive with every read result. Members other than the action and
-/// effect are carried as HCP defines them.
+/// What a client may do with context it received, or on the Context Subject's behalf
+/// (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant
+/// does not. Where two that apply disagree, `deny` prevails over `ask-first`, and
+/// `ask-first` over `permit` (HCP 6.4).
 class Directive {
   const Directive({
-    this.action,
-    this.effect,
+    required this.directiveId,
+    required this.action,
+    required this.effect,
+    required this.text,
+    this.categories,
+    this.operators,
+    required this.setBy,
+    required this.createdAt,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Directive.fromJson(Map<String, dynamic> json) => Directive(
-        action: json['action'] as String?,
-        effect: json['effect'] == null
+        directiveId: json['directiveId'] as String,
+        action: json['action'] as String,
+        effect: DirectiveEffect(json['effect'] as String),
+        text: json['text'] as String,
+        categories: json['categories'] == null
             ? null
-            : DirectiveEffect(json['effect'] as String),
+            : (json['categories'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        operators: json['operators'] == null
+            ? null
+            : (json['operators'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        setBy: json['setBy'] as String,
+        createdAt: json['createdAt'] as String,
       );
 
-  /// The action the directive governs: `share`, `sign` or `transact`, or an absolute URI
-  /// naming another action.
-  final String? action;
+  /// Stable for the life of the directive (HCP 6.4).
+  final Urn directiveId;
 
-  /// What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's
-  /// own values, carried verbatim. A `permit` never widens the grant.
-  final DirectiveEffect? effect;
+  /// What the directive governs: `share` (passing received context to another agent),
+  /// `sign` (signing, agreeing to or committing to anything on the Context Subject's
+  /// behalf), `transact` (spending, buying or entering a contract on their behalf), or
+  /// an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an
+  /// action it does not recognize as a permission; it reads the directive from `text`.
+  final String action;
+
+  /// `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain
+  /// the Context Subject's confirmation each time before taking it. `permit`: the client
+  /// may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
+  final DirectiveEffect effect;
+
+  /// The directive in the Context Subject's words (HCP 6.4). A client presents it to a
+  /// model as data, never as instructions (HCP 7.4). The maxLength is a framework bound,
+  /// not an HCP requirement.
+  final String text;
+
+  /// The categories whose context the directive governs; absent means every category,
+  /// held now or later (HCP 6.4).
+  final List<Category>? categories;
+
+  /// The Client Operators the directive applies to, each a DNS domain or an operator
+  /// identifier, matched as for standing rules; absent means every operator (HCP 6.4,
+  /// 6.3).
+  final List<String>? operators;
+
+  /// Set by the provider: `context-subject`, or the `delegationId` of the delegate who
+  /// set it (HCP 6.4, 6.3).
+  final String setBy;
+
+  /// Set by the provider: when the directive was set (HCP 6.4).
+  final Instant createdAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        if (action != null) 'action': action!,
-        if (effect != null) 'effect': effect!.value,
+        'directiveId': directiveId,
+        'action': action,
+        'effect': effect.value,
+        'text': text,
+        if (categories != null) 'categories': categories!,
+        if (operators != null) 'operators': operators!,
+        'setBy': setBy,
+        'createdAt': createdAt,
       };
 }
 
-/// The HCP Query result: the disclosed entries, ordered by the provider's declared
-/// method, with the directives that apply to them. Failures use trust-task-error, not
-/// this shape.
+/// The HCP Query result (HCP 5.2.1): the entries in relevance order (HCP 7.3), with
+/// the minimization report and, for a Context Client, the directives that apply.
+/// Failures use trust-task-error, not this shape.
 class Response {
   const Response({
     required this.entries,
@@ -543,7 +1475,8 @@ class Response {
   factory Response.fromJson(Map<String, dynamic> json) => Response(
         entries: (json['entries'] as List<dynamic>).map((e) => e).toList(),
         retrievalId: json['retrievalId'] as String,
-        minimization: json['minimization'] as Map<String, dynamic>,
+        minimization: MinimizationReport.fromJson(
+            json['minimization'] as Map<String, dynamic>),
         categoriesSearched: (json['categoriesSearched'] as List<dynamic>)
             .map((e) => e as String)
             .toList(),
@@ -555,34 +1488,36 @@ class Response {
         respondedAt: json['respondedAt'] as String,
       );
 
-  /// HCP `entries`: at most 20 entries (HCP 7.2), each a Disclosure, or an Entry where
-  /// HCP lets the reader see the entry itself. Empty when nothing matched or nothing
-  /// could be disclosed.
+  /// HCP `entries`: at most 20 (HCP 7.2), in relevance order (HCP 7.3). Each is a
+  /// Disclosure where the requester is a Context Client (HCP 7.4); otherwise the whole
+  /// Entry. Empty when nothing matched or nothing could be disclosed.
   final List<Object?> entries;
 
-  /// HCP `retrievalId`: the identifier of this retrieval, as recorded in the provider's
-  /// `context.read` audit event (HCP 8.1).
+  /// HCP `retrievalId`: the `urn:uuid:` identifier of this retrieval, recorded in the
+  /// `context.read` audit event (HCP 5.2.1, 8.2).
   final Urn retrievalId;
 
-  /// HCP `minimization`: the provider's account of how it minimized the result (HCP
-  /// 7.2), carried as HCP defines it.
-  final Map<String, dynamic> minimization;
+  /// HCP `minimization`: the minimization report (HCP 7.5).
+  final MinimizationReport minimization;
 
-  /// HCP `categoriesSearched`: the categories the provider searched.
+  /// HCP `categoriesSearched`: the categories named in the request, or, where it named
+  /// none, every category the grant can read for the purpose named (HCP 5.2.1).
   final List<Category> categoriesSearched;
 
-  /// HCP `directives`: the directives that apply to the disclosed context (HCP 6.4).
-  /// Absent when none applies.
+  /// HCP `directives`: every directive whose `operators` match the client's Client
+  /// Operator and whose `categories` include a category of an entry disclosed or are
+  /// absent (HCP 6.4). Every result to a Context Client carries it, empty when none
+  /// applies (HCP 6.4, 5.2.1).
   final List<Directive>? directives;
 
-  /// HCP `timestamp`, renamed: when the provider produced the result.
+  /// HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.1).
   final Instant respondedAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'entries': entries,
         'retrievalId': retrievalId,
-        'minimization': minimization,
+        'minimization': minimization.toJson(),
         'categoriesSearched': categoriesSearched,
         if (directives != null)
           'directives': directives!.map((e) => e.toJson()).toList(),
@@ -619,32 +1554,35 @@ class Payload {
         accessToken: json['accessToken'] as String,
       );
 
-  /// HCP `query`: what the client wants context about, in natural language. HCP treats
-  /// query text as being as sensitive as content (HCP 8.2), so the provider does not log
-  /// it.
+  /// HCP `query`: a natural-language query describing the context or task (HCP 5.2.1).
   final String query;
 
-  /// HCP `categories`: the categories to search. Absent means every category the grant
-  /// covers. A category outside the grant is refused with `permissionDenied` (HCP
-  /// 5.2.1). The bound of 256 is a framework bound, not an HCP requirement.
+  /// HCP `categories`: the categories to query; an entry matches where any of its
+  /// categories is among them. Absent means every category the grant can read for the
+  /// purpose named (HCP 5.2.1). A category outside the grant fails with HCP not
+  /// authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The
+  /// bound of 256 is a framework bound, not an HCP requirement.
   final List<Category>? categories;
 
-  /// HCP `purpose`: the purpose code, an absolute URI, the context is requested for. It
-  /// must be a purpose the grant allows (HCP 5.2.1).
+  /// HCP `purpose`: a purpose code, an absolute URI, that the grant approved for the
+  /// categories queried (HCP 5.2.1, 6.1.5.2).
   final PurposeCode purpose;
 
-  /// HCP `purposeDescription`: a human-readable statement of the purpose. Absent when
-  /// the client gives none.
+  /// HCP `purposeDescription`: a plain-language statement of the task, recorded in the
+  /// provider's audit log (HCP 5.2.1, 8.2). The maxLength is a framework bound, not an
+  /// HCP requirement.
   final String? purposeDescription;
 
-  /// HCP `maxEntries`: the most entries the client wants. Absent means HCP's default of
-  /// 5. The provider returns at most the lesser of this value and 20 (HCP 7.2).
+  /// HCP `maxEntries`: the most entries to return. Absent means HCP's default of 5. A
+  /// ceiling, not a target: the provider returns at most the lesser of this value and
+  /// 20, and never pads to reach it (HCP 5.2.1, 7.2).
   final int? maxEntries;
 
-  /// The HCP access token (an OAuth or first-party token, HCP 9.3) that stands for the
-  /// grant, carried unchanged. HCP's HTTP binding sends it as a Bearer token; this
-  /// member carries it in the document. The provider validates it exactly as over HTTP
-  /// and treats it as opaque.
+  /// The HCP access token that stands for the grant (an OAuth or first-party token, HCP
+  /// 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP
+  /// 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2),
+  /// and this member carries it in the document. The provider validates it exactly as
+  /// over HTTP and treats it as opaque.
   final String accessToken;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -692,11 +1630,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/entries/query/0.1","title":"HCP — Query Context — payload","description":"The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token stands for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["query","purpose","accessToken"],"properties":{"query":{"type":"string","minLength":1,"maxLength":4096,"description":"HCP `query`: what the client wants context about, in natural language. HCP treats query text as being as sensitive as content (HCP 8.2), so the provider does not log it."},"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categories`: the categories to search. Absent means every category the grant covers. A category outside the grant is refused with `permissionDenied` (HCP 5.2.1). The bound of 256 is a framework bound, not an HCP requirement."},"purpose":{"\$ref":"#/\$defs/PurposeCode","description":"HCP `purpose`: the purpose code, an absolute URI, the context is requested for. It must be a purpose the grant allows (HCP 5.2.1)."},"purposeDescription":{"type":"string","minLength":1,"maxLength":1024,"description":"HCP `purposeDescription`: a human-readable statement of the purpose. Absent when the client gives none."},"maxEntries":{"type":"integer","minimum":1,"description":"HCP `maxEntries`: the most entries the client wants. Absent means HCP\'s default of 5. The provider returns at most the lesser of this value and 20 (HCP 7.2)."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The HCP access token (an OAuth or first-party token, HCP 9.3) that stands for the grant, carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."}},"\$defs":{"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:.+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a name from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:.+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/entries/query/0.1","title":"HCP — Query Context — payload","description":"The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token stands for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["query","purpose","accessToken"],"properties":{"query":{"type":"string","minLength":1,"maxLength":4096,"description":"HCP `query`: a natural-language query describing the context or task (HCP 5.2.1)."},"categories":{"type":"array","maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement."},"purpose":{"\$ref":"#/\$defs/PurposeCode","description":"HCP `purpose`: a purpose code, an absolute URI, that the grant approved for the categories queried (HCP 5.2.1, 6.1.5.2)."},"purposeDescription":{"type":"string","maxLength":1024,"description":"HCP `purposeDescription`: a plain-language statement of the task, recorded in the provider\'s audit log (HCP 5.2.1, 8.2). The maxLength is a framework bound, not an HCP requirement."},"maxEntries":{"type":"integer","minimum":1,"description":"HCP `maxEntries`: the most entries to return. Absent means HCP\'s default of 5. A ceiling, not a target: the provider returns at most the lesser of this value and 20, and never pads to reach it (HCP 5.2.1, 7.2)."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The HCP access token that stands for the grant (an OAuth or first-party token, HCP 12, 13), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token (HCP 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2), and this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."}},"\$defs":{"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"HCP — Query Context — response payload","type":"object","additionalProperties":false,"required":["entries","retrievalId","minimization","categoriesSearched","respondedAt"],"description":"The HCP Query result: the disclosed entries, ordered by the provider\'s declared method, with the directives that apply to them. Failures use trust-task-error, not this shape.","properties":{"entries":{"type":"array","maxItems":20,"items":{"anyOf":[{"\$ref":"#/\$defs/Disclosure"},{"\$ref":"#/\$defs/Entry"}]},"description":"HCP `entries`: at most 20 entries (HCP 7.2), each a Disclosure, or an Entry where HCP lets the reader see the entry itself. Empty when nothing matched or nothing could be disclosed."},"retrievalId":{"\$ref":"#/\$defs/Urn","description":"HCP `retrievalId`: the identifier of this retrieval, as recorded in the provider\'s `context.read` audit event (HCP 8.1)."},"minimization":{"type":"object","additionalProperties":true,"description":"HCP `minimization`: the provider\'s account of how it minimized the result (HCP 7.2), carried as HCP defines it."},"categoriesSearched":{"type":"array","items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categoriesSearched`: the categories the provider searched."},"directives":{"type":"array","items":{"\$ref":"#/\$defs/Directive"},"description":"HCP `directives`: the directives that apply to the disclosed context (HCP 6.4). Absent when none applies."},"respondedAt":{"\$ref":"#/\$defs/Instant","description":"HCP `timestamp`, renamed: when the provider produced the result."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Directive":{"type":"object","additionalProperties":true,"description":"A directive the person set on what a client may do with disclosed context (HCP 6.4). A directive only narrows what a grant allows, and the provider delivers every applicable directive with every read result. Members other than the action and effect are carried as HCP defines them.","properties":{"action":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:.+)\$","description":"The action the directive governs: `share`, `sign` or `transact`, or an absolute URI naming another action."},"effect":{"type":"string","enum":["deny","ask-first","permit"],"description":"What the directive says about the action: `deny`, `ask-first` or `permit`. HCP\'s own values, carried verbatim. A `permit` never widens the grant."}}},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:.+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a name from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers."},"Entry":{"type":"object","additionalProperties":true,"required":["schema","id","type","subject","content","assertion","classification","record"],"description":"An HCP context entry (HCP section 4), carried verbatim. A Context Client normally receives a Disclosure, which carries a grant-scoped `ref` in place of `id` (HCP 7.4); the stable `id` reaches only the parties HCP lets see it.","properties":{"schema":{"type":"string","minLength":1,"maxLength":2048,"description":"The HCP entry schema identifier the entry conforms to, as HCP defines it."},"id":{"\$ref":"#/\$defs/Urn","description":"The entry\'s stable identifier (HCP section 4). Never disclosed to a Context Client, which sees a `ref` instead (HCP 7.4)."},"type":{"type":"string","minLength":1,"maxLength":2048,"description":"The entry type, as HCP defines it."},"subject":{"\$ref":"#/\$defs/EntrySubject","description":"The Context Subject the entry is about."},"content":{"\$ref":"#/\$defs/Content","description":"What the entry says, shaped by the content profile the entry uses (HCP section 4)."},"assertion":{"\$ref":"#/\$defs/Assertion","description":"Who declared the content, how, and with what confidence (HCP 4.2.5)."},"classification":{"\$ref":"#/\$defs/Classification","description":"The entry\'s categories and purpose limits (HCP 4.5)."},"record":{"\$ref":"#/\$defs/Record","description":"The entry\'s status, version and provenance as recorded by the provider."},"evidence":{"type":"array","items":{"\$ref":"#/\$defs/EvidenceItem"},"description":"Evidence items backing the entry, such as a verifiable credential. At most one item has role `content` (HCP section 4). Absent when the entry carries no evidence."}}},"EvidenceItem":{"type":"object","additionalProperties":true,"required":["role","type"],"description":"One evidence item on an entry (HCP section 4).","properties":{"role":{"type":"string","enum":["content","supports"],"description":"`content`: the item is the entry\'s content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry."},"type":{"type":"string","minLength":1,"maxLength":256,"description":"The evidence type, such as `verifiable-credential`, as HCP defines it."}}},"Record":{"type":"object","additionalProperties":true,"required":["status"],"description":"The provider\'s record of the entry: its status, version, provenance, relationships, conversion and metadata. Members other than `status` and `provenance` are carried as HCP defines them.","properties":{"status":{"type":"string","enum":["active","deprecated","conflicted","expired","revoked","suspended","deleted"],"description":"The entry\'s lifecycle status, as HCP defines it."},"provenance":{"\$ref":"#/\$defs/Provenance","description":"Who asserted the entry, under which grant it was submitted, and who recorded it."}}},"Provenance":{"type":"object","additionalProperties":true,"description":"The entry\'s provenance (HCP section 4): `assertedBy`, `assertedAt`, `source`, `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`, `recordedAt` and `confirmations`. The instants are declared here; the other members are carried as HCP defines them.","properties":{"assertedAt":{"\$ref":"#/\$defs/Instant","description":"When the asserter made the assertion."},"recordedAt":{"\$ref":"#/\$defs/Instant","description":"When the provider recorded the entry."}}},"Classification":{"type":"object","additionalProperties":true,"required":["categories"],"description":"The entry\'s classification (HCP 4.5). A grant reaches an entry when it covers any one of the entry\'s categories.","properties":{"categories":{"type":"array","minItems":1,"items":{"\$ref":"#/\$defs/Category"},"description":"The entry\'s categories; at least one (HCP 4.5)."},"dimension":{"type":"string","minLength":1,"maxLength":256,"description":"A hint at the aspect of the person the entry describes. A hint only; it grants and limits nothing (HCP 4.5)."},"permittedPurposes":{"type":"array","items":{"\$ref":"#/\$defs/PurposeCode"},"description":"Purposes the entry may be disclosed for. Absent when the classification sets none."}}},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:.+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used."},"Assertion":{"type":"object","additionalProperties":true,"required":["declarationType"],"description":"How the entry\'s content was declared (HCP 4.2.5). HCP requires `confidence` when `declarationType` is `model-inferred`.","properties":{"declarationType":{"type":"string","enum":["person-declared","model-inferred","issuer-attested"],"description":"Who declared the content: the person, a model inferring it, or an issuer attesting it. HCP\'s own values, carried verbatim."},"confidence":{"type":["string","null"],"enum":["high","medium","low",null],"description":"The asserter\'s confidence in an inferred assertion. REQUIRED by HCP when `declarationType` is `model-inferred`; null or absent otherwise."},"validUntil":{"\$ref":"#/\$defs/Instant","description":"The instant after which the assertion no longer holds. Absent when it states no end."},"basis":{"type":"object","additionalProperties":true,"description":"What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task, the setting and the rationale. Carried as HCP defines it."},"permittedPurposes":{"type":"array","items":{"\$ref":"#/\$defs/PurposeCode"},"description":"Purposes the asserter permits the content to be used for. Absent when the assertion sets none."}}},"Content":{"type":"object","additionalProperties":true,"description":"Entry content. Its shape is set by the content profile: the General Context profile (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and `language`; the VC Evidence profile points at an evidence item instead (HCP section 4).","properties":{"value":{"description":"The context itself under the General Context profile: a string, or an object whose shape the profile leaves to the entry type."},"language":{"type":"string","minLength":1,"maxLength":64,"description":"The language of `value`, as a BCP 47 language tag. Absent when the profile or value has none."}}},"EntrySubject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The subject of an entry.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The subject\'s identifier as presented to the reader. A Context Client sees a per-client pseudonym (HCP 3.4), never an identifier shared across clients."}}},"Disclosure":{"type":"object","additionalProperties":true,"required":["ref","useUntil"],"description":"A disclosed copy of an entry. It carries a grant-scoped `ref` in place of the entry\'s stable `id` (HCP 7.4), and the instant until which the client may use the copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives them.","properties":{"ref":{"type":"string","minLength":1,"maxLength":2048,"description":"The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and different across grants, so two clients cannot join their copies on it."},"useUntil":{"\$ref":"#/\$defs/Instant","description":"The instant after which the client MUST NOT use this copy (HCP 7.6): at least one hour and at most 30 days after disclosure, and at most 24 hours for High-sensitivity context."},"content":{"\$ref":"#/\$defs/Content","description":"The disclosed content."},"assertion":{"\$ref":"#/\$defs/Assertion","description":"How the content was declared."},"classification":{"\$ref":"#/\$defs/Classification","description":"The entry\'s categories and purpose limits."},"record":{"\$ref":"#/\$defs/Record","description":"The entry\'s status and provenance as disclosed."},"evidence":{"type":"array","items":{"\$ref":"#/\$defs/EvidenceItem"},"description":"Evidence items disclosed with the entry. Absent when none is disclosed."}}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"HCP — Query Context — response payload","type":"object","additionalProperties":false,"required":["entries","retrievalId","minimization","categoriesSearched","respondedAt"],"description":"The HCP Query result (HCP 5.2.1): the entries in relevance order (HCP 7.3), with the minimization report and, for a Context Client, the directives that apply. Failures use trust-task-error, not this shape.","properties":{"entries":{"type":"array","maxItems":20,"items":{"anyOf":[{"\$ref":"#/\$defs/Disclosure"},{"\$ref":"#/\$defs/Entry"}]},"description":"HCP `entries`: at most 20 (HCP 7.2), in relevance order (HCP 7.3). Each is a Disclosure where the requester is a Context Client (HCP 7.4); otherwise the whole Entry. Empty when nothing matched or nothing could be disclosed."},"retrievalId":{"\$ref":"#/\$defs/Urn","description":"HCP `retrievalId`: the `urn:uuid:` identifier of this retrieval, recorded in the `context.read` audit event (HCP 5.2.1, 8.2)."},"minimization":{"\$ref":"#/\$defs/MinimizationReport","description":"HCP `minimization`: the minimization report (HCP 7.5)."},"categoriesSearched":{"type":"array","items":{"\$ref":"#/\$defs/Category"},"description":"HCP `categoriesSearched`: the categories named in the request, or, where it named none, every category the grant can read for the purpose named (HCP 5.2.1)."},"directives":{"type":"array","items":{"\$ref":"#/\$defs/Directive"},"description":"HCP `directives`: every directive whose `operators` match the client\'s Client Operator and whose `categories` include a category of an entry disclosed or are absent (HCP 6.4). Every result to a Context Client carries it, empty when none applies (HCP 6.4, 5.2.1)."},"respondedAt":{"\$ref":"#/\$defs/Instant","description":"HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.1)."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Directive":{"type":"object","additionalProperties":true,"required":["directiveId","action","effect","text","setBy","createdAt"],"description":"What a client may do with context it received, or on the Context Subject\'s behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).","properties":{"directiveId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the directive (HCP 6.4)."},"action":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject\'s behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`."},"effect":{"type":"string","enum":["deny","ask-first","permit"],"description":"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject\'s confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP\'s own values, carried verbatim."},"text":{"type":"string","minLength":1,"maxLength":4096,"description":"The directive in the Context Subject\'s words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement."},"categories":{"type":"array","minItems":1,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4)."},"operators":{"type":"array","minItems":1,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3)."},"setBy":{"type":"string","minLength":1,"maxLength":2048,"description":"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3)."},"createdAt":{"\$ref":"#/\$defs/Instant","description":"Set by the provider: when the directive was set (HCP 6.4)."}}},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."},"MinimizationReport":{"type":"object","additionalProperties":true,"required":["method"],"description":"The minimization report a query or get-entry result carries (HCP 7.5). It MUST NOT carry the number of entries considered, the number available within scope, or any other measure of what was withheld (HCP 7.5); no schema can check that by name.","properties":{"method":{"type":"string","minLength":1,"maxLength":256,"description":"The relevance method that determined the final ordering (HCP 7.3): the method the provider declares as `minimization_method` in its discovery document (HCP 19.3), such as `lexical`, `semantic` or `llm`, or `none` for a get-entry result. The set of values is open."}}},"Entry":{"type":"object","additionalProperties":true,"required":["schema","id","type","subject","content","assertion","classification","record"],"description":"An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry, with its stable `id`, reaches only the Context Subject\'s own access (HCP 7.4).","properties":{"@context":{"type":["array","string"],"description":"The entry\'s JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 4.2)."},"schema":{"type":"string","const":"https://hcp.example/spec/entry/2.0","description":"The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3 defines this one value."},"id":{"\$ref":"#/\$defs/Urn","description":"The entry\'s stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4)."},"type":{"type":"array","items":{"type":"string","minLength":1,"maxLength":256},"minItems":1,"description":"The entry\'s types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated here and not in the schema: the registry\'s Rust generator does not support `contains`, so a validator does not check it."},"subject":{"\$ref":"#/\$defs/EntrySubject","description":"The Context Subject the entry is about."},"content":{"\$ref":"#/\$defs/Content","description":"What is said about the Context Subject, shaped by its content profile (HCP 4.2)."},"assertion":{"\$ref":"#/\$defs/Assertion","description":"What the submitting client states about the assertion (HCP 4.2, 4.4)."},"classification":{"\$ref":"#/\$defs/Classification","description":"HCP\'s classification of the entry: its categories, dimension and purpose limits (HCP 4.2, 4.5)."},"evidence":{"type":"array","items":{"\$ref":"#/\$defs/EvidenceItem"},"description":"Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry\'s Rust generator does not support `contains`, so a validator does not check it."},"record":{"\$ref":"#/\$defs/Record","description":"The provider\'s record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2)."}}},"Record":{"type":"object","additionalProperties":true,"required":["status","version","provenance"],"description":"The provider\'s record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).","properties":{"status":{"type":"string","enum":["active","deprecated","conflicted","expired","revoked","suspended","deleted"],"description":"The entry\'s lifecycle state (HCP 4.2.4). HCP\'s own values, carried verbatim."},"version":{"type":"integer","minimum":1,"description":"The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2)."},"provenance":{"\$ref":"#/\$defs/Provenance","description":"Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8)."},"relationships":{"type":"array","items":{"\$ref":"#/\$defs/Relationship"},"description":"Relationships to other entries (HCP 4.2.3). Absent or empty when there are none."},"conversion":{"type":"object","additionalProperties":true,"required":["from","convertedAt","convertedBy"],"description":"Present only on an entry converted from HCP v1 (HCP 4.3).","properties":{"from":{"type":"string","maxLength":2048,"description":"What the entry was converted from."},"convertedAt":{"\$ref":"#/\$defs/Instant","description":"When it was converted."},"convertedBy":{"type":"string","maxLength":2048,"description":"Who converted it."},"unmapped":{"type":"object","additionalProperties":true,"description":"v1 members the conversion did not map."}}},"metadata":{"type":"object","additionalProperties":true,"description":"Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2)."}}},"Relationship":{"type":"object","additionalProperties":true,"required":["type","target","assertedBy","recordedAt"],"description":"A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines it. This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"type":{"\$ref":"#/\$defs/RelationshipType","description":"The kind of relationship."},"target":{"type":"string","minLength":1,"maxLength":2048,"description":"The related entry\'s `id`."},"assertedBy":{"type":"object","additionalProperties":true,"required":["role","id"],"description":"Who asserted the relationship.","properties":{"role":{"type":"string","enum":["management-client","context-client","authorization-service","hcp-provider"],"description":"Their role (HCP 3.9). HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Their identifier."}}},"recordedAt":{"\$ref":"#/\$defs/Instant","description":"When the provider recorded the relationship."},"proposal":{"type":"object","additionalProperties":true,"description":"A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4)."}}},"RelationshipType":{"type":"string","enum":["derivedFrom","supersedes","contradicts","duplicates"],"description":"How one entry relates to another (HCP 4.2.3). HCP\'s own values, carried verbatim."},"Provenance":{"type":"object","additionalProperties":true,"required":["assertedBy","assertedAt","source","submittedByClient","authorizedUnder","recordedByProvider","recordedAt"],"description":"The provenance of one version of an entry (HCP 4.2, 3.5).","properties":{"assertedBy":{"type":"object","additionalProperties":true,"required":["id","assurance"],"description":"The Context Asserter (HCP 3.5, 3.6).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The Context Asserter\'s identifier."},"assurance":{"\$ref":"#/\$defs/Assurance","description":"How the asserter\'s identity was established."},"via":{"type":"object","additionalProperties":true,"required":["kind","id"],"description":"Present only where a client attested for an issuer under the issuer\'s authorization (HCP 3.7).","properties":{"kind":{"type":"string","enum":["authorization-credential","arrangement"],"description":"What the client attested under. HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The identifier of the attestation authorization or the recorded arrangement."}}}}},"assertedAt":{"\$ref":"#/\$defs/Instant","description":"When the assertion was made, as the submitting client states it."},"source":{"type":"string","minLength":1,"maxLength":2048,"description":"The origin of the entry, as the submitting client states it: a conversation or document identifier, `person-input` or `integration` (HCP 4.2)."},"submittedByClient":{"\$ref":"#/\$defs/ClientDescription","description":"The HCP Client that submitted this version, and its Client Operator (HCP 3.5)."},"authorizedUnder":{"type":"string","minLength":1,"maxLength":2048,"description":"The grant under which this version was written."},"recordedByProvider":{"type":"string","minLength":1,"maxLength":2048,"description":"The HCP Provider that recorded this version."},"recordedAt":{"\$ref":"#/\$defs/Instant","description":"When the provider recorded this version."},"confirmations":{"type":"array","description":"Confirmation records for this version (HCP 3.8). Absent or empty when there are none.","items":{"type":"object","additionalProperties":true,"required":["disposition","confirmedBy","confirmedAt"],"properties":{"disposition":{"type":"string","enum":["confirmed","rejected"],"description":"Whether the Context Subject confirmed or rejected the version."},"confirmedBy":{"type":"object","additionalProperties":true,"required":["id"],"description":"Who confirmed or rejected it.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Their identifier."}}},"confirmedAt":{"\$ref":"#/\$defs/Instant","description":"When."}}}}}},"ClientDescription":{"type":"object","additionalProperties":true,"required":["id","name","operator"],"description":"An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The client\'s identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"The client\'s name."},"operator":{"type":"object","additionalProperties":true,"required":["id","name"],"description":"The Client Operator.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The operator\'s identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"The operator\'s name."}}}}},"Assurance":{"type":"string","enum":["unverified","authenticated","cryptographically-verified"],"description":"How a Context Asserter\'s identity was established (HCP 3.6). HCP\'s own values, carried verbatim."},"EvidenceItem":{"type":"object","additionalProperties":true,"required":["role","type"],"description":"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"role":{"type":"string","enum":["content","supports"],"description":"`content`: the item\'s credential is the entry\'s content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."},"type":{"type":"string","minLength":1,"maxLength":2048,"description":"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3)."},"credential":{"description":"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2)."},"verification":{"type":"object","additionalProperties":true,"required":["result","at"],"description":"The provider\'s record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.","properties":{"result":{"type":"string","enum":["verified","failed"],"description":"The outcome."},"at":{"\$ref":"#/\$defs/Instant","description":"When the provider verified."},"by":{"type":"string","enum":["provider","trust-domain"],"description":"Who verified: the provider, or the Context Subject\'s trust domain under end-to-end encrypted storage (HCP 4.8). HCP\'s own values, carried verbatim."}}}}},"Classification":{"type":"object","additionalProperties":true,"required":["categories"],"description":"HCP\'s classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it covers any one of the entry\'s categories (HCP 4.5).","properties":{"categories":{"type":"array","minItems":1,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Category"},"description":"One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4)."},"dimension":{"type":["string","null"],"maxLength":2048,"description":"A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2)."},"permittedPurposes":{"type":"array","uniqueItems":true,"items":{"\$ref":"#/\$defs/PurposeCode"},"description":"The Authorizing Principal\'s narrowing of the entry\'s purposes; absent means no limit (HCP 4.2.6)."}}},"PurposeCode":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2)."},"Assertion":{"type":"object","additionalProperties":true,"required":["declarationType"],"description":"What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"declarationType":{"type":"string","enum":["person-declared","model-inferred","issuer-attested"],"description":"What kind of party made the assertion (HCP 4.4); never omitted. HCP\'s own values, carried verbatim."},"confidence":{"type":["string","null"],"enum":["high","medium","low",null],"description":"How confident an inferring model is (HCP 4.2, 4.4)."},"validUntil":{"type":["string","null"],"format":"date-time","description":"The instant after which the content no longer holds; absent or null means it does not expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable, which is a disclosure\'s `useUntil` (HCP 7.6)."},"basis":{"\$ref":"#/\$defs/Basis","description":"What the assertion was drawn from (HCP 4.2.5)."},"permittedPurposes":{"type":"array","uniqueItems":true,"items":{"\$ref":"#/\$defs/PurposeCode"},"description":"The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6)."}}},"Basis":{"type":"object","additionalProperties":true,"description":"What an assertion was drawn from (HCP 4.2.5). It identifies no party but the Context Subject.","properties":{"drawnFrom":{"type":"array","items":{"type":"string","maxLength":2048},"description":"The sources the assertion was drawn from."},"task":{"type":"string","maxLength":4096,"description":"The task during which the assertion was made."},"setting":{"type":"string","maxLength":4096,"description":"The setting in which the assertion was made."},"rationale":{"type":"string","maxLength":4096,"description":"Why the asserter drew the conclusion."}}},"Content":{"type":"object","additionalProperties":true,"required":["profile"],"description":"Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"profile":{"\$ref":"#/\$defs/Uri","description":"The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3)."},"value":{"type":["string","object"],"description":"The statement, under the General Context profile: a string or a structured object (HCP 11.2)."},"language":{"type":["string","null"],"maxLength":64,"description":"The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null."},"evidence":{"type":"integer","minimum":0,"description":"Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2)."}}},"Uri":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3)."},"EntrySubject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The subject of an entry (HCP 4.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2)."},"relationship":{"type":"null","description":"Reserved by HCP (HCP 4.2, 11.3); null where present."}}},"Disclosure":{"type":"object","additionalProperties":true,"required":["ref","version","content","assertion","classification","standing","useUntil"],"description":"A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped `ref`, never by its `id`, and withholds the entry\'s `id`, `subject`, `schema` and the whole of `record` (status, provenance, relationships, conversion, metadata): those members describe the person\'s activity with other systems, which no grant authorizes a client to learn (HCP 7.4). What the client needs to judge the entry it receives in `standing`.","properties":{"ref":{"type":"string","minLength":1,"maxLength":2048,"description":"A reference to the entry, opaque to the client, stable for one grant and one entry and different under every other grant, and never derivable into the entry\'s `id` (HCP 7.4). The client names the entry by it in get entry, revise and withdraw; under any other grant it fails with not authorized."},"version":{"type":"integer","minimum":1,"description":"The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2)."},"content":{"\$ref":"#/\$defs/Content","description":"The content, as stored for the version disclosed (HCP 7.4)."},"evidence":{"type":"array","items":{"\$ref":"#/\$defs/DisclosedEvidenceItem"},"description":"The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2), including each item\'s `verification`, except that a credential may be disclosed in derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The one-`content`-item rule is stated here and not in the schema: the registry\'s Rust generator does not support `contains`, so a validator does not check it."},"assertion":{"\$ref":"#/\$defs/Assertion","description":"The assertion, as stored for the version disclosed, including `basis` and `permittedPurposes` (HCP 7.4)."},"classification":{"\$ref":"#/\$defs/Classification","description":"Only the entry\'s categories the requesting grant covers, with its dimension and its `permittedPurposes` where present; its other categories are withheld (HCP 7.4)."},"standing":{"\$ref":"#/\$defs/Standing","description":"What the client needs to judge the entry\'s standing (HCP 7.4, 3.8)."},"useUntil":{"\$ref":"#/\$defs/Instant","description":"The instant after which the client MUST NOT use the copy, or pass it on, without fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit time that applies (such as `assertion.validUntil`), else a heuristic of at least 1 hour; never more than 30 days after disclosure, 24 hours for an entry of High default sensitivity, or 1 hour where the client has no registered notification endpoint (HCP 7.6)."},"onwardSharing":{"const":true,"description":"Present, and true, only where the client may share from this entry under HCP 3.12: the detail of the grant that reaches the entry carries `onwardSharing` and every category of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4)."},"relationships":{"type":"array","items":{"\$ref":"#/\$defs/DisclosedRelationship"},"description":"Only the relationships whose target is disclosed in the same response, with the target named by its `ref` (HCP 7.4, 4.2.3)."},"provenance":{"\$ref":"#/\$defs/DisclosedProvenance","description":"Present only where the requesting grant includes the `provenance` action for a category of the entry (HCP 7.4.1)."}},"not":{"anyOf":[{"required":["id"]},{"required":["subject"]},{"required":["record"]},{"required":["schema"]}]}},"DisclosedProvenance":{"type":"object","additionalProperties":true,"required":["submittedBy","source","assertedAt","recordedAt"],"description":"Provenance on request (HCP 7.4.1): names, never identifiers. It MUST NOT carry an identifier of a client, a Client Operator, a grant, a conversation or a document, nor `confirmedBy`.","properties":{"submittedBy":{"type":"object","additionalProperties":true,"required":["name","operator"],"description":"The names of the client that submitted the version disclosed and of its Client Operator.","properties":{"name":{"type":"string","minLength":1,"maxLength":1024,"description":"The client\'s name."},"operator":{"type":"string","minLength":1,"maxLength":1024,"description":"The Client Operator\'s name."}}},"source":{"type":"string","enum":["conversation","document","person-input","integration"],"description":"The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP\'s own values, carried verbatim."},"assertedAt":{"\$ref":"#/\$defs/Instant","description":"When the assertion was made."},"recordedAt":{"\$ref":"#/\$defs/Instant","description":"When the provider recorded the version."}},"not":{"anyOf":[{"required":["id"]},{"required":["confirmedBy"]},{"required":["authorizedUnder"]},{"required":["submittedByClient"]}]}},"DisclosedRelationship":{"type":"object","additionalProperties":true,"required":["type","target"],"description":"A relationship as disclosed (HCP 7.4).","properties":{"type":{"\$ref":"#/\$defs/RelationshipType","description":"The kind of relationship."},"target":{"type":"string","minLength":1,"maxLength":2048,"description":"The `ref` of the related entry, disclosed in the same response."}}},"Standing":{"type":"object","additionalProperties":true,"required":["assurance","confirmed"],"description":"The standing of the disclosed version (HCP 7.4).","properties":{"assurance":{"\$ref":"#/\$defs/Assurance","description":"The stored `record.provenance.assertedBy.assurance`."},"confirmed":{"type":"boolean","description":"True where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8)."}}},"DisclosedEvidenceItem":{"description":"An evidence item as disclosed (HCP 7.4). An item carrying a derived credential adds `revealed`.","allOf":[{"\$ref":"#/\$defs/EvidenceItem"}],"properties":{"revealed":{"type":"array","items":{"type":"string","maxLength":2048},"description":"The JSON Pointers into the stored credential of the claims a derived credential reveals (HCP 7.4, 14.9)."}}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

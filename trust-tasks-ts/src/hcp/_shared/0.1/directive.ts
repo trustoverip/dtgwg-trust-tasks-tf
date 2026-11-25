@@ -4,7 +4,7 @@
  */
 
 /**
- * The Human Context Protocol (HCP) 2.0-draft-3 directive (HCP 6.4), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution; not copied from HCP's own schema files. Open, as HCP's objects are (HCP Appendix A.3). Where this schema and the HCP text differ, the HCP text governs.
+ * The Human Context Protocol (HCP) 2.0-draft-3 directive (HCP 6.4), shared by the hcp/* tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are. Where this schema and the HCP text differ, the HCP text governs.
  */
 export interface HCPDirective {
   [k: string]: unknown | undefined;

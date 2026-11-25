@@ -99,7 +99,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "Urn": {
       "type": "string",
       "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "description": "An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers."
+      "description": "An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."
     }
   }
 };

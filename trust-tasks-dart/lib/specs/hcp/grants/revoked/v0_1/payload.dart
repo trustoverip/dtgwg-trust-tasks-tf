@@ -15,8 +15,8 @@ typedef Response = Map<String, dynamic>;
 /// An RFC 3339 instant.
 typedef Instant = String;
 
-/// An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers,
-/// grant identifiers and retrieval identifiers.
+/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+/// HCP uses for entry, grant, directive and retrieval identifiers.
 typedef Urn = String;
 
 /// The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3,
@@ -84,7 +84,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoked/0.1","title":"HCP — Revocation Notice — payload","description":"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["grantId","revokedAt"],"properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"The grant-revoked event\'s `grantId`: the grant that was revoked."},"revokedAt":{"\$ref":"#/\$defs/Instant","description":"The grant-revoked event\'s `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3)."}},"\$defs":{"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoked/0.1","title":"HCP — Revocation Notice — payload","description":"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["grantId","revokedAt"],"properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"The grant-revoked event\'s `grantId`: the grant that was revoked."},"revokedAt":{"\$ref":"#/\$defs/Instant","description":"The grant-revoked event\'s `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3)."}},"\$defs":{"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

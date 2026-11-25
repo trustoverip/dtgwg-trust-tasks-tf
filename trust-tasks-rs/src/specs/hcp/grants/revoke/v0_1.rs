@@ -128,7 +128,7 @@ impl Response {
         Default::default()
     }
 }
-///An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers.
+///An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -280,7 +280,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Revoke grant operation (HCP 6.2, 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2): a Management Client, acting for the Authorizing Principal, ends a grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to revoke.\"}},\"required\":[\"grantId\",\"accessToken\"],\"title\":\"HCP — Revoke Grant — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/grants/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Revoke grant operation (HCP 6.2, 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2): a Management Client, acting for the Authorizing Principal, ends a grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to revoke.\"}},\"required\":[\"grantId\",\"accessToken\"],\"title\":\"HCP — Revoke Grant — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -311,7 +311,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::INVALID_TOKE
 pub mod error_codes {
     /// `hcp:invalidToken`
     ///
-    /// The Management Client's access token is missing from the provider's records, expired, revoked, or otherwise not valid for this provider (HCP 5.5 `invalid-token`).
+    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management Client's access token.
     ///
     /// Declared `retryable: false`.
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

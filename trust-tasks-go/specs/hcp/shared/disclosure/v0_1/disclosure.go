@@ -8,37 +8,146 @@ package hcpshareddisclosurev0_1
 
 import "encoding/json"
 
-// Disclosure A disclosed copy of an entry. It carries a grant-scoped `ref` in place of
-// the entry's stable `id` (HCP 7.4), and the instant until which the client may use the
-// copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives them.
+// Disclosure A disclosed copy of an entry (HCP 7.4). It names the entry by a grant-scoped
+// `ref`, never by its `id`, and withholds the entry's `id`, `subject`, `schema` and the
+// whole of `record` (status, provenance, relationships, conversion, metadata): those
+// members describe the person's activity with other systems, which no grant authorizes a
+// client to learn (HCP 7.4). What the client needs to judge the entry it receives in
+// `standing`.
 type Disclosure struct {
-	// The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and different
-	// across grants, so two clients cannot join their copies on it.
+	// A reference to the entry, opaque to the client, stable for one grant and one entry and
+	// different under every other grant, and never derivable into the entry's `id` (HCP 7.4).
+	// The client names the entry by it in get entry, revise and withdraw; under any other
+	// grant it fails with not authorized.
 	Ref string `json:"ref"`
 
-	// The instant after which the client MUST NOT use this copy (HCP 7.6): at least one hour
-	// and at most 30 days after disclosure, and at most 24 hours for High-sensitivity
-	// context.
+	// The entry version disclosed: the stored `record.version` (HCP 7.4, 4.2).
+	Version int64 `json:"version"`
+
+	// The content, as stored for the version disclosed (HCP 7.4).
+	Content Content `json:"content"`
+
+	// The evidence, as stored (so at most one item whose `role` is `content`, HCP 4.2.2),
+	// including each item's `verification`, except that a credential may be disclosed in
+	// derived form (HCP 7.4, 14.9). Absent or empty when none is disclosed. The
+	// one-`content`-item rule is stated here and not in the schema: the registry's Rust
+	// generator does not support `contains`, so a validator does not check it.
+	Evidence *[]DisclosedEvidenceItem `json:"evidence,omitempty"`
+
+	// The assertion, as stored for the version disclosed, including `basis` and
+	// `permittedPurposes` (HCP 7.4).
+	Assertion Assertion `json:"assertion"`
+
+	// Only the entry's categories the requesting grant covers, with its dimension and its
+	// `permittedPurposes` where present; its other categories are withheld (HCP 7.4).
+	Classification Classification `json:"classification"`
+
+	// What the client needs to judge the entry's standing (HCP 7.4, 3.8).
+	Standing Standing `json:"standing"`
+
+	// The instant after which the client MUST NOT use the copy, or pass it on, without
+	// fetching it again (HCP 7.6). The provider sets it at disclosure: the earliest explicit
+	// time that applies (such as `assertion.validUntil`), else a heuristic of at least 1
+	// hour; never more than 30 days after disclosure, 24 hours for an entry of High default
+	// sensitivity, or 1 hour where the client has no registered notification endpoint (HCP
+	// 7.6).
 	UseUntil Instant `json:"useUntil"`
 
-	// The disclosed content.
-	Content *Content `json:"content,omitempty"`
+	// Present, and true, only where the client may share from this entry under HCP 3.12: the
+	// detail of the grant that reaches the entry carries `onwardSharing` and every category
+	// of the entry has a default sensitivity of Low. Omitted otherwise (HCP 7.4).
+	OnwardSharing json.RawMessage `json:"onwardSharing,omitempty"`
 
-	// How the content was declared.
-	Assertion *Assertion `json:"assertion,omitempty"`
+	// Only the relationships whose target is disclosed in the same response, with the target
+	// named by its `ref` (HCP 7.4, 4.2.3).
+	Relationships *[]DisclosedRelationship `json:"relationships,omitempty"`
 
-	// The entry's categories and purpose limits.
-	Classification *Classification `json:"classification,omitempty"`
-
-	// The entry's status and provenance as disclosed.
-	Record *Record `json:"record,omitempty"`
-
-	// Evidence items disclosed with the entry. Absent when none is disclosed.
-	Evidence *[]EvidenceItem `json:"evidence,omitempty"`
+	// Present only where the requesting grant includes the `provenance` action for a category
+	// of the entry (HCP 7.4.1).
+	Provenance *DisclosedProvenance `json:"provenance,omitempty"`
 }
 
-// EvidenceItemRole `content`: the item is the entry's content (VC Evidence profile).
-// `supports`: the item backs content stated elsewhere in the entry.
+// Standing The standing of the disclosed version (HCP 7.4).
+type Standing struct {
+	// The stored `record.provenance.assertedBy.assurance`.
+	Assurance Assurance `json:"assurance"`
+
+	// True where the most recent confirmation record on the version disclosed is `confirmed`
+	// (HCP 7.4, 3.8).
+	Confirmed bool `json:"confirmed"`
+}
+
+// DisclosedEvidenceItem An evidence item as disclosed (HCP 7.4). An item carrying a
+// derived credential adds `revealed`.
+type DisclosedEvidenceItem = json.RawMessage
+
+// DisclosedRelationship A relationship as disclosed (HCP 7.4).
+type DisclosedRelationship struct {
+	// The kind of relationship.
+	Type RelationshipType `json:"type"`
+
+	// The `ref` of the related entry, disclosed in the same response.
+	Target string `json:"target"`
+}
+
+// DisclosedProvenanceSubmittedBy The names of the client that submitted the version
+// disclosed and of its Client Operator.
+type DisclosedProvenanceSubmittedBy struct {
+	// The client's name.
+	Name string `json:"name"`
+
+	// The Client Operator's name.
+	Operator string `json:"operator"`
+}
+
+// DisclosedProvenanceSource The kind of origin the stored `source` records, not its value
+// (HCP 7.4.1). HCP's own values, carried verbatim.
+type DisclosedProvenanceSource string
+
+// Values DisclosedProvenanceSource may take, per this specification's schema.
+const (
+	DisclosedProvenanceSourceConversation DisclosedProvenanceSource = "conversation"
+	DisclosedProvenanceSourceDocument     DisclosedProvenanceSource = "document"
+	DisclosedProvenanceSourcePersonInput  DisclosedProvenanceSource = "person-input"
+	DisclosedProvenanceSourceIntegration  DisclosedProvenanceSource = "integration"
+)
+
+// DisclosedProvenance Provenance on request (HCP 7.4.1): names, never identifiers. It
+// MUST NOT carry an identifier of a client, a Client Operator, a grant, a conversation or
+// a document, nor `confirmedBy`.
+type DisclosedProvenance struct {
+	// The names of the client that submitted the version disclosed and of its Client
+	// Operator.
+	SubmittedBy DisclosedProvenanceSubmittedBy `json:"submittedBy"`
+
+	// The kind of origin the stored `source` records, not its value (HCP 7.4.1). HCP's own
+	// values, carried verbatim.
+	Source DisclosedProvenanceSource `json:"source"`
+
+	// When the assertion was made.
+	AssertedAt Instant `json:"assertedAt"`
+
+	// When the provider recorded the version.
+	RecordedAt Instant `json:"recordedAt"`
+}
+
+// Instant An RFC 3339 instant.
+type Instant = string
+
+// RelationshipType How one entry relates to another (HCP 4.2.3). HCP's own values,
+// carried verbatim.
+type RelationshipType string
+
+// Values RelationshipType may take, per this specification's schema.
+const (
+	RelationshipTypeDerivedFrom RelationshipType = "derivedFrom"
+	RelationshipTypeSupersedes  RelationshipType = "supersedes"
+	RelationshipTypeContradicts RelationshipType = "contradicts"
+	RelationshipTypeDuplicates  RelationshipType = "duplicates"
+)
+
+// EvidenceItemRole `content`: the item's credential is the entry's content (VC Evidence
+// profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 type EvidenceItemRole string
 
 // Values EvidenceItemRole may take, per this specification's schema.
@@ -47,82 +156,104 @@ const (
 	EvidenceItemRoleSupports EvidenceItemRole = "supports"
 )
 
-// EvidenceItem One evidence item on an entry (HCP section 4).
-type EvidenceItem struct {
-	// `content`: the item is the entry's content (VC Evidence profile). `supports`: the item
-	// backs content stated elsewhere in the entry.
-	Role EvidenceItemRole `json:"role"`
+// EvidenceItemVerificationResult The outcome.
+type EvidenceItemVerificationResult string
 
-	// The evidence type, such as `verifiable-credential`, as HCP defines it.
-	Type string `json:"type"`
-}
-
-// RecordStatus The entry's lifecycle status, as HCP defines it.
-type RecordStatus string
-
-// Values RecordStatus may take, per this specification's schema.
+// Values EvidenceItemVerificationResult may take, per this specification's schema.
 const (
-	RecordStatusActive     RecordStatus = "active"
-	RecordStatusDeprecated RecordStatus = "deprecated"
-	RecordStatusConflicted RecordStatus = "conflicted"
-	RecordStatusExpired    RecordStatus = "expired"
-	RecordStatusRevoked    RecordStatus = "revoked"
-	RecordStatusSuspended  RecordStatus = "suspended"
-	RecordStatusDeleted    RecordStatus = "deleted"
+	EvidenceItemVerificationResultVerified EvidenceItemVerificationResult = "verified"
+	EvidenceItemVerificationResultFailed   EvidenceItemVerificationResult = "failed"
 )
 
-// Record The provider's record of the entry: its status, version, provenance,
-// relationships, conversion and metadata. Members other than `status` and `provenance`
-// are carried as HCP defines them.
-type Record struct {
-	// The entry's lifecycle status, as HCP defines it.
-	Status RecordStatus `json:"status"`
+// EvidenceItemVerificationBy Who verified: the provider, or the Context Subject's trust
+// domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried
+// verbatim.
+type EvidenceItemVerificationBy string
 
-	// Who asserted the entry, under which grant it was submitted, and who recorded it.
-	Provenance *Provenance `json:"provenance,omitempty"`
+// Values EvidenceItemVerificationBy may take, per this specification's schema.
+const (
+	EvidenceItemVerificationByProvider    EvidenceItemVerificationBy = "provider"
+	EvidenceItemVerificationByTrustDomain EvidenceItemVerificationBy = "trust-domain"
+)
+
+// EvidenceItemVerification The provider's record of its most recent verification of the
+// credential (HCP 4.2.2). Set only by the provider.
+type EvidenceItemVerification struct {
+	// The outcome.
+	Result EvidenceItemVerificationResult `json:"result"`
+
+	// When the provider verified.
+	At Instant `json:"at"`
+
+	// Who verified: the provider, or the Context Subject's trust domain under end-to-end
+	// encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
+	By *EvidenceItemVerificationBy `json:"by,omitempty"`
 }
 
-// Provenance The entry's provenance (HCP section 4): `assertedBy`, `assertedAt`,
-// `source`, `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`,
-// `recordedAt` and `confirmations`. The instants are declared here; the other members are
-// carried as HCP defines them.
-type Provenance struct {
-	// When the asserter made the assertion.
-	AssertedAt *Instant `json:"assertedAt,omitempty"`
+// EvidenceItem One evidence item (HCP 4.2.2). An item of a type the provider does not
+// recognize is preserved and never raises assurance (HCP A.3). An item whose type is
+// `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`,
+// `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This
+// rule is stated here and not as a schema conditional: the registry's Rust generator does
+// not support `if`/`then`/`else`, so a validator does not check it.
+type EvidenceItem struct {
+	// `content`: the item's credential is the entry's content (VC Evidence profile).
+	// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+	Role EvidenceItemRole `json:"role"`
 
-	// When the provider recorded the entry.
-	RecordedAt *Instant `json:"recordedAt,omitempty"`
+	// The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
+	Type string `json:"type"`
+
+	// The credential: for `verifiable-credential`, a W3C Verifiable Credential with
+	// `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its
+	// contents (HCP 4.2.2, 14.2).
+	Credential json.RawMessage `json:"credential,omitempty"`
+
+	// The provider's record of its most recent verification of the credential (HCP 4.2.2).
+	// Set only by the provider.
+	Verification *EvidenceItemVerification `json:"verification,omitempty"`
 }
 
-// Instant An RFC 3339 instant.
-type Instant = string
+// Assurance How a Context Asserter's identity was established (HCP 3.6). HCP's own
+// values, carried verbatim.
+type Assurance string
 
-// Classification The entry's classification (HCP 4.5). A grant reaches an entry when it
-// covers any one of the entry's categories.
+// Values Assurance may take, per this specification's schema.
+const (
+	AssuranceUnverified                Assurance = "unverified"
+	AssuranceAuthenticated             Assurance = "authenticated"
+	AssuranceCryptographicallyVerified Assurance = "cryptographically-verified"
+)
+
+// Classification HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an
+// entry when it covers any one of the entry's categories (HCP 4.5).
 type Classification struct {
-	// The entry's categories; at least one (HCP 4.5).
+	// One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the
+	// categories the requesting grant covers (HCP 7.4).
 	Categories []Category `json:"categories"`
 
-	// A hint at the aspect of the person the entry describes. A hint only; it grants and
-	// limits nothing (HCP 4.5).
+	// A free-form identifier of the dimension the entry addresses, scoped within its
+	// categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).
 	Dimension *string `json:"dimension,omitempty"`
 
-	// Purposes the entry may be disclosed for. Absent when the classification sets none.
+	// The Authorizing Principal's narrowing of the entry's purposes; absent means no limit
+	// (HCP 4.2.6).
 	PermittedPurposes *[]PurposeCode `json:"permittedPurposes,omitempty"`
 }
 
 // PurposeCode An HCP purpose code: an absolute URI naming the purpose for which context
-// is requested or may be used.
+// is requested or may be used (HCP 6.1.5.2).
 type PurposeCode = string
 
 // Category An HCP context category (HCP 4.5), the primary unit of access control: either
-// a name from HCP's category registry, such as `general_preferences` or `health_context`,
-// or a custom category written as an absolute URI. A custom category is not portable
-// between providers without bilateral agreement (HCP 4.5).
+// a slug from HCP's category registry, such as `general_preferences` or `health_context`,
+// or a custom category written as an absolute URI under a domain its definer controls. A
+// custom category is not portable between providers without bilateral agreement (HCP
+// 4.5).
 type Category = string
 
-// AssertionDeclarationType Who declared the content: the person, a model inferring it, or
-// an issuer attesting it. HCP's own values, carried verbatim.
+// AssertionDeclarationType What kind of party made the assertion (HCP 4.4); never
+// omitted. HCP's own values, carried verbatim.
 type AssertionDeclarationType string
 
 // Values AssertionDeclarationType may take, per this specification's schema.
@@ -132,38 +263,74 @@ const (
 	AssertionDeclarationTypeIssuerAttested AssertionDeclarationType = "issuer-attested"
 )
 
-// Assertion How the entry's content was declared (HCP 4.2.5). HCP requires `confidence`
-// when `declarationType` is `model-inferred`.
+// Assertion What the submitting client states about the assertion (HCP 4.2). `confidence`
+// is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent
+// otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the
+// registry's Rust generator does not support `if`/`then`/`else`, so a validator does not
+// check it.
 type Assertion struct {
-	// Who declared the content: the person, a model inferring it, or an issuer attesting it.
-	// HCP's own values, carried verbatim.
+	// What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values,
+	// carried verbatim.
 	DeclarationType AssertionDeclarationType `json:"declarationType"`
 
-	// The asserter's confidence in an inferred assertion. REQUIRED by HCP when
-	// `declarationType` is `model-inferred`; null or absent otherwise.
+	// How confident an inferring model is (HCP 4.2, 4.4).
 	Confidence *string `json:"confidence,omitempty"`
 
-	// The instant after which the assertion no longer holds. Absent when it states no end.
-	ValidUntil *Instant `json:"validUntil,omitempty"`
+	// The instant after which the content no longer holds; absent or null means it does not
+	// expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable,
+	// which is a disclosure's `useUntil` (HCP 7.6).
+	ValidUntil *string `json:"validUntil,omitempty"`
 
-	// What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task, the
-	// setting and the rationale. Carried as HCP defines it.
-	Basis *map[string]json.RawMessage `json:"basis,omitempty"`
+	// What the assertion was drawn from (HCP 4.2.5).
+	Basis *Basis `json:"basis,omitempty"`
 
-	// Purposes the asserter permits the content to be used for. Absent when the assertion
-	// sets none.
+	// The purposes the asserter permits the entry to be used for; absent means no limit (HCP
+	// 4.2.6).
 	PermittedPurposes *[]PurposeCode `json:"permittedPurposes,omitempty"`
 }
 
-// Content Entry content. Its shape is set by the content profile: the General Context
-// profile (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and
-// `language`; the VC Evidence profile points at an evidence item instead (HCP section 4).
+// Basis What an assertion was drawn from (HCP 4.2.5). It identifies no party but the
+// Context Subject.
+type Basis struct {
+	// The sources the assertion was drawn from.
+	DrawnFrom *[]string `json:"drawnFrom,omitempty"`
+
+	// The task during which the assertion was made.
+	Task *string `json:"task,omitempty"`
+
+	// The setting in which the assertion was made.
+	Setting *string `json:"setting,omitempty"`
+
+	// Why the asserter drew the conclusion.
+	Rationale *string `json:"rationale,omitempty"`
+}
+
+// Content Entry content. `profile` names its shape (HCP 4.2). Under the General Context
+// profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence
+// profile it carries `evidence`, the index of the evidence item holding the credential,
+// and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under
+// VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here
+// and not as a schema conditional: the registry's Rust generator does not support
+// `if`/`then`/`else`, so a validator does not check it.
 type Content struct {
-	// The context itself under the General Context profile: a string, or an object whose
-	// shape the profile leaves to the entry type.
+	// The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or
+	// `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom
+	// profile (HCP A.3).
+	Profile URI `json:"profile"`
+
+	// The statement, under the General Context profile: a string or a structured object (HCP
+	// 11.2).
 	Value json.RawMessage `json:"value,omitempty"`
 
-	// The language of `value`, as a BCP 47 language tag. Absent when the profile or value has
-	// none.
+	// The BCP 47 language tag of a string `value`, under the General Context profile (HCP
+	// 11.2). Optional; may be null.
 	Language *string `json:"language,omitempty"`
+
+	// Under the VC Evidence profile, the index in `evidence` of the item whose credential is
+	// the content (HCP 4.2.2).
+	Evidence *int64 `json:"evidence,omitempty"`
 }
+
+// URI An absolute URI with no whitespace, as HCP writes every custom value at an
+// extension point (HCP A.3).
+type URI = string

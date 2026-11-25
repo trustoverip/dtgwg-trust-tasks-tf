@@ -6,8 +6,9 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package hcpshareddirectivev0_1
 
-// DirectiveEffect What the directive says about the action: `deny`, `ask-first` or
-// `permit`. HCP's own values, carried verbatim. A `permit` never widens the grant.
+// DirectiveEffect `deny`: the client MUST NOT take the action. `ask-first`: the client
+// MUST obtain the Context Subject's confirmation each time before taking it. `permit`:
+// the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
 type DirectiveEffect string
 
 // Values DirectiveEffect may take, per this specification's schema.
@@ -17,16 +18,57 @@ const (
 	DirectiveEffectPermit   DirectiveEffect = "permit"
 )
 
-// Directive A directive the person set on what a client may do with disclosed context
-// (HCP 6.4). A directive only narrows what a grant allows, and the provider delivers
-// every applicable directive with every read result. Members other than the action and
-// effect are carried as HCP defines them.
+// Directive What a client may do with context it received, or on the Context Subject's
+// behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant
+// does not. Where two that apply disagree, `deny` prevails over `ask-first`, and
+// `ask-first` over `permit` (HCP 6.4).
 type Directive struct {
-	// The action the directive governs: `share`, `sign` or `transact`, or an absolute URI
-	// naming another action.
-	Action *string `json:"action,omitempty"`
+	// Stable for the life of the directive (HCP 6.4).
+	DirectiveID Urn `json:"directiveId"`
 
-	// What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's own
-	// values, carried verbatim. A `permit` never widens the grant.
-	Effect *DirectiveEffect `json:"effect,omitempty"`
+	// What the directive governs: `share` (passing received context to another agent), `sign`
+	// (signing, agreeing to or committing to anything on the Context Subject's behalf),
+	// `transact` (spending, buying or entering a contract on their behalf), or an absolute
+	// URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not
+	// recognize as a permission; it reads the directive from `text`.
+	Action string `json:"action"`
+
+	// `deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the
+	// Context Subject's confirmation each time before taking it. `permit`: the client may
+	// take it without asking (HCP 6.4). HCP's own values, carried verbatim.
+	Effect DirectiveEffect `json:"effect"`
+
+	// The directive in the Context Subject's words (HCP 6.4). A client presents it to a model
+	// as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an
+	// HCP requirement.
+	Text string `json:"text"`
+
+	// The categories whose context the directive governs; absent means every category, held
+	// now or later (HCP 6.4).
+	Categories *[]Category `json:"categories,omitempty"`
+
+	// The Client Operators the directive applies to, each a DNS domain or an operator
+	// identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3).
+	Operators *[]string `json:"operators,omitempty"`
+
+	// Set by the provider: `context-subject`, or the `delegationId` of the delegate who set
+	// it (HCP 6.4, 6.3).
+	SetBy string `json:"setBy"`
+
+	// Set by the provider: when the directive was set (HCP 6.4).
+	CreatedAt Instant `json:"createdAt"`
 }
+
+// Instant An RFC 3339 instant.
+type Instant = string
+
+// Category An HCP context category (HCP 4.5), the primary unit of access control: either
+// a slug from HCP's category registry, such as `general_preferences` or `health_context`,
+// or a custom category written as an absolute URI under a domain its definer controls. A
+// custom category is not portable between providers without bilateral agreement (HCP
+// 4.5).
+type Category = string
+
+// Urn An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+// HCP uses for entry, grant, directive and retrieval identifiers.
+type Urn = string
