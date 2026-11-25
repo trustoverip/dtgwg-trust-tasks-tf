@@ -848,6 +848,22 @@ mod governance {
         }
     }
 }
+#[cfg(feature = "hcp")]
+mod hcp {
+    mod entries {
+        mod query {
+            mod v0_1;
+        }
+    }
+    mod grants {
+        mod revoke {
+            mod v0_1;
+        }
+        mod revoked {
+            mod v0_1;
+        }
+    }
+}
 #[cfg(feature = "keys")]
 mod keys {
     mod create {

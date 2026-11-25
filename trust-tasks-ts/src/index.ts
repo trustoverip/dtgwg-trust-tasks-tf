@@ -1120,6 +1120,27 @@ export import GovernanceCapabilityEnable_v0_1 = _GovernanceCapabilityEnable_v0_1
 import * as _GovernanceCapabilityList_v0_1 from "./governance/capability/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import GovernanceCapabilityList_v0_1 = _GovernanceCapabilityList_v0_1;
+import * as _CommonShared_v0_1 from "./hcp/_shared/0.1/common.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import CommonShared_v0_1 = _CommonShared_v0_1;
+import * as _ContextEntryShared_v0_1 from "./hcp/_shared/0.1/context-entry.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import ContextEntryShared_v0_1 = _ContextEntryShared_v0_1;
+import * as _DirectiveShared_v0_1 from "./hcp/_shared/0.1/directive.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DirectiveShared_v0_1 = _DirectiveShared_v0_1;
+import * as _DisclosureShared_v0_1 from "./hcp/_shared/0.1/disclosure.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DisclosureShared_v0_1 = _DisclosureShared_v0_1;
+import * as _HcpEntriesQuery_v0_1 from "./hcp/entries/query/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import HcpEntriesQuery_v0_1 = _HcpEntriesQuery_v0_1;
+import * as _HcpGrantsRevoke_v0_1 from "./hcp/grants/revoke/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import HcpGrantsRevoke_v0_1 = _HcpGrantsRevoke_v0_1;
+import * as _HcpGrantsRevoked_v0_1 from "./hcp/grants/revoked/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import HcpGrantsRevoked_v0_1 = _HcpGrantsRevoked_v0_1;
 import * as _KeyRecordShared_v0_1 from "./keys/_shared/0.1/key-record.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import KeyRecordShared_v0_1 = _KeyRecordShared_v0_1;

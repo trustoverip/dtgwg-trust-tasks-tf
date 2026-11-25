@@ -145,6 +145,12 @@ pub mod git_trust;
     note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
 )]
 pub mod governance;
+#[cfg(feature = "hcp")]
+#[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
+pub mod hcp;
 #[cfg(feature = "keys")]
 #[cfg(not(test))]
 #[deprecated(

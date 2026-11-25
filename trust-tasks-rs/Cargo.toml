@@ -61,6 +61,7 @@ all-specs = [
     "git-ns",
     "git-trust",
     "governance",
+    "hcp",
     "keys",
     "messaging",
     "notifications",
@@ -99,6 +100,7 @@ external = []
 git-ns = []
 git-trust = []
 governance = []
+hcp = []
 keys = []
 messaging = []
 notifications = []

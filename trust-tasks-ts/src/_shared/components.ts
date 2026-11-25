@@ -619,6 +619,10 @@ export type Capability_DeviceV0_2 =
   | "pcsTrustee"
   | "credentialPresent";
 /**
+ * An HCP context category (HCP 4.5), the primary unit of access control: either a name from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+ */
+export type Category = string;
+/**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
 export type ChunkCount = number;
@@ -1129,6 +1133,10 @@ export type IdentityKeyRole = "attestation" | "operational" | "messaging" | "upd
  * The media types a directory image may have — those a `CardBlobRef` admits.
  */
 export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
+/**
+ * An RFC 3339 instant.
+ */
+export type Instant = string;
 /**
  * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
  */
@@ -1913,6 +1921,10 @@ export type ProviderObjectPrefix = string;
  * What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.
  */
 export type Purpose = "login";
+/**
+ * An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used.
+ */
+export type PurposeCode = string;
 /**
  * An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.
  */
@@ -2722,6 +2734,10 @@ export type UploadId = string;
  * The party's public address.
  */
 export type Url = string;
+/**
+ * An HCP identifier: a UUID in `urn:uuid:` form, as HCP uses for entry identifiers, grant identifiers and retrieval identifiers.
+ */
+export type Urn = string;
 /**
  * The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
  */
@@ -6045,6 +6061,34 @@ export interface ApproverBinding {
   routeHint?: string;
 }
 /**
+ * How the entry's content was declared (HCP 4.2.5). HCP requires `confidence` when `declarationType` is `model-inferred`.
+ */
+export interface Assertion {
+  /**
+   * Who declared the content: the person, a model inferring it, or an issuer attesting it. HCP's own values, carried verbatim.
+   */
+  declarationType: "person-declared" | "model-inferred" | "issuer-attested";
+  /**
+   * The asserter's confidence in an inferred assertion. REQUIRED by HCP when `declarationType` is `model-inferred`; null or absent otherwise.
+   */
+  confidence?: "high" | "medium" | "low" | null;
+  /**
+   * The instant after which the assertion no longer holds. Absent when it states no end.
+   */
+  validUntil?: Instant;
+  /**
+   * What the assertion was drawn from (HCP 4.2.5): the sources (`drawnFrom`), the task, the setting and the rationale. Carried as HCP defines it.
+   */
+  basis?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Purposes the asserter permits the content to be used for. Absent when the assertion sets none.
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
+}
+/**
  * A member DID's statement that the named principal may carry its traffic on one connection — the one whose `sessionId` and `muxNonce` it names — until `exp`, within `scope`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
  */
 export interface AttachStatement {
@@ -7460,6 +7504,26 @@ export interface ClaimSelector {
   issuers?: string[];
 }
 /**
+ * The entry's classification (HCP 4.5). A grant reaches an entry when it covers any one of the entry's categories.
+ */
+export interface Classification {
+  /**
+   * The entry's categories; at least one (HCP 4.5).
+   *
+   * @minItems 1
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * A hint at the aspect of the person the entry describes. A hint only; it grants and limits nothing (HCP 4.5).
+   */
+  dimension?: string;
+  /**
+   * Purposes the entry may be disclosed for. Absent when the classification sets none.
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
+}
+/**
  * The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.
  */
 export interface CollectionEntry {
@@ -7955,6 +8019,22 @@ export interface ContactRevision {
    */
   supersededAt?: string | null;
   document?: ContactDocument;
+}
+/**
+ * Entry content. Its shape is set by the content profile: the General Context profile (`https://hcp.example/spec/profiles/general-context/2.0`) carries `value` and `language`; the VC Evidence profile points at an evidence item instead (HCP section 4).
+ */
+export interface Content {
+  /**
+   * The context itself under the General Context profile: a string, or an object whose shape the profile leaves to the entry type.
+   */
+  value?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The language of `value`, as a BCP 47 language tag. Absent when the profile or value has none.
+   */
+  language?: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * Per-context restrictions the VTA enforces. Every member is optional, and **absence means unrestricted, not empty** — a policy that omits `presentableTypes` permits every type, while one that sets it to `[]` permits none. The two are opposite instructions and a consumer MUST NOT collapse them.
@@ -9047,6 +9127,20 @@ export interface DidcommAuthcryptEnvelope_VaultV0_2 {
   jwe: string;
 }
 /**
+ * A directive the person set on what a client may do with disclosed context (HCP 6.4). A directive only narrows what a grant allows, and the provider delivers every applicable directive with every read result. Members other than the action and effect are carried as HCP defines them.
+ */
+export interface Directive {
+  /**
+   * The action the directive governs: `share`, `sign` or `transact`, or an absolute URI naming another action.
+   */
+  action?: string;
+  /**
+   * What the directive says about the action: `deny`, `ask-first` or `permit`. HCP's own values, carried verbatim. A `permit` never widens the grant.
+   */
+  effect?: "deny" | "ask-first" | "permit";
+  [k: string]: unknown | undefined;
+}
+/**
  * A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.
  */
 export interface DirectoryCard {
@@ -9247,6 +9341,40 @@ export interface Disclosure {
    * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
    */
   coercionResistance: false;
+}
+/**
+ * A disclosed copy of an entry. It carries a grant-scoped `ref` in place of the entry's stable `id` (HCP 7.4), and the instant until which the client may use the copy (HCP 7.6). The entry parts it carries have the shapes the shared Entry gives them.
+ */
+export interface Disclosure_HcpV0_1 {
+  /**
+   * The grant-scoped reference to the entry (HCP 7.4). Stable for one grant and different across grants, so two clients cannot join their copies on it.
+   */
+  ref: string;
+  /**
+   * The instant after which the client MUST NOT use this copy (HCP 7.6): at least one hour and at most 30 days after disclosure, and at most 24 hours for High-sensitivity context.
+   */
+  useUntil: Instant;
+  /**
+   * The disclosed content.
+   */
+  content?: Content;
+  /**
+   * How the content was declared.
+   */
+  assertion?: Assertion;
+  /**
+   * The entry's categories and purpose limits.
+   */
+  classification?: Classification;
+  /**
+   * The entry's status and provenance as disclosed.
+   */
+  record?: Record;
+  /**
+   * Evidence items disclosed with the entry. Absent when none is disclosed.
+   */
+  evidence?: EvidenceItem[];
+  [k: string]: unknown | undefined;
 }
 /**
  * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand. Under a `credential` roll it also says whose membership credential counts (`rollCredential`).
@@ -9950,6 +10078,58 @@ export interface EntryProfile {
   url?: Url;
   tags?: Tags;
 }
+/**
+ * The subject of an entry.
+ */
+export interface EntrySubject {
+  /**
+   * The subject's identifier as presented to the reader. A Context Client sees a per-client pseudonym (HCP 3.4), never an identifier shared across clients.
+   */
+  id: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * An HCP context entry (HCP section 4), carried verbatim. A Context Client normally receives a Disclosure, which carries a grant-scoped `ref` in place of `id` (HCP 7.4); the stable `id` reaches only the parties HCP lets see it.
+ */
+export interface Entry_HcpV0_1 {
+  /**
+   * The HCP entry schema identifier the entry conforms to, as HCP defines it.
+   */
+  schema: string;
+  /**
+   * The entry's stable identifier (HCP section 4). Never disclosed to a Context Client, which sees a `ref` instead (HCP 7.4).
+   */
+  id: Urn;
+  /**
+   * The entry type, as HCP defines it.
+   */
+  type: string;
+  /**
+   * The Context Subject the entry is about.
+   */
+  subject: EntrySubject;
+  /**
+   * What the entry says, shaped by the content profile the entry uses (HCP section 4).
+   */
+  content: Content;
+  /**
+   * Who declared the content, how, and with what confidence (HCP 4.2.5).
+   */
+  assertion: Assertion;
+  /**
+   * The entry's categories and purpose limits (HCP 4.5).
+   */
+  classification: Classification;
+  /**
+   * The entry's status, version and provenance as recorded by the provider.
+   */
+  record: Record;
+  /**
+   * Evidence items backing the entry, such as a verifiable credential. At most one item has role `content` (HCP section 4). Absent when the entry carries no evidence.
+   */
+  evidence?: EvidenceItem[];
+  [k: string]: unknown | undefined;
+}
 export interface EnumOption {
   /**
    * The stored value.
@@ -10142,6 +10322,20 @@ export interface EpochLink {
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
  */
 export interface EvidenceDocument {}
+/**
+ * One evidence item on an entry (HCP section 4).
+ */
+export interface EvidenceItem {
+  /**
+   * `content`: the item is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry.
+   */
+  role: "content" | "supports";
+  /**
+   * The evidence type, such as `verifiable-credential`, as HCP defines it.
+   */
+  type: string;
+  [k: string]: unknown | undefined;
+}
 /**
  * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
  */
@@ -13362,6 +13556,20 @@ export interface ProtocolCounts {
   other?: number;
 }
 /**
+ * The entry's provenance (HCP section 4): `assertedBy`, `assertedAt`, `source`, `submittedByClient`, `authorizedUnder` (the grant), `recordedByProvider`, `recordedAt` and `confirmations`. The instants are declared here; the other members are carried as HCP defines them.
+ */
+export interface Provenance_HcpV0_1 {
+  /**
+   * When the asserter made the assertion.
+   */
+  assertedAt?: Instant;
+  /**
+   * When the provider recorded the entry.
+   */
+  recordedAt?: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.
  */
 export interface PublicKeyCredentialCreationOptions {
@@ -13894,6 +14102,20 @@ export interface Recipients {
    * The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`.
    */
   role?: string;
+}
+/**
+ * The provider's record of the entry: its status, version, provenance, relationships, conversion and metadata. Members other than `status` and `provenance` are carried as HCP defines them.
+ */
+export interface Record {
+  /**
+   * The entry's lifecycle status, as HCP defines it.
+   */
+  status: "active" | "deprecated" | "conflicted" | "expired" | "revoked" | "suspended" | "deleted";
+  /**
+   * Who asserted the entry, under which grant it was submitted, and who recorded it.
+   */
+  provenance?: Provenance_HcpV0_1;
+  [k: string]: unknown | undefined;
 }
 /**
  * Cites a credential.
