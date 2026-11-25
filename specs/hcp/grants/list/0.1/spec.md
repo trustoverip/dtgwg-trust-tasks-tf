@@ -23,8 +23,9 @@ proofRequirement:
   request: RECOMMENDED
   response: RECOMMENDED
   rationale: >-
-    A read whose authority is the Management Client's access token, which the provider checks whatever the binding,
-    so a request proof is RECOMMENDED, not REQUIRED. The response is RECOMMENDED to be signed so the person can show
+    A read of metadata whose authority is the Management Client's access token, which the provider checks whatever
+    the binding, so a request proof is RECOMMENDED, not REQUIRED, as for every Management Client read whose response
+    is metadata. The response is RECOMMENDED to be signed so the person can show
     which grants the provider reported as active, and when, if a client later acts outside what was listed.
 issuedAtRequirement:
   requirement: REQUIRED

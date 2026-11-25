@@ -45,9 +45,12 @@ exposure:
     and any narrowing and onward-sharing election. It carries no context. The request carries the HCP access token, a
     bearer secret.
 retention:
-  class: exchange
+  class: transient
   rationale: >-
-    Nothing is recorded by the read (HCP 5.2.6). The client may keep the grant record for the life of the grant.
+    The provider needs the request only to answer it: nothing is recorded by the read (HCP 5.2.6, 6.1.5), and
+    beyond the duplicate-execution digest every task keeps (SPEC 7.2 item 11), it keeps nothing of the request, as
+    for List grants. The grant record the client receives is the provider's, which the client may keep for the life
+    of the grant.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-

@@ -20,13 +20,15 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  request: RECOMMENDED
+  request: REQUIRED
   response: REQUIRED
   rationale: >-
     The response discloses the person's whole context, so it carries the provider's signature: the person can show
     which provider released which context, when, and that the export is complete as the provider made it, which is
-    what moving it to another provider relies on. A request proof is RECOMMENDED, not REQUIRED, because the
-    authority is evidenced by the Management Client's access token, which the provider checks whatever the binding.
+    what moving it to another provider relies on. The request proof is REQUIRED, as for every Management Client read
+    whose response is secret: the access token is the authority, but a signed request lets the provider refuse a
+    token lifted from a stored or forwarded document and sent from another VID, and shows which Management Client
+    asked for the export.
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
@@ -103,7 +105,7 @@ The authority is **the Context Subject's own authority over their data**, which 
 
 Under the Delegated Authorization Profile, a governance operation performed by a delegate reaches only entries in categories within the delegation's scope (HCP 17.4), so a delegate's export carries no entry outside that scope.
 
-The `proof`, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
 ## Definitions
 
@@ -155,6 +157,14 @@ An absent option, or one set to `false`, takes HCP's default.
   "payload": {
     "excludeDeleted": true,
     "accessToken": "hcp_mt_8f3a1c9e7b2d4f60"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T09:00:00Z",
+    "verificationMethod": "did:web:wallet.person.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z3Kp8vR2mXcN6wB4hT9qL1sY7dF3gJ5aZe2uP8oVkC4iM6nD1tH9yW5xS3wE7rA2jU8fG4lO6pK1vX9zN5bR3cQ7"
   }
 }
 ```

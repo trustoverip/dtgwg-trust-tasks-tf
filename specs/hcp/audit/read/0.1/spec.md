@@ -20,14 +20,15 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  request: RECOMMENDED
+  request: REQUIRED
   response: REQUIRED
   rationale: >-
     The response discloses the person's own record of who read and wrote their context, for which purposes and in
     which categories, so it carries the provider's signature: the person can show which provider gave which account
-    of their log, and when, which is what a later dispute with a client or the provider turns on. A request proof is
-    RECOMMENDED, not REQUIRED, because the authority is evidenced by the access token, which the provider checks on
-    every request whatever the binding, and the read changes nothing.
+    of their log, and when, which is what a later dispute with a client or the provider turns on. The request proof is
+    REQUIRED, as for every Management Client read whose response is secret: the access token is the authority, but
+    a signed request lets the provider refuse a token lifted from a stored or forwarded document and sent from
+    another VID, and shows which Management Client asked for the disclosure.
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
@@ -103,7 +104,7 @@ What the caller reads depends on whom the Management Client acts for (HCP 8.3, 1
 
 A redacted event leaves the withheld members out; it never carries them as null, so a former delegate cannot tell an event with no entry from one whose entry is withheld. Filters apply within what the caller may read, and never widen it.
 
-The `proof` on the request, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
 ## Definitions
 

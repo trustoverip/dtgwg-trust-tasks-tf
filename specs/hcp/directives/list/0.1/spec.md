@@ -20,30 +20,31 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  request: REQUIRED
+  request: RECOMMENDED
   response: RECOMMENDED
   rationale: >-
-    Reading the directives is a governance operation that exercises the person's own authority (HCP 5.4, 6.1.9), so
-    the request is signed: the provider can show which Management Client read the directives, independently of the
-    transport. The response proof is RECOMMENDED so the Management Client can show which directives the provider said
-    it held, and when.
+    A read of metadata whose authority is the Management Client's access token, which the provider checks whatever
+    the binding, and which changes nothing, so a request proof is RECOMMENDED, not REQUIRED, as for every
+    Management Client read whose response is metadata. The response proof is RECOMMENDED so the Management Client
+    can show which directives the provider said it held, and when.
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
-    The task acts for the person, so it is consequential; a stale or re-delivered request must be placeable in the
-    provider's acceptance window.
+    The task is not consequential, but its answer describes the directives in force now, which the person relies on to
+    decide what to change; requiring `issuedAt` lets the provider refuse a stale or replayed request by its
+    acceptance window.
 sideEffects:
   level: none
   rationale: >-
     A read. The provider changes nothing, and HCP requires no audit event for it (HCP 8.1).
 exposure:
   discloses: metadata
-  actsAsSubject: true
+  actsAsSubject: false
   ingests: secret
   rationale: >-
-    The Management Client exercises the Context Subject's (or a delegate's) authority over their own directives. The
-    request carries the Management Client's access token, a bearer secret. The response lists the directives, in the
-    person's own words, which carry no context.
+    The response lists the directives, in the person's own words, which carry no context. A read produces no
+    attributable effect in the person's name, so `actsAsSubject` is false (SPEC 7.3 item 14), as for every Management
+    Client read. The request carries the Management Client's access token, a bearer secret.
 retention:
   class: transient
   rationale: >-
@@ -91,7 +92,7 @@ The authority is **the Context Subject's own authority over their directives**, 
 
 Under the Delegated Authorization Profile, HCP lets a delegate call this operation as for standing rules, "within the delegation's scope" (HCP 9.4.15, 9.4.14), and a delegate's governance operations reach only categories within scope (HCP 17.4), but HCP does not say which directives a delegate sees. This specification takes the narrowest reading, *pending HCP confirmation* ([question 28](#pending-hcp-confirmation)): a delegate's list carries each directive whose `categories` are absent, or are all within the delegation's scope; a directive that names any category outside the scope is left out whole, never trimmed, so the list never discloses an out-of-scope category. The Context Subject's list carries every directive.
 
-The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+The `proof`, where present, establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
 ## Definitions
 

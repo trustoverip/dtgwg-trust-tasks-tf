@@ -525,6 +525,12 @@ and meet the seven rules of §9.4:
 
 `registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. `hcp/*` shows a family that carries several operations of one protocol: one slug per operation, under one namespace, with the protocol's shared object shapes in its `_shared/` folder. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
 
+Give the operations of one kind in a family one front-matter profile, so that a reader can tell a deliberate difference from drift. `hcp/*` declares one for every Management Client read (List grants, the audit log, the disclosure summary, export, and the delegation, standing-rule and directive lists):
+
+- `actsAsSubject: false`: a read produces no attributable effect in the person's name ([SPEC §7.3](SPEC.md#73-specification-requirements) item 14), even though it is a governance operation.
+- A request `proof` **REQUIRED** where the response is `discloses: secret` (export, the audit log, the disclosure summary, the delegation list), so that the provider can refuse an access token sent from a VID other than the client's, and **RECOMMENDED** where it is `metadata` (grants, standing rules, directives).
+- `retention.class: transient`, unless HCP requires an audit event for the read, as it does for export (`durable`). Read own grant, the Context Client's counterpart of List grants, is `transient` too.
+
 ## Task-specific error codes (optional)
 
 If your task defines extension codes per [SPEC.md §8.5](SPEC.md#85-extension-by-individual-trust-task-specifications), declare them in front matter. The namespace before the colon **MUST** equal the spec's slug — including any `/` separators:
