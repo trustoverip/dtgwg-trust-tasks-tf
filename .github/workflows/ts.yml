@@ -326,6 +326,8 @@ jobs:
   # GETTING-STARTED.md §3 — a signed acl/grant round trip over HTTP that
   # asserts its own output — and holds that section's snippets to its source
   # (the TypeScript counterpart of trust-tasks/tests/getting_started_snippets.rs).
+  #
+  # And examples/hcp-demo-ts, the HCP-over-Trust-Tasks demo over TSP.
   consumer-app-ts:
     name: example application (trust-tasks-gen-ts)
     runs-on: ubuntu-24.04
@@ -355,3 +357,13 @@ jobs:
         run: npm ci --no-audit --no-fund && npm run all
       - name: "Getting started: GETTING-STARTED.md §3 matches the example"
         run: node scripts/check-getting-started-snippets.mjs examples/getting-started-ts/src/main.ts
+      # examples/hcp-demo-ts: the HCP-over-Trust-Tasks demo (discover, grant
+      # request held with a next step, query, revoke, revocation notice), sealed
+      # over TSP. `npm run all` also runs its tests, which hold the run to the
+      # golden transcript every language's port shares.
+      - name: Build @openvtc/trust-tasks-tsp
+        working-directory: trust-tasks-ts-tsp
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: "HCP demo: generate, build, run and test"
+        working-directory: examples/hcp-demo-ts
+        run: npm ci --no-audit --no-fund && npm run all

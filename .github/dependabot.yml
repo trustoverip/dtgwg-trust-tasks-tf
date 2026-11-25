@@ -76,6 +76,7 @@ updates:
       - /trust-tasks-ts-gen
       - /examples/consumer-app-ts
       - /examples/getting-started-ts
+      - /examples/hcp-demo-ts
     schedule:
       interval: weekly
     groups:
