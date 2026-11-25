@@ -9,7 +9,7 @@
   "properties": {
     "entryId": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
-      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.9): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."
     },
     "disposition": {
       "type": "string",

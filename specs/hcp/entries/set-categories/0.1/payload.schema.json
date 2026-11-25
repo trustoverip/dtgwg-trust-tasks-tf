@@ -9,7 +9,7 @@
   "properties": {
     "entryId": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
-      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2)."
     },
     "categories": {
       "type": "array",
@@ -24,7 +24,7 @@
     "expectedVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
     },
     "accessToken": {
       "type": "string",

@@ -54,10 +54,11 @@ retention:
     8.2), which is the person's record of who could reach the entry, and when.
     The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
-  response: 262144
+  response: 524288
   rationale: >-
     One whole entry, which may carry a verifiable credential as evidence (HCP 4.2.2), plus its provenance,
-    relationships, envelope and proof. This is a framework bound, not an HCP requirement; HCP sets no size limit.
+    relationships, envelope and proof. It is the bound of hcp/entries/create, revise and get, so that an entry those
+    tasks carry can also be returned here. This is a framework bound, not an HCP requirement; HCP sets no size limit.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -112,7 +113,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 
 | HCP field | Member | Notes |
 |---|---|---|
-| path parameter `{entryId}` (`PUT /v2/entries/{entryId}/categories`, HCP 9.2) | `entryId` | Moved from the path into the payload, unchanged. A Management Client names the entry by its `id` (HCP 9.4.5). |
+| path parameter `{entryId}` (`PUT /v2/entries/{entryId}/categories`, HCP 9.2) | `entryId` | Moved from the path into the payload, unchanged. A Management Client names the entry by its `id` (HCP 9.4.2). |
 | request `categories` | `categories` | Unchanged. At most 256 items, a framework bound HCP does not set. |
 | request `expectedVersion` | `expectedVersion` | Unchanged. |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |

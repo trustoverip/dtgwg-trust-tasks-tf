@@ -53,10 +53,12 @@ retention:
     text (HCP 8.2). The client stops using each disclosed copy at its `useUntil` (HCP 7.6).
     The access token is not retained (see Security & Privacy, The access token).
 maxDocumentBytes:
-  response: 2097152
+  response: 12582912
   rationale: >-
-    Up to 20 disclosures, each of which may carry a verifiable credential as evidence, plus directives, envelope and
-    proof. This is a framework bound, not an HCP requirement; HCP sets no size limit.
+    Up to 20 disclosures (HCP 7.2), each of which may carry a verifiable credential as evidence: 20 times the 512 KiB
+    response bound of hcp/entries/get, so that 20 disclosures each of a size get can return always fit, plus 2 MiB for
+    the directives, the minimization report, envelope and proof. This is a framework bound, not an HCP requirement;
+    HCP sets no size limit.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
