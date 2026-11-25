@@ -143,7 +143,7 @@ at key assurance level 1. A `service` DID is the durable identity of the VTA its
 VTC, a VTN, a host service or an integration: an **alpha** use of `did:webs`
 that a VTA enables separately. Every VTI node resolves it (VTI-KEY-003); a party that
 is not a VTI node may not. A key-role identity (level 2 or 3) is created by
-[`vta/dids/create`](../../../../dids/create/1.1/spec.md) with the `webs` method profile,
+[`vta/dids/create`](../../../../dids/create/1.2/spec.md) with the `webs` method profile,
 not here.
 
 The DID's services, aliases and integration kind come either from explicit members or

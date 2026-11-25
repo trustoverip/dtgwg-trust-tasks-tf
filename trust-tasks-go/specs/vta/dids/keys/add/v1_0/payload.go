@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTA DIDs — Keys Add — response payload
+//
+// Deprecated: superseded by vta/dids/keys/add/1.1
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -627,6 +629,8 @@ const (
 // Payload Add a newly minted key to a role of a key-role identity — a post-quantum
 // attestation key beside a classical one, a second operational key. `update` and
 // `authenticator` keys are not added.
+//
+// Deprecated: superseded by vta/dids/keys/add/1.1
 type Payload struct {
 	// The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).
 	DID string `json:"did"`
@@ -676,7 +680,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/dids/keys/add/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/keys/add/1.0#response"

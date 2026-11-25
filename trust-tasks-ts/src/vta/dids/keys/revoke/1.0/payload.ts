@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Revoke a key of a key-role identity for compromise: it leaves its role in one change without overlap, its compromise time is published as the method's `revoked` value, and a replacement takes its place where needed. For `update`, the authority moves to the routine successor (`scope: key`) or, when the VTA's boundary may be compromised, to the recovery key (`scope: boundary`).
+ *
+ * @deprecated superseded by vta/dids/keys/revoke/1.1
  */
 export interface VTADIDsKeysRevokePayload {
   /**
@@ -63,6 +65,7 @@ export interface VTADIDsKeysRevokePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/keys/revoke/1.1 */
 export interface VTADIDsKeysRevokeResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -111,15 +114,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/keys/revoke/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/revoke/1.1
+ */
 export type Payload = VTADIDsKeysRevokePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/revoke/1.1
+ */
 export type Response = VTADIDsKeysRevokeResponsePayload;
 
 /**

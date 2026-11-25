@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/dids/create/1.1");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/dids/create/1.2");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -1825,7 +1825,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/dids/create/1.1")]
+#[deprecated(note = "superseded by vta/dids/create/1.2")]
 pub struct Payload {
     ///Context the identity belongs to. Its derived keys are derived under this context's base.
     #[serde(rename = "contextId")]
@@ -3198,7 +3198,7 @@ impl<'de> ::serde::Deserialize<'de> for RecoverySigningRequestUnsignedChange {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/dids/create/1.1")]
+#[deprecated(note = "superseded by vta/dids/create/1.2")]
 pub struct Response {
     ///Present when `outcome` is `pendingApproval`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

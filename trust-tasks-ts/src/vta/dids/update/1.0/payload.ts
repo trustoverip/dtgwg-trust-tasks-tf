@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Ask a Verifiable Trust Agent to change a key-role identity's non-key members — services, `alsoKnownAs`, method parameters such as witnesses. Keys change only through the key-role tasks (vta/dids/_shared/0.1/CONVENTIONS.md).
+ *
+ * @deprecated superseded by vta/dids/update/1.1
  */
 export interface VTADIDsUpdatePayload {
   /**
@@ -44,6 +46,7 @@ export interface VTADIDsUpdatePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/update/1.1 */
 export interface VTADIDsUpdateResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -86,15 +89,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/update/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/update/1.1
+ */
 export type Payload = VTADIDsUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/update/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/update/1.1
+ */
 export type Response = VTADIDsUpdateResponsePayload;
 
 /**

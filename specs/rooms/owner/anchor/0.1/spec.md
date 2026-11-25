@@ -107,7 +107,7 @@ A recipient **SHOULD** reconcile before publishing and **MUST** report the outco
 
 ## What publishing costs
 
-[`vta/dids/update/1.0`](../../../../vta/dids/update/1.0/spec.md) already exists (and, for a room DID created before key roles, `vta/webvh/dids/update/1.0`), so nothing new is needed to write an anchor. What the did:webvh method profile says, and what a room operator has to plan around:
+[`vta/dids/update/1.1`](../../../../vta/dids/update/1.1/spec.md) already exists (and, for a room DID created before key roles, `vta/webvh/dids/update/1.0`), so nothing new is needed to write an anchor. What the did:webvh method profile says, and what a room operator has to plan around:
 
 > Every entry moves the update authority (`updateKeyRotates: true`, always): an entry the VTA appends reveals its routine successor, is signed by it, and commits a fresh one.
 

@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTA DIDs — Update — response payload
+//
+// Deprecated: superseded by vta/dids/update/1.1
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -334,6 +336,8 @@ const (
 // Payload Ask a Verifiable Trust Agent to change a key-role identity's non-key members —
 // services, `alsoKnownAs`, method parameters such as witnesses. Keys change only through
 // the key-role tasks (vta/dids/_shared/0.1/CONVENTIONS.md).
+//
+// Deprecated: superseded by vta/dids/update/1.1
 type Payload struct {
 	// The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).
 	DID string `json:"did"`
@@ -388,7 +392,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/dids/update/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/update/1.0#response"

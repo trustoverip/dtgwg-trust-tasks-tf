@@ -1249,7 +1249,7 @@ class ReissuanceFollowUp {
 }
 
 /// VTA DIDs — Recover — response payload
-@Deprecated('superseded by vta/dids/recover/1.1')
+@Deprecated('superseded by vta/dids/recover/1.2')
 class Response {
   const Response({
     required this.did,
@@ -1412,7 +1412,7 @@ extension type const PayloadLostKeys(String value) {
 /// recovering VTA generates new keys, and the recovery custodian signs the one change
 /// that publishes them. Level 3 only: a level-1 or level-2 identity is recovered by
 /// restoring its VTA's backup, and is refused with `vta/dids:assuranceLevelMismatch`.
-@Deprecated('superseded by vta/dids/recover/1.1')
+@Deprecated('superseded by vta/dids/recover/1.2')
 class Payload {
   const Payload({
     required this.did,
@@ -1533,7 +1533,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/dids/recover/1.1';
+const String? deprecation = 'superseded by vta/dids/recover/1.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/dids/recover/1.0';

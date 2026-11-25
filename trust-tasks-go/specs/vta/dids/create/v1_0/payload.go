@@ -13,7 +13,7 @@ import (
 
 // Response VTA DIDs — Create — response payload
 //
-// Deprecated: superseded by vta/dids/create/1.1
+// Deprecated: superseded by vta/dids/create/1.2
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -659,7 +659,7 @@ type RecoveryCommitment struct {
 // (CONVENTIONS.md §4, §5). No caller-supplied key, key identifier, keyed document or
 // existing history is accepted.
 //
-// Deprecated: superseded by vta/dids/create/1.1
+// Deprecated: superseded by vta/dids/create/1.2
 type Payload struct {
 	// Context the identity belongs to. Its derived keys are derived under this context's
 	// base.
@@ -715,7 +715,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vta/dids/create/1.1"
+const Deprecation = "superseded by vta/dids/create/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/create/1.0#response"

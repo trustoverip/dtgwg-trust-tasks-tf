@@ -1217,7 +1217,7 @@ class Publication {
 }
 
 /// VTA DIDs — Create — response payload
-@Deprecated('superseded by vta/dids/create/1.1')
+@Deprecated('superseded by vta/dids/create/1.2')
 class Response {
   const Response({
     required this.did,
@@ -1363,7 +1363,7 @@ class RecoveryCommitment {
 /// custody rules and commits a routine update successor and the caller's recovery key
 /// (CONVENTIONS.md §4, §5). No caller-supplied key, key identifier, keyed document or
 /// existing history is accepted.
-@Deprecated('superseded by vta/dids/create/1.1')
+@Deprecated('superseded by vta/dids/create/1.2')
 class Payload {
   const Payload({
     required this.contextId,
@@ -1460,7 +1460,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/dids/create/1.1';
+const String? deprecation = 'superseded by vta/dids/create/1.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/dids/create/1.0';

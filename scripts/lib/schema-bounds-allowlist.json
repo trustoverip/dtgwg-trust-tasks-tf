@@ -262,15 +262,6 @@
     "vta/dids/keys/list/1.0": {
       "array-max-items /properties/roles": "Baseline: no maxItems when the lint landed; the next version declares one."
     },
-    "vta/dids/keys/rotate/1.0": {
-      "array-max-items /properties/replace": "Baseline: no maxItems when the lint landed; the next version declares one."
-    },
-    "vta/dids/recover/1.1": {
-      "array-max-items /properties/history": "Baseline: no maxItems when the lint landed; the next version declares one."
-    },
-    "vta/dids/upgrade/1.0": {
-      "array-max-items /properties/layout": "Baseline: no maxItems when the lint landed; the next version declares one."
-    },
     "vta/health/details/0.1": {
       "url-scheme /$defs/Response/properties/mediatorUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
     },

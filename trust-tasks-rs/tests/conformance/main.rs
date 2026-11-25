@@ -1882,6 +1882,7 @@ mod vta {
         mod create {
             mod v1_0;
             mod v1_1;
+            mod v1_2;
         }
         mod get {
             mod v0_1;
@@ -1889,18 +1890,22 @@ mod vta {
         mod keys {
             mod add {
                 mod v1_0;
+                mod v1_1;
             }
             mod list {
                 mod v1_0;
             }
             mod retire {
                 mod v1_0;
+                mod v1_1;
             }
             mod revoke {
                 mod v1_0;
+                mod v1_1;
             }
             mod rotate {
                 mod v1_0;
+                mod v1_1;
             }
         }
         mod list {
@@ -1914,12 +1919,15 @@ mod vta {
         mod recover {
             mod v1_0;
             mod v1_1;
+            mod v1_2;
         }
         mod update {
             mod v1_0;
+            mod v1_1;
         }
         mod upgrade {
             mod v1_0;
+            mod v1_1;
         }
     }
     mod health {

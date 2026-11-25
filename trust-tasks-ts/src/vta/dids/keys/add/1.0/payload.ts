@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Add a newly minted key to a role of a key-role identity — a post-quantum attestation key beside a classical one, a second operational key. `update` and `authenticator` keys are not added.
+ *
+ * @deprecated superseded by vta/dids/keys/add/1.1
  */
 export interface VTADIDsKeysAddPayload {
   /**
@@ -44,6 +46,7 @@ export interface VTADIDsKeysAddPayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/keys/add/1.1 */
 export interface VTADIDsKeysAddResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -91,15 +94,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/keys/add/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/add/1.1
+ */
 export type Payload = VTADIDsKeysAddPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/add/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/keys/add/1.1
+ */
 export type Response = VTADIDsKeysAddResponsePayload;
 
 /**

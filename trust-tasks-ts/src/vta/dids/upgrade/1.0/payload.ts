@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Ask a Verifiable Trust Agent to raise the key assurance level of an identity it holds, in place and without changing its identifier: from level 1 to level 2 or 3, or from level 2 to level 3 (VTI-KEY-147; CONVENTIONS.md §3.5). The VTA mints fresh keys for every role whose custody the new level tightens, removes the keys they replace, moves the update authority, declares the new level and, at level 3, commits the caller's recovery key. A level is never lowered.
+ *
+ * @deprecated superseded by vta/dids/upgrade/1.1
  */
 export interface VTADIDsUpgradePayload {
   /**
@@ -58,6 +60,7 @@ export interface VTADIDsUpgradePayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/upgrade/1.1 */
 export interface VTADIDsUpgradeResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -116,15 +119,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/upgrade/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/upgrade/1.1
+ */
 export type Payload = VTADIDsUpgradePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/upgrade/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/upgrade/1.1
+ */
 export type Response = VTADIDsUpgradeResponsePayload;
 
 /**

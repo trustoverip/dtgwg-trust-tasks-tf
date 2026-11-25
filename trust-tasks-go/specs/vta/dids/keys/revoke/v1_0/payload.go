@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTA DIDs — Keys Revoke — response payload
+//
+// Deprecated: superseded by vta/dids/keys/revoke/1.1
 type Response struct {
 	DID     string           `json:"did"`
 	Outcome KeyChangeOutcome `json:"outcome"`
@@ -732,6 +734,8 @@ type PayloadReplacement struct {
 // value, and a replacement takes its place where needed. For `update`, the authority
 // moves to the routine successor (`scope: key`) or, when the VTA's boundary may be
 // compromised, to the recovery key (`scope: boundary`).
+//
+// Deprecated: superseded by vta/dids/keys/revoke/1.1
 type Payload struct {
 	// The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).
 	DID  string          `json:"did"`
@@ -806,7 +810,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/dids/keys/revoke/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0#response"
