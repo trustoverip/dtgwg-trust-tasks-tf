@@ -1,0 +1,48 @@
+name: trust_tasks_example_hcp_demo
+description: >-
+  A demonstration of the Human Context Protocol (HCP) carried as Trust Tasks
+  between a toy in-memory provider, a Context Client and a Management Client,
+  sealed over TSP and signed with Data Integrity proofs. Not a reference
+  provider.
+publish_to: none
+
+environment:
+  # trust_tasks_tsp's floor (affinidi_tsp sets 3.8); trust_tasks_proof's is 3.6.
+  sdk: ^3.8.0
+
+# The runtime, the TSP binding and the proof backend. The four hcp/* libraries
+# are generated into lib/trust_tasks/ from trust-tasks.lock and the bundles
+# vendored beside it; trust-task-discovery and trust-task-next-step ship with
+# the runtime.
+dependencies:
+  trust_tasks:
+    path: ../../trust-tasks-dart
+  trust_tasks_proof:
+    path: ../../trust-tasks-dart-proof
+  trust_tasks_tsp:
+    path: ../../trust-tasks-dart-tsp
+  # The VID types trust_tasks_tsp's API is expressed in. trust_tasks_tsp
+  # depends on it already, so this adds nothing to the graph.
+  affinidi_tsp: ^0.1.0
+  # The key type a signer is built from. trust_tasks_proof depends on it
+  # already; the range is the one it declares.
+  ssi: ">=3.9.6 <5.0.0"
+  # A full JSON Schema 2020-12 engine behind PayloadValidator. The HCP schemas
+  # rely on `pattern`, `format` and `uniqueItems`, which getting-started-dart's
+  # structural stand-in ignores.
+  json_schema: ^5.2.0
+
+dev_dependencies:
+  test: ^1.26.3
+
+# The siblings name the published core; build all three against this
+# checkout's. affinidi_tsp is not on pub.dev yet, so it comes from the commit
+# trust-tasks-dart-tsp/pubspec_overrides.yaml pins. An application outside this
+# repository depends on published versions and needs no override.
+dependency_overrides:
+  trust_tasks:
+    path: ../../trust-tasks-dart
+  affinidi_tsp:
+    git:
+      url: https://github.com/affinidi/affinidi-tsp-dart
+      ref: 5b1cb003fc12a9364a556f102374e367dd8f5daf
