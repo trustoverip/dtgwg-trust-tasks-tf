@@ -11,6 +11,32 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.13.9 — 2026-11-25
+
+
+### Specifications
+
+- **vta/dids**: A step-up hold is a next step, never an error (vta/dids next versions) (#1360)
+
+SPEC §8.6 requires a held task to be answered with trust-task-next-step,
+  never an error response. Ruling 1 on trustoverip/dtgwg-trust-tasks-spec#36
+  (reading (a)) confirmed that inline step-up delivery in an error response
+  was not an intended exception. auth/step-up/approve-request/0.6, which this
+  builds on, landed in #1362.
+
+  - vta/dids create 1.2, keys/add 1.1, keys/retire 1.1, keys/revoke 1.1,
+    keys/rotate 1.1, recover 1.2, update 1.1, upgrade 1.1: drop
+    vta/dids:stepUpRequired. A request with a previewId that is held for a
+    step-up is answered with a next step naming approve-response, its hint
+    an approve-request/0.6 payload bound to the previewId as before. A
+    request with no previewId is answered with a next step naming the task
+    itself (continuation: proceed), its hint the dry-run #response carrying
+    the stored preview. keys/rotate, recover and upgrade declare the maxItems
+    their baselined request arrays lacked.
+
+  Earlier versions stay published and are superseded by the new ones.
+  Bindings regenerated for all four languages.
+
 ## 0.13.8 — 2026-11-25
 
 
