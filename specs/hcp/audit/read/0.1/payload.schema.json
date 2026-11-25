@@ -17,7 +17,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "Only events in which this HCP Client took part, by its client identifier (HCP 8.3: \"filter by HCP Client\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement."
+      "description": "Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: \"filter by HCP Client\"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement."
     },
     "category": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Category",

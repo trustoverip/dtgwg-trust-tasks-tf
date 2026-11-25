@@ -73,7 +73,7 @@
         "outcome": {
           "type": "string",
           "enum": ["imported", "converted", "skipped", "rejected"],
-          "description": "`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim."
+          "description": "`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim."
         },
         "reason": {
           "type": "string",
