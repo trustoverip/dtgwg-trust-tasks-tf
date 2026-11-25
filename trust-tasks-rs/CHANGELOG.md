@@ -31,6 +31,64 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.41.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.3...trust-tasks-rs-v0.41.4) — 2026-11-25
+
+
+### Build & CI
+
+- **codegen,rs**: Spell each shared $defs entry once in the prebuilt tree ([#1363](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1363))
+
+trust-tasks-rs packaged to 9.79 MiB of crates.io's 10 MiB upload limit, and
+  the `cargo package` job fails above 9.9 MiB, so new spec versions no longer
+  fit. The largest duplication is the schema text: a shared schema (a family's
+  _shared key-roles or device-binding schema, the framework's Ext, ...) is
+  inlined into every version that references it, so the PAYLOAD_SCHEMA
+  literals held ~9.7 MB of $defs entries of which 2.2 MB was distinct.
+
+  trust-tasks-codegen now writes each $defs entry that two or more schema
+  constants carry once, into src/specs/shared_defs.rs as a macro_rules!
+  expanding to its string literal, and rewrites each literal into a concat! of
+  the pieces naming it. concat! expands the macros at compile time, so every
+  PAYLOAD_SCHEMA is the same &'static str, byte for byte (all 2775 compared
+  against main); the rewrite reassembles each literal and compares it before
+  replacing it. Type names, paths and constant values are unchanged, and
+  trust_tasks_build::generate_module's output is untouched - the pass runs in
+  trust-tasks-codegen after it.
+
+  The .crate goes from 10,260,868 to 9,141,546 bytes (9.79 -> 8.72 MiB).
+
+  It is Rust-only: no schema changes, only how one Rust constant is spelled,
+  and the npm, Go and Dart packages have no upload limit near their size.
+  check-bindings reads the Rust constants from source, so it now resolves the
+  concat! and the shared_defs macros the way rustc does.
+
+
+
+### Specifications
+
+- **auth/step-up**: Approve-request 0.6 — a step-up hold is a next step, never an error ([#1362](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1362))
+
+Implements ruling 1, reading (a), on trustoverip/dtgwg-trust-tasks-spec#36
+  for the step-up request itself. Split out of #1360 so it can land while the
+  trust-tasks-rs crate is near crates.io's upload limit.
+
+  - `auth/step-up/approve-request/0.6` (`extends: "0.5"`): inline delivery is a
+    `trust-task-next-step` whose `expects` entry names
+    `auth/step-up/approve-response/0.7` and carries this payload as its `hint`;
+    after approval is recorded the producer re-sends the operation
+    (`continuation: resubmit`). Delivery in an error response is forbidden. The
+    schema is unchanged.
+  - The schema-bounds `accepts` baseline moves from 0.5 to 0.6: a version that
+    extends 0.5 cannot narrow a bound, and `uniqueItems` over a three-value enum
+    already caps it at 3.
+  - `auth/oob/redeem/0.1` is `status: retired`, `supersededBy:
+    auth/oob/redeem/0.2`.
+
+  The new `vta/dids` versions from #1360 follow once the crate is smaller.
+  Libraries regenerated.
+
+
+
 ## [0.41.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.2...trust-tasks-rs-v0.41.3) — 2026-11-25
 
 
