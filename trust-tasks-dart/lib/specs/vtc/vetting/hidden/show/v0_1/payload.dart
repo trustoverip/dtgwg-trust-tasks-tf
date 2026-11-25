@@ -309,7 +309,7 @@ class Response {
     this.published,
     this.enrolledVetters,
     this.eventStatus,
-    this.requirementsDigest,
+    required this.requirementsDigest,
     this.ext,
   });
 

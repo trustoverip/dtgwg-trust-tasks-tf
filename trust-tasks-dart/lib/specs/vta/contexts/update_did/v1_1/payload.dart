@@ -95,7 +95,7 @@ typedef Response = ContextRecord;
 class Payload {
   const Payload({
     required this.id,
-    this.did,
+    required this.did,
     this.ext,
   });
 

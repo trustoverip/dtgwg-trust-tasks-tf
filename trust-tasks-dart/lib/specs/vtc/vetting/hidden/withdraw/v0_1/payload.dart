@@ -16,7 +16,7 @@ class Response {
   const Response({
     required this.criterionId,
     required this.withdrawn,
-    this.requirementsDigest,
+    required this.requirementsDigest,
     this.ext,
   });
 

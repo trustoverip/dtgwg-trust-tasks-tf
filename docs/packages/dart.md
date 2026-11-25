@@ -44,7 +44,13 @@ Paths are snake_cased for Dart's `file_names` lint, so the slug
 field is nullable (`final String? did;`), and `toJson` writes it whatever its
 value, so a null `did` on `vta/contexts/update-did` 1.2 writes `"did": null`
 ("no DID of its own") instead of leaving the key out and failing the schema's
-`required`. An *optional* nullable member is still written only when non-null,
+`required`. Its constructor parameter is `required` as well
+(`required this.did`), so a caller writes `did: null` to clear the DID and
+cannot get that by leaving the argument out. That matches Rust, whose builder
+fails with "no value supplied for did" when the member is never set, and
+TypeScript, where `did: string | null` is a required property. Go is the
+outlier: its field is `*string` and a nil it never set writes `null`
+([go.md](go.md)). An *optional* nullable member is still written only when non-null,
 so Dart cannot tell `null` from absent there: `acl/update` 0.3 reads
 `"label": null` as "clear the label", and a Dart client can only send "leave it
 unchanged" ([runtime-parity.md](../runtime-parity.md)). Both generators do

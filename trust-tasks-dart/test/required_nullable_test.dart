@@ -7,6 +7,7 @@
 // 'required nullable' group pins the per-module generator.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:trust_tasks/specs/acl/update/v0_3/payload.dart' as acl_update;
@@ -28,6 +29,15 @@ void main() {
           update_did.Payload.fromJson(jsonDecode(wire) as Map<String, dynamic>);
       expect(jsonEncode(p.toJson()), wire);
     }
+  });
+
+  // The constructor makes the caller say `did: null`: leaving it out clears
+  // the DID on the wire, so it must not be the default. A compile-time rule,
+  // so it is checked in the generated source.
+  test('a required nullable member is a required constructor parameter', () {
+    final src = File('lib/specs/vta/contexts/update_did/v1_2/payload.dart')
+        .readAsStringSync();
+    expect(src, contains('    required this.id,\n    required this.did,\n'));
   });
 
   // The other half of the rule: an optional nullable member is still omitted

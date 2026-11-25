@@ -321,7 +321,7 @@ class Response {
     required this.criterionId,
     required this.stored,
     required this.published,
-    this.requirementsDigest,
+    required this.requirementsDigest,
     this.ext,
   });
 

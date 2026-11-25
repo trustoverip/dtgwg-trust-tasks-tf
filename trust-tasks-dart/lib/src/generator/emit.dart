@@ -694,7 +694,8 @@ class _Field {
   final _Desc desc;
   final bool isRequired;
 
-  /// Required, and its schema admits null: nullable, but always written.
+  /// Required, and its schema admits null: nullable, but a `required`
+  /// constructor parameter and always written.
   final bool keepsNull;
   final Object? doc;
 }
@@ -740,8 +741,10 @@ _Desc _declareClass(
         '$name, generated from its schema.'),
     'class $name {',
     '  const $name({',
+    // A required nullable member is `required` too: the caller states `null`
+    // rather than getting it by leaving the argument out.
     for (final f in fields)
-      '    ${f.isRequired ? 'required ' : ''}this.${f.fieldName},',
+      '    ${f.isRequired || f.keepsNull ? 'required ' : ''}this.${f.fieldName},',
     '  });',
     '',
     '  /// Read this payload from a decoded JSON object.',

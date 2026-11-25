@@ -915,7 +915,10 @@ function declareClass(em, node, hint, defNames) {
   // Constructor.
   lines.push(`  const ${name}({`);
   for (const f of fields) {
-    lines.push(`    ${f.isRequired ? "required " : ""}this.${f.fieldName},`);
+    // A required nullable member is `required` too: the caller states `null`
+    // rather than getting it by leaving the argument out, because `null` is a
+    // value the schema gives a meaning to (update-did: clear the DID).
+    lines.push(`    ${f.isRequired || f.keepsNull ? "required " : ""}this.${f.fieldName},`);
   }
   lines.push(`  });`);
   lines.push("");

@@ -441,6 +441,15 @@ void main() {
       expect(lib, isNot(contains("if (grant != null) 'grant'")));
     });
 
+    test('is a required constructor parameter', () {
+      final lib = library();
+      expect(lib, contains('    required this.did,'));
+      expect(lib, contains('    required this.grant,'));
+      expect(lib, contains('    required this.id,'));
+      expect(lib, contains('    this.label,'));
+      expect(lib, isNot(contains('required this.label')));
+    });
+
     test('a required plain and an optional nullable member are unchanged', () {
       final lib = library();
       expect(lib, contains('final String id;'));
