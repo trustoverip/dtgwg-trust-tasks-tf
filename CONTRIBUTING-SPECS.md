@@ -523,7 +523,7 @@ and meet the seven rules of §9.4:
 - **No departures.** Anything the protocol does not define, such as an extra check or step, is a separate spec without `carries`, which a ceremony can compose with this one.
 - **The protocol's conformance is the protocol's.**
 
-`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
+`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. `hcp/*` shows a family that carries several operations of one protocol: one slug per operation, under one namespace, with the protocol's shared object shapes in its `_shared/` folder. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
 
 ## Task-specific error codes (optional)
 
