@@ -99,17 +99,17 @@ What the caller reads depends on whom the Management Client acts for (HCP 8.3, 1
 |---|---|
 | The Context Subject | The whole log, at any time (HCP 8.3, 17.5, 17.7). |
 | A delegate, while the delegation holds | Every event of a grant they authorized and of a governance operation performed for them, and the same for any sub-delegate they appointed; not the events of grants the Context Subject authorized (HCP 17.7, 17.10). |
-| A former delegate | The events of grants they authorized: issued, revoked and expired, and the reads and writes made under them, each showing event type, time, client, Client Operator, category and purpose. The provider **MUST** leave out `entryId`, `relatedEntryId`, `disclosed`, and the `data` of every `context.*` event, and **MUST NOT** return an event in a category outside the delegation's scope (HCP 17.7). |
+| A former delegate | The events of grants they authorized: issued, revoked and expired, and the reads and writes made under them, each showing event type, time, client, Client Operator, category and purpose. The provider **MUST** withhold `entryId` and `relatedEntryId`, carrying each as null, **MUST** leave out `disclosed` and the `data` of every `context.*` event, and **MUST NOT** return an event in a category outside the delegation's scope (HCP 17.7). |
 | Anyone else | Nothing (HCP 17.7): `permissionDenied`. |
 
-A redacted event leaves the withheld members out; it never carries them as null, so a former delegate cannot tell an event with no entry from one whose entry is withheld. Filters apply within what the caller may read, and never widen it.
+A redacted event carries `entryId` and `relatedEntryId` as null, whatever they hold in the log, because the shared `AuditEvent` requires them (see [Response](#response)); it leaves `disclosed` and `data` out. Either way a former delegate cannot tell an event with no entry from one whose entry is withheld. Carrying a withheld member as null, rather than leaving it out as HCP 17.7's "never" might be read, is *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). Filters apply within what the caller may read, and never widen it.
 
 The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 ## Definitions
 
 - **Management Client**, **Context Client**, **HCP Provider**, **Context Subject**, **Authorizing Principal**, **delegate**, **audit log** and **audit event** have their HCP 2.0-draft-3 meanings.
-- The event shape is the shared [`AuditEvent`](../../../_shared/0.1/audit-event.schema.json) (HCP 8.2). It is open, as HCP's own shapes are, and carries HCP's member names verbatim, including `timestamp`, so that an event read here is the event an export carries.
+- The event shape is the shared [`AuditEvent`](../../../_shared/0.1/audit-event.schema.json) (HCP 8.2). It is open, as HCP's own shapes are, and carries HCP's member names verbatim, including `timestamp`, so that an event read here is the event an export carries. It requires `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each a value or null, which HCP's own shape leaves optional, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - HCP defines no request or result schema for this operation. The filters come from HCP 8.3, the paging members from HCP 9.5.
 
 ### HCP field mapping
@@ -179,6 +179,7 @@ The Management Client asks for a page of the log. The payload is the top-level s
 The provider answers with one page. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
 - `events` holds the page's audit events, oldest first, each a shared [`AuditEvent`](../../../_shared/0.1/audit-event.schema.json) (HCP 8.2), as the caller may read it ([Authorization](#authorization)). An empty `events` is a successful answer: nothing matched. The member name is *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
+- Every event carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null, as HCP 8.2's template writes them: null says the event concerns no entry, no related entry, no purpose, no stated task or no grant. HCP's own shape leaves these members optional; the carriage requires them, so that a null always travels and a reader never has to tell a null from an absent member, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
 - `nextCursor` is an opaque token for the next page, present only when more events remain. It is **absent**, never null, on the last page, a departure from HCP 9.5's null *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
@@ -206,6 +207,8 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
           "provider": { "id": "https://context.provider.example" },
           "retrievalId": "urn:uuid:9a1e5c73-2d4b-4e8f-a6c1-7b0d3e2f1a99"
         },
+        "entryId": null,
+        "relatedEntryId": null,
         "categories": ["general_preferences", "health_context"],
         "purpose": "https://hcp.example/purposes/reservation",
         "purposeDescription": "Book a table that can serve the guest's diet.",
@@ -231,7 +234,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
 
 ### A former delegate's last page
 
-The Management Client acts for a former delegate. The provider returns only an event of a grant they authorized, without `entryId`, `relatedEntryId`, `disclosed`, or the event's `data`, and with no `nextCursor`, because this is the last page.
+The Management Client acts for a former delegate. The provider returns only an event of a grant they authorized, with `entryId` and `relatedEntryId` withheld as null, without `disclosed` or the event's `data`, and with no `nextCursor`, because this is the last page.
 
 ```json
 {
@@ -252,8 +255,11 @@ The Management Client acts for a former delegate. The provider returns only an e
           "clientOperator": { "id": "https://tutor.example" },
           "provider": { "id": "https://context.provider.example" }
         },
+        "entryId": null,
+        "relatedEntryId": null,
         "categories": ["learning_context"],
         "purpose": "https://hcp.example/purposes/tutoring",
+        "purposeDescription": "Plan this week's maths practice.",
         "grantId": "urn:uuid:6f8b0d2e-4a5c-4e7b-9d1f-3b5d7f9a1c39"
       }
     ]
@@ -308,6 +314,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 29 — filter names, and what `client` matches.** `client`, `category`, `eventType`, `from` and `to`, each single-valued and optional; `client` matches an event whose initiator is that client, or whose grant was issued to it.
 - **Question 30 — the result member and the date range.** The page's events are in `events`, oldest first, and `from` and `to` are both inclusive.
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
+- **Question 42 — presence signals the carriage adds.** Every `AuditEvent` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null, though HCP's own shape leaves them optional; an event redacted for a former delegate carries `entryId` and `relatedEntryId` as null rather than leaving them out (HCP 8.2, 17.7).
 
 ## What HCP requires that a document cannot express
 

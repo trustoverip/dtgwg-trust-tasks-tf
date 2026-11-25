@@ -62,7 +62,7 @@
         "events": {
           "type": "array",
           "items": { "$ref": "../../../_shared/0.1/audit-event.schema.json#/$defs/AuditEvent" },
-          "description": "The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read, with the members it withholds left out. Empty when nothing matches."
+          "description": "The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches."
         },
         "nextCursor": {
           "type": "string",
