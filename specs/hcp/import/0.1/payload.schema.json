@@ -49,12 +49,9 @@
           "type": "boolean",
           "description": "HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11)."
         },
-        "rulesNotApplied": {
-          "type": "array",
-          "maxItems": 1000000,
-          "uniqueItems": true,
-          "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn" },
-          "description": "Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40)."
         }
       }
     },
@@ -145,6 +142,24 @@
         "excludeDeleted": { "type": "boolean", "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown." },
         "includeVersions": { "type": "boolean", "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown." },
         "includeAudit": { "type": "boolean", "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown." }
+      }
+    },
+    "HcpCarriageImportExtension": {
+      "$anchor": "hcpCarriageImportExtension",
+      "title": "HCP — Import — vnd.trusttasks.hcp-carriage response extension",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rulesNotApplied"],
+      "description": "The value of `ext[\"vnd.trusttasks.hcp-carriage\"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.",
+      "properties": {
+        "rulesNotApplied": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000000,
+          "uniqueItems": true,
+          "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn" },
+          "description": "The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+        }
       }
     },
     "Outcome": {

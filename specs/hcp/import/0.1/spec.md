@@ -96,7 +96,7 @@ The authority is **the Context Subject's own authority over their context**, whi
 
 Under the Delegated Authorization Profile, a governance operation performed by a delegate reaches only entries in categories within the delegation's scope (HCP 17.4). For a delegate's import, the provider checks scope first, after `categoryMap` has replaced the entry's categories and before every other check: an entry any of whose categories, so replaced, is outside the scope is not imported. It is reported as a `rejected` outcome with the one fixed `reason` `outside the delegation's scope`, whether or not the provider holds its `id`, and whatever it holds under it, *pending HCP confirmation* ([question 34](#pending-hcp-confirmation)). A dry run appends no audit event, so any other answer would let a delegate who holds an old export learn, without trace, whether an out-of-scope entry exists and what it holds. No `context.recategorized` event is recorded for such an entry.
 
-A delegate's import applies only the standing rules in the export that the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md): each that names `categories`, all within the delegation's scope (HCP 6.3, 17.4). The provider applies each as that task applies a delegate's rule, recording the delegate's `delegationId` in `setBy`, and applies no other; it lists each rule it does not apply by its `ruleId` in the response's `rulesNotApplied`, *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). HCP 5.4.3 applies the export's standing rules "as the Context Subject's own", but HCP 17.4 lets a delegate set rules only within the delegation's scope, and an import must not let a delegate do what [`hcp/rules/set`](../../rules/set/0.1/spec.md) refuses them.
+A delegate's import applies only the standing rules in the export that the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md): each that names `categories`, all within the delegation's scope (HCP 6.3, 17.4). The provider applies each as that task applies a delegate's rule, recording the delegate's `delegationId` in `setBy`, and applies no other; it lists each rule it does not apply by its `ruleId` in `rulesNotApplied`, under this family's extension namespace `vnd.trusttasks.hcp-carriage` in the response's `ext` (see [Response](#response)), *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). HCP 5.4.3 applies the export's standing rules "as the Context Subject's own", but HCP 17.4 lets a delegate set rules only within the delegation's scope, and an import must not let a delegate do what [`hcp/rules/set`](../../rules/set/0.1/spec.md) refuses them.
 
 The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. Nor does it vouch for the export it carries: the export's entries keep the provenance the exporting provider recorded, and the importing provider verifies their credentials again (see [Rules carried from HCP](#rules-carried-from-hcp)). A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
@@ -116,7 +116,7 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `outcomes` | `outcomes` | Unchanged: each with `id`, `outcome` and, for a rejection, `reason`. |
 | result `dryRun` | `dryRun` | Unchanged. |
-| (none) | `rulesNotApplied` | **Added** for a delegate's import: the standing rules it did not apply, *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). |
+| (none) | `ext["vnd.trusttasks.hcp-carriage"].rulesNotApplied` | **Added** by this family, not HCP, for a delegate's import: the standing rules it did not apply, carried in the framework's `ext` so that the result stays HCP's, *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). |
 
 ### Parties
 
@@ -327,7 +327,7 @@ The provider answers with one outcome for each entry. The payload is the sub-sch
 
 - `outcomes` holds one item for each entry in the export: its `id`, its `outcome`, and, where the outcome is `rejected`, the `reason`. That a `rejected` outcome carries `reason` is not checked by the schema.
 - `dryRun` is true where the request was a dry run, and nothing was changed.
-- `rulesNotApplied`, present only for a delegate's import and only where the export holds a standing rule the delegate could not set, lists the `ruleId` of each rule the provider did not apply (or, in a dry run, would not apply), *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). HCP's result has no such member; the Context Subject's import never carries it.
+- `ext` (OPTIONAL) is the framework's extension member ([SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)), and carries nothing of HCP's. `outcomes` and `dryRun` are HCP's whole result (HCP 5.4.3, 9.4.11); what this family adds to it sits under its own namespace, `vnd.trusttasks.hcp-carriage`, the `hcp/*` Trust Task family's extension, not HCP's, so that a reader never mistakes it for an HCP member. That namespace is present only for a delegate's import, and only where the export holds a standing rule the delegate could not set; its value **MUST** validate against `HcpCarriageImportExtension` in [`payload.schema.json`](payload.schema.json): `rulesNotApplied`, the `ruleId` of each rule the provider did not apply (or, in a dry run, would not apply), *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). The Context Subject's import never carries it. It is informational: a Management Client that does not recognize the namespace ignores it ([SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)), and a provider never marks it critical. This family defines the namespace for this response only.
 
 Failures of the import as a whole use `trust-task-error`, not a `#response` document (see [Errors](#errors)). An entry that cannot be imported is not such a failure: it is a `rejected` outcome (see [Outcomes](#outcomes)).
 
@@ -353,6 +353,31 @@ The new provider holds the second entry's `id` already, with different content, 
       }
     ],
     "dryRun": true
+  }
+}
+```
+
+### A delegate's import, with a rule not applied
+
+A delegate imports an export whose one standing rule names no `categories`, which the delegate could not set with [`hcp/rules/set`](../../rules/set/0.1/spec.md). The provider imports the entry, does not apply the rule, and names it under this family's `ext` namespace; HCP's result, `outcomes`, is unchanged.
+
+```json
+{
+  "id": "urn:uuid:5673a676-23de-49a0-a653-4e14466e685e",
+  "type": "https://trusttasks.org/spec/hcp/import/0.1#response",
+  "issuer": "did:web:new-context.provider.example",
+  "recipient": "did:web:assistant.delegate.example",
+  "issuedAt": "2026-11-25T12:00:01Z",
+  "threadId": "urn:uuid:f2ffdd02-d8e8-410a-a35e-899243f3b6c8",
+  "payload": {
+    "outcomes": [
+      { "id": "urn:uuid:d901edab-5d35-4f04-8e6e-d5e5325a3742", "outcome": "imported" }
+    ],
+    "ext": {
+      "vnd.trusttasks.hcp-carriage": {
+        "rulesNotApplied": ["urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b"]
+      }
+    }
   }
 }
 ```
@@ -412,7 +437,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 33 — export size.** The export travels in one request document, bounded at the framework's 16 MiB ceiling; a larger export is loaded over HCP's HTTP binding.
 - **Question 34 — entries that cannot be imported, and `skipped`.** An entry whose content credential fails verification, an entry in a schema the provider does not accept, and, under a delegation, an entry outside the delegation's scope, are each a `rejected` outcome, and the rest of the import proceeds; the scope is checked first, after `categoryMap`, and an out-of-scope entry gets the one fixed `reason` whether or not its `id` is held. A deleted entry is `skipped` where the provider chooses to omit it (see [Outcomes](#outcomes)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
-- **Question 40 — a delegate's export and import beyond entries.** A delegate's import applies only the standing rules the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md), recorded as set by the delegate, and lists the others in `rulesNotApplied` (see [Authorization](#authorization)).
+- **Question 40 — a delegate's export and import beyond entries.** A delegate's import applies only the standing rules the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md), recorded as set by the delegate, and lists the others in `rulesNotApplied`, which this family carries under its own `ext` namespace `vnd.trusttasks.hcp-carriage`, not in HCP's result (see [Response](#response)).
 - **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each `AuditEvent` in its `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null; an export whose audit log omits one is refused with `malformedRequest`, though HCP's own shape leaves them optional (HCP 5.4.1, 5.4.3, 8.2).
 
 ## What HCP requires that a document cannot express

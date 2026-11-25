@@ -147,7 +147,7 @@
   },
   {
     "variant": "response",
-    "note": "A `rulesNotApplied` item that is not a rule identifier — each names a standing rule by its `ruleId`, a `urn:uuid:` (HCP 6.3).",
+    "note": "`rulesNotApplied` as a member of the result — HCP's import result has `outcomes` and `dryRun` only (HCP 5.4.3, 9.4.11); this family carries the rules a delegate's import did not apply under its own `ext` namespace, `vnd.trusttasks.hcp-carriage`, never beside HCP's members (question 40).",
     "payload": {
       "outcomes": [
         {
@@ -156,7 +156,7 @@
         }
       ],
       "rulesNotApplied": [
-        "deny-ads"
+        "urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b"
       ]
     }
   }
