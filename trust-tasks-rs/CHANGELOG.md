@@ -31,6 +31,39 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.41.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.2...trust-tasks-rs-v0.41.3) — 2026-11-25
+
+
+### Specifications
+
+- **credential-exchange/present**: 0.2 — OID4VP keyed vp_token, either Data Integrity nonce placement ([#1359](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1359))
+
+`credential-exchange/present/0.2` settles the two readings #1358 found in 0.1.
+
+  - `vp_token` is the OID4VP 1.0 DCQL response (§8.1): an object keyed by
+    credential query `id`, each value an array of one or more presentations
+    (SD-JWT-VC string or Data Integrity VP object). A bare SD-JWT-VC string is
+    still accepted for compatibility; producers send the keyed form.
+  - Data Integrity nonce and audience: a consumer MUST accept them as the holder
+    proof's `challenge`/`domain` (OID4VP §14.1.2) or as the signed presentation's
+    own `nonce`/`domain`; where both are stated they MUST agree, and a
+    presentation stating neither is refused. Producers SHOULD use the proof's
+    members. "The proof's `nonce`" in 0.1 was a wording slip for `challenge`.
+  - Worked SD-JWT-VC and Data Integrity examples (the latter using
+    `proof.challenge`/`proof.domain`).
+
+  0.1 stays published and is superseded by 0.2 (the libraries deprecate it).
+
+  `vtc/directory/card/present/0.1` takes the same placement rule in place: it is
+  a draft whose wire shape does not change (only the presentation member's
+  description), which SPEC §5.2 allows within a draft version, as #831 did for
+  the same sentence.
+
+  Prose links to present/0.1 in other specs move to 0.2 (fix-stale-references).
+  Libraries regenerated.
+
+
+
 ## [0.41.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.41.1...trust-tasks-rs-v0.41.2) — 2026-11-24
 
 
