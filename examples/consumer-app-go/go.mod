@@ -1,6 +1,6 @@
 module example.com/trust-tasks-consumer-app-go
 
-go 1.22
+go 1.24
 
 require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.0.0-00010101000000-000000000000
 

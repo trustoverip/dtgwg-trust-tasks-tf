@@ -147,7 +147,7 @@ written in the module. Its only requirement is the core module whose
   as `proofInvalid` (§10.4). `did:key` only, no network.
 - **The core CI jobs do not reach it** (`./...` in `trust-tasks-go` excludes a
   nested module); a dedicated `proof` job in `go.yml` builds/vets/tests it on its
-  `go 1.22` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
+  `go 1.24` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
   so keep these files gofmt-clean.
 - **Released on its own `trust-tasks-go/proof/vX.Y.Z` tag**, independently of the
   core. It carries a `version.go` with a `const Version` (the manifest surrogate,
@@ -197,7 +197,7 @@ authcrypt on the standard library.
   header and the parsed document), and a disagreement is `malformedRequest`
   routed to the sender, never `identityMismatch`.
 - **Core CI does not reach it**; a `didcomm` job in `go.yml` builds/vets/tests on
-  the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
+  the `go 1.24` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
   recurses in). **Released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag** the
   same way `proof` is — a `version.go`, a `publish-go` matrix leg, and a
   `GO_MODULES` entry in `release-pr.sh` — independent of the core. **Cross-library interop is now
@@ -227,7 +227,7 @@ classification. No third-party dependency (only the core, for `Document` and
   attempt, distinct from a bit-for-bit retry the consumer's item-11 record
   absorbs. Sign built documents with `trust-tasks-go/proof`.
 - **Core CI does not reach it**; a `capabilityclient` job in `go.yml` builds/vets/
-  tests it on the `go 1.22` floor. Keep the files gofmt-clean. **Released on
+  tests it on the `go 1.24` floor. Keep the files gofmt-clean. **Released on
   its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag** the same way `proof`
   is — a `version.go`, a `publish-go` matrix leg, a `GO_MODULES` entry in
   `release-pr.sh` and a `release-bump-go.sh` case — and the core's release

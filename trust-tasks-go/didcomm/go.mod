@@ -7,6 +7,6 @@
 // TransportHandler seam it plugs into.
 module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/didcomm
 
-go 1.22
+go 1.24
 
 require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3
