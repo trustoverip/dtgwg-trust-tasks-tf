@@ -164,7 +164,7 @@ The Management Client sends the new list to the provider. The payload is the top
 
 ## Response
 
-The provider answers with the entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): `entry`, the whole entry with its new `classification.permittedPurposes`. Where the narrowing was removed, the member is absent from the entry, since an absent list sets no limit (HCP 4.2.6). Its `record.version` is unchanged, since a change of `classification` creates no version (HCP 4.2.1). HCP's result body is the entry itself; the carriage wraps it in `entry` (see [HCP field mapping](#hcp-field-mapping)). Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
+The provider answers with the entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): `entry`, the whole entry with its new `classification.permittedPurposes`. Where the narrowing was removed, the member is absent from the entry, since an absent list sets no limit (HCP 4.2.6), *pending HCP confirmation* ([question 29](#pending-hcp-confirmation)): HCP 9.4.10 removes the narrowing with a null but does not say whether the entry it returns omits the member or carries it as null. Its `record.version` is unchanged, since a change of `classification` creates no version (HCP 4.2.1). HCP's result body is the entry itself; the carriage wraps it in `entry` (see [HCP field mapping](#hcp-field-mapping)). Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
 ### The entry, now limited to care coordination
 
@@ -258,6 +258,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
 - **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 29 — the entry returned after the narrowing is removed.** Where `permittedPurposes` is null, the returned entry omits `classification.permittedPurposes`, rather than carrying it as null, since an absent list sets no limit (HCP 4.2.6) and the entry's schema has no null for it (see [Response](#response)).
 
 ## What HCP requires that a document cannot express
 

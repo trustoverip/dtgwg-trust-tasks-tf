@@ -100,7 +100,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the Context Subject's own authority over statements about them**, which a Management Client exercises for them (HCP 3.8, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Confirming or rejecting an entry is a governance operation: any caller other than a Management Client acting for the Authorizing Principal receives not authorized (HCP 5.4, 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9).
 
-Under the Delegated Authorization Profile, a Management Client may act for the Context Subject or for a delegate, within what HCP 17 allows each (HCP 6.1.9). A delegate's governance operations reach only entries in categories within the delegation's scope (HCP 17.4); an entry outside it is refused with `permissionDenied`, exactly as an entry that does not exist.
+Under the Delegated Authorization Profile, a Management Client may act for the Context Subject or for a delegate, within what HCP 17 allows each (HCP 6.1.9). HCP 3.8 names the Context Subject as the one who confirms or rejects; this specification reads the delegate's governance authority (HCP 17.4) as including it, so a delegate's Management Client may confirm or reject an entry in categories within the delegation's scope, *pending HCP confirmation* ([question 28](#pending-hcp-confirmation)). A delegate's governance operations reach only entries in categories within the delegation's scope (HCP 17.4); an entry outside it is refused with `permissionDenied`, exactly as an entry that does not exist.
 
 The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
 
@@ -283,6 +283,7 @@ A re-delivered document with the same `id` and content is absorbed by [SPEC §7.
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
 
 - **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 28 — a delegate confirming or rejecting.** HCP 3.8 says confirmation is performed by the Context Subject, and HCP 17.4 lets a delegate perform governance operations on entries within the delegation's scope. This specification reads the two together: a delegate's Management Client may confirm or reject an entry in categories within the delegation's scope, and no other (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
