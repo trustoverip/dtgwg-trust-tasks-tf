@@ -35,21 +35,40 @@ A schema can give an optional member three meanings: absent, present and empty
 (`[]`, `{}`), and present as `null`. `acl/update` 0.3 reads `"label": null` as
 "clear the label" and an absent `label` as "leave it unchanged". typify's own
 output folds these together (an empty `Vec` is skipped on the way out, and a
-`null` is read as `None`), so `trust-tasks-build` rewrites the affected fields
-after typify runs (`trust-tasks-build/src/presence.rs`):
+`null` is read as `None`, even where the schema has no null form), so
+`trust-tasks-build` rewrites every optional member's field after typify runs
+(`trust-tasks-build/src/presence.rs`):
 
 | Optional member's schema | Field type | absent | `null` | a value |
 |---|---|---|---|---|
 | array or map | `Option<Vec<T>>` / `Option<Map>` | `None` | refused | `Some(v)`, `[]` included |
 | admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
 | `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
+| `true`, `{}` or annotations only | `Option<Option<Value>>` | `None` | `Some(None)` | `Some(Some(v))` |
+| anything else | `Option<T>`, unchanged | `None` | **refused** | `Some(v)` |
 
-Each rewritten field reads through a private `presence::present` helper that
-the module emits for itself, and is skipped on the way out only when it is
-`None`, so a decoded document re-encodes with the same members. Required
-members are not touched, and nor are members with a JSON Schema `default`
-(an absent one still reads as its default, which is what the schema says it
-means).
+Decoding is strict: a `null` is accepted exactly where the member's schema
+admits one. `{"subject": "…", "purposes": null}` on `acl/update` 0.3 ("There
+is no null form") is refused with `invalid type: null, expected a value (this
+optional member has no null form: leave it out instead)`; it used to be read
+as absent, "leave unchanged". Whether a schema admits `null` is decided from
+`type`, `const`, `enum`, `oneOf` / `anyOf` / `allOf`, `$ref` and a `not` of
+exactly `null`; a schema those keywords don't settle (no `type`, say) is taken
+to admit it, so the generator can keep a `null` the schema would refuse but
+never refuses one it accepts. A `true` member is treated like `{}`: any value,
+`null` included.
+
+Each optional field reads through one of two helpers, `present` (the member
+admits `null`) or `not_null` (it doesn't), and is skipped on the way out only
+when it is `None`, so a decoded document re-encodes with the same members. In
+`trust-tasks-rs` the helpers are the crate-private `specs::presence`, shared by
+every prebuilt module; a module an application generates carries its own
+private copy, so it needs nothing new from the runtime's `__private`.
+Required members are not touched. A member with a declared JSON Schema
+`default` is left as typify renders it, so an absent one reads as that
+default, **except** a default equal to the type's intrinsic one (`[]`, `{}`,
+`null`, `false`, `0`, `""`): typify treats that as no default, so the member is
+rewritten like any other and an absent one reads as `None`.
 
 The builder setters take the field's type through `TryInto`, so:
 
@@ -63,6 +82,8 @@ The builder setters take the field's type through `TryInto`, so:
   it in `Some`.
 - Reading: `p.label.flatten()` gives the value when you don't care why there
   isn't one; match `Some(None)` to see an explicit `null`.
+- Any other optional member keeps its `Option<T>` setter and type; only its
+  decoding changed (a `null` is refused).
 
 These are public type changes, so the change that introduced them was a
 breaking release of `trust-tasks-rs`, and an application generating its own
