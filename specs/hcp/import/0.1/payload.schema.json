@@ -53,9 +53,9 @@
     },
     "Outcome": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": ["id", "outcome"],
-      "description": "The outcome for one entry of the export (HCP 5.4.3, 9.4.11). A `rejected` outcome carries `reason`: HCP 5.4.3 says \"rejected, with the reason\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.",
+      "description": "The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \"rejected, with the reason\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.",
       "properties": {
         "id": {
           "type": "string",
