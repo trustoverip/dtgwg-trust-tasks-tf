@@ -187,7 +187,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 
 ## Repeated requests
 
-HCP's HTTP binding asks a provider to accept an idempotency key on a withdrawal (a SHOULD, HCP 9.6). This task uses the document `id` as that key, under [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is answered with the original response and appends no second `context.withdrawn` event; a reused `id` with different content is refused with `idConflict`.
+HCP's HTTP binding asks a provider to accept an idempotency key on a withdrawal (a SHOULD, HCP 9.6). This task uses the document `id` as that key, under [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): a re-delivered document with the same `id` and content is answered with the original response and appends no second `context.withdrawn` event; a reused `id` with different content is refused with `idConflict`. The provider **MUST** retain its duplicate-execution record, with the response, for at least 24 hours (HCP 9.6), and for at least the acceptance window it applies to `issuedAt`.
 
 A new document withdrawing an entry that is already `deleted` succeeds with the same result, as HCP says repeated deletion is harmless to entry state, and appends a further `context.withdrawn` event, as HCP says a repeat without a key does (HCP 9.6). This reading is *pending HCP confirmation* ([question 10](#pending-hcp-confirmation)).
 
