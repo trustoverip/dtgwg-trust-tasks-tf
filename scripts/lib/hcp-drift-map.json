@@ -215,7 +215,8 @@
     {
       "id": "hcp/import:request",
       "ours": "specs/hcp/import/0.1/payload.schema.json#",
-      "hcp": "operations/import-request.json"
+      "hcp": "operations/import-request.json",
+      "note": "`export` is the local `ImportedExport`, with its `audit` items the local `ImportedAuditEvent`, HCP's own shapes; neither is a mapped pair, so both are compared here, member by member, with export.json and audit-event.json, which import-request.json's `export` refers to. Its `rules`, `directives` and `delegations` items are the shared defs, compared as those objects."
     },
     {
       "id": "hcp/import:response",

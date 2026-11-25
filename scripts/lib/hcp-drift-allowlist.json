@@ -65,6 +65,13 @@
       "ref": "Q42"
     },
     {
+      "object": "hcp/_shared:StandingRule",
+      "path": "(root)",
+      "kind": "alternatives",
+      "reason": "HCP's standing-rule schema requires `operators`, `requires`, or both. The shared def leaves the `anyOf` out so that it stays fully typed in all four libraries (an `anyOf` of `required` clauses only at a payload root); hcp/rules/set checks it at its request root, where a rule is written, and hcp/import's provider refuses an export holding a rule with neither with `malformedRequest`.",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping (the request body `operators`, `requires`, `categories` row); specs/hcp/import/0.1/spec.md#request"
+    },
+    {
       "object": "hcp/entries/create:request",
       "path": "classification.permittedPurposes",
       "kind": "hcp-only",
@@ -136,9 +143,9 @@
     },
     {
       "object": "hcp/import:response",
-      "path": "rulesNotApplied",
+      "path": "ext",
       "kind": "ours-only",
-      "reason": "Added for a delegate's import: the standing rules in the export it did not apply (HCP 6.3, 17.4 against 5.4.3).",
+      "reason": "The framework's extension member (SPEC §4.5.1), not an HCP member; the family's own namespace `vnd.trusttasks.hcp-carriage` carries `rulesNotApplied`, the standing rules a delegate's import did not apply (HCP 6.3, 17.4 against 5.4.3), so that the result itself stays HCP's `outcomes` and `dryRun`.",
       "ref": "Q40"
     },
     {
