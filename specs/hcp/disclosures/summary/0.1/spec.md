@@ -13,7 +13,7 @@ carries:
 category: access-control
 keywords: [hcp, human-context-protocol, disclosure, audit, governance]
 parties:
-  - role: Management Client (HCP), acting for the Context Subject, a delegate or a former delegate
+  - role: Management Client (HCP), acting for the Context Subject or a delegate
     requirement: REQUIRED
     member: issuer
   - role: HCP Provider
@@ -94,7 +94,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The authority is **the Authorizing Principal's right to know what each client has received** (HCP 8.6, 18.4), which a Management Client exercises for them. It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. The disclosure summary is a governance operation (HCP 8.6, 6.1.9): any caller other than a Management Client acting for the Authorizing Principal receives not authorized (HCP 6.1.9, 9.2), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
-The summary discloses nothing the log does not hold (HCP 8.6), and so nothing the caller could not read in the log. Under the Delegated Authorization Profile, the Context Subject's summary is computed from the whole log; a delegate's or former delegate's is computed only from the events HCP 17.7 lets them read ([`hcp/audit/read`](../../../audit/read/0.1/spec.md#authorization)): the grants they authorized, and those of sub-delegates they appointed, within the delegation's scope. A Management Client acting for anyone else receives `permissionDenied`.
+The summary discloses nothing the log does not hold (HCP 8.6), and so nothing the caller could not read in the log. Under the Delegated Authorization Profile, the Context Subject's summary is computed from the whole log. A delegate, while the delegation holds, is given a summary scoped as follows, *pending HCP confirmation* ([question 38](#pending-hcp-confirmation)): HCP 8.6 gives the summary to the Authorizing Principal, who may be a delegate (HCP 3.2.2), but neither 8.6 nor 17.7 says what a delegate's summary covers. Theirs is computed only from the events HCP 17.7 lets a delegate read ([`hcp/audit/read`](../../../audit/read/0.1/spec.md#authorization)): those of the grants they authorized under the delegation, and of the grants of sub-delegates they appointed (HCP 17.10). A delegate reads every member of those events, `disclosed` included, so `entries`, `retrievals` and `usableUntil` computed from them reveal nothing HCP 17.7 withholds from them; a client appears in their summary only for those grants, and `grants` lists only those grants. A former delegate is not given the summary: HCP 17.7 withholds `entryId` and `disclosed` from them, from which `entries` and `usableUntil` are computed, and they read the record of the grants they authorized through [`hcp/audit/read`](../../../audit/read/0.1/spec.md) instead. A Management Client acting for a former delegate, or for anyone else, receives `permissionDenied`.
 
 The REQUIRED `proof` on the request establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
@@ -248,7 +248,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 |---|---|---|
 | invalid request | `malformed-request`: including a cursor the provider did not issue, one past its validity, or one sent with different filters | `malformedRequest` |
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
-| not authorized | `scope-denied`: the caller is not a Management Client acting for the Authorizing Principal (HCP 6.1.9, 8.6), or, under the Delegated Authorization Profile, for the Context Subject, a delegate or a former delegate (HCP 17.7) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
+| not authorized | `scope-denied`: the caller is not a Management Client acting for the Authorizing Principal (HCP 6.1.9, 8.6), or, under the Delegated Authorization Profile, for the Context Subject or a delegate while the delegation holds (HCP 17.7, [question 38](#pending-hcp-confirmation)), so including a former delegate | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and this operation carries none. |
 | version conflict | `version-conflict` | Does not arise: a read names no entry version (HCP 5.4). |
 | credential invalid | `credential-invalid` | Does not arise: it concerns a credential written as an entry's content (HCP 14.6). |
@@ -275,6 +275,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client is refused with `permissionDenied`, a strengthening HCP does not itself require (see [The access token](#the-access-token)).
 - **Question 30 — the date range.** `from` and `to` are both inclusive, and bound when each disclosure took place.
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
+- **Question 38 — a delegate's summary.** A delegate, while the delegation holds, is given the summary, computed only from the events of the grants they authorized under the delegation and of their sub-delegates' grants (HCP 17.7, 17.10); a former delegate is not given it, because `entries` and `usableUntil` are computed from `disclosed`, which HCP 17.7 withholds from them.
 
 ## What HCP requires that a document cannot express
 
