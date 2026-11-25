@@ -21,7 +21,8 @@ the same reason). TypeScript hoists because structural typing makes it free.
    declare `Ext`. Side by side in Go that is a redeclaration error, so every
    schema gets its own directory: `specs/auth/shared/tokens/v0_1`.
 
-3. **Optional members are pointers, *including slices and maps*.** `omitempty` on
+3. **Optional members are pointers, *including slices and maps*** (or a
+   `trusttasks.Nullable` when the schema admits `null`, below). `omitempty` on
    a plain slice drops an empty one from the wire, collapsing "present and empty"
    into "absent" — which `acl`'s `allowedKeys` documents at length as a
    privilege-escalation defect ("PRESENT-BUT-EMPTY means authorized on NO keys —
@@ -29,7 +30,7 @@ the same reason). TypeScript hoists because structural typing makes it free.
    can say it. `trust-tasks-go/specs/smoke` pins this, on `vta/contexts/update/1.0`'s
    `signableKeys` ("absent: every key; present-but-empty: no keys").
 
-   A member whose schema admits `null` is a pointer too, required or not, and
+   A *required* member whose schema admits `null` is a pointer too, and
    **`omitempty` goes on optional members only**. A required nullable member
    (`vta/contexts/update-did` 1.2's `did`, where `null` means "no DID of its
    own") is `*string` with a plain `json:"did"` tag, so a nil writes
@@ -58,14 +59,24 @@ the same reason). TypeScript hoists because structural typing makes it free.
    whenever `T` does (`p.Label == trusttasks.Null[string]()`). `omitzero`
    (Go 1.24, the modules' floor) asks its `IsZero` and leaves an absent one
    out; `omitempty` never omits a struct, so a hand-written field tagged only
-   `omitempty` reaches `MarshalJSON` and fails. With a slice `T`, `Value(nil)`
-   writes `null` (`Value([]T{})` writes `[]`). Non-nullable optional members are
-   still pointers, and the generated types still do not refuse a `null` the
-   schema forbids (it reads as nil): that is the caller's validator's job, over
-   `PayloadSchemaJSON`. A member the generator renders as `json.RawMessage` (a
+   `omitempty` reaches `MarshalJSON` and fails. With a plain slice or map `T`,
+   only `Null()` writes `null`: `Value(nil)` writes `[]` or `{}`, so on `acl`'s
+   `allowedKeys` (absent or `null`: every key; `[]`: none) a filtered-to-nothing
+   nil slice grants no key rather than every key. A `T` that encodes itself
+   (`json.RawMessage`, `[]byte`, a type with `MarshalJSON` or `MarshalText`)
+   writes a nil value as `T` does. `CheckMemberNames` enters a `Nullable`, so a
+   case-variant member inside one is refused as it is behind a pointer. Use it
+   only as a struct field tagged `omitzero`: behind a pointer, nested, or as a
+   map value it loses a state or fails the encode. Non-nullable optional
+   members are still pointers, and the generated types still do not refuse a
+   `null` the schema forbids (it reads as nil): that is the caller's
+   validator's job, over `PayloadSchemaJSON`. A member the generator renders as `json.RawMessage` (a
    `oneOf` with `null`, for example) is not affected: an explicit `null`
    survives in it. `specs/smoke/optional_nullable_test.go` round-trips
-   `acl/update` 0.3 and `vtc/registry/records/list` 0.2, and
+   `acl/update` 0.3 and `vtc/registry/records/list` 0.2,
+   `specs/smoke/nullable_members_test.go` round-trips `acl/grant` 0.1's
+   `allowedKeys` (absent, `null`, `[]`) and refuses a case-variant member in
+   `vtc/join-requests/list` 0.2's `decision`, and
    `TestOptionalNullableMembersAreNullable` in `cmd/trust-tasks-gen` pins the
    per-module generator.
 
