@@ -55,14 +55,22 @@ as absent, "leave unchanged". Whether a schema admits `null` is decided from
 `type`, `const`, `enum`, `oneOf` / `anyOf` / `allOf`, `$ref` and a `not` of
 exactly `null`; a schema those keywords don't settle (no `type`, say) is taken
 to admit it, so the generator can keep a `null` the schema would refuse but
-never refuses one it accepts. A `true` member is treated like `{}`: any value,
-`null` included.
+never refuses one it accepts. A `$ref` is read with JSON Schema 2020-12
+semantics (its siblings apply too), which every registry schema uses. A `true`
+member is treated like `{}`: any value, `null` included.
+
+Generation fails rather than guess where that guarantee could break: a member
+that admits `null` but that typify renders as a bare collection instead of an
+`Option` (a type-less `{"additionalProperties": …}`, say), and a member whose
+nullable tag typify dropped (each tag carries its own id, and every one must be
+read back off a generated field). Give such a member an explicit `type`.
 
 Each optional field reads through one of two helpers, `present` (the member
 admits `null`) or `not_null` (it doesn't), and is skipped on the way out only
 when it is `None`, so a decoded document re-encodes with the same members. In
-`trust-tasks-rs` the helpers are the crate-private `specs::presence`, shared by
-every prebuilt module; a module an application generates carries its own
+`trust-tasks-rs` the helpers are the crate-private `specs::__presence`, shared by
+every prebuilt module (the leading underscores keep it apart from the family
+modules beside it: a slug segment starts with a letter); a module an application generates carries its own
 private copy, so it needs nothing new from the runtime's `__private`.
 Required members are not touched. A member with a declared JSON Schema
 `default` is left as typify renders it, so an absent one reads as that
