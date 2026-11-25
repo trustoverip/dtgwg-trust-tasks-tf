@@ -4,7 +4,7 @@ name = "trust-tasks"
 # crates that expose its types, so this crate's version is theirs: one number at
 # the front door. (`trust-tasks-ceremony` versions on its own; its requirement
 # is in `[dependencies]` below.) Never edit it by hand — RELEASING.md.
-version = "0.41.3"
+version = "0.41.4"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true

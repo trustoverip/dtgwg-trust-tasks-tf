@@ -14,6 +14,32 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.12.7 — 2026-11-25
+
+
+### Specifications
+
+- **auth/step-up**: Approve-request 0.6 — a step-up hold is a next step, never an error (#1362)
+
+Implements ruling 1, reading (a), on trustoverip/dtgwg-trust-tasks-spec#36
+  for the step-up request itself. Split out of #1360 so it can land while the
+  trust-tasks-rs crate is near crates.io's upload limit.
+
+  - `auth/step-up/approve-request/0.6` (`extends: "0.5"`): inline delivery is a
+    `trust-task-next-step` whose `expects` entry names
+    `auth/step-up/approve-response/0.7` and carries this payload as its `hint`;
+    after approval is recorded the producer re-sends the operation
+    (`continuation: resubmit`). Delivery in an error response is forbidden. The
+    schema is unchanged.
+  - The schema-bounds `accepts` baseline moves from 0.5 to 0.6: a version that
+    extends 0.5 cannot narrow a bound, and `uniqueItems` over a three-value enum
+    already caps it at 3.
+  - `auth/oob/redeem/0.1` is `status: retired`, `supersededBy:
+    auth/oob/redeem/0.2`.
+
+  The new `vta/dids` versions from #1360 follow once the crate is smaller.
+  Libraries regenerated.
+
 ## 0.12.6 — 2026-11-25
 
 
