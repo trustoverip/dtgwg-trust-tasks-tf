@@ -38,14 +38,43 @@ the same reason). TypeScript hoists because structural typing makes it free.
    the prebuilt package, `TestRequiredNullableMembersKeepTheirKey` in
    `cmd/trust-tasks-gen` the per-module generator.
 
-   An *optional* nullable member is still `*T` with `omitempty`, so Go cannot
-   tell `null` from absent: both decode to nil, and nil writes neither.
-   `acl/update` 0.3 reads `"label": null` as "clear the label" and an absent
-   `label` as "leave it unchanged"; a Go client can only send the second.
-   Saying both needs a different field type (a public API change), so it is
-   an open decision ([runtime-parity.md](../runtime-parity.md)). A member the
-   generator renders as `json.RawMessage` (a `oneOf` with `null`, for example)
-   is not affected: an explicit `null` survives in it.
+   An *optional* nullable member has three states, and a pointer has two, so
+   it is a **`trusttasks.Nullable[T]`** tagged `omitzero`. `acl/update` 0.3 reads
+   an absent `label` as "leave it unchanged", `"label": null` as "clear it" and
+   a string as the new label:
+
+   ```go
+   aclupdatev0_3.Payload{Subject: s}                                   // leave it
+   aclupdatev0_3.Payload{Subject: s, Label: trusttasks.Null[string]()} // clear it
+   aclupdatev0_3.Payload{Subject: s, Label: trusttasks.Value("ops")}   // set it
+
+   if label, ok := p.Label.Get(); ok { ... } else if p.Label.IsNull() { ... }
+   ```
+
+   `IsSet` is true for null and a value. The zero value is absent, an absent
+   one refuses to marshal (it has nothing it may write, and `null` would mean
+   "clear"), and `UnmarshalJSON` reads `null` as null and refuses what `T`
+   refuses. It is a struct with unexported fields, so it compares with `==`
+   whenever `T` does (`p.Label == trusttasks.Null[string]()`). `omitzero`
+   (Go 1.24, the modules' floor) asks its `IsZero` and leaves an absent one
+   out; `omitempty` never omits a struct, so a hand-written field tagged only
+   `omitempty` reaches `MarshalJSON` and fails. With a slice `T`, `Value(nil)`
+   writes `null` (`Value([]T{})` writes `[]`). Non-nullable optional members are
+   still pointers, and the generated types still do not refuse a `null` the
+   schema forbids (it reads as nil): that is the caller's validator's job, over
+   `PayloadSchemaJSON`. A member the generator renders as `json.RawMessage` (a
+   `oneOf` with `null`, for example) is not affected: an explicit `null`
+   survives in it. `specs/smoke/optional_nullable_test.go` round-trips
+   `acl/update` 0.3 and `vtc/registry/records/list` 0.2, and
+   `TestOptionalNullableMembersAreNullable` in `cmd/trust-tasks-gen` pins the
+   per-module generator.
+
+   **The specs module needs a core with `Nullable` (v0.14.0 or later).**
+   `specs/go.mod` requires the published core, so the generated tree that uses
+   it builds only after a core release carrying the type, and a move of that
+   requirement. Before that release, build it against this checkout's core with
+   a `go.work` kept outside the repository (`GOWORK=<file>`, `use`-ing
+   `trust-tasks-go` and `trust-tasks-go/specs`); never commit a `replace`.
 
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
