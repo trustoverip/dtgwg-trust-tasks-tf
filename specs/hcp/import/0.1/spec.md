@@ -67,9 +67,6 @@ errorCodes:
       Client's access token.
     retryable: false
 uncheckedRules:
-  - member: "/properties/export/properties/rules/items/properties/operators"
-    rule: "A standing rule carries `operators`, `requires`, or both."
-    source: "HCP 6.3"
   - member: "/properties/export/properties/delegations/items/properties/basis/properties/evidence"
     rule: "Where `method` is `evidence`, `evidence` is present with at least one item."
     source: "HCP 17.3"
