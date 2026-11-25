@@ -21,7 +21,7 @@ import {
   type SpecPolicy,
   type TrustTaskDocument,
 } from "@openvtc/trust-tasks/runtime";
-import { DataIntegrityProofVerifier, signerFromPrivateKey, signTrustTask, type Signer } from "@openvtc/trust-tasks-proof";
+import { canonicalize, DataIntegrityProofVerifier, signerFromPrivateKey, signTrustTask, type Signer } from "@openvtc/trust-tasks-proof";
 import { TspConsumer, packTrustTask, unpackTrustTask, advertisedSender } from "@openvtc/trust-tasks-tsp";
 
 import {
@@ -32,21 +32,42 @@ import {
 } from "./trust-tasks/index.js";
 // Framework specifications ship with the runtime package, not the generator.
 import * as discovery from "@openvtc/trust-tasks/trust-task-discovery/0.4/payload";
+import * as error from "@openvtc/trust-tasks/trust-task-error/0.6/payload";
 import * as nextStep from "@openvtc/trust-tasks/trust-task-next-step/0.1/payload";
 import { schemaValidator, validatePayload } from "./validator.js";
 
 // ── Deterministic inputs ───────────────────────────────────────────────────
 // A fixed clock the demo controls: it starts at START and moves one second per
-// document issued. Instants are whole seconds (`…Z`), never toISOString().
+// document issued. It never reads the system time.
 export const START = "2026-11-25T10:00:00Z";
+
+/**
+ * An instant as the documents write it: whole seconds, `YYYY-MM-DDTHH:MM:SSZ`.
+ * The repository's rule is "never write toISOString() into a document": it
+ * carries milliseconds, and it invites stamping the system time. Every instant
+ * the demo writes comes from its injected Clock, which holds whole seconds
+ * only, and goes through this one function.
+ */
+export function iso(ms: number): string {
+  if (ms % 1000 !== 0) throw new Error("the demo's instants are whole seconds");
+  const d = new Date(ms);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${two(d.getUTCMonth() + 1)}-${two(d.getUTCDate())}T${two(d.getUTCHours())}:${two(d.getUTCMinutes())}:${two(d.getUTCSeconds())}Z`;
+}
 
 export class Clock {
   private ms = Date.parse(START);
   now = (): number => this.ms;
-  iso = (): string => new Date(this.ms).toISOString().replace(".000Z", "Z");
+  iso = (): string => iso(this.ms);
+  /** `seconds` after now, as an instant. */
+  plus = (seconds: number): string => iso(this.ms + seconds * 1000);
   tick = (): string => {
     this.ms += 1000;
     return this.iso();
+  };
+  /** Let time pass without issuing a document (tests only). */
+  advance = (seconds: number): void => {
+    this.ms += seconds * 1000;
   };
 }
 
@@ -89,6 +110,10 @@ function party(name: string, signingSeed: number, encryptionSeed: number): Party
 export const PURPOSE = "https://purposes.example/travel-booking";
 export const MANAGEMENT_TOKEN = "hcp_mt_demo_management"; // DEMO ONLY: issued to the person's app at setup
 const NEUTRAL_DENIAL = "The request is not authorized."; // one fixed text for every refusal (HCP 5.5)
+/** The person, by the pseudonym the provider uses with this client (HCP 3.4). */
+const SUBJECT = "hcp-sub-demo-alex";
+/** How long after the response a resubmission still gets the same grant (hcp/grants/request "After approval"). */
+export const AFTER_APPROVAL_WINDOW = 3600;
 
 /** The person's context, as the toy provider stores it (HCP 4.2, much simplified). */
 const ENTRIES = [
@@ -97,13 +122,35 @@ const ENTRIES = [
   { ref: "hcp-ref-0003", category: "health_context", value: "Severe peanut allergy." },
 ];
 
-interface Grant {
+/** A grant in the provider's table. */
+export interface Grant {
   grantId: string;
   token: string;
-  client: string;
+  tokenExpiresAt: string;
+  client: string; // the client's VID
+  access: grantRequest.Response["grant"]["access"];
   categories: string[];
   purposes: string[];
+  issuedAt: string;
+  expiresAt: string;
   status: "active" | "revoked";
+  revokedAt?: string;
+}
+
+/** A grant request on one thread: held, approved by the person, then granted (hcp/grants/request "Holding"). */
+interface Hold {
+  issuer: string;
+  payload: grantRequest.Payload;
+  canonical: string; // JCS of the payload, to compare resubmissions
+  state: "pending" | "approved" | "granted";
+  grantId?: string;
+  respondedAt?: number; // when the response was first sent, in ms
+}
+
+/** What the Context Client keeps for a grant it holds: the token, and the refs of the copies disclosed under it. */
+export interface HeldGrant {
+  token: string;
+  copies: string[];
 }
 
 // ── The world: three parties, one transport, one clock ─────────────────────
@@ -114,10 +161,22 @@ export class World {
   readonly contextClient = party("Context Client", 0x21, 0x22);
   readonly management = party("Management Client", 0x31, 0x32);
   readonly transcript: string[] = [];
+
+  // ── The provider's state ──
+  /** Its one registered client, by VID, with the registration the person is shown (HCP 6.1.5, 6.1.6). */
+  readonly registeredClients = new Map([
+    [this.contextClient.vid, { name: "Wayfare booking agent", operator: { id: "booking.example", name: "Wayfare Travel Ltd" } }],
+  ]);
   readonly grants: Grant[] = [];
-  /** Grant requests the person has not decided yet, by threadId (SPEC §8.6 hold). */
-  readonly held = new Map<string, { payload: grantRequest.Payload; decided: boolean }>();
+  /** Grant requests by threadId (the SPEC §8.6 hold). */
+  readonly held = new Map<string, Hold>();
   private tokens = 0;
+
+  // ── The Context Client's state ──
+  /** The grants it holds, by grantId. */
+  readonly wallet = new Map<string, HeldGrant>();
+  /** Revocation notices it has processed: noticeId → grantId (hcp/grants/revoked "Deduplication"). */
+  readonly processedNotices = new Map<string, string>();
 
   private parties = [this.provider, this.contextClient, this.management];
   private verifier = new DataIntegrityProofVerifier({ now: this.clock.now });
@@ -189,6 +248,8 @@ export class World {
       keys: { receiverDecryptionKey: from.encPriv, senderEncryptionKey: to.encPub, senderSigningKey: to.sigPub },
     });
     const reply = opened.document as unknown as TrustTaskDocument<any>;
+    const sent = doc as TrustTaskDocument<unknown>;
+    checkReply(reply, to, sent.threadId ?? sent.id);
     if (reply.proof !== undefined && !(await this.verifier.verify(reply))) throw new Error("reply proof does not verify");
     validatePayload(reply);
     this.print(to, from, reply);
@@ -207,60 +268,22 @@ export class World {
         return reply({ supportedTypes: [grantRequest.TYPE_URI, query.TYPE_URI, revoke.TYPE_URI, revoked.TYPE_URI] });
 
       // Step 2 — hcp/grants/request: hold with a next step until the person decides (HCP 6.1.6, SPEC §8.6).
-      case grantRequest.TYPE_URI: {
-        const threadId = doc.threadId!;
-        const hold = this.held.get(threadId);
-        if (hold === undefined) this.held.set(threadId, { payload: doc.payload, decided: false });
-        if (hold === undefined || !hold.decided) {
-          const step: TrustTaskDocument<nextStep.Payload> = {
-            id: this.ids.next(),
-            type: nextStep.TYPE_URI,
-            issuer: me.vid,
-            recipient: doc.issuer!,
-            issuedAt: this.clock.tick(),
-            threadId,
-            payload: {
-              expects: [{ typeUri: `${grantRequest.TYPE_URI}#request`, reason: "The request is with the person, who has not decided yet.", hint: { retryAfter: 5 } }],
-              continuation: "resubmit",
-              inResponseTo: { typeUri: doc.type, id: doc.id },
-            },
-          };
-          return this.sign(me, step);
-        }
-        // The person approved (the toy approves everything asked, read only).
-        const grant: Grant = {
-          grantId: this.ids.next(),
-          token: `hcp_at_demo_${String(++this.tokens).padStart(4, "0")}`, // DEMO ONLY
-          client: doc.issuer!,
-          categories: hold.payload.access.flatMap((a) => a.categories),
-          purposes: hold.payload.access.flatMap((a) => (a.purposes ?? []).map((p) => p.code)),
-          status: "active",
-        };
-        this.grants.push(grant);
-        const grantedAt = this.clock.iso();
-        const plus = (s: number) => new Date(this.clock.now() + s * 1000).toISOString().replace(".000Z", "Z");
-        const response: grantRequest.Response = {
-          accessToken: grant.token,
-          tokenExpiresAt: plus(3600), // HCP 13.4 default
-          grantId: grant.grantId,
-          access: hold.payload.access.map((a) => ({ type: a.type, actions: a.actions, categories: a.categories, purposes: a.purposes! })) as grantRequest.Response["access"], // approved as asked
-          grantType: "temporary",
-          grantedAt,
-          grantExpiresAt: plus(hold.payload.expiresIn ?? 4 * 3600), // HCP 6.1.3 default
-        };
-        return reply(response);
-      }
+      case grantRequest.TYPE_URI:
+        return this.grantRequest(me, doc as TrustTaskDocument<grantRequest.Payload>, reply, refuse);
 
-      // Step 3 — hcp/entries/query: the grant is checked on every request (HCP 5.2.1, 6.2.2).
+      // Steps 3 and 5 — hcp/entries/query: the grant is checked on every request (HCP 5.2.1, 6.2.2).
       case query.TYPE_URI: {
         const p = doc.payload as query.Payload;
-        const grant = this.grants.find((g) => g.token === p.accessToken && g.client === doc.issuer);
-        if (grant === undefined || grant.status !== "active") return refuse("hcp:invalidToken", "The access token is not valid.");
+        const grant = this.grants.find((g) => g.token === p.accessToken);
+        if (grant === undefined) return refuse("hcp:invalidToken", "The access token is not valid.");
+        // A token issued to another client is no use from this VID (query "The access token").
+        if (grant.client !== doc.issuer) return refuse("permissionDenied", NEUTRAL_DENIAL);
+        if (grant.status !== "active") return refuse("hcp:invalidToken", "The access token is not valid.");
         const asked = p.categories ?? grant.categories;
         if (!grant.purposes.includes(p.purpose) || asked.some((c) => !grant.categories.includes(c))) {
           return refuse("permissionDenied", NEUTRAL_DENIAL);
         }
-        const useUntil = new Date(this.clock.now() + 3600 * 1000).toISOString().replace(".000Z", "Z");
+        const useUntil = this.clock.plus(3600);
         const entries = ENTRIES.filter((e) => asked.includes(e.category))
           .slice(0, Math.min(p.maxEntries ?? 5, 20))
           .map((e) => ({
@@ -277,8 +300,9 @@ export class World {
           retrievalId: this.ids.next(),
           minimization: { method: "lexical" },
           categoriesSearched: asked,
+          directives: [], // a Context Client always gets the list; the person set none (HCP 6.4)
           respondedAt: this.clock.iso(),
-        } as query.Response);
+        } as unknown as query.Response);
       }
 
       // Step 4 — hcp/grants/revoke: only the person's Management Client may (HCP 6.1.9, 6.2.1).
@@ -287,21 +311,136 @@ export class World {
         if (p.accessToken !== MANAGEMENT_TOKEN) return refuse("permissionDenied", NEUTRAL_DENIAL);
         const grant = this.grants.find((g) => g.grantId === p.grantId);
         if (grant === undefined) return refuse("permissionDenied", NEUTRAL_DENIAL);
-        grant.status = "revoked"; // immediate (HCP 6.2.2); a second revoke is idempotent
+        if (grant.status === "active") {
+          grant.status = "revoked"; // immediate (HCP 6.2.2); a second revoke is idempotent
+          grant.revokedAt = this.clock.iso();
+        }
         return reply({});
       }
 
-      // Step 5 — hcp/grants/revoked, at the Context Client: stop using what it holds (HCP 6.2.2, 9.9).
-      case revoked.TYPE_URI:
+      // Step 6 — hcp/grants/revoked, at the Context Client (HCP 6.2.2, 9.9; hcp/grants/revoked "Delivery rules").
+      case revoked.TYPE_URI: {
+        const p = doc.payload as revoked.Payload;
+        // Deduplicate on noticeId: a later attempt of a processed notice is acknowledged, not acted on again.
+        // (A real client keeps the record at least 25 hours; the demo keeps it for the run.)
+        if (!this.processedNotices.has(p.noticeId)) {
+          this.processedNotices.set(p.noticeId, p.grantId);
+          this.forgetGrant(p.grantId);
+        }
         return reply({});
+      }
     }
     throw new Error(`unhandled ${doc.type}`);
   }
 
+  /** The provider's side of hcp/grants/request: the hold, the grant, and "After approval". */
+  private grantRequest(
+    me: Party,
+    doc: TrustTaskDocument<grantRequest.Payload>,
+    reply: (payload: unknown) => TrustTaskDocument<unknown>,
+    refuse: (code: string, message: string) => TrustTaskDocument<unknown>,
+  ): TrustTaskDocument<unknown> {
+    const issuer = doc.issuer!;
+    const threadId = doc.threadId!;
+    // Only a registered client may ask (hcp/grants/request "Authorization").
+    if (!this.registeredClients.has(issuer)) return refuse("permissionDenied", NEUTRAL_DENIAL);
+
+    const canonical = canonicalize(doc.payload);
+    const hold = this.held.get(threadId);
+    if (hold === undefined) {
+      this.held.set(threadId, { issuer, payload: doc.payload, canonical, state: "pending" });
+      return this.nextStep(me, doc);
+    }
+    // A resubmission is matched by (threadId, issuer); a refusal leaves the held request as it is.
+    if (hold.issuer !== issuer) return refuse("permissionDenied", NEUTRAL_DENIAL);
+    if (hold.canonical !== canonical) return refuse("malformedRequest", "The resubmission differs from the held request.");
+
+    switch (hold.state) {
+      case "pending":
+        return this.nextStep(me, doc);
+      case "approved": {
+        // The person approved (the toy approves everything asked, read only): issue the one grant.
+        const grantedAt = this.clock.iso();
+        const grant: Grant = {
+          grantId: this.ids.next(),
+          token: `hcp_at_demo_${String(++this.tokens).padStart(4, "0")}`, // DEMO ONLY
+          tokenExpiresAt: this.clock.plus(3600), // HCP 13.4 default
+          client: issuer,
+          access: hold.payload.access.map((a) => ({
+            type: a.type,
+            actions: a.actions,
+            categories: a.categories,
+            purposes: (a.purposes ?? []).map((p) => ({ code: p.code, description: p.description ?? p.code })),
+          })) as unknown as Grant["access"], // approved as asked
+          categories: hold.payload.access.flatMap((a) => a.categories),
+          purposes: hold.payload.access.flatMap((a) => (a.purposes ?? []).map((p) => p.code)),
+          issuedAt: grantedAt,
+          expiresAt: this.clock.plus(hold.payload.expiresIn ?? 4 * 3600), // HCP 6.1.3 default
+          status: "active",
+        };
+        this.grants.push(grant);
+        hold.state = "granted";
+        hold.grantId = grant.grantId;
+        hold.respondedAt = this.clock.now();
+        return reply(this.grantResponse(grant));
+      }
+      case "granted": {
+        // After approval: the same grant within the hour, never a second one; after it, permissionDenied.
+        const grant = this.grants.find((g) => g.grantId === hold.grantId)!;
+        const late = this.clock.now() - hold.respondedAt! > AFTER_APPROVAL_WINDOW * 1000;
+        if (late || grant.status !== "active") return refuse("permissionDenied", NEUTRAL_DENIAL);
+        return reply(this.grantResponse(grant));
+      }
+    }
+  }
+
+  /** The hold: a next step naming the request Type URI, continuation resubmit (SPEC §8.6). */
+  private nextStep(me: Party, doc: TrustTaskDocument<grantRequest.Payload>): TrustTaskDocument<unknown> {
+    const step: TrustTaskDocument<nextStep.Payload> = {
+      id: this.ids.next(),
+      type: nextStep.TYPE_URI,
+      issuer: me.vid,
+      recipient: doc.issuer!,
+      issuedAt: this.clock.tick(),
+      threadId: doc.threadId!,
+      payload: {
+        expects: [{ typeUri: `${grantRequest.TYPE_URI}#request`, reason: "The request is with the person, who has not decided yet.", hint: { retryAfter: 5 } }],
+        continuation: "resubmit",
+        inResponseTo: { typeUri: doc.type, id: doc.id },
+      },
+    };
+    return this.sign(me, step);
+  }
+
+  /** The grant response: the token and HCP's grant object, as hcp/grants/read-own would return it. */
+  private grantResponse(grant: Grant): grantRequest.Response {
+    const registration = this.registeredClients.get(grant.client)!;
+    return {
+      accessToken: grant.token,
+      tokenExpiresAt: grant.tokenExpiresAt,
+      grant: {
+        grantId: grant.grantId,
+        subject: { id: SUBJECT },
+        authorizingPrincipal: { id: SUBJECT },
+        client: { id: grant.client, ...registration },
+        access: grant.access,
+        grantType: "temporary",
+        issuedAt: grant.issuedAt,
+        expiresAt: grant.expiresAt,
+        status: grant.status,
+      },
+    };
+  }
+
   /** The person decides, in the provider's own modality (here: approves at once). */
   personApproves(threadId: string): void {
-    this.held.get(threadId)!.decided = true;
+    this.held.get(threadId)!.state = "approved";
     this.transcript.push(`[person] approves the grant request on thread ${threadId} in the provider's app\n`);
+  }
+
+  /** The Context Client stops using a grant: drops its token and every copy disclosed under it (HCP 6.2.2, 7.6). */
+  forgetGrant(grantId: string): void {
+    this.wallet.delete(grantId);
   }
 
   // ── Transcript ───────────────────────────────────────────────────────────
@@ -322,6 +461,32 @@ const SPECS: Record<string, SpecPolicy> = {
   [revoke.TYPE_URI]: revoke.SPEC,
   [revoked.TYPE_URI]: revoked.SPEC,
 };
+
+/**
+ * The codes the receiving end's SPEC §7.2 pipeline raises before any handler
+ * runs. The library builds those error responses itself, unsigned; every other
+ * reply (each response, next step and handler refusal) is signed.
+ */
+export const PIPELINE_CODES = new Set([
+  "malformedRequest",
+  "unsupportedType",
+  "unsupportedVersion",
+  "unsupportedExtension",
+  "expired",
+  "proofRequired",
+  "proofInvalid",
+  "wrongRecipient",
+  "identityMismatch",
+  "idConflict",
+]);
+
+/** The sender's checks on a reply before it trusts it: who it is from, which thread, and that it is signed. */
+export function checkReply(reply: TrustTaskDocument<any>, from: Party, threadId: string): void {
+  if (reply.issuer !== from.vid) throw new Error(`reply issuer ${reply.issuer} is not ${from.vid}`);
+  if (reply.threadId !== threadId) throw new Error(`reply threadId ${reply.threadId} is not ${threadId}`);
+  const libraryError = reply.type === error.TYPE_URI && PIPELINE_CODES.has(reply.payload?.code);
+  if (reply.proof === undefined && !libraryError) throw new Error(`reply ${reply.type} carries no proof`);
+}
 
 /** Secrets are shown as present, never in full: the first 6 characters and an ellipsis. */
 export function redact(value: unknown): unknown {
@@ -349,62 +514,119 @@ export function pretty(value: unknown, indent = ""): string {
   return JSON.stringify(value);
 }
 
-// ── The five steps ─────────────────────────────────────────────────────────
-export interface DemoResult {
-  transcript: string;
-  postRevokeError: TrustTaskDocument<{ code: string }>;
+// ── The six steps, one function each ───────────────────────────────────────
+
+/** What the Context Client asks for in step 2. */
+export const ASK: grantRequest.Payload = {
+  access: [
+    {
+      type: "https://hcp.example/spec/authorization/context-access",
+      actions: ["read"],
+      categories: ["travel_preferences"],
+      purposes: [{ code: PURPOSE, description: "Book trips that match how you like to travel" }],
+    },
+  ],
+  expiresIn: 14400,
+  subjectHint: "acct:alex@provider.example",
+};
+
+/** The query the Context Client sends in steps 3 and 5, under the grant's token. */
+export function queryPayload(accessToken: string): query.Payload {
+  return { query: "How does Alex like to fly?", categories: ["travel_preferences"], purpose: PURPOSE, maxEntries: 5, accessToken };
 }
 
-export async function runDemo(world = new World()): Promise<DemoResult> {
-  const { provider: P, contextClient: C, management: M } = world;
-
-  // 1. Discover: does the provider speak hcp/*? (trust-task-discovery 0.4, SPEC §10)
+/** 1. Discover: does the provider speak hcp/*? (trust-task-discovery 0.4, SPEC §10) */
+export async function stepDiscover(world: World): Promise<void> {
+  const { provider: P, contextClient: C } = world;
   world.step("1. Discover (trust-task-discovery 0.4)");
   const found = await world.exchange(C, P, world.request(C, P, discovery.TYPE_URI, { patterns: ["hcp/*"] }));
   if (!found.payload.supportedTypes.includes(grantRequest.TYPE_URI)) throw new Error("provider does not serve grant requests");
+}
 
-  // 2. Grant request: held with a next step while the person decides, then resubmitted (HCP 6.1.6, 6.1.7; SPEC §8.6)
+/**
+ * 2. Grant request: held with a next step while the person decides, then
+ * resubmitted on the same thread (HCP 6.1.6, 6.1.7; SPEC §8.6). The client
+ * keeps the token in its wallet. Returns the thread and the grant.
+ */
+export async function stepGrantRequest(world: World): Promise<{ threadId: string; grantId: string }> {
+  const { provider: P, contextClient: C } = world;
   world.step("2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step");
-  const ask: grantRequest.Payload = {
-    access: [
-      {
-        type: "https://hcp.example/spec/authorization/context-access",
-        actions: ["read"],
-        categories: ["travel_preferences"],
-        purposes: [{ code: PURPOSE, description: "Book trips that match how you like to travel" }],
-      },
-    ],
-    expiresIn: 14400,
-    subjectHint: "acct:alex@provider.example",
-  };
-  const first = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ask);
+  const first = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK);
   const held = await world.exchange(C, P, first);
   if (held.type !== nextStep.TYPE_URI) throw new Error("expected a next step");
   world.personApproves(first.threadId!);
   // Resubmission: a new document, fresh id, same threadId and payload.
-  const granted = await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ask, first.threadId));
+  const granted = await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId));
   if (granted.type !== grantRequest.RESPONSE_TYPE_URI) throw new Error("expected the grant");
-  const { accessToken, grantId } = granted.payload as grantRequest.Response;
+  const { accessToken, grant } = granted.payload as grantRequest.Response;
+  world.wallet.set(grant.grantId, { token: accessToken, copies: [] });
+  return { threadId: first.threadId!, grantId: grant.grantId };
+}
 
-  // 3. Query under the grant (hcp/entries/query 0.1, HCP 5.2.1)
+/** 3. Query under the grant (hcp/entries/query 0.1, HCP 5.2.1). The client keeps the refs of the copies. */
+export async function stepQuery(world: World, grantId: string): Promise<void> {
+  const { provider: P, contextClient: C } = world;
   world.step("3. Query (hcp/entries/query 0.1)");
-  const queryPayload: query.Payload = { query: "How does Alex like to fly?", categories: ["travel_preferences"], purpose: PURPOSE, maxEntries: 5, accessToken };
-  const answer = await world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload));
+  const held = world.wallet.get(grantId)!;
+  const answer = await world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload(held.token)));
   if (answer.type !== query.RESPONSE_TYPE_URI) throw new Error("expected entries");
+  held.copies.push(...(answer.payload as query.Response).entries.map((e) => (e as { ref: string }).ref));
+}
 
-  // 4. Revoke from the person's Management Client (hcp/grants/revoke 0.1, HCP 6.2.1)
+/** 4. Revoke from the person's Management Client (hcp/grants/revoke 0.1, HCP 6.2.1). */
+export async function stepRevoke(world: World, grantId: string): Promise<void> {
+  const { provider: P, management: M } = world;
   world.step("4. Revoke (hcp/grants/revoke 0.1) from the Management Client");
   const done = await world.exchange(M, P, world.request(M, P, `${revoke.TYPE_URI}#request`, { grantId, accessToken: MANAGEMENT_TOKEN }));
   if (done.type !== revoke.RESPONSE_TYPE_URI) throw new Error("expected the revocation");
+}
 
-  // 5. Revocation notice to the Context Client (hcp/grants/revoked 0.1, HCP 6.2.3, 9.9)
-  world.step("5. Revocation notice (hcp/grants/revoked 0.1)");
-  const ack = await world.exchange(P, C, world.request(P, C, `${revoked.TYPE_URI}#request`, { grantId, noticeId: world.ids.next(), revokedAt: world.clock.iso() }));
+/**
+ * 5. The same query, sent before any notice arrives, fails with
+ * hcp:invalidToken: the grant is checked on every request, so revocation takes
+ * effect at once (HCP 6.2.2). The client acts on that at once too: it drops
+ * the token and the copies (hcp/grants/revoked "Independence").
+ */
+export async function stepQueryAfterRevoke(world: World, grantId: string): Promise<TrustTaskDocument<{ code: string }>> {
+  const { provider: P, contextClient: C } = world;
+  world.step("5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken");
+  const held = world.wallet.get(grantId)!;
+  const refused = await world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload(held.token)));
+  if (refused.type === error.TYPE_URI && refused.payload.code === "hcp:invalidToken") world.forgetGrant(grantId);
+  return refused;
+}
+
+/**
+ * 6. Revocation notice to the grant's client (hcp/grants/revoked 0.1, HCP
+ * 6.2.3, 9.9). The client records the noticeId and the grant and stops using
+ * the grant; it never sends the old token again. Returns the notice sent.
+ */
+export async function stepNotice(world: World, grantId: string): Promise<TrustTaskDocument<revoked.Payload>> {
+  const P = world.provider;
+  world.step("6. Revocation notice (hcp/grants/revoked 0.1)");
+  const grant = world.grants.find((g) => g.grantId === grantId)!;
+  const client = world.byVid(grant.client);
+  const notice = world.request(P, client, `${revoked.TYPE_URI}#request`, { grantId, noticeId: world.ids.next(), revokedAt: grant.revokedAt! });
+  const ack = await world.exchange(P, client, notice);
   if (ack.type !== revoked.RESPONSE_TYPE_URI) throw new Error("expected the acknowledgement");
+  return notice;
+}
 
-  // After: the same query again fails — the grant is checked on every request (HCP 6.2.2)
-  world.step("After revoke: the same query fails with hcp:invalidToken");
-  const refused = await world.exchange(C, P, world.request(C, P, `${query.TYPE_URI}#request`, queryPayload));
+export interface DemoResult {
+  transcript: string;
+  threadId: string;
+  grantId: string;
+  postRevokeError: TrustTaskDocument<{ code: string }>;
+  notice: TrustTaskDocument<revoked.Payload>;
+}
 
-  return { transcript: world.transcript.join(""), postRevokeError: refused };
+/** The six steps in order. */
+export async function runDemo(world = new World()): Promise<DemoResult> {
+  await stepDiscover(world);
+  const { threadId, grantId } = await stepGrantRequest(world);
+  await stepQuery(world, grantId);
+  await stepRevoke(world, grantId);
+  const postRevokeError = await stepQueryAfterRevoke(world, grantId);
+  const notice = await stepNotice(world, grantId);
+  return { transcript: world.transcript.join(""), threadId, grantId, postRevokeError, notice };
 }
