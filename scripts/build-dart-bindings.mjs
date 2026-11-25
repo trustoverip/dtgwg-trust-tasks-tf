@@ -899,8 +899,13 @@ function declareClass(em, node, hint, defNames) {
     const { nullable } = typeOf(memberNode);
     const desc = dartTypeFor(em, member, `${name}${dartClassName(wireName)}`, defNames);
     const isRequired = required.has(wireName) && !nullable;
+    // A required member whose schema admits null: the field is nullable, but
+    // the key is always written, because `null` is a value the schema gives a
+    // meaning to (vta/contexts/update-did 1.2: "no DID of its own") and a
+    // document without the key fails `required`.
+    const keepsNull = required.has(wireName) && nullable;
 
-    fields.push({ wireName, fieldName, desc, isRequired, doc: memberNode.description });
+    fields.push({ wireName, fieldName, desc, isRequired, keepsNull, doc: memberNode.description });
   }
 
   const lines = [];
@@ -949,13 +954,27 @@ function declareClass(em, node, hint, defNames) {
   }
   lines.push("");
 
-  // toJson. A null member is omitted rather than written as JSON null, matching
-  // `skip_serializing_if` in Rust and `omitempty` in Go.
+  // toJson. A null optional member is omitted rather than written as JSON null,
+  // matching `skip_serializing_if` in Rust and `omitempty` in Go. A required
+  // nullable member is always written, null included.
   lines.push(`  /// Serialize to a JSON-encodable map, omitting absent members.`);
   lines.push(`  Map<String, dynamic> toJson() => <String, dynamic>{`);
   for (const f of fields) {
     if (f.isRequired) {
       lines.push(`        ${dartString(f.wireName)}: ${f.desc.to(f.fieldName)},`);
+    } else if (f.keepsNull) {
+      // `f?.toJson()` rather than `f == null ? null : f!.toJson()`, which the
+      // prefer_null_aware_operators lint refuses; null-shorting covers a chain
+      // such as `f?.map(...).toList()`.
+      const bang = `${f.fieldName}!`;
+      const to = f.desc.to(bang);
+      const value =
+        to === bang
+          ? f.fieldName
+          : to.startsWith(`${bang}.`)
+            ? `${f.fieldName}?${to.slice(bang.length)}`
+            : `${f.fieldName} == null ? null : ${to}`;
+      lines.push(`        ${dartString(f.wireName)}: ${value},`);
     } else {
       // `!` is required: a public final field is not promoted by a null check.
       const value = f.desc.to(`${f.fieldName}!`);

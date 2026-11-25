@@ -687,11 +687,15 @@ String _nullable(String type, bool isRequired) =>
     isRequired || type.endsWith('?') ? type : '$type?';
 
 class _Field {
-  _Field(this.wireName, this.fieldName, this.desc, this.isRequired, this.doc);
+  _Field(this.wireName, this.fieldName, this.desc, this.isRequired,
+      this.keepsNull, this.doc);
   final String wireName;
   final String fieldName;
   final _Desc desc;
   final bool isRequired;
+
+  /// Required, and its schema admits null: nullable, but always written.
+  final bool keepsNull;
   final Object? doc;
 }
 
@@ -722,8 +726,12 @@ _Desc _declareClass(
     final desc =
         _dartTypeFor(em, member, '$name${_dartClassName(wireName)}', defNames);
     final isRequired = required.contains(wireName) && !nullable;
-    fields.add(_Field(
-        wireName, fieldName, desc, isRequired, memberNode['description']));
+    // A required member whose schema admits null keeps its key when null: the
+    // schema gives `null` a meaning, and a document without the key fails
+    // `required`.
+    final keepsNull = required.contains(wireName) && nullable;
+    fields.add(_Field(wireName, fieldName, desc, isRequired, keepsNull,
+        memberNode['description']));
   }
 
   final lines = <String>[
@@ -774,6 +782,18 @@ _Desc _declareClass(
     if (f.isRequired) {
       lines
           .add('        ${dartString(f.wireName)}: ${f.desc.to(f.fieldName)},');
+    } else if (f.keepsNull) {
+      // `f?.toJson()`, not `f == null ? null : f!.toJson()`, which the
+      // prefer_null_aware_operators lint refuses; null-shorting covers a chain
+      // such as `f?.map(...).toList()`.
+      final bang = '${f.fieldName}!';
+      final to = f.desc.to(bang);
+      final value = to == bang
+          ? f.fieldName
+          : to.startsWith('$bang.')
+              ? '${f.fieldName}?${to.substring(bang.length)}'
+              : '${f.fieldName} == null ? null : $to';
+      lines.add('        ${dartString(f.wireName)}: $value,');
     } else {
       final value = f.desc.to('${f.fieldName}!');
       lines.add(
