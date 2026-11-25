@@ -16,8 +16,26 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:22e820a9-5559-492f-bea4-3b15802c1675\",\n  \"type\": \"https://trusttasks.org/spec/hcp/import/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:new-context.provider.example\",\n  \"issuedAt\": \"2026-11-25T11:00:00Z\",\n  \"threadId\": \"urn:uuid:64ff6764-9233-4953-af27-1c27eb0f6035\",\n  \"payload\": {\n    \"export\": {\n      \"@context\": [\"https://hcp.example/contexts/v2\"],\n      \"type\": \"ContextExport\",\n      \"schema\": \"https://hcp.example/spec/export/2.0\",\n      \"subject\": { \"id\": \"did:web:person.example\" },\n      \"exportedBy\": \"https://other-context.provider.example\",\n      \"exportedAt\": \"2026-11-25T10:30:00Z\",\n      \"entries\": [\n        {\n          \"@context\": [\"https://hcp.example/contexts/v2\"],\n          \"schema\": \"https://hcp.example/spec/entry/2.0\",\n          \"id\": \"urn:uuid:9f752f44-cf3e-469a-9def-a7253e13c969\",\n          \"type\": [\"ContextEntry\"],\n          \"subject\": { \"id\": \"did:web:person.example\" },\n          \"content\": {\n            \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n            \"value\": \"Prefers aisle seats on long flights.\",\n            \"language\": \"en\"\n          },\n          \"assertion\": { \"declarationType\": \"person-declared\" },\n          \"classification\": { \"categories\": [\"general_preferences\"] },\n          \"record\": {\n            \"status\": \"active\",\n            \"version\": 1,\n            \"provenance\": {\n              \"assertedBy\": { \"id\": \"did:web:person.example\", \"assurance\": \"authenticated\" },\n              \"assertedAt\": \"2026-10-02T08:00:00Z\",\n              \"source\": \"person-input\",\n              \"submittedByClient\": {\n                \"id\": \"wallet-app\",\n                \"name\": \"Person Wallet\",\n                \"operator\": { \"id\": \"wallet.person.example\", \"name\": \"Wallet Co\" }\n              },\n              \"authorizedUnder\": \"urn:uuid:7e702905-d484-487e-9c30-8f7fa67b6ac2\",\n              \"recordedByProvider\": \"https://other-context.provider.example\",\n              \"recordedAt\": \"2026-10-02T08:00:01Z\"\n            }\n          }\n        }\n      ],\n      \"rules\": [\n        {\n          \"ruleId\": \"urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b\",\n          \"effect\": \"deny\",\n          \"operators\": [\"ads.example\"],\n          \"setBy\": \"context-subject\",\n          \"createdAt\": \"2026-09-14T18:20:00Z\"\n        }\n      ],\n      \"audit\": [\n        {\n          \"eventId\": \"urn:uuid:5d0b7c3e-8f21-4a6b-9c4d-2e7f1a3b6c58\",\n          \"eventType\": \"rule.set\",\n          \"timestamp\": \"2026-09-14T18:20:00Z\",\n          \"participants\": {\n            \"initiator\": { \"role\": \"management-client\", \"id\": \"wallet-app\" },\n            \"provider\": { \"id\": \"https://other-context.provider.example\" }\n          },\n          \"data\": { \"ruleId\": \"urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b\" }\n        }\n      ]\n    },\n    \"accessToken\": \"hcp_mt_3c7e1a9f5b2d8e40\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T11:00:00Z\",\n    \"verificationMethod\": \"did:web:wallet.person.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"zr4yLz4W2AxhBML7C9Sf3J4GMWq4AeL3tW2Cm85PYHJK1fCGYGrjhVj7n8UPZPgRbojK5Tt75P1coLCsZezEfEXB\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:146208b0-3dc7-4845-9e9f-8f86b5640ff8\",\n  \"type\": \"https://trusttasks.org/spec/hcp/import/0.1#response\",\n  \"issuer\": \"did:web:new-context.provider.example\",\n  \"recipient\": \"did:web:wallet.person.example\",\n  \"issuedAt\": \"2026-11-25T10:00:01Z\",\n  \"threadId\": \"urn:uuid:71b8857d-0a2a-4ceb-a93d-00f7829620c9\",\n  \"payload\": {\n    \"outcomes\": [\n      { \"id\": \"urn:uuid:13462b18-de39-4fcc-b94d-56b776184381\", \"outcome\": \"imported\" },\n      {\n        \"id\": \"urn:uuid:fa146974-0465-4023-9ec4-1c36ee8341f8\",\n        \"outcome\": \"rejected\",\n        \"reason\": \"id held with different content\"\n      }\n    ],\n    \"dryRun\": true\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Response> =
+        serde_json::from_str(JSON).expect("deserialize response example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "response example failed round-trip");
+}
+#[test]
+fn response_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:5673a676-23de-49a0-a653-4e14466e685e\",\n  \"type\": \"https://trusttasks.org/spec/hcp/import/0.1#response\",\n  \"issuer\": \"did:web:new-context.provider.example\",\n  \"recipient\": \"did:web:assistant.delegate.example\",\n  \"issuedAt\": \"2026-11-25T12:00:01Z\",\n  \"threadId\": \"urn:uuid:f2ffdd02-d8e8-410a-a35e-899243f3b6c8\",\n  \"payload\": {\n    \"outcomes\": [\n      { \"id\": \"urn:uuid:d901edab-5d35-4f04-8e6e-d5e5325a3742\", \"outcome\": \"imported\" }\n    ],\n    \"ext\": {\n      \"vnd.trusttasks.hcp-carriage\": {\n        \"rulesNotApplied\": [\"urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b\"]\n      }\n    }\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,6 +71,14 @@ fn rejects_invalid_examples() {
         (
             "`dryRun` as a string — HCP's `dryRun` is a boolean (HCP 5.4.3).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"dryRun\": \"yes\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+        ),
+        (
+            "An export option as a string — `options` may be absent, and so may each of its members, but one that is present is a boolean (HCP 5.4.1).",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": \"no\"\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
+        ),
+        (
+            "An imported audit event whose `entryId` is not a `urn:uuid` — `entryId` may be absent, as HCP's own audit-event shape leaves it, but one that is present is an entry `id` or null (HCP 8.2).",
+            "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"audit\": [\n      {\n        \"entryId\": \"entry-1\",\n        \"eventId\": \"urn:uuid:5d0b7c3e-8f21-4a6b-9c4d-2e7f1a3b6c58\",\n        \"eventType\": \"rule.set\",\n        \"participants\": {\n          \"initiator\": {\n            \"id\": \"wallet-app\",\n            \"role\": \"management-client\"\n          },\n          \"provider\": {\n            \"id\": \"https://context.provider.example\"\n          }\n        },\n        \"timestamp\": \"2026-09-14T18:20:00Z\"\n      }\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
@@ -95,8 +121,8 @@ fn rejects_invalid_response_examples() {
             "{\n  \"dryRun\": true\n}",
         ),
         (
-            "A `rulesNotApplied` item that is not a rule identifier — each names a standing rule by its `ruleId`, a `urn:uuid:` (HCP 6.3).",
-            "{\n  \"outcomes\": [\n    {\n      \"id\": \"urn:uuid:13462b18-de39-4fcc-b94d-56b776184381\",\n      \"outcome\": \"imported\"\n    }\n  ],\n  \"rulesNotApplied\": [\n    \"deny-ads\"\n  ]\n}",
+            "`rulesNotApplied` as a member of the result — HCP's import result has `outcomes` and `dryRun` only (HCP 5.4.3, 9.4.11); this family carries the rules a delegate's import did not apply under its own `ext` namespace, `vnd.trusttasks.hcp-carriage`, never beside HCP's members (question 40).",
+            "{\n  \"outcomes\": [\n    {\n      \"id\": \"urn:uuid:13462b18-de39-4fcc-b94d-56b776184381\",\n      \"outcome\": \"imported\"\n    }\n  ],\n  \"rulesNotApplied\": [\n    \"urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b\"\n  ]\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

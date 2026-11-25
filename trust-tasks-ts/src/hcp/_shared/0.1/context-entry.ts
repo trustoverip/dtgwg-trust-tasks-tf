@@ -14,4 +14,4 @@ export interface HCPContextEntry {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Assertion, Basis, Classification, ClientDescription, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Provenance_HcpV0_1 as Provenance, Record, Relationship } from "../../../_shared/components.js";
+export type { Assertion, Basis, Classification, ClientDescription, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Provenance_HcpV0_1 as Provenance, Record, RecordedProposal, Relationship } from "../../../_shared/components.js";

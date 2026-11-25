@@ -731,6 +731,143 @@ extension type const RelationshipType(String value) {
   ];
 }
 
+/// The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecordedProposalAct(String value) {
+  static const RecordedProposalAct reject = RecordedProposalAct('reject');
+  static const RecordedProposalAct accept = RecordedProposalAct('accept');
+  static const RecordedProposalAct supersede = RecordedProposalAct('supersede');
+
+  /// Every value this specification's schema permits.
+  static const List<RecordedProposalAct> values = <RecordedProposalAct>[
+    reject,
+    accept,
+    supersede
+  ];
+}
+
+/// Their role (HCP 3.9). HCP's own values, carried verbatim.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecordedProposalProposedByRole(String value) {
+  static const RecordedProposalProposedByRole managementClient =
+      RecordedProposalProposedByRole('management-client');
+  static const RecordedProposalProposedByRole contextClient =
+      RecordedProposalProposedByRole('context-client');
+  static const RecordedProposalProposedByRole authorizationService =
+      RecordedProposalProposedByRole('authorization-service');
+  static const RecordedProposalProposedByRole hcpProvider =
+      RecordedProposalProposedByRole('hcp-provider');
+
+  /// Every value this specification's schema permits.
+  static const List<RecordedProposalProposedByRole> values =
+      <RecordedProposalProposedByRole>[
+    managementClient,
+    contextClient,
+    authorizationService,
+    hcpProvider
+  ];
+}
+
+/// Who made the proposal: the provider under the Memory Manager Profile, or the client
+/// that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a
+/// request.
+class RecordedProposalProposedBy {
+  const RecordedProposalProposedBy({
+    required this.role,
+    required this.id,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordedProposalProposedBy.fromJson(Map<String, dynamic> json) =>
+      RecordedProposalProposedBy(
+        role: RecordedProposalProposedByRole(json['role'] as String),
+        id: json['id'] as String,
+      );
+
+  /// Their role (HCP 3.9). HCP's own values, carried verbatim.
+  final RecordedProposalProposedByRole role;
+
+  /// Their identifier. The maxLength is a framework bound, not an HCP requirement.
+  final String id;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'role': role.value,
+        'id': id,
+      };
+}
+
+/// A proposal for resolving a conflict, as the provider records it on a `contradicts`
+/// relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is
+/// the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and
+/// `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A
+/// proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape
+/// is.
+class RecordedProposal {
+  const RecordedProposal({
+    required this.act,
+    required this.entry,
+    required this.rationale,
+    required this.weighed,
+    required this.proposedBy,
+    required this.proposedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordedProposal.fromJson(Map<String, dynamic> json) =>
+      RecordedProposal(
+        act: RecordedProposalAct(json['act'] as String),
+        entry: json['entry'] as String,
+        rationale: json['rationale'] as String,
+        weighed:
+            (json['weighed'] as List<dynamic>).map((e) => e as String).toList(),
+        proposedBy: RecordedProposalProposedBy.fromJson(
+            json['proposedBy'] as Map<String, dynamic>),
+        proposedAt: json['proposedAt'] as String,
+      );
+
+  /// The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+  final RecordedProposalAct act;
+
+  /// The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not
+  /// an HCP requirement.
+  final String entry;
+
+  /// Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a
+  /// framework bound, not an HCP requirement.
+  final String rationale;
+
+  /// What the proposal considered: an open set, of which HCP defines `basis`,
+  /// `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP
+  /// 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.
+  final List<String> weighed;
+
+  /// Who made the proposal: the provider under the Memory Manager Profile, or the client
+  /// that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a
+  /// request.
+  final RecordedProposalProposedBy proposedBy;
+
+  /// When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never
+  /// taken from a request.
+  final Instant proposedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'act': act.value,
+        'entry': entry,
+        'rationale': rationale,
+        'weighed': weighed,
+        'proposedBy': proposedBy.toJson(),
+        'proposedAt': proposedAt,
+      };
+}
+
 /// Their role (HCP 3.9). HCP's own values, carried verbatim.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
@@ -784,9 +921,10 @@ class RelationshipAssertedBy {
 }
 
 /// A relationship from this entry to another (HCP 4.2.3). Only a `contradicts`
-/// relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines
-/// it. This rule is stated here and not as a schema conditional: the registry's Rust
-/// generator does not support `if`/`then`/`else`, so a validator does not check it.
+/// relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as
+/// HCP defines it. This rule is stated here and not as a schema conditional: the
+/// registry's Rust generator does not support `if`/`then`/`else`, so a validator does
+/// not check it.
 class Relationship {
   const Relationship({
     required this.type,
@@ -803,7 +941,10 @@ class Relationship {
         assertedBy: RelationshipAssertedBy.fromJson(
             json['assertedBy'] as Map<String, dynamic>),
         recordedAt: json['recordedAt'] as String,
-        proposal: json['proposal'] as Map<String, dynamic>?,
+        proposal: json['proposal'] == null
+            ? null
+            : RecordedProposal.fromJson(
+                json['proposal'] as Map<String, dynamic>),
       );
 
   /// The kind of relationship.
@@ -820,7 +961,7 @@ class Relationship {
 
   /// A proposal for resolving a conflict, which changes nothing until the Context
   /// Subject acts (HCP 4.7.4).
-  final Map<String, dynamic>? proposal;
+  final RecordedProposal? proposal;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -828,7 +969,7 @@ class Relationship {
         'target': target,
         'assertedBy': assertedBy.toJson(),
         'recordedAt': recordedAt,
-        if (proposal != null) 'proposal': proposal!,
+        if (proposal != null) 'proposal': proposal!.toJson(),
       };
 }
 

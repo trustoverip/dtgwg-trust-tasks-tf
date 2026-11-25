@@ -3,17 +3,14 @@
  * Source: specs/hcp/import/0.1/payload.schema.json
  */
 
-import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn } from "../../../_shared/components.js";
+import type { AuditDisclosed, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Ext, Instant, StandingRule, Uri, Urn } from "../../../_shared/components.js";
 
 
 /**
  * The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface HCPImportPayload {
-  /**
-   * HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19).
-   */
-  export: Export;
+  export: ImportedExport;
   /**
    * HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.
    */
@@ -30,6 +27,459 @@ export interface HCPImportPayload {
   accessToken: string;
 }
 /**
+ * HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted.
+ */
+export interface ImportedExport {
+  /**
+   * The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  "@context":
+    | []
+    | [unknown]
+    | [unknown, unknown]
+    | [unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | string;
+  /**
+   * `ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.
+   */
+  type: "ContextExport";
+  /**
+   * The export structure version, compared as an exact string (HCP 5.4.1, 1.7).
+   */
+  schema: "https://hcp.example/spec/export/2.0";
+  /**
+   * The Context Subject (HCP 5.4.1).
+   */
+  subject: {
+    /**
+     * The Context Subject's identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The exporting HCP Provider (HCP 5.4.1).
+   */
+  exportedBy: string;
+  /**
+   * When the export was made (HCP 5.4.1).
+   */
+  exportedAt: Instant;
+  options?: ImportedExportOptions;
+  /**
+   * The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
+   *
+   * @maxItems 100000
+   */
+  entries: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array.
+   *
+   * @maxItems 1000000
+   */
+  versions?: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * The Context Subject's standing rules (HCP 5.4.1, 6.3).
+   *
+   * @maxItems 1000000
+   */
+  rules: StandingRule[];
+  /**
+   * The Context Subject's directives (HCP 5.4.1, 6.4).
+   *
+   * @maxItems 1000000
+   */
+  directives?: Directive[];
+  /**
+   * The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
+   *
+   * @maxItems 1000000
+   */
+  delegations?: Delegation[];
+  /**
+   * The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array.
+   *
+   * @maxItems 1000000
+   */
+  audit?: ImportedAuditEvent[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.
+ */
+export interface ImportedExportOptions {
+  /**
+   * Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown.
+   */
+  excludeDeleted?: boolean;
+  /**
+   * Superseded versions were requested (HCP 5.4.1). Absent means unknown.
+   */
+  includeVersions?: boolean;
+  /**
+   * The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.
+   */
+  includeAudit?: boolean;
+  [k: string]: unknown | undefined;
+}
+/**
+ * One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.
+ */
+export interface ImportedAuditEvent {
+  /**
+   * The event's identifier (HCP 8.2).
+   */
+  eventId: Urn;
+  /**
+   * The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.
+   */
+  eventType: string;
+  /**
+   * When the event occurred. HCP's member name (HCP 8.2), carried verbatim.
+   */
+  timestamp: Instant;
+  /**
+   * Who took part (HCP 8.2, 3.9).
+   */
+  participants: AuditParticipants;
+  /**
+   * The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+   */
+  entryId?: string | null;
+  /**
+   * For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+   */
+  relatedEntryId?: string | null;
+  /**
+   * The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  categories?: Category[];
+  /**
+   * The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+   */
+  purpose?: string | null;
+  /**
+   * The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+   */
+  purposeDescription?: string | null;
+  /**
+   * The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+   */
+  grantId?: string | null;
+  /**
+   * Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
+   *
+   * @maxItems 20
+   */
+  disclosed?:
+    | []
+    | [AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ];
+  /**
+   * The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
+   */
+  data?: {
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
  * The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.
  */
 export interface HCPImportResponsePayload {
@@ -44,11 +494,9 @@ export interface HCPImportResponsePayload {
    */
   dryRun?: boolean;
   /**
-   * Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
-   *
-   * @maxItems 1000000
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).
    */
-  rulesNotApplied?: Urn[];
+  ext?: Ext;
 }
 /**
  * The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says "rejected, with the reason". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.
@@ -70,7 +518,7 @@ export interface Outcome {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuditDisclosed, AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn };
+export type { AuditDisclosed, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Ext, Instant, StandingRule, Uri, Urn };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/import/0.1" as const;
@@ -127,8 +575,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   ],
   "properties": {
     "export": {
-      "$ref": "#/$defs/Export",
-      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19)."
+      "$ref": "#/$defs/ImportedExport",
+      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted."
     },
     "dryRun": {
       "type": "boolean",
@@ -150,19 +598,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Urn": {
-      "type": "string",
-      "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "description": "An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."
-    },
-    "Category": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2048,
-      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
-    },
-    "Export": {
+    "ImportedExport": {
       "type": "object",
       "additionalProperties": true,
       "required": [
@@ -172,11 +608,10 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "subject",
         "exportedBy",
         "exportedAt",
-        "options",
         "entries",
         "rules"
       ],
-      "description": "An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.",
+      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
       "properties": {
         "@context": {
           "type": [
@@ -223,8 +658,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "When the export was made (HCP 5.4.1)."
         },
         "options": {
-          "$ref": "#/$defs/ExportOptions",
-          "description": "The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42)."
+          "$ref": "#/$defs/ImportedExportOptions",
+          "description": "HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either."
         },
         "entries": {
           "type": "array",
@@ -242,7 +677,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "type": "object",
             "additionalProperties": true
           },
-          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records."
+          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array."
         },
         "rules": {
           "type": "array",
@@ -272,50 +707,41 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "array",
           "maxItems": 1000000,
           "items": {
-            "$ref": "#/$defs/AuditEvent"
+            "$ref": "#/$defs/ImportedAuditEvent"
           },
-          "description": "The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records."
+          "description": "The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."
         }
       }
     },
-    "ExportOptions": {
+    "ImportedExportOptions": {
       "type": "object",
       "additionalProperties": true,
-      "required": [
-        "includeVersions",
-        "includeAudit"
-      ],
-      "description": "The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.",
+      "description": "HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.",
       "properties": {
         "excludeDeleted": {
           "type": "boolean",
-          "description": "Omit entries whose `record.status` is `deleted` (HCP 5.4.1)."
+          "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown."
         },
         "includeVersions": {
           "type": "boolean",
-          "description": "Also return superseded versions of each entry returned (HCP 5.4.1)."
+          "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown."
         },
         "includeAudit": {
           "type": "boolean",
-          "description": "Also return the Context Subject's audit log (HCP 5.4.1, 8.3)."
+          "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown."
         }
       }
     },
-    "AuditEvent": {
+    "ImportedAuditEvent": {
       "type": "object",
       "additionalProperties": true,
       "required": [
         "eventId",
         "eventType",
         "timestamp",
-        "participants",
-        "entryId",
-        "relatedEntryId",
-        "purpose",
-        "purposeDescription",
-        "grantId"
+        "participants"
       ],
-      "description": "One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).",
+      "description": "One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
       "properties": {
         "eventId": {
           "$ref": "#/$defs/Urn",
@@ -325,11 +751,11 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "description": "The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements."
+          "description": "The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements."
         },
         "timestamp": {
           "$ref": "#/$defs/Instant",
-          "description": "When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1)."
+          "description": "When the event occurred. HCP's member name (HCP 8.2), carried verbatim."
         },
         "participants": {
           "$ref": "#/$defs/AuditParticipants",
@@ -341,7 +767,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
+          "description": "The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
         },
         "relatedEntryId": {
           "type": [
@@ -349,7 +775,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."
+          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
         },
         "categories": {
           "type": "array",
@@ -366,7 +792,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           ],
           "maxLength": 2048,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
         },
         "purposeDescription": {
           "type": [
@@ -374,7 +800,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "maxLength": 4096,
-          "description": "The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
         },
         "grantId": {
           "type": [
@@ -382,7 +808,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42)."
+          "description": "The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
         },
         "disclosed": {
           "type": "array",
@@ -395,9 +821,36 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "data": {
           "type": "object",
           "additionalProperties": true,
-          "description": "The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."
+          "description": "The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."
         }
       }
+    },
+    "HcpCarriageImportExtension": {
+      "$anchor": "hcpCarriageImportExtension",
+      "title": "HCP — Import — vnd.trusttasks.hcp-carriage response extension",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rulesNotApplied"
+      ],
+      "description": "The value of `ext[\"vnd.trusttasks.hcp-carriage\"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.",
+      "properties": {
+        "rulesNotApplied": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Urn"
+          },
+          "description": "The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+        }
+      }
+    },
+    "Urn": {
+      "type": "string",
+      "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."
     },
     "AuditDisclosed": {
       "type": "object",
@@ -462,6 +915,13 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "format": "date-time",
       "description": "An RFC 3339 instant."
+    },
+    "Category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
     },
     "AuditParticipants": {
       "type": "object",
@@ -911,7 +1371,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "setBy",
         "createdAt"
       ],
-      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.",
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.",
       "properties": {
         "ruleId": {
           "$ref": "#/$defs/Urn",
@@ -963,19 +1423,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Instant",
           "description": "Set by the provider: when the rule was set (HCP 6.3)."
         }
-      },
-      "anyOf": [
-        {
-          "required": [
-            "operators"
-          ]
-        },
-        {
-          "required": [
-            "requires"
-          ]
-        }
-      ]
+      }
     },
     "Uri": {
       "type": "string",
@@ -1015,14 +1463,9 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "boolean",
           "description": "HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11)."
         },
-        "rulesNotApplied": {
-          "type": "array",
-          "maxItems": 1000000,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Urn"
-          },
-          "description": "Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+        "ext": {
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40)."
         }
       }
     },
@@ -1059,10 +1502,15 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Urn": {
-      "type": "string",
-      "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "description": "An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
     }
   }
 };

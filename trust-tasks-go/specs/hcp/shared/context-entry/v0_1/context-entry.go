@@ -343,9 +343,10 @@ type RelationshipAssertedBy struct {
 }
 
 // Relationship A relationship from this entry to another (HCP 4.2.3). Only a
-// `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP
-// defines it. This rule is stated here and not as a schema conditional: the registry's
-// Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+// `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a
+// `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema
+// conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a
+// validator does not check it.
 type Relationship struct {
 	// The kind of relationship.
 	Type RelationshipType `json:"type"`
@@ -361,7 +362,73 @@ type Relationship struct {
 
 	// A proposal for resolving a conflict, which changes nothing until the Context Subject
 	// acts (HCP 4.7.4).
-	Proposal *map[string]json.RawMessage `json:"proposal,omitempty"`
+	Proposal *RecordedProposal `json:"proposal,omitempty"`
+}
+
+// RecordedProposalAct The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried
+// verbatim.
+type RecordedProposalAct string
+
+// Values RecordedProposalAct may take, per this specification's schema.
+const (
+	RecordedProposalActReject    RecordedProposalAct = "reject"
+	RecordedProposalActAccept    RecordedProposalAct = "accept"
+	RecordedProposalActSupersede RecordedProposalAct = "supersede"
+)
+
+// RecordedProposalProposedByRole Their role (HCP 3.9). HCP's own values, carried
+// verbatim.
+type RecordedProposalProposedByRole string
+
+// Values RecordedProposalProposedByRole may take, per this specification's schema.
+const (
+	RecordedProposalProposedByRoleManagementClient     RecordedProposalProposedByRole = "management-client"
+	RecordedProposalProposedByRoleContextClient        RecordedProposalProposedByRole = "context-client"
+	RecordedProposalProposedByRoleAuthorizationService RecordedProposalProposedByRole = "authorization-service"
+	RecordedProposalProposedByRoleHcpProvider          RecordedProposalProposedByRole = "hcp-provider"
+)
+
+// RecordedProposalProposedBy Who made the proposal: the provider under the Memory Manager
+// Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider,
+// never taken from a request.
+type RecordedProposalProposedBy struct {
+	// Their role (HCP 3.9). HCP's own values, carried verbatim.
+	Role RecordedProposalProposedByRole `json:"role"`
+
+	// Their identifier. The maxLength is a framework bound, not an HCP requirement.
+	ID string `json:"id"`
+}
+
+// RecordedProposal A proposal for resolving a conflict, as the provider records it on a
+// `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject
+// acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy`
+// and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A
+// proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.
+type RecordedProposal struct {
+	// The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+	Act RecordedProposalAct `json:"act"`
+
+	// The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an
+	// HCP requirement.
+	Entry string `json:"entry"`
+
+	// Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework
+	// bound, not an HCP requirement.
+	Rationale string `json:"rationale"`
+
+	// What the proposal considered: an open set, of which HCP defines `basis`,
+	// `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP
+	// 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.
+	Weighed []string `json:"weighed"`
+
+	// Who made the proposal: the provider under the Memory Manager Profile, or the client
+	// that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a
+	// request.
+	ProposedBy RecordedProposalProposedBy `json:"proposedBy"`
+
+	// When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken
+	// from a request.
+	ProposedAt Instant `json:"proposedAt"`
 }
 
 // EvidenceItemRole `content`: the item's credential is the entry's content (VC Evidence

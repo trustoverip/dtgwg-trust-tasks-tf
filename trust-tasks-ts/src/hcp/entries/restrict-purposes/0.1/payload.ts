@@ -3,7 +3,7 @@
  * Source: specs/hcp/entries/restrict-purposes/0.1/payload.schema.json
  */
 
-import type { Assertion, Assurance, Basis, Category, Classification, ClientDescription, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Instant, Provenance_HcpV0_1 as Provenance, PurposeCode, Record, Relationship, RelationshipType, Uri, Urn } from "../../../../_shared/components.js";
+import type { Assertion, Assurance, Basis, Category, Classification, ClientDescription, Content, Entry_HcpV0_1 as Entry, EntrySubject, EvidenceItem, Instant, Provenance_HcpV0_1 as Provenance, PurposeCode, Record, RecordedProposal, Relationship, RelationshipType, Uri, Urn } from "../../../../_shared/components.js";
 
 
 /**
@@ -40,7 +40,7 @@ export interface HCPRestrictEntryPurposesResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Assertion, Assurance, Basis, Category, Classification, ClientDescription, Content, Entry, EntrySubject, EvidenceItem, Instant, Provenance, PurposeCode, Record, Relationship, RelationshipType, Uri, Urn };
+export type { Assertion, Assurance, Basis, Category, Classification, ClientDescription, Content, Entry, EntrySubject, EvidenceItem, Instant, Provenance, PurposeCode, Record, RecordedProposal, Relationship, RelationshipType, Uri, Urn };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1" as const;
@@ -320,7 +320,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "assertedBy",
         "recordedAt"
       ],
-      "description": "A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.",
+      "description": "A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.",
       "properties": {
         "type": {
           "$ref": "#/$defs/RelationshipType",
@@ -364,9 +364,86 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "When the provider recorded the relationship."
         },
         "proposal": {
+          "$ref": "#/$defs/RecordedProposal",
+          "description": "A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4)."
+        }
+      }
+    },
+    "RecordedProposal": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "act",
+        "entry",
+        "rationale",
+        "weighed",
+        "proposedBy",
+        "proposedAt"
+      ],
+      "description": "A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.",
+      "properties": {
+        "act": {
+          "type": "string",
+          "enum": [
+            "reject",
+            "accept",
+            "supersede"
+          ],
+          "description": "The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim."
+        },
+        "entry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement."
+        },
+        "weighed": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "description": "What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements."
+        },
+        "proposedBy": {
           "type": "object",
           "additionalProperties": true,
-          "description": "A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4)."
+          "required": [
+            "role",
+            "id"
+          ],
+          "description": "Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.",
+          "properties": {
+            "role": {
+              "type": "string",
+              "enum": [
+                "management-client",
+                "context-client",
+                "authorization-service",
+                "hcp-provider"
+              ],
+              "description": "Their role (HCP 3.9). HCP's own values, carried verbatim."
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "Their identifier. The maxLength is a framework bound, not an HCP requirement."
+            }
+          }
+        },
+        "proposedAt": {
+          "$ref": "#/$defs/Instant",
+          "description": "When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request."
         }
       }
     },

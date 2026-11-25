@@ -2424,12 +2424,6 @@ export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_
  */
 export type Slot = string;
 /**
- * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.
- */
-export type StandingRule = {
-  [k: string]: unknown | undefined;
-};
-/**
  * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
  */
 export type State = "active" | "dismissed";
@@ -13184,7 +13178,7 @@ export interface Export {
    */
   exportedAt: Instant;
   /**
-   * The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42).
+   * The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional, and hcp/import accepts an export without it; requiring it of an export the provider produces is pending HCP confirmation (question 42).
    */
   options: ExportOptions;
   /**
@@ -17568,6 +17562,49 @@ export interface RecordedApproval {
   recordedAt?: string;
 }
 /**
+ * A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.
+ */
+export interface RecordedProposal {
+  /**
+   * The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+   */
+  act: "reject" | "accept" | "supersede";
+  /**
+   * The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+   */
+  entry: string;
+  /**
+   * Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+   */
+  rationale: string;
+  /**
+   * What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  weighed: [string, ...string[]];
+  /**
+   * Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.
+   */
+  proposedBy: {
+    /**
+     * Their role (HCP 3.9). HCP's own values, carried verbatim.
+     */
+    role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
+    /**
+     * Their identifier. The maxLength is a framework bound, not an HCP requirement.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request.
+   */
+  proposedAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).
  */
 export interface RecoveryCommitment {
@@ -17779,7 +17816,7 @@ export interface RejectedKey {
   reason: string;
 }
 /**
- * A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ * A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
  */
 export interface Relationship {
   /**
@@ -17811,9 +17848,7 @@ export interface Relationship {
   /**
    * A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).
    */
-  proposal?: {
-    [k: string]: unknown | undefined;
-  };
+  proposal?: RecordedProposal;
   [k: string]: unknown | undefined;
 }
 /**
@@ -19792,6 +19827,49 @@ export interface Standing {
    * True where the most recent confirmation record on the version disclosed is `confirmed` (HCP 7.4, 3.8).
    */
   confirmed: boolean;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.
+ */
+export interface StandingRule {
+  /**
+   * Stable for the life of the rule (HCP 6.3).
+   */
+  ruleId: Urn;
+  /**
+   * `deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
+   */
+  effect: "deny";
+  /**
+   * The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  operators?: [string, ...string[]];
+  /**
+   * Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  requires?: [Uri, ...Uri[]];
+  /**
+   * The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories?: [Category, ...Category[]];
+  /**
+   * Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
+   */
+  setBy: string;
+  /**
+   * Set by the provider: when the rule was set (HCP 6.3).
+   */
+  createdAt: Instant;
   [k: string]: unknown | undefined;
 }
 /**

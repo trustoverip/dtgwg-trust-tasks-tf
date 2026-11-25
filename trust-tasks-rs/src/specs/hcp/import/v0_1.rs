@@ -131,447 +131,6 @@ impl<'de> ::serde::Deserialize<'de> for AuditDisclosedRevealedItemClaimsItem {
             })
     }
 }
-///One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditEvent {
-    ///The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
-    ///The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub disclosed: ::std::vec::Vec<AuditDisclosed>,
-    ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
-    #[serde(rename = "entryId")]
-    pub entry_id: ::std::option::Option<AuditEventEntryId>,
-    ///The event's identifier (HCP 8.2).
-    #[serde(rename = "eventId")]
-    pub event_id: Urn,
-    ///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
-    #[serde(rename = "eventType")]
-    pub event_type: AuditEventEventType,
-    ///The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
-    #[serde(rename = "grantId")]
-    pub grant_id: ::std::option::Option<AuditEventGrantId>,
-    ///Who took part (HCP 8.2, 3.9).
-    pub participants: AuditParticipants,
-    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-    pub purpose: ::std::option::Option<AuditEventPurpose>,
-    ///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-    #[serde(rename = "purposeDescription")]
-    pub purpose_description: ::std::option::Option<AuditEventPurposeDescription>,
-    ///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
-    #[serde(rename = "relatedEntryId")]
-    pub related_entry_id: ::std::option::Option<AuditEventRelatedEntryId>,
-    ///When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).
-    pub timestamp: Instant,
-}
-impl AuditEvent {
-    pub fn builder() -> builder::AuditEvent {
-        Default::default()
-    }
-}
-///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventEntryId(::std::string::String);
-impl ::std::ops::Deref for AuditEventEntryId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventEntryId> for ::std::string::String {
-    fn from(value: AuditEventEntryId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventEntryId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
-            || {
-                ::regress::Regex::new(
-                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                )
-                .unwrap()
-            },
-        );
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventEntryId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventEventType(::std::string::String);
-impl ::std::ops::Deref for AuditEventEventType {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventEventType> for ::std::string::String {
-    fn from(value: AuditEventEventType) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventEventType {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 256usize {
-            return Err("longer than 256 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventEventType {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventGrantId(::std::string::String);
-impl ::std::ops::Deref for AuditEventGrantId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventGrantId> for ::std::string::String {
-    fn from(value: AuditEventGrantId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventGrantId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
-            || {
-                ::regress::Regex::new(
-                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                )
-                .unwrap()
-            },
-        );
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventGrantId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventGrantId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventGrantId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventGrantId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventPurpose(::std::string::String);
-impl ::std::ops::Deref for AuditEventPurpose {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventPurpose> for ::std::string::String {
-    fn from(value: AuditEventPurpose) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventPurpose {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventPurpose {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventPurposeDescription(::std::string::String);
-impl ::std::ops::Deref for AuditEventPurposeDescription {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventPurposeDescription> for ::std::string::String {
-    fn from(value: AuditEventPurposeDescription) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventPurposeDescription {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 4096usize {
-            return Err("longer than 4096 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventPurposeDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventPurposeDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventPurposeDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventPurposeDescription {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventRelatedEntryId(::std::string::String);
-impl ::std::ops::Deref for AuditEventRelatedEntryId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventRelatedEntryId> for ::std::string::String {
-    fn from(value: AuditEventRelatedEntryId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventRelatedEntryId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
-            || {
-                ::regress::Regex::new(
-                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                )
-                .unwrap()
-            },
-        );
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventRelatedEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventRelatedEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventRelatedEntryId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventRelatedEntryId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///The participants in an audit event (HCP 8.2, 3.9). No event names "system" (HCP 8.2).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -2289,17 +1848,574 @@ impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemVerification
         value.parse()
     }
 }
-///An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
+///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
+impl ::std::ops::Deref for Ext {
+    type Target = ::std::collections::HashMap<ExtKey, ::serde_json::Value>;
+    fn deref(&self) -> &::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+        &self.0
+    }
+}
+impl ::std::convert::From<Ext> for ::std::collections::HashMap<ExtKey, ::serde_json::Value> {
+    fn from(value: Ext) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Value>> for Ext {
+    fn from(value: ::std::collections::HashMap<ExtKey, ::serde_json::Value>) -> Self {
+        Self(value)
+    }
+}
+///`ExtKey`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ExtKey(::std::string::String);
+impl ::std::ops::Deref for ExtKey {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ExtKey> for ::std::string::String {
+    fn from(value: ExtKey) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ExtKey {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ExtKey {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ExtKey {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ExtKey {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ExtKey {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The value of `ext["vnd.trusttasks.hcp-carriage"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct HcpCarriageImportExtension {
+    ///The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
+    #[serde(rename = "rulesNotApplied")]
+    pub rules_not_applied: Vec<Urn>,
+}
+impl HcpCarriageImportExtension {
+    pub fn builder() -> builder::HcpCarriageImportExtension {
+        Default::default()
+    }
+}
+///One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
-pub struct Export {
-    ///The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.
+pub struct ImportedAuditEvent {
+    ///The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub audit: ::std::vec::Vec<AuditEvent>,
+    pub categories: ::std::vec::Vec<Category>,
+    ///The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
+    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
+    pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub disclosed: ::std::vec::Vec<AuditDisclosed>,
+    ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+    #[serde(
+        rename = "entryId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub entry_id: ::std::option::Option<ImportedAuditEventEntryId>,
+    ///The event's identifier (HCP 8.2).
+    #[serde(rename = "eventId")]
+    pub event_id: Urn,
+    ///The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.
+    #[serde(rename = "eventType")]
+    pub event_type: ImportedAuditEventEventType,
+    ///The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+    #[serde(
+        rename = "grantId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub grant_id: ::std::option::Option<ImportedAuditEventGrantId>,
+    ///Who took part (HCP 8.2, 3.9).
+    pub participants: AuditParticipants,
+    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub purpose: ::std::option::Option<ImportedAuditEventPurpose>,
+    ///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+    #[serde(
+        rename = "purposeDescription",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub purpose_description: ::std::option::Option<ImportedAuditEventPurposeDescription>,
+    ///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+    #[serde(
+        rename = "relatedEntryId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub related_entry_id: ::std::option::Option<ImportedAuditEventRelatedEntryId>,
+    ///When the event occurred. HCP's member name (HCP 8.2), carried verbatim.
+    pub timestamp: Instant,
+}
+impl ImportedAuditEvent {
+    pub fn builder() -> builder::ImportedAuditEvent {
+        Default::default()
+    }
+}
+///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventEntryId(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventEntryId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventEntryId> for ::std::string::String {
+    fn from(value: ImportedAuditEventEntryId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventEntryId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
+            || {
+                ::regress::Regex::new(
+                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                )
+                .unwrap()
+            },
+        );
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventEntryId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventEventType(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventEventType {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventEventType> for ::std::string::String {
+    fn from(value: ImportedAuditEventEventType) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventEventType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventEventType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventEventType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventEventType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventEventType {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventGrantId(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventGrantId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventGrantId> for ::std::string::String {
+    fn from(value: ImportedAuditEventGrantId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventGrantId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
+            || {
+                ::regress::Regex::new(
+                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                )
+                .unwrap()
+            },
+        );
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventGrantId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventGrantId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventGrantId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventGrantId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventPurpose(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventPurpose {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventPurpose> for ::std::string::String {
+    fn from(value: ImportedAuditEventPurpose) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventPurpose {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventPurpose {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventPurpose {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventPurposeDescription(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventPurposeDescription {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventPurposeDescription> for ::std::string::String {
+    fn from(value: ImportedAuditEventPurposeDescription) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventPurposeDescription {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventPurposeDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventPurposeDescription {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedAuditEventRelatedEntryId(::std::string::String);
+impl ::std::ops::Deref for ImportedAuditEventRelatedEntryId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedAuditEventRelatedEntryId> for ::std::string::String {
+    fn from(value: ImportedAuditEventRelatedEntryId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedAuditEventRelatedEntryId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
+            || {
+                ::regress::Regex::new(
+                    "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                )
+                .unwrap()
+            },
+        );
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditEventRelatedEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventRelatedEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventRelatedEntryId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventRelatedEntryId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedExport {
+    ///The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub audit: ::std::vec::Vec<ImportedAuditEvent>,
     ///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
     #[serde(rename = "@context")]
-    pub context: ExportContext,
+    pub context: ImportedExportContext,
     ///The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub delegations: ::std::vec::Vec<Delegation>,
@@ -2313,23 +2429,24 @@ pub struct Export {
     pub exported_at: Instant,
     ///The exporting HCP Provider (HCP 5.4.1).
     #[serde(rename = "exportedBy")]
-    pub exported_by: ExportExportedBy,
-    ///The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42).
-    pub options: ExportOptions,
+    pub exported_by: ImportedExportExportedBy,
+    ///HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub options: ::std::option::Option<ImportedExportOptions>,
     ///The Context Subject's standing rules (HCP 5.4.1, 6.3).
     pub rules: ::std::vec::Vec<StandingRule>,
     ///The export structure version, compared as an exact string (HCP 5.4.1, 1.7).
     pub schema: ::std::string::String,
-    pub subject: ExportSubject,
+    pub subject: ImportedExportSubject,
     ///`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
-    ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.
+    ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub versions: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
-impl Export {
-    pub fn builder() -> builder::Export {
+impl ImportedExport {
+    pub fn builder() -> builder::ImportedExport {
         Default::default()
     }
 }
@@ -2338,11 +2455,11 @@ impl Export {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
-pub enum ExportContext {
+pub enum ImportedExportContext {
     Array(::std::vec::Vec<::serde_json::Value>),
     String(::std::string::String),
 }
-impl ::std::convert::From<::std::vec::Vec<::serde_json::Value>> for ExportContext {
+impl ::std::convert::From<::std::vec::Vec<::serde_json::Value>> for ImportedExportContext {
     fn from(value: ::std::vec::Vec<::serde_json::Value>) -> Self {
         Self::Array(value)
     }
@@ -2351,19 +2468,19 @@ impl ::std::convert::From<::std::vec::Vec<::serde_json::Value>> for ExportContex
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct ExportExportedBy(::std::string::String);
-impl ::std::ops::Deref for ExportExportedBy {
+pub struct ImportedExportExportedBy(::std::string::String);
+impl ::std::ops::Deref for ImportedExportExportedBy {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<ExportExportedBy> for ::std::string::String {
-    fn from(value: ExportExportedBy) -> Self {
+impl ::std::convert::From<ImportedExportExportedBy> for ::std::string::String {
+    fn from(value: ImportedExportExportedBy) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for ExportExportedBy {
+impl ::std::str::FromStr for ImportedExportExportedBy {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 2048usize {
@@ -2375,13 +2492,13 @@ impl ::std::str::FromStr for ExportExportedBy {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for ExportExportedBy {
+impl ::std::convert::TryFrom<&str> for ImportedExportExportedBy {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ExportExportedBy {
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedExportExportedBy {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -2389,7 +2506,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for ExportExportedBy {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for ExportExportedBy {
+impl ::std::convert::TryFrom<::std::string::String> for ImportedExportExportedBy {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -2397,7 +2514,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ExportExportedBy {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for ExportExportedBy {
+impl<'de> ::serde::Deserialize<'de> for ImportedExportExportedBy {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -2409,27 +2526,44 @@ impl<'de> ::serde::Deserialize<'de> for ExportExportedBy {
             })
     }
 }
-///The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.
+///HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
-pub struct ExportOptions {
-    ///Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
+pub struct ImportedExportOptions {
+    ///Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown.
     #[serde(
         rename = "excludeDeleted",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub exclude_deleted: ::std::option::Option<bool>,
-    ///Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
-    #[serde(rename = "includeAudit")]
-    pub include_audit: bool,
-    ///Also return superseded versions of each entry returned (HCP 5.4.1).
-    #[serde(rename = "includeVersions")]
-    pub include_versions: bool,
+    ///The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.
+    #[serde(
+        rename = "includeAudit",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub include_audit: ::std::option::Option<bool>,
+    ///Superseded versions were requested (HCP 5.4.1). Absent means unknown.
+    #[serde(
+        rename = "includeVersions",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub include_versions: ::std::option::Option<bool>,
 }
-impl ExportOptions {
-    pub fn builder() -> builder::ExportOptions {
+impl ::std::default::Default for ImportedExportOptions {
+    fn default() -> Self {
+        Self {
+            exclude_deleted: Default::default(),
+            include_audit: Default::default(),
+            include_versions: Default::default(),
+        }
+    }
+}
+impl ImportedExportOptions {
+    pub fn builder() -> builder::ImportedExportOptions {
         Default::default()
     }
 }
@@ -2437,12 +2571,12 @@ impl ExportOptions {
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
-pub struct ExportSubject {
+pub struct ImportedExportSubject {
     ///The Context Subject's identifier.
-    pub id: ExportSubjectId,
+    pub id: ImportedExportSubjectId,
 }
-impl ExportSubject {
-    pub fn builder() -> builder::ExportSubject {
+impl ImportedExportSubject {
+    pub fn builder() -> builder::ImportedExportSubject {
         Default::default()
     }
 }
@@ -2450,19 +2584,19 @@ impl ExportSubject {
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct ExportSubjectId(::std::string::String);
-impl ::std::ops::Deref for ExportSubjectId {
+pub struct ImportedExportSubjectId(::std::string::String);
+impl ::std::ops::Deref for ImportedExportSubjectId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<ExportSubjectId> for ::std::string::String {
-    fn from(value: ExportSubjectId) -> Self {
+impl ::std::convert::From<ImportedExportSubjectId> for ::std::string::String {
+    fn from(value: ImportedExportSubjectId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for ExportSubjectId {
+impl ::std::str::FromStr for ImportedExportSubjectId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 2048usize {
@@ -2474,13 +2608,13 @@ impl ::std::str::FromStr for ExportSubjectId {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for ExportSubjectId {
+impl ::std::convert::TryFrom<&str> for ImportedExportSubjectId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ExportSubjectId {
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedExportSubjectId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -2488,7 +2622,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for ExportSubjectId {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for ExportSubjectId {
+impl ::std::convert::TryFrom<::std::string::String> for ImportedExportSubjectId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -2496,7 +2630,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ExportSubjectId {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for ExportSubjectId {
+impl<'de> ::serde::Deserialize<'de> for ImportedExportSubjectId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -2786,8 +2920,8 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
-    ///HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19).
-    pub export: Export,
+    ///HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted.
+    pub export: ImportedExport,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -2869,22 +3003,18 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
     ///HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
     pub outcomes: ::std::vec::Vec<Outcome>,
-    ///Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
-    #[serde(
-        rename = "rulesNotApplied",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub rules_not_applied: ::std::option::Option<Vec<Urn>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
     }
 }
-///A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.
+///A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
@@ -3357,221 +3487,6 @@ pub mod builder {
             Self {
                 claims: Ok(value.claims),
                 evidence: Ok(value.evidence),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AuditEvent {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        data: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            ::std::string::String,
-        >,
-        disclosed:
-            ::std::result::Result<::std::vec::Vec<super::AuditDisclosed>, ::std::string::String>,
-        entry_id: ::std::result::Result<
-            ::std::option::Option<super::AuditEventEntryId>,
-            ::std::string::String,
-        >,
-        event_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        event_type: ::std::result::Result<super::AuditEventEventType, ::std::string::String>,
-        grant_id: ::std::result::Result<
-            ::std::option::Option<super::AuditEventGrantId>,
-            ::std::string::String,
-        >,
-        participants: ::std::result::Result<super::AuditParticipants, ::std::string::String>,
-        purpose: ::std::result::Result<
-            ::std::option::Option<super::AuditEventPurpose>,
-            ::std::string::String,
-        >,
-        purpose_description: ::std::result::Result<
-            ::std::option::Option<super::AuditEventPurposeDescription>,
-            ::std::string::String,
-        >,
-        related_entry_id: ::std::result::Result<
-            ::std::option::Option<super::AuditEventRelatedEntryId>,
-            ::std::string::String,
-        >,
-        timestamp: ::std::result::Result<super::Instant, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditEvent {
-        fn default() -> Self {
-            Self {
-                categories: Ok(Default::default()),
-                data: Ok(Default::default()),
-                disclosed: Ok(Default::default()),
-                entry_id: Err("no value supplied for entry_id".to_string()),
-                event_id: Err("no value supplied for event_id".to_string()),
-                event_type: Err("no value supplied for event_type".to_string()),
-                grant_id: Err("no value supplied for grant_id".to_string()),
-                participants: Err("no value supplied for participants".to_string()),
-                purpose: Err("no value supplied for purpose".to_string()),
-                purpose_description: Err("no value supplied for purpose_description".to_string()),
-                related_entry_id: Err("no value supplied for related_entry_id".to_string()),
-                timestamp: Err("no value supplied for timestamp".to_string()),
-            }
-        }
-    }
-    impl AuditEvent {
-        pub fn categories<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.categories = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for categories: {e}"));
-            self
-        }
-        pub fn data<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.data = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for data: {e}"));
-            self
-        }
-        pub fn disclosed<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosed>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.disclosed = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for disclosed: {e}"));
-            self
-        }
-        pub fn entry_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventEntryId>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.entry_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
-            self
-        }
-        pub fn event_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.event_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for event_id: {e}"));
-            self
-        }
-        pub fn event_type<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditEventEventType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.event_type = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for event_type: {e}"));
-            self
-        }
-        pub fn grant_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventGrantId>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.grant_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for grant_id: {e}"));
-            self
-        }
-        pub fn participants<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditParticipants>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.participants = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for participants: {e}"));
-            self
-        }
-        pub fn purpose<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventPurpose>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.purpose = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
-            self
-        }
-        pub fn purpose_description<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventPurposeDescription>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.purpose_description = value.try_into().map_err(|e| {
-                format!("error converting supplied value for purpose_description: {e}")
-            });
-            self
-        }
-        pub fn related_entry_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventRelatedEntryId>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.related_entry_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for related_entry_id: {e}"));
-            self
-        }
-        pub fn timestamp<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.timestamp = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for timestamp: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditEvent> for super::AuditEvent {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditEvent,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                categories: value.categories?,
-                data: value.data?,
-                disclosed: value.disclosed?,
-                entry_id: value.entry_id?,
-                event_id: value.event_id?,
-                event_type: value.event_type?,
-                grant_id: value.grant_id?,
-                participants: value.participants?,
-                purpose: value.purpose?,
-                purpose_description: value.purpose_description?,
-                related_entry_id: value.related_entry_id?,
-                timestamp: value.timestamp?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AuditEvent> for AuditEvent {
-        fn from(value: super::AuditEvent) -> Self {
-            Self {
-                categories: Ok(value.categories),
-                data: Ok(value.data),
-                disclosed: Ok(value.disclosed),
-                entry_id: Ok(value.entry_id),
-                event_id: Ok(value.event_id),
-                event_type: Ok(value.event_type),
-                grant_id: Ok(value.grant_id),
-                participants: Ok(value.participants),
-                purpose: Ok(value.purpose),
-                purpose_description: Ok(value.purpose_description),
-                related_entry_id: Ok(value.related_entry_id),
-                timestamp: Ok(value.timestamp),
             }
         }
     }
@@ -4635,9 +4550,272 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct Export {
-        audit: ::std::result::Result<::std::vec::Vec<super::AuditEvent>, ::std::string::String>,
-        context: ::std::result::Result<super::ExportContext, ::std::string::String>,
+    pub struct HcpCarriageImportExtension {
+        rules_not_applied: ::std::result::Result<Vec<super::Urn>, ::std::string::String>,
+    }
+    impl ::std::default::Default for HcpCarriageImportExtension {
+        fn default() -> Self {
+            Self {
+                rules_not_applied: Err("no value supplied for rules_not_applied".to_string()),
+            }
+        }
+    }
+    impl HcpCarriageImportExtension {
+        pub fn rules_not_applied<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::Urn>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rules_not_applied = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rules_not_applied: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<HcpCarriageImportExtension> for super::HcpCarriageImportExtension {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: HcpCarriageImportExtension,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                rules_not_applied: value.rules_not_applied?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::HcpCarriageImportExtension> for HcpCarriageImportExtension {
+        fn from(value: super::HcpCarriageImportExtension) -> Self {
+            Self {
+                rules_not_applied: Ok(value.rules_not_applied),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditEvent {
+        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        data: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        disclosed:
+            ::std::result::Result<::std::vec::Vec<super::AuditDisclosed>, ::std::string::String>,
+        entry_id: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditEventEntryId>,
+            ::std::string::String,
+        >,
+        event_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        event_type:
+            ::std::result::Result<super::ImportedAuditEventEventType, ::std::string::String>,
+        grant_id: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditEventGrantId>,
+            ::std::string::String,
+        >,
+        participants: ::std::result::Result<super::AuditParticipants, ::std::string::String>,
+        purpose: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditEventPurpose>,
+            ::std::string::String,
+        >,
+        purpose_description: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+            ::std::string::String,
+        >,
+        related_entry_id: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditEventRelatedEntryId>,
+            ::std::string::String,
+        >,
+        timestamp: ::std::result::Result<super::Instant, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditEvent {
+        fn default() -> Self {
+            Self {
+                categories: Ok(Default::default()),
+                data: Ok(Default::default()),
+                disclosed: Ok(Default::default()),
+                entry_id: Ok(Default::default()),
+                event_id: Err("no value supplied for event_id".to_string()),
+                event_type: Err("no value supplied for event_type".to_string()),
+                grant_id: Ok(Default::default()),
+                participants: Err("no value supplied for participants".to_string()),
+                purpose: Ok(Default::default()),
+                purpose_description: Ok(Default::default()),
+                related_entry_id: Ok(Default::default()),
+                timestamp: Err("no value supplied for timestamp".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditEvent {
+        pub fn categories<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.categories = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for categories: {e}"));
+            self
+        }
+        pub fn data<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.data = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for data: {e}"));
+            self
+        }
+        pub fn disclosed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosed>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disclosed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disclosed: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventEntryId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn event_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event_id: {e}"));
+            self
+        }
+        pub fn event_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedAuditEventEventType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.event_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for event_type: {e}"));
+            self
+        }
+        pub fn grant_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventGrantId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.grant_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for grant_id: {e}"));
+            self
+        }
+        pub fn participants<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuditParticipants>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.participants = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for participants: {e}"));
+            self
+        }
+        pub fn purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ImportedAuditEventPurpose>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for purpose: {e}"));
+            self
+        }
+        pub fn purpose_description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditEventPurposeDescription>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.purpose_description = value.try_into().map_err(|e| {
+                format!("error converting supplied value for purpose_description: {e}")
+            });
+            self
+        }
+        pub fn related_entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditEventRelatedEntryId>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.related_entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for related_entry_id: {e}"));
+            self
+        }
+        pub fn timestamp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.timestamp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for timestamp: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditEvent> for super::ImportedAuditEvent {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditEvent,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                categories: value.categories?,
+                data: value.data?,
+                disclosed: value.disclosed?,
+                entry_id: value.entry_id?,
+                event_id: value.event_id?,
+                event_type: value.event_type?,
+                grant_id: value.grant_id?,
+                participants: value.participants?,
+                purpose: value.purpose?,
+                purpose_description: value.purpose_description?,
+                related_entry_id: value.related_entry_id?,
+                timestamp: value.timestamp?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditEvent> for ImportedAuditEvent {
+        fn from(value: super::ImportedAuditEvent) -> Self {
+            Self {
+                categories: Ok(value.categories),
+                data: Ok(value.data),
+                disclosed: Ok(value.disclosed),
+                entry_id: Ok(value.entry_id),
+                event_id: Ok(value.event_id),
+                event_type: Ok(value.event_type),
+                grant_id: Ok(value.grant_id),
+                participants: Ok(value.participants),
+                purpose: Ok(value.purpose),
+                purpose_description: Ok(value.purpose_description),
+                related_entry_id: Ok(value.related_entry_id),
+                timestamp: Ok(value.timestamp),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedExport {
+        audit: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedAuditEvent>,
+            ::std::string::String,
+        >,
+        context: ::std::result::Result<super::ImportedExportContext, ::std::string::String>,
         delegations:
             ::std::result::Result<::std::vec::Vec<super::Delegation>, ::std::string::String>,
         directives: ::std::result::Result<::std::vec::Vec<super::Directive>, ::std::string::String>,
@@ -4646,18 +4824,21 @@ pub mod builder {
             ::std::string::String,
         >,
         exported_at: ::std::result::Result<super::Instant, ::std::string::String>,
-        exported_by: ::std::result::Result<super::ExportExportedBy, ::std::string::String>,
-        options: ::std::result::Result<super::ExportOptions, ::std::string::String>,
+        exported_by: ::std::result::Result<super::ImportedExportExportedBy, ::std::string::String>,
+        options: ::std::result::Result<
+            ::std::option::Option<super::ImportedExportOptions>,
+            ::std::string::String,
+        >,
         rules: ::std::result::Result<::std::vec::Vec<super::StandingRule>, ::std::string::String>,
         schema: ::std::result::Result<::std::string::String, ::std::string::String>,
-        subject: ::std::result::Result<super::ExportSubject, ::std::string::String>,
+        subject: ::std::result::Result<super::ImportedExportSubject, ::std::string::String>,
         type_: ::std::result::Result<::std::string::String, ::std::string::String>,
         versions: ::std::result::Result<
             ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
     }
-    impl ::std::default::Default for Export {
+    impl ::std::default::Default for ImportedExport {
         fn default() -> Self {
             Self {
                 audit: Ok(Default::default()),
@@ -4667,7 +4848,7 @@ pub mod builder {
                 entries: Err("no value supplied for entries".to_string()),
                 exported_at: Err("no value supplied for exported_at".to_string()),
                 exported_by: Err("no value supplied for exported_by".to_string()),
-                options: Err("no value supplied for options".to_string()),
+                options: Ok(Default::default()),
                 rules: Err("no value supplied for rules".to_string()),
                 schema: Err("no value supplied for schema".to_string()),
                 subject: Err("no value supplied for subject".to_string()),
@@ -4676,10 +4857,10 @@ pub mod builder {
             }
         }
     }
-    impl Export {
+    impl ImportedExport {
         pub fn audit<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditEvent>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditEvent>>,
             T::Error: ::std::fmt::Display,
         {
             self.audit = value
@@ -4689,7 +4870,7 @@ pub mod builder {
         }
         pub fn context<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ExportContext>,
+            T: ::std::convert::TryInto<super::ImportedExportContext>,
             T::Error: ::std::fmt::Display,
         {
             self.context = value
@@ -4741,7 +4922,7 @@ pub mod builder {
         }
         pub fn exported_by<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ExportExportedBy>,
+            T: ::std::convert::TryInto<super::ImportedExportExportedBy>,
             T::Error: ::std::fmt::Display,
         {
             self.exported_by = value
@@ -4751,7 +4932,7 @@ pub mod builder {
         }
         pub fn options<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ExportOptions>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ImportedExportOptions>>,
             T::Error: ::std::fmt::Display,
         {
             self.options = value
@@ -4781,7 +4962,7 @@ pub mod builder {
         }
         pub fn subject<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ExportSubject>,
+            T: ::std::convert::TryInto<super::ImportedExportSubject>,
             T::Error: ::std::fmt::Display,
         {
             self.subject = value
@@ -4812,9 +4993,11 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<Export> for super::Export {
+    impl ::std::convert::TryFrom<ImportedExport> for super::ImportedExport {
         type Error = super::error::ConversionError;
-        fn try_from(value: Export) -> ::std::result::Result<Self, super::error::ConversionError> {
+        fn try_from(
+            value: ImportedExport,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 audit: value.audit?,
                 context: value.context?,
@@ -4832,8 +5015,8 @@ pub mod builder {
             })
         }
     }
-    impl ::std::convert::From<super::Export> for Export {
-        fn from(value: super::Export) -> Self {
+    impl ::std::convert::From<super::ImportedExport> for ImportedExport {
+        fn from(value: super::ImportedExport) -> Self {
             Self {
                 audit: Ok(value.audit),
                 context: Ok(value.context),
@@ -4852,21 +5035,21 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct ExportOptions {
+    pub struct ImportedExportOptions {
         exclude_deleted: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        include_audit: ::std::result::Result<bool, ::std::string::String>,
-        include_versions: ::std::result::Result<bool, ::std::string::String>,
+        include_audit: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        include_versions: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
     }
-    impl ::std::default::Default for ExportOptions {
+    impl ::std::default::Default for ImportedExportOptions {
         fn default() -> Self {
             Self {
                 exclude_deleted: Ok(Default::default()),
-                include_audit: Err("no value supplied for include_audit".to_string()),
-                include_versions: Err("no value supplied for include_versions".to_string()),
+                include_audit: Ok(Default::default()),
+                include_versions: Ok(Default::default()),
             }
         }
     }
-    impl ExportOptions {
+    impl ImportedExportOptions {
         pub fn exclude_deleted<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<bool>>,
@@ -4879,7 +5062,7 @@ pub mod builder {
         }
         pub fn include_audit<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<bool>,
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
             T::Error: ::std::fmt::Display,
         {
             self.include_audit = value
@@ -4889,7 +5072,7 @@ pub mod builder {
         }
         pub fn include_versions<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<bool>,
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
             T::Error: ::std::fmt::Display,
         {
             self.include_versions = value
@@ -4898,10 +5081,10 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<ExportOptions> for super::ExportOptions {
+    impl ::std::convert::TryFrom<ImportedExportOptions> for super::ImportedExportOptions {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: ExportOptions,
+            value: ImportedExportOptions,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 exclude_deleted: value.exclude_deleted?,
@@ -4910,8 +5093,8 @@ pub mod builder {
             })
         }
     }
-    impl ::std::convert::From<super::ExportOptions> for ExportOptions {
-        fn from(value: super::ExportOptions) -> Self {
+    impl ::std::convert::From<super::ImportedExportOptions> for ImportedExportOptions {
+        fn from(value: super::ImportedExportOptions) -> Self {
             Self {
                 exclude_deleted: Ok(value.exclude_deleted),
                 include_audit: Ok(value.include_audit),
@@ -4920,20 +5103,20 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct ExportSubject {
-        id: ::std::result::Result<super::ExportSubjectId, ::std::string::String>,
+    pub struct ImportedExportSubject {
+        id: ::std::result::Result<super::ImportedExportSubjectId, ::std::string::String>,
     }
-    impl ::std::default::Default for ExportSubject {
+    impl ::std::default::Default for ImportedExportSubject {
         fn default() -> Self {
             Self {
                 id: Err("no value supplied for id".to_string()),
             }
         }
     }
-    impl ExportSubject {
+    impl ImportedExportSubject {
         pub fn id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ExportSubjectId>,
+            T: ::std::convert::TryInto<super::ImportedExportSubjectId>,
             T::Error: ::std::fmt::Display,
         {
             self.id = value
@@ -4942,16 +5125,16 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<ExportSubject> for super::ExportSubject {
+    impl ::std::convert::TryFrom<ImportedExportSubject> for super::ImportedExportSubject {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: ExportSubject,
+            value: ImportedExportSubject,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self { id: value.id? })
         }
     }
-    impl ::std::convert::From<super::ExportSubject> for ExportSubject {
-        fn from(value: super::ExportSubject) -> Self {
+    impl ::std::convert::From<super::ImportedExportSubject> for ImportedExportSubject {
+        fn from(value: super::ImportedExportSubject) -> Self {
             Self { id: Ok(value.id) }
         }
     }
@@ -5032,7 +5215,7 @@ pub mod builder {
             ::std::string::String,
         >,
         dry_run: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        export: ::std::result::Result<super::Export, ::std::string::String>,
+        export: ::std::result::Result<super::ImportedExport, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -5079,7 +5262,7 @@ pub mod builder {
         }
         pub fn export<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::Export>,
+            T: ::std::convert::TryInto<super::ImportedExport>,
             T::Error: ::std::fmt::Display,
         {
             self.export = value
@@ -5112,16 +5295,15 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         dry_run: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         outcomes: ::std::result::Result<::std::vec::Vec<super::Outcome>, ::std::string::String>,
-        rules_not_applied:
-            ::std::result::Result<::std::option::Option<Vec<super::Urn>>, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
                 dry_run: Ok(Default::default()),
+                ext: Ok(Default::default()),
                 outcomes: Err("no value supplied for outcomes".to_string()),
-                rules_not_applied: Ok(Default::default()),
             }
         }
     }
@@ -5136,6 +5318,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for dry_run: {e}"));
             self
         }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
         pub fn outcomes<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::vec::Vec<super::Outcome>>,
@@ -5146,24 +5338,14 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for outcomes: {e}"));
             self
         }
-        pub fn rules_not_applied<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<Vec<super::Urn>>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.rules_not_applied = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for rules_not_applied: {e}"));
-            self
-        }
     }
     impl ::std::convert::TryFrom<Response> for super::Response {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 dry_run: value.dry_run?,
+                ext: value.ext?,
                 outcomes: value.outcomes?,
-                rules_not_applied: value.rules_not_applied?,
             })
         }
     }
@@ -5171,8 +5353,8 @@ pub mod builder {
         fn from(value: super::Response) -> Self {
             Self {
                 dry_run: Ok(value.dry_run),
+                ext: Ok(value.ext),
                 outcomes: Ok(value.outcomes),
-                rules_not_applied: Ok(value.rules_not_applied),
             }
         }
     }
@@ -5311,7 +5493,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(16777216usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"AuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry a retrieval disclosed (HCP 8.2).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable `id`.\"},\"provenance\":{\"description\":\"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"additionalProperties\":true,\"description\":\"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"evidence\":{\"description\":\"The evidence item's index.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The use-until time the disclosure was given (HCP 7.6).\"},\"version\":{\"description\":\"The version disclosed.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"},\"AuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's template writes them: HCP's own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\",\"entryId\",\"relatedEntryId\",\"purpose\",\"purposeDescription\",\"grantId\"],\"type\":\"object\"},\"AuditParticipants\":{\"additionalProperties\":true,\"description\":\"The participants in an audit event (HCP 8.2, 3.9). No event names \\\"system\\\" (HCP 8.2).\",\"properties\":{\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Authorizing Principal (HCP 3.9).\"},\"clientOperator\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Client Operator, where a client took part (HCP 3.9).\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 8.2). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The model, where one took part (HCP 3.9).\"},\"provider\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The HCP Provider (HCP 8.2).\"},\"requestingParty\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Requesting Party, where there is one (HCP 3.9).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval, on a read (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"},\"AuditParty\":{\"additionalProperties\":true,\"description\":\"A participant named by its identifier (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Delegation\":{\"additionalProperties\":true,\"description\":\"One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/DelegationBasis\",\"description\":\"What the authority rests on, and how the Authorization Service established it (HCP 17.3).\"},\"delegate\":{\"additionalProperties\":true,\"description\":\"The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).\",\"properties\":{\"id\":{\"description\":\"The delegate's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"A name the Context Subject can recognize.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"delegationId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).\"},\"ended\":{\"$ref\":\"#/$defs/DelegationEnded\",\"description\":\"Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).\"},\"mayDelegate\":{\"description\":\"True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).\",\"type\":\"boolean\"},\"relationship\":{\"description\":\"The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/DelegationScope\",\"description\":\"The categories and actions the delegate may authorize (HCP 17.4).\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 17.2).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"term\":{\"$ref\":\"#/$defs/DelegationTerm\",\"description\":\"When the delegation ends (HCP 17.2).\"}},\"required\":[\"delegationId\",\"subject\",\"delegate\",\"relationship\",\"basis\",\"scope\",\"term\"],\"type\":\"object\"},\"DelegationBasis\":{\"additionalProperties\":true,\"description\":\"What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.\",\"properties\":{\"covers\":{\"description\":\"The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"description\":{\"description\":\"What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"establishedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation was established (HCP 17.2).\"},\"establishedBy\":{\"description\":\"The Authorization Service that established the delegation (HCP 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"description\":\"The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"maxItems\":16,\"type\":\"array\"},\"method\":{\"description\":\"How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).\",\"enum\":[\"appointed\",\"attested\",\"evidence\",\"delegated\",\"unspecified\"],\"type\":\"string\"},\"parent\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).\"}},\"required\":[\"method\",\"description\",\"establishedBy\",\"establishedAt\"],\"type\":\"object\"},\"DelegationEnded\":{\"additionalProperties\":true,\"description\":\"How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation ended (HCP 17.2, 17.6).\"},\"reason\":{\"description\":\"Why it ended (HCP 17.6). HCP's own values, carried verbatim.\",\"enum\":[\"majority\",\"expiry\",\"basis-ended\",\"relinquished\",\"ended-by-subject\",\"parent-ended\",\"ended-by-delegate\"],\"type\":\"string\"}},\"required\":[\"at\",\"reason\"],\"type\":\"object\"},\"DelegationScope\":{\"additionalProperties\":true,\"description\":\"The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).\",\"properties\":{\"actions\":{\"description\":\"The actions in scope (HCP 17.2, 6.1.5).\",\"items\":{\"enum\":[\"read\",\"write\"],\"type\":\"string\"},\"maxItems\":2,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"categories\",\"actions\"],\"type\":\"object\"},\"DelegationTerm\":{\"additionalProperties\":true,\"description\":\"When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).\",\"properties\":{\"atMajority\":{\"description\":\"True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).\",\"type\":\"boolean\"},\"endsAt\":{\"description\":\"When the delegation ends; null where no end is known (HCP 17.2).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"endsAt\",\"atMajority\"],\"type\":\"object\"},\"Directive\":{\"additionalProperties\":true,\"description\":\"What a client may do with context it received, or on the Context Subject's behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).\",\"properties\":{\"action\":{\"description\":\"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the directive was set (HCP 6.4).\"},\"directiveId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the directive (HCP 6.4).\"},\"effect\":{\"description\":\"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"text\":{\"description\":\"The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"directiveId\",\"action\",\"effect\",\"text\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"EvidenceItem\":{\"additionalProperties\":true,\"description\":\"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"credential\":{\"description\":\"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"},\"Export\":{\"additionalProperties\":true,\"description\":\"An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.\",\"maxItems\":16,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"maxItems\":1000000,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"maxItems\":1000000,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"maxItems\":1000000,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":100000,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ExportOptions\",\"description\":\"The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42).\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3).\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"maxItems\":1000000,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":1000000,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"options\",\"entries\",\"rules\"],\"type\":\"object\"},\"ExportOptions\":{\"additionalProperties\":true,\"description\":\"The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Omit entries whose `record.status` is `deleted` (HCP 5.4.1).\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"Also return the Context Subject's audit log (HCP 5.4.1, 8.3).\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Also return superseded versions of each entry returned (HCP 5.4.1).\",\"type\":\"boolean\"}},\"required\":[\"includeVersions\",\"includeAudit\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"StandingRule\":{\"additionalProperties\":true,\"anyOf\":[{\"required\":[\"operators\"]},{\"required\":[\"requires\"]}],\"description\":\"A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.\",\"properties\":{\"categories\":{\"description\":\"The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the rule was set (HCP 6.3).\"},\"effect\":{\"description\":\"`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.\",\"enum\":[\"deny\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"ruleId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the rule (HCP 6.3).\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"ruleId\",\"effect\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/import/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categoryMap\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Category\"},\"description\":\"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement.\",\"maxProperties\":256,\"type\":\"object\"},\"dryRun\":{\"description\":\"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.\",\"type\":\"boolean\"},\"export\":{\"$ref\":\"#/$defs/Export\",\"description\":\"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19).\"}},\"required\":[\"export\",\"accessToken\"],\"title\":\"HCP — Import — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"AuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry a retrieval disclosed (HCP 8.2).\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable `id`.\"},\"provenance\":{\"description\":\"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"additionalProperties\":true,\"description\":\"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"evidence\":{\"description\":\"The evidence item's index.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"The use-until time the disclosure was given (HCP 7.6).\"},\"version\":{\"description\":\"The version disclosed.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"},\"AuditParticipants\":{\"additionalProperties\":true,\"description\":\"The participants in an audit event (HCP 8.2, 3.9). No event names \\\"system\\\" (HCP 8.2).\",\"properties\":{\"authorizingPrincipal\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Authorizing Principal (HCP 3.9).\"},\"clientOperator\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Client Operator, where a client took part (HCP 3.9).\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 8.2). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The model, where one took part (HCP 3.9).\"},\"provider\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The HCP Provider (HCP 8.2).\"},\"requestingParty\":{\"$ref\":\"#/$defs/AuditParty\",\"description\":\"The Requesting Party, where there is one (HCP 3.9).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval, on a read (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"},\"AuditParty\":{\"additionalProperties\":true,\"description\":\"A participant named by its identifier (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Delegation\":{\"additionalProperties\":true,\"description\":\"One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/DelegationBasis\",\"description\":\"What the authority rests on, and how the Authorization Service established it (HCP 17.3).\"},\"delegate\":{\"additionalProperties\":true,\"description\":\"The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).\",\"properties\":{\"id\":{\"description\":\"The delegate's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"A name the Context Subject can recognize.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"delegationId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).\"},\"ended\":{\"$ref\":\"#/$defs/DelegationEnded\",\"description\":\"Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).\"},\"mayDelegate\":{\"description\":\"True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).\",\"type\":\"boolean\"},\"relationship\":{\"description\":\"The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/DelegationScope\",\"description\":\"The categories and actions the delegate may authorize (HCP 17.4).\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 17.2).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"term\":{\"$ref\":\"#/$defs/DelegationTerm\",\"description\":\"When the delegation ends (HCP 17.2).\"}},\"required\":[\"delegationId\",\"subject\",\"delegate\",\"relationship\",\"basis\",\"scope\",\"term\"],\"type\":\"object\"},\"DelegationBasis\":{\"additionalProperties\":true,\"description\":\"What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.\",\"properties\":{\"covers\":{\"description\":\"The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"description\":{\"description\":\"What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"establishedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation was established (HCP 17.2).\"},\"establishedBy\":{\"description\":\"The Authorization Service that established the delegation (HCP 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"description\":\"The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"maxItems\":16,\"type\":\"array\"},\"method\":{\"description\":\"How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).\",\"enum\":[\"appointed\",\"attested\",\"evidence\",\"delegated\",\"unspecified\"],\"type\":\"string\"},\"parent\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).\"}},\"required\":[\"method\",\"description\",\"establishedBy\",\"establishedAt\"],\"type\":\"object\"},\"DelegationEnded\":{\"additionalProperties\":true,\"description\":\"How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation ended (HCP 17.2, 17.6).\"},\"reason\":{\"description\":\"Why it ended (HCP 17.6). HCP's own values, carried verbatim.\",\"enum\":[\"majority\",\"expiry\",\"basis-ended\",\"relinquished\",\"ended-by-subject\",\"parent-ended\",\"ended-by-delegate\"],\"type\":\"string\"}},\"required\":[\"at\",\"reason\"],\"type\":\"object\"},\"DelegationScope\":{\"additionalProperties\":true,\"description\":\"The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).\",\"properties\":{\"actions\":{\"description\":\"The actions in scope (HCP 17.2, 6.1.5).\",\"items\":{\"enum\":[\"read\",\"write\"],\"type\":\"string\"},\"maxItems\":2,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"categories\",\"actions\"],\"type\":\"object\"},\"DelegationTerm\":{\"additionalProperties\":true,\"description\":\"When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).\",\"properties\":{\"atMajority\":{\"description\":\"True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).\",\"type\":\"boolean\"},\"endsAt\":{\"description\":\"When the delegation ends; null where no end is known (HCP 17.2).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"endsAt\",\"atMajority\"],\"type\":\"object\"},\"Directive\":{\"additionalProperties\":true,\"description\":\"What a client may do with context it received, or on the Context Subject's behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).\",\"properties\":{\"action\":{\"description\":\"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the directive was set (HCP 6.4).\"},\"directiveId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the directive (HCP 6.4).\"},\"effect\":{\"description\":\"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"text\":{\"description\":\"The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"directiveId\",\"action\",\"effect\",\"text\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"EvidenceItem\":{\"additionalProperties\":true,\"description\":\"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"credential\":{\"description\":\"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"},\"HcpCarriageImportExtension\":{\"$anchor\":\"hcpCarriageImportExtension\",\"additionalProperties\":false,\"description\":\"The value of `ext[\\\"vnd.trusttasks.hcp-carriage\\\"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.\",\"properties\":{\"rulesNotApplied\":{\"description\":\"The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Urn\"},\"maxItems\":1000000,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"rulesNotApplied\"],\"title\":\"HCP — Import — vnd.trusttasks.hcp-carriage response extension\",\"type\":\"object\"},\"ImportedAuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim.\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\"],\"type\":\"object\"},\"ImportedExport\":{\"additionalProperties\":true,\"description\":\"An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.\",\"maxItems\":16,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array.\",\"items\":{\"$ref\":\"#/$defs/ImportedAuditEvent\"},\"maxItems\":1000000,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"maxItems\":1000000,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"maxItems\":1000000,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":100000,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ImportedExportOptions\",\"description\":\"HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3).\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"maxItems\":1000000,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":1000000,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"entries\",\"rules\"],\"type\":\"object\"},\"ImportedExportOptions\":{\"additionalProperties\":true,\"description\":\"HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Superseded versions were requested (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"StandingRule\":{\"additionalProperties\":true,\"description\":\"A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.\",\"properties\":{\"categories\":{\"description\":\"The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Set by the provider: when the rule was set (HCP 6.3).\"},\"effect\":{\"description\":\"`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.\",\"enum\":[\"deny\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"ruleId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"Stable for the life of the rule (HCP 6.3).\"},\"setBy\":{\"description\":\"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"ruleId\",\"effect\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/import/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categoryMap\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Category\"},\"description\":\"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement.\",\"maxProperties\":256,\"type\":\"object\"},\"dryRun\":{\"description\":\"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.\",\"type\":\"boolean\"},\"export\":{\"$ref\":\"#/$defs/ImportedExport\",\"description\":\"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted.\"}},\"required\":[\"export\",\"accessToken\"],\"title\":\"HCP — Import — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -5319,7 +5501,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Outcome\":{\"additionalProperties\":true,\"description\":\"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\\"rejected, with the reason\\\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.\",\"properties\":{\"id\":{\"description\":\"The entry's `id`, as the export carries it (HCP 5.4.3, 9.4.11).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim.\",\"enum\":[\"imported\",\"converted\",\"skipped\",\"rejected\"],\"type\":\"string\"},\"reason\":{\"description\":\"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\\"id held with different content\\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"outcome\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.\",\"properties\":{\"dryRun\":{\"description\":\"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11).\",\"type\":\"boolean\"},\"outcomes\":{\"description\":\"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Outcome\"},\"maxItems\":100000,\"type\":\"array\"},\"rulesNotApplied\":{\"description\":\"Not an HCP member: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Urn\"},\"maxItems\":1000000,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"outcomes\"],\"title\":\"HCP — Import — response payload\",\"type\":\"object\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Outcome\":{\"additionalProperties\":true,\"description\":\"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\\"rejected, with the reason\\\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.\",\"properties\":{\"id\":{\"description\":\"The entry's `id`, as the export carries it (HCP 5.4.3, 9.4.11).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim.\",\"enum\":[\"imported\",\"converted\",\"skipped\",\"rejected\"],\"type\":\"string\"},\"reason\":{\"description\":\"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\\"id held with different content\\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"outcome\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.\",\"properties\":{\"dryRun\":{\"description\":\"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11).\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).\"},\"outcomes\":{\"description\":\"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Outcome\"},\"maxItems\":100000,\"type\":\"array\"}},\"required\":[\"outcomes\"],\"title\":\"HCP — Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

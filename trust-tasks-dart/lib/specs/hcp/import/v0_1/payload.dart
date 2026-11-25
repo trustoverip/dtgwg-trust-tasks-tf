@@ -72,9 +72,9 @@ class Outcome {
       };
 }
 
-/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
-/// HCP uses for entry, grant, directive and retrieval identifiers.
-typedef Urn = String;
+/// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
+/// reverse-DNS namespace; structure under each namespace is opaque to the framework.
+typedef Ext = Map<String, dynamic>;
 
 /// The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the
 /// export. Failures of the import as a whole use trust-task-error, not this shape.
@@ -82,7 +82,7 @@ class Response {
   const Response({
     required this.outcomes,
     this.dryRun,
-    this.rulesNotApplied,
+    this.ext,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -91,11 +91,7 @@ class Response {
             .map((e) => Outcome.fromJson(e as Map<String, dynamic>))
             .toList(),
         dryRun: json['dryRun'] as bool?,
-        rulesNotApplied: json['rulesNotApplied'] == null
-            ? null
-            : (json['rulesNotApplied'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
+        ext: json['ext'] as Map<String, dynamic>?,
       );
 
   /// HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches
@@ -107,22 +103,70 @@ class Response {
   /// (HCP 9.4.11).
   final bool? dryRun;
 
-  /// Not an HCP member: present only for a delegate's import, and only where the export
-  /// holds a standing rule the delegate could not set with hcp/rules/set (one naming no
-  /// `categories`, or a category outside the delegation's scope). The `ruleId` of each
-  /// such rule, which the provider did not apply, or in a dry run would not apply (HCP
-  /// 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the
-  /// export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP
-  /// requirement.
-  final List<Urn>? rulesNotApplied;
+  /// Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's
+  /// import result is `outcomes` and `dryRun` only. This family defines one namespace
+  /// here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension,
+  /// not HCP's: present only for a delegate's import, and only where the export holds a
+  /// standing rule the delegate could not set with hcp/rules/set; its value MUST
+  /// validate against the `HcpCarriageImportExtension` definition in this schema,
+  /// pending HCP confirmation (question 40).
+  final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'outcomes': outcomes.map((e) => e.toJson()).toList(),
         if (dryRun != null) 'dryRun': dryRun!,
-        if (rulesNotApplied != null) 'rulesNotApplied': rulesNotApplied!,
+        if (ext != null) 'ext': ext!,
       };
 }
+
+/// An RFC 3339 instant.
+typedef Instant = String;
+
+/// HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's
+/// own shape, where the shared `ExportOptions` requires `includeVersions` and
+/// `includeAudit`. A member that is present says whether that option was requested;
+/// one that is absent leaves it unknown, and the provider MUST NOT infer it.
+class ImportedExportOptions {
+  const ImportedExportOptions({
+    this.excludeDeleted,
+    this.includeVersions,
+    this.includeAudit,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ImportedExportOptions.fromJson(Map<String, dynamic> json) =>
+      ImportedExportOptions(
+        excludeDeleted: json['excludeDeleted'] as bool?,
+        includeVersions: json['includeVersions'] as bool?,
+        includeAudit: json['includeAudit'] as bool?,
+      );
+
+  /// Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means
+  /// unknown.
+  final bool? excludeDeleted;
+
+  /// Superseded versions were requested (HCP 5.4.1). Absent means unknown.
+  final bool? includeVersions;
+
+  /// The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.
+  final bool? includeAudit;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (excludeDeleted != null) 'excludeDeleted': excludeDeleted!,
+        if (includeVersions != null) 'includeVersions': includeVersions!,
+        if (includeAudit != null) 'includeAudit': includeAudit!,
+      };
+}
+
+/// An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as
+/// HCP uses for entry, grant, directive and retrieval identifiers.
+typedef Urn = String;
+
+/// An absolute URI with no whitespace, as HCP writes every custom value at an
+/// extension point (HCP A.3).
+typedef Uri = String;
 
 /// An HCP context category (HCP 4.5), the primary unit of access control: either a
 /// slug from HCP's category registry, such as `general_preferences` or
@@ -130,47 +174,6 @@ class Response {
 /// its definer controls. A custom category is not portable between providers without
 /// bilateral agreement (HCP 4.5).
 typedef Category = String;
-
-/// An RFC 3339 instant.
-typedef Instant = String;
-
-/// The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are
-/// required, true where the option was requested and false otherwise, pending HCP
-/// confirmation (question 42); `excludeDeleted` absent or false means the default.
-class ExportOptions {
-  const ExportOptions({
-    this.excludeDeleted,
-    required this.includeVersions,
-    required this.includeAudit,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory ExportOptions.fromJson(Map<String, dynamic> json) => ExportOptions(
-        excludeDeleted: json['excludeDeleted'] as bool?,
-        includeVersions: json['includeVersions'] as bool,
-        includeAudit: json['includeAudit'] as bool,
-      );
-
-  /// Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
-  final bool? excludeDeleted;
-
-  /// Also return superseded versions of each entry returned (HCP 5.4.1).
-  final bool includeVersions;
-
-  /// Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
-  final bool includeAudit;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        if (excludeDeleted != null) 'excludeDeleted': excludeDeleted!,
-        'includeVersions': includeVersions,
-        'includeAudit': includeAudit,
-      };
-}
-
-/// An absolute URI with no whitespace, as HCP writes every custom value at an
-/// extension point (HCP A.3).
-typedef Uri = String;
 
 /// `deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
 ///
@@ -186,9 +189,12 @@ extension type const StandingRuleEffect(String value) {
 
 /// A deny rule the Context Subject sets across every grant, present and future (HCP
 /// 6.3). A standing rule never widens access. It carries `operators`, `requires`, or
-/// both: `operators` may be absent only where `requires` is present (HCP 6.3). The
-/// schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own
-/// standing-rule schema does.
+/// both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's
+/// own standing-rule schema checks that rule with an `anyOf` of the two `required`
+/// clauses; this shared definition does not, so that the type stays fully typed in
+/// every generated library. The hcp/rules/set request checks it at its payload root,
+/// where the rule is written; a provider never holds or returns a rule that breaks it,
+/// and hcp/import refuses an export holding one with `malformedRequest`.
 class StandingRule {
   const StandingRule({
     required this.ruleId,
@@ -1110,16 +1116,18 @@ class AuditDisclosed {
       };
 }
 
-/// One audit event (HCP 8.2). The log names entries by their stable `id`, never by the
-/// `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3).
-/// The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`,
-/// `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2's
-/// template writes them: HCP's own shape leaves them optional, and the carriage
-/// requires them so that a null always travels and is never confused with an absent
-/// member, pending HCP confirmation (question 42). An event redacted for a former
-/// delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).
-class AuditEvent {
-  const AuditEvent({
+/// One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's
+/// own audit-event shape, so that an export written to HCP's schema alone is accepted.
+/// It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and
+/// hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`,
+/// `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where
+/// the shared `AuditEvent` requires each, a value or null (question 42). Where one is
+/// absent, it is unknown what the exporting provider recorded for it, and the provider
+/// MUST NOT read the absence as null. Every other member is as in the shared
+/// `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements.
+/// Open, as HCP's own shape is.
+class ImportedAuditEvent {
+  const ImportedAuditEvent({
     required this.eventId,
     required this.eventType,
     required this.timestamp,
@@ -1135,7 +1143,8 @@ class AuditEvent {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory AuditEvent.fromJson(Map<String, dynamic> json) => AuditEvent(
+  factory ImportedAuditEvent.fromJson(Map<String, dynamic> json) =>
+      ImportedAuditEvent(
         eventId: json['eventId'] as String,
         eventType: json['eventType'] as String,
         timestamp: json['timestamp'] as String,
@@ -1162,54 +1171,48 @@ class AuditEvent {
   /// The event's identifier (HCP 8.2).
   final Urn eventId;
 
-  /// The event type, one of those HCP 8.1 lists (such as `context.read`,
-  /// `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the
-  /// event types of a later draft are not refused. The minLength and maxLength are
-  /// framework bounds, not HCP requirements.
+  /// The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves
+  /// it. The minLength and maxLength are framework bounds, not HCP requirements.
   final String eventType;
 
-  /// When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event
-  /// is the one an export carries (HCP 5.4.1).
+  /// When the event occurred. HCP's member name (HCP 8.2), carried verbatim.
   final Instant timestamp;
 
   /// Who took part (HCP 8.2, 3.9).
   final AuditParticipants participants;
 
   /// The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2).
-  /// For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event
-  /// redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42).
+  /// OPTIONAL, as in HCP's own shape; absent means unknown.
   final String? entryId;
 
   /// For conflict events, the authoritative entry (or the other entry where neither or
-  /// both are authoritative); null for every other event type (HCP 8.2). Required, and
-  /// null in an event redacted for a former delegate (HCP 17.7), pending HCP
-  /// confirmation (question 42).
+  /// both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in
+  /// HCP's own shape; absent means unknown.
   final String? relatedEntryId;
 
   /// The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP
   /// requirement.
   final List<Category>? categories;
 
-  /// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required,
-  /// pending HCP confirmation (question 42). The maxLength is a framework bound, not an
+  /// The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in
+  /// HCP's own shape; absent means unknown. The maxLength is a framework bound, not an
   /// HCP requirement.
   final String? purpose;
 
-  /// The stated task, or null where none was stated (HCP 8.2). Required, pending HCP
-  /// confirmation (question 42). The maxLength is a framework bound, not an HCP
+  /// The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own
+  /// shape; absent means unknown. The maxLength is a framework bound, not an HCP
   /// requirement.
   final String? purposeDescription;
 
-  /// The grant concerned, or null where the event concerns none (HCP 8.2). Required,
-  /// pending HCP confirmation (question 42).
+  /// The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as
+  /// in HCP's own shape; absent means unknown.
   final String? grantId;
 
   /// Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A
   /// retrieval discloses at most 20 entries (HCP 7.2).
   final List<AuditDisclosed>? disclosed;
 
-  /// The members HCP 8.2 fixes for the event type, such as `options` for
-  /// `context.exported` or `ruleId` for `rule.set`. Implementations may add members,
+  /// The members HCP 8.2 fixes for the event type. Implementations may add members,
   /// which are preserved and not interpreted (HCP 8.2, A.3).
   final Map<String, dynamic>? data;
 
@@ -1233,13 +1236,14 @@ class AuditEvent {
 }
 
 /// The Context Subject (HCP 5.4.1).
-class ExportSubject {
-  const ExportSubject({
+class ImportedExportSubject {
+  const ImportedExportSubject({
     required this.id,
   });
 
   /// Read this payload from a decoded JSON object.
-  factory ExportSubject.fromJson(Map<String, dynamic> json) => ExportSubject(
+  factory ImportedExportSubject.fromJson(Map<String, dynamic> json) =>
+      ImportedExportSubject(
         id: json['id'] as String,
       );
 
@@ -1252,24 +1256,28 @@ class ExportSubject {
       };
 }
 
-/// An HCP export: a JSON-LD document holding the Context Subject's entries and their
-/// standing rules, directives and delegations, and optionally superseded versions and
-/// the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP
-/// 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets
-/// none. Those on `rules`, `directives` and `delegations` are set so that the
-/// document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more
-/// than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the
-/// list operations bound none: an export too large for one document is refused with
-/// `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
-class Export {
-  const Export({
+/// An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so
+/// that an export written to HCP's schema alone is accepted. It differs from the
+/// shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only,
+/// each as in HCP's own shape (question 42). First, `options`, and each member of it,
+/// is OPTIONAL here, where the shared `Export` requires them: where `options`, or
+/// `includeVersions` or `includeAudit` within it, is absent, it is unknown whether
+/// superseded versions or the audit log were requested, and the provider MUST NOT
+/// infer either, from the presence or absence of `versions` or `audit` or otherwise.
+/// Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`,
+/// `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where
+/// the shared `AuditEvent` requires them. Every other member is as in the shared
+/// `Export`, whose maxItems bounds these match: framework bounds, not HCP
+/// requirements. Open, as HCP's own shape is.
+class ImportedExport {
+  const ImportedExport({
     required this.context,
     required this.type,
     required this.schema,
     required this.subject,
     required this.exportedBy,
     required this.exportedAt,
-    required this.options,
+    this.options,
     required this.entries,
     this.versions,
     required this.rules,
@@ -1279,16 +1287,18 @@ class Export {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory Export.fromJson(Map<String, dynamic> json) => Export(
+  factory ImportedExport.fromJson(Map<String, dynamic> json) => ImportedExport(
         context: json['@context'],
         type: json['type'] as String,
         schema: json['schema'] as String,
-        subject:
-            ExportSubject.fromJson(json['subject'] as Map<String, dynamic>),
+        subject: ImportedExportSubject.fromJson(
+            json['subject'] as Map<String, dynamic>),
         exportedBy: json['exportedBy'] as String,
         exportedAt: json['exportedAt'] as String,
-        options:
-            ExportOptions.fromJson(json['options'] as Map<String, dynamic>),
+        options: json['options'] == null
+            ? null
+            : ImportedExportOptions.fromJson(
+                json['options'] as Map<String, dynamic>),
         entries: (json['entries'] as List<dynamic>)
             .map((e) => e as Map<String, dynamic>)
             .toList(),
@@ -1313,7 +1323,8 @@ class Export {
         audit: json['audit'] == null
             ? null
             : (json['audit'] as List<dynamic>)
-                .map((e) => AuditEvent.fromJson(e as Map<String, dynamic>))
+                .map((e) =>
+                    ImportedAuditEvent.fromJson(e as Map<String, dynamic>))
                 .toList(),
       );
 
@@ -1329,7 +1340,7 @@ class Export {
   final String schema;
 
   /// The Context Subject (HCP 5.4.1).
-  final ExportSubject subject;
+  final ImportedExportSubject subject;
 
   /// The exporting HCP Provider (HCP 5.4.1).
   final String exportedBy;
@@ -1337,12 +1348,10 @@ class Export {
   /// When the export was made (HCP 5.4.1).
   final Instant exportedAt;
 
-  /// The options requested (HCP 5.4.1). Required, with `includeVersions` and
-  /// `includeAudit`, so that the export itself says whether `versions` and `audit` were
-  /// requested: an empty or absent `versions` or `audit` under a true option means
-  /// requested and none, under a false one not requested. HCP's own shape leaves
-  /// `options` optional; pending HCP confirmation (question 42).
-  final ExportOptions options;
+  /// HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape.
+  /// Absent means it is unknown whether `versions` or `audit` were requested, and the
+  /// provider MUST NOT infer either.
+  final ImportedExportOptions? options;
 
   /// The current version of each entry exported, whatever its `record.status` (HCP
   /// 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see
@@ -1353,7 +1362,8 @@ class Export {
   final List<Map<String, dynamic>> entries;
 
   /// Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP
-  /// 5.4.1), which `options.includeVersions` records.
+  /// 5.4.1). Whether they were requested is known only from `options.includeVersions`
+  /// where present, never from this array.
   final List<Map<String, dynamic>>? versions;
 
   /// The Context Subject's standing rules (HCP 5.4.1, 6.3).
@@ -1366,9 +1376,11 @@ class Export {
   /// import does not establish them (HCP 5.4.1, 17.2).
   final List<Delegation>? delegations;
 
-  /// The audit log, as events in the structure of HCP 8.2. Present only where requested
-  /// (HCP 5.4.1), which `options.includeAudit` records.
-  final List<AuditEvent>? audit;
+  /// The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`,
+  /// HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it
+  /// was requested is known only from `options.includeAudit` where present, never from
+  /// this array.
+  final List<ImportedAuditEvent>? audit;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -1378,7 +1390,7 @@ class Export {
         'subject': subject.toJson(),
         'exportedBy': exportedBy,
         'exportedAt': exportedAt,
-        'options': options.toJson(),
+        if (options != null) 'options': options!.toJson(),
         'entries': entries,
         if (versions != null) 'versions': versions!,
         'rules': rules.map((e) => e.toJson()).toList(),
@@ -1387,6 +1399,39 @@ class Export {
         if (delegations != null)
           'delegations': delegations!.map((e) => e.toJson()).toList(),
         if (audit != null) 'audit': audit!.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// The value of `ext\["vnd.trusttasks.hcp-carriage"\]` on the hcp/import response: the
+/// hcp/* Trust Task family's own extension, not an HCP member, so that the result
+/// itself stays HCP's. Present only for a delegate's import, and only where the export
+/// holds a standing rule the delegate could not set with hcp/rules/set (one naming no
+/// `categories`, or a category outside the delegation's scope), pending HCP
+/// confirmation (question 40). A Management Client that does not recognize the
+/// namespace ignores it (SPEC.md §4.5.1); it is informational and never marked
+/// critical.
+class HcpCarriageImportExtension {
+  const HcpCarriageImportExtension({
+    required this.rulesNotApplied,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory HcpCarriageImportExtension.fromJson(Map<String, dynamic> json) =>
+      HcpCarriageImportExtension(
+        rulesNotApplied: (json['rulesNotApplied'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+      );
+
+  /// The `ruleId` of each standing rule in the export the delegate could not set, which
+  /// the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4),
+  /// pending HCP confirmation (question 40). The maxItems matches the export's `rules`
+  /// bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
+  final List<Urn> rulesNotApplied;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'rulesNotApplied': rulesNotApplied,
       };
 }
 
@@ -1406,7 +1451,7 @@ class Payload {
 
   /// Read this payload from a decoded JSON object.
   factory Payload.fromJson(Map<String, dynamic> json) => Payload(
-        export: Export.fromJson(json['export'] as Map<String, dynamic>),
+        export: ImportedExport.fromJson(json['export'] as Map<String, dynamic>),
         dryRun: json['dryRun'] as bool?,
         categoryMap: json['categoryMap'] == null
             ? null
@@ -1417,8 +1462,10 @@ class Payload {
 
   /// HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider
   /// accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas`
-  /// (HCP 5.4.3, 4.3, 19).
-  final Export export;
+  /// (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in
+  /// which `options` is OPTIONAL, so that an export written to HCP's schema alone is
+  /// accepted.
+  final ImportedExport export;
 
   /// HCP `dryRun`: if true, the provider reports the outcome for each entry and changes
   /// nothing (HCP 5.4.3). Absent or false means the import is carried out.
@@ -1480,11 +1527,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/import/0.1","title":"HCP — Import — payload","description":"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject\'s direction, loads the entries of an HCP export into the Context Subject\'s instance. The members are HCP 5.4.3\'s request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["export","accessToken"],"properties":{"export":{"\$ref":"#/\$defs/Export","description":"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19)."},"dryRun":{"type":"boolean","description":"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out."},"categoryMap":{"type":"object","maxProperties":256,"additionalProperties":{"\$ref":"#/\$defs/Category"},"description":"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."}},"\$defs":{"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"Export":{"type":"object","additionalProperties":true,"required":["@context","type","schema","subject","exportedBy","exportedAt","options","entries","rules"],"description":"An HCP export: a JSON-LD document holding the Context Subject\'s entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none. Those on `rules`, `directives` and `delegations` are set so that the document\'s 16 MiB `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the list operations bound none: an export too large for one document is refused with `hcp:exportTooLarge` (hcp/export), never cut short by an item count.","properties":{"@context":{"type":["array","string"],"maxItems":16,"description":"The export\'s JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement."},"type":{"type":"string","const":"ContextExport","description":"`ContextExport` (HCP 5.4.1). HCP\'s own value, carried verbatim."},"schema":{"type":"string","const":"https://hcp.example/spec/export/2.0","description":"The export structure version, compared as an exact string (HCP 5.4.1, 1.7)."},"subject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The Context Subject (HCP 5.4.1).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The Context Subject\'s identifier."}}},"exportedBy":{"type":"string","minLength":1,"maxLength":2048,"description":"The exporting HCP Provider (HCP 5.4.1)."},"exportedAt":{"\$ref":"#/\$defs/Instant","description":"When the export was made (HCP 5.4.1)."},"options":{"\$ref":"#/\$defs/ExportOptions","description":"The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP\'s own shape leaves `options` optional; pending HCP confirmation (question 42)."},"entries":{"type":"array","maxItems":100000,"items":{"type":"object","additionalProperties":true},"description":"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP\'s own shape, and each is validated against the schema it names."},"versions":{"type":"array","maxItems":1000000,"items":{"type":"object","additionalProperties":true},"description":"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1), which `options.includeVersions` records."},"rules":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/StandingRule"},"description":"The Context Subject\'s standing rules (HCP 5.4.1, 6.3)."},"directives":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/Directive"},"description":"The Context Subject\'s directives (HCP 5.4.1, 6.4)."},"delegations":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/Delegation"},"description":"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2)."},"audit":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/AuditEvent"},"description":"The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1), which `options.includeAudit` records."}}},"ExportOptions":{"type":"object","additionalProperties":true,"required":["includeVersions","includeAudit"],"description":"The export options used (HCP 5.4.1). `includeVersions` and `includeAudit` are required, true where the option was requested and false otherwise, pending HCP confirmation (question 42); `excludeDeleted` absent or false means the default.","properties":{"excludeDeleted":{"type":"boolean","description":"Omit entries whose `record.status` is `deleted` (HCP 5.4.1)."},"includeVersions":{"type":"boolean","description":"Also return superseded versions of each entry returned (HCP 5.4.1)."},"includeAudit":{"type":"boolean","description":"Also return the Context Subject\'s audit log (HCP 5.4.1, 8.3)."}}},"AuditEvent":{"type":"object","additionalProperties":true,"required":["eventId","eventType","timestamp","participants","entryId","relatedEntryId","purpose","purposeDescription","grantId"],"description":"One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject\'s (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2). `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are required, each a value or null, as HCP 8.2\'s template writes them: HCP\'s own shape leaves them optional, and the carriage requires them so that a null always travels and is never confused with an absent member, pending HCP confirmation (question 42). An event redacted for a former delegate carries `entryId` and `relatedEntryId` as null (HCP 17.7).","properties":{"eventId":{"\$ref":"#/\$defs/Urn","description":"The event\'s identifier (HCP 8.2)."},"eventType":{"type":"string","minLength":1,"maxLength":256,"description":"The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP\'s own shape leaves it, so that the event types of a later draft are not refused. The minLength and maxLength are framework bounds, not HCP requirements."},"timestamp":{"\$ref":"#/\$defs/Instant","description":"When the event occurred. HCP\'s member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1)."},"participants":{"\$ref":"#/\$defs/AuditParticipants","description":"Who took part (HCP 8.2, 3.9)."},"entryId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."},"relatedEntryId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). Required, and null in an event redacted for a former delegate (HCP 17.7), pending HCP confirmation (question 42)."},"categories":{"type":"array","maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement."},"purpose":{"type":["string","null"],"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."},"purposeDescription":{"type":["string","null"],"maxLength":4096,"description":"The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."},"grantId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"The grant concerned, or null where the event concerns none (HCP 8.2). Required, pending HCP confirmation (question 42)."},"disclosed":{"type":"array","maxItems":20,"items":{"\$ref":"#/\$defs/AuditDisclosed"},"description":"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2)."},"data":{"type":"object","additionalProperties":true,"description":"The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."}}},"AuditDisclosed":{"type":"object","additionalProperties":true,"required":["entryId","version","useUntil"],"description":"One entry a retrieval disclosed (HCP 8.2).","properties":{"entryId":{"\$ref":"#/\$defs/Urn","description":"The entry\'s stable `id`."},"version":{"type":"integer","minimum":1,"description":"The version disclosed."},"useUntil":{"\$ref":"#/\$defs/Instant","description":"The use-until time the disclosure was given (HCP 7.6)."},"provenance":{"type":"boolean","description":"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise."},"revealed":{"type":"array","maxItems":16,"items":{"type":"object","additionalProperties":true,"required":["evidence","claims"],"description":"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).","properties":{"evidence":{"type":"integer","minimum":0,"description":"The evidence item\'s index."},"claims":{"type":"array","maxItems":256,"items":{"type":"string","maxLength":2048},"description":"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements."}}},"description":"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"AuditParticipants":{"type":"object","additionalProperties":true,"required":["initiator","provider"],"description":"The participants in an audit event (HCP 8.2, 3.9). No event names \\"system\\" (HCP 8.2).","properties":{"initiator":{"type":"object","additionalProperties":true,"required":["role","id"],"description":"Who initiated the event.","properties":{"role":{"type":"string","enum":["management-client","context-client","authorization-service","hcp-provider"],"description":"Their role (HCP 8.2). HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements."}}},"clientOperator":{"\$ref":"#/\$defs/AuditParty","description":"The Client Operator, where a client took part (HCP 3.9)."},"requestingParty":{"\$ref":"#/\$defs/AuditParty","description":"The Requesting Party, where there is one (HCP 3.9)."},"authorizingPrincipal":{"\$ref":"#/\$defs/AuditParty","description":"The Authorizing Principal (HCP 3.9)."},"provider":{"\$ref":"#/\$defs/AuditParty","description":"The HCP Provider (HCP 8.2)."},"retrievalId":{"\$ref":"#/\$defs/Urn","description":"The retrieval, on a read (HCP 8.2)."},"model":{"\$ref":"#/\$defs/AuditParty","description":"The model, where one took part (HCP 3.9)."}}},"AuditParty":{"type":"object","additionalProperties":true,"required":["id"],"description":"A participant named by its identifier (HCP 8.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The participant\'s identifier. The minLength and maxLength are framework bounds, not HCP requirements."}}},"Delegation":{"type":"object","additionalProperties":true,"required":["delegationId","subject","delegate","relationship","basis","scope","term"],"description":"One natural person\'s authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).","properties":{"delegationId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2)."},"subject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The Context Subject (HCP 17.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The Context Subject\'s identifier."}}},"delegate":{"type":"object","additionalProperties":true,"required":["id","name"],"description":"The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The delegate\'s identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"A name the Context Subject can recognize."}}},"relationship":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"The delegate\'s relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry\'s reserved `subject.relationship` (HCP 11.3)."},"basis":{"\$ref":"#/\$defs/DelegationBasis","description":"What the authority rests on, and how the Authorization Service established it (HCP 17.3)."},"scope":{"\$ref":"#/\$defs/DelegationScope","description":"The categories and actions the delegate may authorize (HCP 17.4)."},"term":{"\$ref":"#/\$defs/DelegationTerm","description":"When the delegation ends (HCP 17.2)."},"mayDelegate":{"type":"boolean","description":"True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2)."},"ended":{"\$ref":"#/\$defs/DelegationEnded","description":"Absent while the delegation holds; set when it ends, with the reason (HCP 17.6)."}}},"DelegationEnded":{"type":"object","additionalProperties":true,"required":["at","reason"],"description":"How and when a delegation ended (HCP 17.6). The member name `at` is HCP\'s own, carried verbatim.","properties":{"at":{"\$ref":"#/\$defs/Instant","description":"When the delegation ended (HCP 17.2, 17.6)."},"reason":{"type":"string","enum":["majority","expiry","basis-ended","relinquished","ended-by-subject","parent-ended","ended-by-delegate"],"description":"Why it ended (HCP 17.6). HCP\'s own values, carried verbatim."}}},"DelegationTerm":{"type":"object","additionalProperties":true,"required":["endsAt","atMajority"],"description":"When a delegation ends: at `endsAt`, and at the Context Subject\'s age of majority where `atMajority` is true (HCP 17.2).","properties":{"endsAt":{"type":["string","null"],"format":"date-time","description":"When the delegation ends; null where no end is known (HCP 17.2)."},"atMajority":{"type":"boolean","description":"True where the delegation ends at the Context Subject\'s age of majority, which the Authorization Service determines under the law that applies (HCP 17.2)."}}},"DelegationScope":{"type":"object","additionalProperties":true,"required":["categories","actions"],"description":"The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).","properties":{"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement."},"actions":{"type":"array","minItems":1,"maxItems":2,"uniqueItems":true,"items":{"type":"string","enum":["read","write"]},"description":"The actions in scope (HCP 17.2, 6.1.5)."}}},"DelegationBasis":{"type":"object","additionalProperties":true,"required":["method","description","establishedBy","establishedAt"],"description":"What a delegation\'s authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check them.","properties":{"method":{"type":"string","enum":["appointed","attested","evidence","delegated","unspecified"],"description":"How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8)."},"description":{"type":"string","minLength":1,"maxLength":4096,"description":"What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement."},"parent":{"\$ref":"#/\$defs/Urn","description":"For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10)."},"evidence":{"type":"array","maxItems":16,"items":{"\$ref":"#/\$defs/EvidenceItem"},"description":"The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry\'s evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement."},"covers":{"type":"array","maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement."},"establishedBy":{"type":"string","minLength":1,"maxLength":2048,"description":"The Authorization Service that established the delegation (HCP 17.2)."},"establishedAt":{"\$ref":"#/\$defs/Instant","description":"When the delegation was established (HCP 17.2)."}}},"EvidenceItem":{"type":"object","additionalProperties":true,"required":["role","type"],"description":"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"role":{"type":"string","enum":["content","supports"],"description":"`content`: the item\'s credential is the entry\'s content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."},"type":{"type":"string","minLength":1,"maxLength":2048,"description":"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3)."},"credential":{"description":"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2)."},"verification":{"type":"object","additionalProperties":true,"required":["result","at"],"description":"The provider\'s record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.","properties":{"result":{"type":"string","enum":["verified","failed"],"description":"The outcome."},"at":{"\$ref":"#/\$defs/Instant","description":"When the provider verified."},"by":{"type":"string","enum":["provider","trust-domain"],"description":"Who verified: the provider, or the Context Subject\'s trust domain under end-to-end encrypted storage (HCP 4.8). HCP\'s own values, carried verbatim."}}}}},"Directive":{"type":"object","additionalProperties":true,"required":["directiveId","action","effect","text","setBy","createdAt"],"description":"What a client may do with context it received, or on the Context Subject\'s behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).","properties":{"directiveId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the directive (HCP 6.4)."},"action":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject\'s behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`."},"effect":{"type":"string","enum":["deny","ask-first","permit"],"description":"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject\'s confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP\'s own values, carried verbatim."},"text":{"type":"string","minLength":1,"maxLength":4096,"description":"The directive in the Context Subject\'s words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement."},"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement."},"operators":{"type":"array","minItems":1,"maxItems":256,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement."},"setBy":{"type":"string","minLength":1,"maxLength":2048,"description":"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3)."},"createdAt":{"\$ref":"#/\$defs/Instant","description":"Set by the provider: when the directive was set (HCP 6.4)."}}},"StandingRule":{"type":"object","additionalProperties":true,"required":["ruleId","effect","setBy","createdAt"],"description":"A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP\'s own standing-rule schema does.","properties":{"ruleId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the rule (HCP 6.3)."},"effect":{"type":"string","enum":["deny"],"description":"`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider."},"operators":{"type":"array","minItems":1,"maxItems":256,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier\'s host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement."},"requires":{"type":"array","minItems":1,"maxItems":64,"items":{"\$ref":"#/\$defs/Uri"},"description":"Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."},"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."},"setBy":{"type":"string","minLength":1,"maxLength":2048,"description":"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2)."},"createdAt":{"\$ref":"#/\$defs/Instant","description":"Set by the provider: when the rule was set (HCP 6.3)."}},"anyOf":[{"required":["operators"]},{"required":["requires"]}]},"Uri":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3)."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/import/0.1","title":"HCP — Import — payload","description":"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject\'s direction, loads the entries of an HCP export into the Context Subject\'s instance. The members are HCP 5.4.3\'s request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["export","accessToken"],"properties":{"export":{"\$ref":"#/\$defs/ImportedExport","description":"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP\'s own export shape, in which `options` is OPTIONAL, so that an export written to HCP\'s schema alone is accepted."},"dryRun":{"type":"boolean","description":"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out."},"categoryMap":{"type":"object","maxProperties":256,"additionalProperties":{"\$ref":"#/\$defs/Category"},"description":"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."}},"\$defs":{"ImportedExport":{"type":"object","additionalProperties":true,"required":["@context","type","schema","subject","exportedBy","exportedAt","entries","rules"],"description":"An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP\'s own export shape, so that an export written to HCP\'s schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP\'s own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP\'s own shape is.","properties":{"@context":{"type":["array","string"],"maxItems":16,"description":"The export\'s JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement."},"type":{"type":"string","const":"ContextExport","description":"`ContextExport` (HCP 5.4.1). HCP\'s own value, carried verbatim."},"schema":{"type":"string","const":"https://hcp.example/spec/export/2.0","description":"The export structure version, compared as an exact string (HCP 5.4.1, 1.7)."},"subject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The Context Subject (HCP 5.4.1).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The Context Subject\'s identifier."}}},"exportedBy":{"type":"string","minLength":1,"maxLength":2048,"description":"The exporting HCP Provider (HCP 5.4.1)."},"exportedAt":{"\$ref":"#/\$defs/Instant","description":"When the export was made (HCP 5.4.1)."},"options":{"\$ref":"#/\$defs/ImportedExportOptions","description":"HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP\'s own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either."},"entries":{"type":"array","maxItems":100000,"items":{"type":"object","additionalProperties":true},"description":"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP\'s own shape, and each is validated against the schema it names."},"versions":{"type":"array","maxItems":1000000,"items":{"type":"object","additionalProperties":true},"description":"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array."},"rules":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/StandingRule"},"description":"The Context Subject\'s standing rules (HCP 5.4.1, 6.3)."},"directives":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/Directive"},"description":"The Context Subject\'s directives (HCP 5.4.1, 6.4)."},"delegations":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/Delegation"},"description":"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2)."},"audit":{"type":"array","maxItems":1000000,"items":{"\$ref":"#/\$defs/ImportedAuditEvent"},"description":"The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP\'s own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."}}},"ImportedExportOptions":{"type":"object","additionalProperties":true,"description":"HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP\'s own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.","properties":{"excludeDeleted":{"type":"boolean","description":"Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown."},"includeVersions":{"type":"boolean","description":"Superseded versions were requested (HCP 5.4.1). Absent means unknown."},"includeAudit":{"type":"boolean","description":"The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown."}}},"ImportedAuditEvent":{"type":"object","additionalProperties":true,"required":["eventId","eventType","timestamp","participants"],"description":"One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP\'s own audit-event shape, so that an export written to HCP\'s schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP\'s own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP\'s own shape is.","properties":{"eventId":{"\$ref":"#/\$defs/Urn","description":"The event\'s identifier (HCP 8.2)."},"eventType":{"type":"string","minLength":1,"maxLength":256,"description":"The event type, one of those HCP 8.1 lists. Left open, as HCP\'s own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements."},"timestamp":{"\$ref":"#/\$defs/Instant","description":"When the event occurred. HCP\'s member name (HCP 8.2), carried verbatim."},"participants":{"\$ref":"#/\$defs/AuditParticipants","description":"Who took part (HCP 8.2, 3.9)."},"entryId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP\'s own shape; absent means unknown."},"relatedEntryId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP\'s own shape; absent means unknown."},"categories":{"type":"array","maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement."},"purpose":{"type":["string","null"],"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP\'s own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."},"purposeDescription":{"type":["string","null"],"maxLength":4096,"description":"The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP\'s own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."},"grantId":{"type":["string","null"],"pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP\'s own shape; absent means unknown."},"disclosed":{"type":"array","maxItems":20,"items":{"\$ref":"#/\$defs/AuditDisclosed"},"description":"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2)."},"data":{"type":"object","additionalProperties":true,"description":"The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."}}},"HcpCarriageImportExtension":{"\$anchor":"hcpCarriageImportExtension","title":"HCP — Import — vnd.trusttasks.hcp-carriage response extension","type":"object","additionalProperties":false,"required":["rulesNotApplied"],"description":"The value of `ext[\\"vnd.trusttasks.hcp-carriage\\"]` on the hcp/import response: the hcp/* Trust Task family\'s own extension, not an HCP member, so that the result itself stays HCP\'s. Present only for a delegate\'s import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation\'s scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.","properties":{"rulesNotApplied":{"type":"array","minItems":1,"maxItems":1000000,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Urn"},"description":"The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export\'s `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."}}},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."},"AuditDisclosed":{"type":"object","additionalProperties":true,"required":["entryId","version","useUntil"],"description":"One entry a retrieval disclosed (HCP 8.2).","properties":{"entryId":{"\$ref":"#/\$defs/Urn","description":"The entry\'s stable `id`."},"version":{"type":"integer","minimum":1,"description":"The version disclosed."},"useUntil":{"\$ref":"#/\$defs/Instant","description":"The use-until time the disclosure was given (HCP 7.6)."},"provenance":{"type":"boolean","description":"True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise."},"revealed":{"type":"array","maxItems":16,"items":{"type":"object","additionalProperties":true,"required":["evidence","claims"],"description":"Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).","properties":{"evidence":{"type":"integer","minimum":0,"description":"The evidence item\'s index."},"claims":{"type":"array","maxItems":256,"items":{"type":"string","maxLength":2048},"description":"The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements."}}},"description":"Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement."}}},"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Category":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP\'s category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."},"AuditParticipants":{"type":"object","additionalProperties":true,"required":["initiator","provider"],"description":"The participants in an audit event (HCP 8.2, 3.9). No event names \\"system\\" (HCP 8.2).","properties":{"initiator":{"type":"object","additionalProperties":true,"required":["role","id"],"description":"Who initiated the event.","properties":{"role":{"type":"string","enum":["management-client","context-client","authorization-service","hcp-provider"],"description":"Their role (HCP 8.2). HCP\'s own values, carried verbatim."},"id":{"type":"string","minLength":1,"maxLength":2048,"description":"Their identifier. The minLength and maxLength are framework bounds, not HCP requirements."}}},"clientOperator":{"\$ref":"#/\$defs/AuditParty","description":"The Client Operator, where a client took part (HCP 3.9)."},"requestingParty":{"\$ref":"#/\$defs/AuditParty","description":"The Requesting Party, where there is one (HCP 3.9)."},"authorizingPrincipal":{"\$ref":"#/\$defs/AuditParty","description":"The Authorizing Principal (HCP 3.9)."},"provider":{"\$ref":"#/\$defs/AuditParty","description":"The HCP Provider (HCP 8.2)."},"retrievalId":{"\$ref":"#/\$defs/Urn","description":"The retrieval, on a read (HCP 8.2)."},"model":{"\$ref":"#/\$defs/AuditParty","description":"The model, where one took part (HCP 3.9)."}}},"AuditParty":{"type":"object","additionalProperties":true,"required":["id"],"description":"A participant named by its identifier (HCP 8.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The participant\'s identifier. The minLength and maxLength are framework bounds, not HCP requirements."}}},"Delegation":{"type":"object","additionalProperties":true,"required":["delegationId","subject","delegate","relationship","basis","scope","term"],"description":"One natural person\'s authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).","properties":{"delegationId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2)."},"subject":{"type":"object","additionalProperties":true,"required":["id"],"description":"The Context Subject (HCP 17.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The Context Subject\'s identifier."}}},"delegate":{"type":"object","additionalProperties":true,"required":["id","name"],"description":"The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The delegate\'s identifier."},"name":{"type":"string","minLength":1,"maxLength":1024,"description":"A name the Context Subject can recognize."}}},"relationship":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"The delegate\'s relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry\'s reserved `subject.relationship` (HCP 11.3)."},"basis":{"\$ref":"#/\$defs/DelegationBasis","description":"What the authority rests on, and how the Authorization Service established it (HCP 17.3)."},"scope":{"\$ref":"#/\$defs/DelegationScope","description":"The categories and actions the delegate may authorize (HCP 17.4)."},"term":{"\$ref":"#/\$defs/DelegationTerm","description":"When the delegation ends (HCP 17.2)."},"mayDelegate":{"type":"boolean","description":"True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2)."},"ended":{"\$ref":"#/\$defs/DelegationEnded","description":"Absent while the delegation holds; set when it ends, with the reason (HCP 17.6)."}}},"DelegationEnded":{"type":"object","additionalProperties":true,"required":["at","reason"],"description":"How and when a delegation ended (HCP 17.6). The member name `at` is HCP\'s own, carried verbatim.","properties":{"at":{"\$ref":"#/\$defs/Instant","description":"When the delegation ended (HCP 17.2, 17.6)."},"reason":{"type":"string","enum":["majority","expiry","basis-ended","relinquished","ended-by-subject","parent-ended","ended-by-delegate"],"description":"Why it ended (HCP 17.6). HCP\'s own values, carried verbatim."}}},"DelegationTerm":{"type":"object","additionalProperties":true,"required":["endsAt","atMajority"],"description":"When a delegation ends: at `endsAt`, and at the Context Subject\'s age of majority where `atMajority` is true (HCP 17.2).","properties":{"endsAt":{"type":["string","null"],"format":"date-time","description":"When the delegation ends; null where no end is known (HCP 17.2)."},"atMajority":{"type":"boolean","description":"True where the delegation ends at the Context Subject\'s age of majority, which the Authorization Service determines under the law that applies (HCP 17.2)."}}},"DelegationScope":{"type":"object","additionalProperties":true,"required":["categories","actions"],"description":"The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).","properties":{"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement."},"actions":{"type":"array","minItems":1,"maxItems":2,"uniqueItems":true,"items":{"type":"string","enum":["read","write"]},"description":"The actions in scope (HCP 17.2, 6.1.5)."}}},"DelegationBasis":{"type":"object","additionalProperties":true,"required":["method","description","establishedBy","establishedAt"],"description":"What a delegation\'s authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check them.","properties":{"method":{"type":"string","enum":["appointed","attested","evidence","delegated","unspecified"],"description":"How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8)."},"description":{"type":"string","minLength":1,"maxLength":4096,"description":"What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement."},"parent":{"\$ref":"#/\$defs/Urn","description":"For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10)."},"evidence":{"type":"array","maxItems":16,"items":{"\$ref":"#/\$defs/EvidenceItem"},"description":"The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry\'s evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement."},"covers":{"type":"array","maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement."},"establishedBy":{"type":"string","minLength":1,"maxLength":2048,"description":"The Authorization Service that established the delegation (HCP 17.2)."},"establishedAt":{"\$ref":"#/\$defs/Instant","description":"When the delegation was established (HCP 17.2)."}}},"EvidenceItem":{"type":"object","additionalProperties":true,"required":["role","type"],"description":"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry\'s Rust generator does not support `if`/`then`/`else`, so a validator does not check it.","properties":{"role":{"type":"string","enum":["content","supports"],"description":"`content`: the item\'s credential is the entry\'s content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."},"type":{"type":"string","minLength":1,"maxLength":2048,"description":"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3)."},"credential":{"description":"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2)."},"verification":{"type":"object","additionalProperties":true,"required":["result","at"],"description":"The provider\'s record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.","properties":{"result":{"type":"string","enum":["verified","failed"],"description":"The outcome."},"at":{"\$ref":"#/\$defs/Instant","description":"When the provider verified."},"by":{"type":"string","enum":["provider","trust-domain"],"description":"Who verified: the provider, or the Context Subject\'s trust domain under end-to-end encrypted storage (HCP 4.8). HCP\'s own values, carried verbatim."}}}}},"Directive":{"type":"object","additionalProperties":true,"required":["directiveId","action","effect","text","setBy","createdAt"],"description":"What a client may do with context it received, or on the Context Subject\'s behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).","properties":{"directiveId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the directive (HCP 6.4)."},"action":{"type":"string","minLength":1,"maxLength":2048,"pattern":"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)\$","description":"What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject\'s behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`."},"effect":{"type":"string","enum":["deny","ask-first","permit"],"description":"`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject\'s confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP\'s own values, carried verbatim."},"text":{"type":"string","minLength":1,"maxLength":4096,"description":"The directive in the Context Subject\'s words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement."},"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement."},"operators":{"type":"array","minItems":1,"maxItems":256,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement."},"setBy":{"type":"string","minLength":1,"maxLength":2048,"description":"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3)."},"createdAt":{"\$ref":"#/\$defs/Instant","description":"Set by the provider: when the directive was set (HCP 6.4)."}}},"StandingRule":{"type":"object","additionalProperties":true,"required":["ruleId","effect","setBy","createdAt"],"description":"A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP\'s own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.","properties":{"ruleId":{"\$ref":"#/\$defs/Urn","description":"Stable for the life of the rule (HCP 6.3)."},"effect":{"type":"string","enum":["deny"],"description":"`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider."},"operators":{"type":"array","minItems":1,"maxItems":256,"items":{"type":"string","minLength":1,"maxLength":2048},"description":"The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier\'s host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement."},"requires":{"type":"array","minItems":1,"maxItems":64,"items":{"\$ref":"#/\$defs/Uri"},"description":"Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."},"categories":{"type":"array","minItems":1,"maxItems":256,"items":{"\$ref":"#/\$defs/Category"},"description":"The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement."},"setBy":{"type":"string","minLength":1,"maxLength":2048,"description":"Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2)."},"createdAt":{"\$ref":"#/\$defs/Instant","description":"Set by the provider: when the rule was set (HCP 6.3)."}}},"Uri":{"type":"string","format":"uri","minLength":1,"maxLength":2048,"pattern":"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+\$","description":"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3)."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"HCP — Import — response payload","type":"object","additionalProperties":false,"required":["outcomes"],"description":"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.","properties":{"outcomes":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/Outcome"},"description":"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export\'s `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."},"dryRun":{"type":"boolean","description":"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11)."},"rulesNotApplied":{"type":"array","maxItems":1000000,"uniqueItems":true,"items":{"\$ref":"#/\$defs/Urn"},"description":"Not an HCP member: present only for a delegate\'s import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation\'s scope). The `ruleId` of each such rule, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export\'s `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."}}},"Outcome":{"type":"object","additionalProperties":true,"required":["id","outcome"],"description":"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP\'s own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\"rejected, with the reason\\". That rule is not checked by the schema, because the registry\'s Rust generator does not support the conditional keywords it needs.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The entry\'s `id`, as the export carries it (HCP 5.4.3, 9.4.11)."},"outcome":{"type":"string","enum":["imported","converted","skipped","rejected"],"description":"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP\'s own values, carried verbatim."},"reason":{"type":"string","minLength":1,"maxLength":1024,"description":"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\"id held with different content\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement."}}},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"HCP — Import — response payload","type":"object","additionalProperties":false,"required":["outcomes"],"description":"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.","properties":{"outcomes":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/Outcome"},"description":"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export\'s `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."},"dryRun":{"type":"boolean","description":"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11)."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP\'s import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family\'s own extension, not HCP\'s: present only for a delegate\'s import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40)."}}},"Outcome":{"type":"object","additionalProperties":true,"required":["id","outcome"],"description":"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP\'s own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\"rejected, with the reason\\". That rule is not checked by the schema, because the registry\'s Rust generator does not support the conditional keywords it needs.","properties":{"id":{"type":"string","minLength":1,"maxLength":2048,"description":"The entry\'s `id`, as the export carries it (HCP 5.4.3, 9.4.11)."},"outcome":{"type":"string","enum":["imported","converted","skipped","rejected"],"description":"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP\'s own values, carried verbatim."},"reason":{"type":"string","minLength":1,"maxLength":1024,"description":"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\"id held with different content\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

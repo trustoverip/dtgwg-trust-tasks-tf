@@ -3,7 +3,7 @@
  * Source: specs/hcp/export/0.1/payload.schema.json
  */
 
-import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn } from "../../../_shared/components.js";
+import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Uri, Urn } from "../../../_shared/components.js";
 
 
 /**
@@ -38,7 +38,7 @@ export interface HCPExportResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuditDisclosed, AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Urn };
+export type { AuditDisclosed, AuditEvent, AuditParticipants, AuditParty, Category, Delegation, DelegationBasis, DelegationEnded, DelegationScope, DelegationTerm, Directive, EvidenceItem, Export, ExportOptions, Instant, StandingRule, Uri, Urn };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/hcp/export/0.1" as const;
@@ -197,7 +197,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "options": {
           "$ref": "#/$defs/ExportOptions",
-          "description": "The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional; pending HCP confirmation (question 42)."
+          "description": "The options requested (HCP 5.4.1). Required, with `includeVersions` and `includeAudit`, so that the export itself says whether `versions` and `audit` were requested: an empty or absent `versions` or `audit` under a true option means requested and none, under a false one not requested. HCP's own shape leaves `options` optional, and hcp/import accepts an export without it; requiring it of an export the provider produces is pending HCP confirmation (question 42)."
         },
         "entries": {
           "type": "array",
@@ -896,7 +896,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "setBy",
         "createdAt"
       ],
-      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). The schema checks that rule with an `anyOf` of the two `required` clauses, as HCP's own standing-rule schema does.",
+      "description": "A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; this shared definition does not, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.",
       "properties": {
         "ruleId": {
           "$ref": "#/$defs/Urn",
@@ -948,19 +948,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "$ref": "#/$defs/Instant",
           "description": "Set by the provider: when the rule was set (HCP 6.3)."
         }
-      },
-      "anyOf": [
-        {
-          "required": [
-            "operators"
-          ]
-        },
-        {
-          "required": [
-            "requires"
-          ]
-        }
-      ]
+      }
     },
     "Uri": {
       "type": "string",

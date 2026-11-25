@@ -298,6 +298,7 @@
   "hcp/_shared/0.1/context-entry.schema.json#/$defs/EvidenceItem": "EvidenceItem",
   "hcp/_shared/0.1/context-entry.schema.json#/$defs/Provenance": "Provenance_HcpV0_1",
   "hcp/_shared/0.1/context-entry.schema.json#/$defs/Record": "Record",
+  "hcp/_shared/0.1/context-entry.schema.json#/$defs/RecordedProposal": "RecordedProposal",
   "hcp/_shared/0.1/context-entry.schema.json#/$defs/Relationship": "Relationship",
   "hcp/_shared/0.1/delegation.schema.json#/$defs/Delegation": "Delegation",
   "hcp/_shared/0.1/delegation.schema.json#/$defs/DelegationBasis": "DelegationBasis",

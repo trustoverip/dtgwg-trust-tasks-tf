@@ -2599,7 +2599,428 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordStatus {
         value.parse()
     }
 }
-///A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+///A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct RecordedProposal {
+    ///The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+    pub act: RecordedProposalAct,
+    ///The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+    pub entry: RecordedProposalEntry,
+    ///When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request.
+    #[serde(rename = "proposedAt")]
+    pub proposed_at: Instant,
+    #[serde(rename = "proposedBy")]
+    pub proposed_by: RecordedProposalProposedBy,
+    ///Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+    pub rationale: RecordedProposalRationale,
+    ///What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.
+    pub weighed: ::std::vec::Vec<RecordedProposalWeighedItem>,
+}
+impl RecordedProposal {
+    pub fn builder() -> builder::RecordedProposal {
+        Default::default()
+    }
+}
+///The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum RecordedProposalAct {
+    #[serde(rename = "reject")]
+    Reject,
+    #[serde(rename = "accept")]
+    Accept,
+    #[serde(rename = "supersede")]
+    Supersede,
+}
+impl ::std::fmt::Display for RecordedProposalAct {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Reject => f.write_str("reject"),
+            Self::Accept => f.write_str("accept"),
+            Self::Supersede => f.write_str("supersede"),
+        }
+    }
+}
+impl ::std::str::FromStr for RecordedProposalAct {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "reject" => Ok(Self::Reject),
+            "accept" => Ok(Self::Accept),
+            "supersede" => Ok(Self::Supersede),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalAct {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalAct {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalAct {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RecordedProposalEntry(::std::string::String);
+impl ::std::ops::Deref for RecordedProposalEntry {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RecordedProposalEntry> for ::std::string::String {
+    fn from(value: RecordedProposalEntry) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RecordedProposalEntry {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalEntry {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalEntry {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalEntry {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RecordedProposalEntry {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct RecordedProposalProposedBy {
+    ///Their identifier. The maxLength is a framework bound, not an HCP requirement.
+    pub id: RecordedProposalProposedById,
+    ///Their role (HCP 3.9). HCP's own values, carried verbatim.
+    pub role: RecordedProposalProposedByRole,
+}
+impl RecordedProposalProposedBy {
+    pub fn builder() -> builder::RecordedProposalProposedBy {
+        Default::default()
+    }
+}
+///Their identifier. The maxLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RecordedProposalProposedById(::std::string::String);
+impl ::std::ops::Deref for RecordedProposalProposedById {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RecordedProposalProposedById> for ::std::string::String {
+    fn from(value: RecordedProposalProposedById) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RecordedProposalProposedById {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalProposedById {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalProposedById {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalProposedById {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RecordedProposalProposedById {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Their role (HCP 3.9). HCP's own values, carried verbatim.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum RecordedProposalProposedByRole {
+    #[serde(rename = "management-client")]
+    ManagementClient,
+    #[serde(rename = "context-client")]
+    ContextClient,
+    #[serde(rename = "authorization-service")]
+    AuthorizationService,
+    #[serde(rename = "hcp-provider")]
+    HcpProvider,
+}
+impl ::std::fmt::Display for RecordedProposalProposedByRole {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::ManagementClient => f.write_str("management-client"),
+            Self::ContextClient => f.write_str("context-client"),
+            Self::AuthorizationService => f.write_str("authorization-service"),
+            Self::HcpProvider => f.write_str("hcp-provider"),
+        }
+    }
+}
+impl ::std::str::FromStr for RecordedProposalProposedByRole {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "management-client" => Ok(Self::ManagementClient),
+            "context-client" => Ok(Self::ContextClient),
+            "authorization-service" => Ok(Self::AuthorizationService),
+            "hcp-provider" => Ok(Self::HcpProvider),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalProposedByRole {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalProposedByRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalProposedByRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RecordedProposalRationale(::std::string::String);
+impl ::std::ops::Deref for RecordedProposalRationale {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RecordedProposalRationale> for ::std::string::String {
+    fn from(value: RecordedProposalRationale) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RecordedProposalRationale {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 4096usize {
+            return Err("longer than 4096 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalRationale {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalRationale {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalRationale {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RecordedProposalRationale {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`RecordedProposalWeighedItem`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct RecordedProposalWeighedItem(::std::string::String);
+impl ::std::ops::Deref for RecordedProposalWeighedItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<RecordedProposalWeighedItem> for ::std::string::String {
+    fn from(value: RecordedProposalWeighedItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for RecordedProposalWeighedItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for RecordedProposalWeighedItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RecordedProposalWeighedItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RecordedProposalWeighedItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RecordedProposalWeighedItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
@@ -2607,8 +3028,8 @@ pub struct Relationship {
     #[serde(rename = "assertedBy")]
     pub asserted_by: RelationshipAssertedBy,
     ///A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub proposal: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub proposal: ::std::option::Option<RecordedProposal>,
     ///When the provider recorded the relationship.
     #[serde(rename = "recordedAt")]
     pub recorded_at: Instant,
@@ -4551,10 +4972,178 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct RecordedProposal {
+        act: ::std::result::Result<super::RecordedProposalAct, ::std::string::String>,
+        entry: ::std::result::Result<super::RecordedProposalEntry, ::std::string::String>,
+        proposed_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        proposed_by:
+            ::std::result::Result<super::RecordedProposalProposedBy, ::std::string::String>,
+        rationale: ::std::result::Result<super::RecordedProposalRationale, ::std::string::String>,
+        weighed: ::std::result::Result<
+            ::std::vec::Vec<super::RecordedProposalWeighedItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for RecordedProposal {
+        fn default() -> Self {
+            Self {
+                act: Err("no value supplied for act".to_string()),
+                entry: Err("no value supplied for entry".to_string()),
+                proposed_at: Err("no value supplied for proposed_at".to_string()),
+                proposed_by: Err("no value supplied for proposed_by".to_string()),
+                rationale: Err("no value supplied for rationale".to_string()),
+                weighed: Err("no value supplied for weighed".to_string()),
+            }
+        }
+    }
+    impl RecordedProposal {
+        pub fn act<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalAct>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.act = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for act: {e}"));
+            self
+        }
+        pub fn entry<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalEntry>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry: {e}"));
+            self
+        }
+        pub fn proposed_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proposed_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proposed_at: {e}"));
+            self
+        }
+        pub fn proposed_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalProposedBy>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proposed_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proposed_by: {e}"));
+            self
+        }
+        pub fn rationale<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalRationale>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rationale = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rationale: {e}"));
+            self
+        }
+        pub fn weighed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedProposalWeighedItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.weighed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for weighed: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RecordedProposal> for super::RecordedProposal {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RecordedProposal,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                act: value.act?,
+                entry: value.entry?,
+                proposed_at: value.proposed_at?,
+                proposed_by: value.proposed_by?,
+                rationale: value.rationale?,
+                weighed: value.weighed?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RecordedProposal> for RecordedProposal {
+        fn from(value: super::RecordedProposal) -> Self {
+            Self {
+                act: Ok(value.act),
+                entry: Ok(value.entry),
+                proposed_at: Ok(value.proposed_at),
+                proposed_by: Ok(value.proposed_by),
+                rationale: Ok(value.rationale),
+                weighed: Ok(value.weighed),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RecordedProposalProposedBy {
+        id: ::std::result::Result<super::RecordedProposalProposedById, ::std::string::String>,
+        role: ::std::result::Result<super::RecordedProposalProposedByRole, ::std::string::String>,
+    }
+    impl ::std::default::Default for RecordedProposalProposedBy {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                role: Err("no value supplied for role".to_string()),
+            }
+        }
+    }
+    impl RecordedProposalProposedBy {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalProposedById>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::RecordedProposalProposedByRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RecordedProposalProposedBy> for super::RecordedProposalProposedBy {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RecordedProposalProposedBy,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RecordedProposalProposedBy> for RecordedProposalProposedBy {
+        fn from(value: super::RecordedProposalProposedBy) -> Self {
+            Self {
+                id: Ok(value.id),
+                role: Ok(value.role),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Relationship {
         asserted_by: ::std::result::Result<super::RelationshipAssertedBy, ::std::string::String>,
         proposal: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<super::RecordedProposal>,
             ::std::string::String,
         >,
         recorded_at: ::std::result::Result<super::Instant, ::std::string::String>,
@@ -4585,9 +5174,7 @@ pub mod builder {
         }
         pub fn proposal<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            >,
+            T: ::std::convert::TryInto<::std::option::Option<super::RecordedProposal>>,
             T::Error: ::std::fmt::Display,
         {
             self.proposal = value
@@ -4760,7 +5347,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(524288usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Assertion\":{\"additionalProperties\":true,\"description\":\"What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/Basis\",\"description\":\"What the assertion was drawn from (HCP 4.2.5).\"},\"confidence\":{\"description\":\"How confident an inferring model is (HCP 4.2, 4.4).\",\"enum\":[\"high\",\"medium\",\"low\",null],\"type\":[\"string\",\"null\"]},\"declarationType\":{\"description\":\"What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values, carried verbatim.\",\"enum\":[\"person-declared\",\"model-inferred\",\"issuer-attested\"],\"type\":\"string\"},\"permittedPurposes\":{\"description\":\"The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"validUntil\":{\"description\":\"The instant after which the content no longer holds; absent or null means it does not expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable, which is a disclosure's `useUntil` (HCP 7.6).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"declarationType\"],\"type\":\"object\"},\"Assurance\":{\"description\":\"How a Context Asserter's identity was established (HCP 3.6). HCP's own values, carried verbatim.\",\"enum\":[\"unverified\",\"authenticated\",\"cryptographically-verified\"],\"type\":\"string\"},\"Basis\":{\"additionalProperties\":true,\"description\":\"What an assertion was drawn from (HCP 4.2.5). It identifies no party but the Context Subject.\",\"properties\":{\"drawnFrom\":{\"description\":\"The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"rationale\":{\"description\":\"Why the asserter drew the conclusion.\",\"maxLength\":4096,\"type\":\"string\"},\"setting\":{\"description\":\"The setting in which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"},\"task\":{\"description\":\"The task during which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"}},\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Classification\":{\"additionalProperties\":true,\"description\":\"HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it covers any one of the entry's categories (HCP 4.5).\",\"properties\":{\"categories\":{\"description\":\"One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"dimension\":{\"description\":\"A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).\",\"maxLength\":2048,\"type\":[\"string\",\"null\"]},\"permittedPurposes\":{\"description\":\"The Authorizing Principal's narrowing of the entry's purposes; absent means no limit (HCP 4.2.6).\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"categories\"],\"type\":\"object\"},\"ClientDescription\":{\"additionalProperties\":true,\"description\":\"An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).\",\"properties\":{\"id\":{\"description\":\"The client's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The client's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"additionalProperties\":true,\"description\":\"The Client Operator.\",\"properties\":{\"id\":{\"description\":\"The operator's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The operator's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"}},\"required\":[\"id\",\"name\",\"operator\"],\"type\":\"object\"},\"Content\":{\"additionalProperties\":true,\"description\":\"Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"evidence\":{\"description\":\"Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).\",\"minimum\":0,\"type\":\"integer\"},\"language\":{\"description\":\"The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.\",\"maxLength\":64,\"type\":[\"string\",\"null\"]},\"profile\":{\"$ref\":\"#/$defs/Uri\",\"description\":\"The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).\"},\"value\":{\"description\":\"The statement, under the General Context profile: a string or a structured object (HCP 11.2).\",\"type\":[\"string\",\"object\"]}},\"required\":[\"profile\"],\"type\":\"object\"},\"Entry\":{\"additionalProperties\":true,\"description\":\"An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry, with its stable `id`, reaches only the Context Subject's own access (HCP 7.4).\",\"properties\":{\"@context\":{\"description\":\"The entry's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 4.2).\",\"type\":[\"array\",\"string\"]},\"assertion\":{\"$ref\":\"#/$defs/Assertion\",\"description\":\"What the submitting client states about the assertion (HCP 4.2, 4.4).\"},\"classification\":{\"$ref\":\"#/$defs/Classification\",\"description\":\"HCP's classification of the entry: its categories, dimension and purpose limits (HCP 4.2, 4.5).\"},\"content\":{\"$ref\":\"#/$defs/Content\",\"description\":\"What is said about the Context Subject, shaped by its content profile (HCP 4.2).\"},\"evidence\":{\"description\":\"Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).\"},\"record\":{\"$ref\":\"#/$defs/Record\",\"description\":\"The provider's record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2).\"},\"schema\":{\"const\":\"https://hcp.example/spec/entry/2.0\",\"description\":\"The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3 defines this one value.\",\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/EntrySubject\",\"description\":\"The Context Subject the entry is about.\"},\"type\":{\"description\":\"The entry's types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"schema\",\"id\",\"type\",\"subject\",\"content\",\"assertion\",\"classification\",\"record\"],\"type\":\"object\"},\"EntrySubject\":{\"additionalProperties\":true,\"description\":\"The subject of an entry (HCP 4.2).\",\"properties\":{\"id\":{\"description\":\"A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"relationship\":{\"description\":\"Reserved by HCP (HCP 4.2, 11.3); null where present.\",\"type\":\"null\"}},\"required\":[\"id\"],\"type\":\"object\"},\"EvidenceItem\":{\"additionalProperties\":true,\"description\":\"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"credential\":{\"description\":\"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Provenance\":{\"additionalProperties\":true,\"description\":\"The provenance of one version of an entry (HCP 4.2, 3.5).\",\"properties\":{\"assertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the assertion was made, as the submitting client states it.\"},\"assertedBy\":{\"additionalProperties\":true,\"description\":\"The Context Asserter (HCP 3.5, 3.6).\",\"properties\":{\"assurance\":{\"$ref\":\"#/$defs/Assurance\",\"description\":\"How the asserter's identity was established.\"},\"id\":{\"description\":\"The Context Asserter's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"via\":{\"additionalProperties\":true,\"description\":\"Present only where a client attested for an issuer under the issuer's authorization (HCP 3.7).\",\"properties\":{\"id\":{\"description\":\"The identifier of the attestation authorization or the recorded arrangement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"description\":\"What the client attested under. HCP's own values, carried verbatim.\",\"enum\":[\"authorization-credential\",\"arrangement\"],\"type\":\"string\"}},\"required\":[\"kind\",\"id\"],\"type\":\"object\"}},\"required\":[\"id\",\"assurance\"],\"type\":\"object\"},\"authorizedUnder\":{\"description\":\"The grant under which this version was written.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"confirmations\":{\"description\":\"Confirmation records for this version (HCP 3.8). Absent or empty when there are none.\",\"items\":{\"additionalProperties\":true,\"properties\":{\"confirmedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When.\"},\"confirmedBy\":{\"additionalProperties\":true,\"description\":\"Who confirmed or rejected it.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"disposition\":{\"description\":\"Whether the Context Subject confirmed or rejected the version.\",\"enum\":[\"confirmed\",\"rejected\"],\"type\":\"string\"}},\"required\":[\"disposition\",\"confirmedBy\",\"confirmedAt\"],\"type\":\"object\"},\"type\":\"array\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded this version.\"},\"recordedByProvider\":{\"description\":\"The HCP Provider that recorded this version.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"source\":{\"description\":\"The origin of the entry, as the submitting client states it: a conversation or document identifier, `person-input` or `integration` (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"submittedByClient\":{\"$ref\":\"#/$defs/ClientDescription\",\"description\":\"The HCP Client that submitted this version, and its Client Operator (HCP 3.5).\"}},\"required\":[\"assertedBy\",\"assertedAt\",\"source\",\"submittedByClient\",\"authorizedUnder\",\"recordedByProvider\",\"recordedAt\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Record\":{\"additionalProperties\":true,\"description\":\"The provider's record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).\",\"properties\":{\"conversion\":{\"additionalProperties\":true,\"description\":\"Present only on an entry converted from HCP v1 (HCP 4.3).\",\"properties\":{\"convertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When it was converted.\"},\"convertedBy\":{\"description\":\"Who converted it.\",\"maxLength\":2048,\"type\":\"string\"},\"from\":{\"description\":\"What the entry was converted from.\",\"maxLength\":2048,\"type\":\"string\"},\"unmapped\":{\"additionalProperties\":true,\"description\":\"v1 members the conversion did not map.\",\"type\":\"object\"}},\"required\":[\"from\",\"convertedAt\",\"convertedBy\"],\"type\":\"object\"},\"metadata\":{\"additionalProperties\":true,\"description\":\"Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).\",\"type\":\"object\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).\"},\"relationships\":{\"description\":\"Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Relationship\"},\"type\":\"array\"},\"status\":{\"description\":\"The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"deprecated\",\"conflicted\",\"expired\",\"revoked\",\"suspended\",\"deleted\"],\"type\":\"string\"},\"version\":{\"description\":\"The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"status\",\"version\",\"provenance\"],\"type\":\"object\"},\"Relationship\":{\"additionalProperties\":true,\"description\":\"A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is carried as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"assertedBy\":{\"additionalProperties\":true,\"description\":\"Who asserted the relationship.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 3.9). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"proposal\":{\"additionalProperties\":true,\"description\":\"A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).\",\"type\":\"object\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the relationship.\"},\"target\":{\"description\":\"The related entry's `id`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/RelationshipType\",\"description\":\"The kind of relationship.\"}},\"required\":[\"type\",\"target\",\"assertedBy\",\"recordedAt\"],\"type\":\"object\"},\"RelationshipType\":{\"description\":\"How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.\",\"enum\":[\"derivedFrom\",\"supersedes\",\"contradicts\",\"duplicates\"],\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Assertion\":{\"additionalProperties\":true,\"description\":\"What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/Basis\",\"description\":\"What the assertion was drawn from (HCP 4.2.5).\"},\"confidence\":{\"description\":\"How confident an inferring model is (HCP 4.2, 4.4).\",\"enum\":[\"high\",\"medium\",\"low\",null],\"type\":[\"string\",\"null\"]},\"declarationType\":{\"description\":\"What kind of party made the assertion (HCP 4.4); never omitted. HCP's own values, carried verbatim.\",\"enum\":[\"person-declared\",\"model-inferred\",\"issuer-attested\"],\"type\":\"string\"},\"permittedPurposes\":{\"description\":\"The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"validUntil\":{\"description\":\"The instant after which the content no longer holds; absent or null means it does not expire (HCP 4.2). Not the instant after which a disclosed copy stops being usable, which is a disclosure's `useUntil` (HCP 7.6).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"declarationType\"],\"type\":\"object\"},\"Assurance\":{\"description\":\"How a Context Asserter's identity was established (HCP 3.6). HCP's own values, carried verbatim.\",\"enum\":[\"unverified\",\"authenticated\",\"cryptographically-verified\"],\"type\":\"string\"},\"Basis\":{\"additionalProperties\":true,\"description\":\"What an assertion was drawn from (HCP 4.2.5). It identifies no party but the Context Subject.\",\"properties\":{\"drawnFrom\":{\"description\":\"The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"rationale\":{\"description\":\"Why the asserter drew the conclusion.\",\"maxLength\":4096,\"type\":\"string\"},\"setting\":{\"description\":\"The setting in which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"},\"task\":{\"description\":\"The task during which the assertion was made.\",\"maxLength\":4096,\"type\":\"string\"}},\"type\":\"object\"},\"Category\":{\"description\":\"An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"Classification\":{\"additionalProperties\":true,\"description\":\"HCP's classification of the entry (HCP 4.2, 4.5). A grant reaches an entry when it covers any one of the entry's categories (HCP 4.5).\",\"properties\":{\"categories\":{\"description\":\"One or more categories, without duplicates (HCP 4.2, 4.5). In a disclosure, only the categories the requesting grant covers (HCP 7.4).\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"dimension\":{\"description\":\"A free-form identifier of the dimension the entry addresses, scoped within its categories: a hint for conflict detection that grants and limits nothing (HCP 4.2).\",\"maxLength\":2048,\"type\":[\"string\",\"null\"]},\"permittedPurposes\":{\"description\":\"The Authorizing Principal's narrowing of the entry's purposes; absent means no limit (HCP 4.2.6).\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"categories\"],\"type\":\"object\"},\"ClientDescription\":{\"additionalProperties\":true,\"description\":\"An HCP Client and its Client Operator, as recorded (HCP 3.5, 3.2.8).\",\"properties\":{\"id\":{\"description\":\"The client's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The client's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"operator\":{\"additionalProperties\":true,\"description\":\"The Client Operator.\",\"properties\":{\"id\":{\"description\":\"The operator's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"The operator's name.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"}},\"required\":[\"id\",\"name\",\"operator\"],\"type\":\"object\"},\"Content\":{\"additionalProperties\":true,\"description\":\"Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"evidence\":{\"description\":\"Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).\",\"minimum\":0,\"type\":\"integer\"},\"language\":{\"description\":\"The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.\",\"maxLength\":64,\"type\":[\"string\",\"null\"]},\"profile\":{\"$ref\":\"#/$defs/Uri\",\"description\":\"The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).\"},\"value\":{\"description\":\"The statement, under the General Context profile: a string or a structured object (HCP 11.2).\",\"type\":[\"string\",\"object\"]}},\"required\":[\"profile\"],\"type\":\"object\"},\"Entry\":{\"additionalProperties\":true,\"description\":\"An HCP entry, in the one form a provider emits (HCP 4.2, 4.3). A Context Client never receives one: it receives a Disclosure instead (HCP 7.4). The whole entry, with its stable `id`, reaches only the Context Subject's own access (HCP 7.4).\",\"properties\":{\"@context\":{\"description\":\"The entry's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 4.2).\",\"type\":[\"array\",\"string\"]},\"assertion\":{\"$ref\":\"#/$defs/Assertion\",\"description\":\"What the submitting client states about the assertion (HCP 4.2, 4.4).\"},\"classification\":{\"$ref\":\"#/$defs/Classification\",\"description\":\"HCP's classification of the entry: its categories, dimension and purpose limits (HCP 4.2, 4.5).\"},\"content\":{\"$ref\":\"#/$defs/Content\",\"description\":\"What is said about the Context Subject, shaped by its content profile (HCP 4.2).\"},\"evidence\":{\"description\":\"Evidence items (HCP 4.2.2): at most one whose `role` is `content`. Absent or empty when the entry carries none. This rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"$ref\":\"#/$defs/EvidenceItem\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry's stable identifier, the same across all its versions (HCP 4.2). Never disclosed to a Context Client, which names the entry by a `ref` (HCP 7.4).\"},\"record\":{\"$ref\":\"#/$defs/Record\",\"description\":\"The provider's record of the entry: status, version, provenance, relationships, conversion and metadata (HCP 4.2).\"},\"schema\":{\"const\":\"https://hcp.example/spec/entry/2.0\",\"description\":\"The version of the entry structure, compared as an exact string (HCP 4.2, 1.7). HCP 2.0-draft-3 defines this one value.\",\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/EntrySubject\",\"description\":\"The Context Subject the entry is about.\"},\"type\":{\"description\":\"The entry's types. It MUST include `ContextEntry` (HCP 4.2). That rule is stated here and not in the schema: the registry's Rust generator does not support `contains`, so a validator does not check it.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"schema\",\"id\",\"type\",\"subject\",\"content\",\"assertion\",\"classification\",\"record\"],\"type\":\"object\"},\"EntrySubject\":{\"additionalProperties\":true,\"description\":\"The subject of an entry (HCP 4.2).\",\"properties\":{\"id\":{\"description\":\"A URI identifying the Context Subject of the HCP instance that holds the entry, possibly a pseudonym the provider issues (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"relationship\":{\"description\":\"Reserved by HCP (HCP 4.2, 11.3); null where present.\",\"type\":\"null\"}},\"required\":[\"id\"],\"type\":\"object\"},\"EvidenceItem\":{\"additionalProperties\":true,\"description\":\"One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"credential\":{\"description\":\"The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Provenance\":{\"additionalProperties\":true,\"description\":\"The provenance of one version of an entry (HCP 4.2, 3.5).\",\"properties\":{\"assertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the assertion was made, as the submitting client states it.\"},\"assertedBy\":{\"additionalProperties\":true,\"description\":\"The Context Asserter (HCP 3.5, 3.6).\",\"properties\":{\"assurance\":{\"$ref\":\"#/$defs/Assurance\",\"description\":\"How the asserter's identity was established.\"},\"id\":{\"description\":\"The Context Asserter's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"via\":{\"additionalProperties\":true,\"description\":\"Present only where a client attested for an issuer under the issuer's authorization (HCP 3.7).\",\"properties\":{\"id\":{\"description\":\"The identifier of the attestation authorization or the recorded arrangement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"description\":\"What the client attested under. HCP's own values, carried verbatim.\",\"enum\":[\"authorization-credential\",\"arrangement\"],\"type\":\"string\"}},\"required\":[\"kind\",\"id\"],\"type\":\"object\"}},\"required\":[\"id\",\"assurance\"],\"type\":\"object\"},\"authorizedUnder\":{\"description\":\"The grant under which this version was written.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"confirmations\":{\"description\":\"Confirmation records for this version (HCP 3.8). Absent or empty when there are none.\",\"items\":{\"additionalProperties\":true,\"properties\":{\"confirmedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When.\"},\"confirmedBy\":{\"additionalProperties\":true,\"description\":\"Who confirmed or rejected it.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"disposition\":{\"description\":\"Whether the Context Subject confirmed or rejected the version.\",\"enum\":[\"confirmed\",\"rejected\"],\"type\":\"string\"}},\"required\":[\"disposition\",\"confirmedBy\",\"confirmedAt\"],\"type\":\"object\"},\"type\":\"array\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded this version.\"},\"recordedByProvider\":{\"description\":\"The HCP Provider that recorded this version.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"source\":{\"description\":\"The origin of the entry, as the submitting client states it: a conversation or document identifier, `person-input` or `integration` (HCP 4.2).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"submittedByClient\":{\"$ref\":\"#/$defs/ClientDescription\",\"description\":\"The HCP Client that submitted this version, and its Client Operator (HCP 3.5).\"}},\"required\":[\"assertedBy\",\"assertedAt\",\"source\",\"submittedByClient\",\"authorizedUnder\",\"recordedByProvider\",\"recordedAt\"],\"type\":\"object\"},\"PurposeCode\":{\"description\":\"An HCP purpose code: an absolute URI naming the purpose for which context is requested or may be used (HCP 6.1.5.2).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Record\":{\"additionalProperties\":true,\"description\":\"The provider's record of the entry (HCP 4.2). Withheld from a Context Client in full (HCP 7.4).\",\"properties\":{\"conversion\":{\"additionalProperties\":true,\"description\":\"Present only on an entry converted from HCP v1 (HCP 4.3).\",\"properties\":{\"convertedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When it was converted.\"},\"convertedBy\":{\"description\":\"Who converted it.\",\"maxLength\":2048,\"type\":\"string\"},\"from\":{\"description\":\"What the entry was converted from.\",\"maxLength\":2048,\"type\":\"string\"},\"unmapped\":{\"additionalProperties\":true,\"description\":\"v1 members the conversion did not map.\",\"type\":\"object\"}},\"required\":[\"from\",\"convertedAt\",\"convertedBy\"],\"type\":\"object\"},\"metadata\":{\"additionalProperties\":true,\"description\":\"Free-form data the implementation attaches for its own purposes; carries no HCP meaning (HCP 4.2).\",\"type\":\"object\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"Who asserted, submitted, authorized, recorded and confirmed this version (HCP 3.5–3.8).\"},\"relationships\":{\"description\":\"Relationships to other entries (HCP 4.2.3). Absent or empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Relationship\"},\"type\":\"array\"},\"status\":{\"description\":\"The entry's lifecycle state (HCP 4.2.4). HCP's own values, carried verbatim.\",\"enum\":[\"active\",\"deprecated\",\"conflicted\",\"expired\",\"revoked\",\"suspended\",\"deleted\"],\"type\":\"string\"},\"version\":{\"description\":\"The revision number: starts at 1 and increments by exactly 1 on each revision (HCP 4.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"status\",\"version\",\"provenance\"],\"type\":\"object\"},\"RecordedProposal\":{\"additionalProperties\":true,\"description\":\"A proposal for resolving a conflict, as the provider records it on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. It is the `Proposal` a client writes (entry-write.schema.json), with `proposedBy` and `proposedAt`, which the provider sets and never takes from a request (HCP 4.7.4). A proposal is never disclosed to a Context Client (HCP 7.4). Open, as HCP's own shape is.\",\"properties\":{\"act\":{\"description\":\"The act proposed (HCP 4.7.3, 4.7.4). HCP's own values, carried verbatim.\",\"enum\":[\"reject\",\"accept\",\"supersede\"],\"type\":\"string\"},\"entry\":{\"description\":\"The entry the act applies to (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"proposedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the proposal (HCP 4.7.4). Set by the provider, never taken from a request.\"},\"proposedBy\":{\"additionalProperties\":true,\"description\":\"Who made the proposal: the provider under the Memory Manager Profile, or the client that asserted the conflict (HCP 4.7.4, 15). Set by the provider, never taken from a request.\",\"properties\":{\"id\":{\"description\":\"Their identifier. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 3.9). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"rationale\":{\"description\":\"Why, in words the Context Subject can read (HCP 4.7.4). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"weighed\":{\"description\":\"What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4). The maxItems and maxLength are framework bounds, not HCP requirements.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"act\",\"entry\",\"rationale\",\"weighed\",\"proposedBy\",\"proposedAt\"],\"type\":\"object\"},\"Relationship\":{\"additionalProperties\":true,\"description\":\"A relationship from this entry to another (HCP 4.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4), which is a `RecordedProposal`, as HCP defines it. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.\",\"properties\":{\"assertedBy\":{\"additionalProperties\":true,\"description\":\"Who asserted the relationship.\",\"properties\":{\"id\":{\"description\":\"Their identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"Their role (HCP 3.9). HCP's own values, carried verbatim.\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"proposal\":{\"$ref\":\"#/$defs/RecordedProposal\",\"description\":\"A proposal for resolving a conflict, which changes nothing until the Context Subject acts (HCP 4.7.4).\"},\"recordedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider recorded the relationship.\"},\"target\":{\"description\":\"The related entry's `id`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/RelationshipType\",\"description\":\"The kind of relationship.\"}},\"required\":[\"type\",\"target\",\"assertedBy\",\"recordedAt\"],\"type\":\"object\"},\"RelationshipType\":{\"description\":\"How one entry relates to another (HCP 4.2.3). HCP's own values, carried verbatim.\",\"enum\":[\"derivedFrom\",\"supersedes\",\"contradicts\",\"duplicates\"],\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},\"Uri\":{\"description\":\"An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).\",\"format\":\"uri\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"Urn\":{\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
