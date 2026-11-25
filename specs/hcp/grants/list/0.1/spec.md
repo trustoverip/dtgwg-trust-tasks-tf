@@ -52,6 +52,13 @@ retention:
   rationale: >-
     The provider keeps nothing of the request: no audit event is required for reading a grant list (HCP 6.1.5). The
     Management Client shows the list to the person and need not keep it; the grants themselves stay with the provider.
+maxDocumentBytes:
+  response: 4194304
+  rationale: >-
+    A page of up to 1000 grant objects, each with its client, operator, authorization details, purposes and any
+    narrowing and onward sharing; a typical grant is 1 to 2 KiB, so 4 MiB holds a full page of grants well above
+    that size, with envelope and proof. This is a framework bound, not an HCP requirement; HCP sets no size limit. A
+    provider ends the page early and returns `nextCursor` where a full page would not fit.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
@@ -150,7 +157,7 @@ The Management Client asks the provider for the grants. The payload is the top-l
 
 The provider answers with a page of grants. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
 
-- `grants` holds the grant objects with the status asked for (HCP 6.1.5, 9.4.6), at most `limit` of them and never more than 1000. An empty `grants` is a successful answer: there are none.
+- `grants` holds the grant objects with the status asked for (HCP 6.1.5, 9.4.6), at most `limit` of them and never more than 1000. An empty `grants` is a successful answer: there are none. Where the grants that remain would take the response past its `maxDocumentBytes` (4 MiB, a framework bound), the provider **MUST** paginate: it returns fewer grants than `limit` asked for, or than its own page size, so that the response fits, and returns `nextCursor` for the rest. It **MUST NOT** drop a grant to fit, or refuse the request because the set is large.
 - `nextCursor` is present where more grants remain, and absent when the set is exhausted, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). It is opaque: the Management Client **MUST NOT** interpret it, and the provider **MUST NOT** make it a value from which the size or position of the set can be read, **MUST NOT** encode a credential or entry content in it, and **MUST** keep it valid for at least 300 seconds (HCP 9.5).
 
 Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).

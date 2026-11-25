@@ -51,6 +51,13 @@ retention:
     beyond the duplicate-execution digest every task keeps (SPEC 7.2 item 11), it keeps nothing of the request, as
     for List grants. The grant record the client receives is the provider's, which the client may keep for the life
     of the grant.
+maxDocumentBytes:
+  response: 5242880
+  rationale: >-
+    One grant object plus the directives that apply to it (HCP 5.2.6). HCP bounds neither, and the result has no
+    pages. The directives that apply to one grant are a subset of every directive, which hcp/directives/list
+    bounds at 4 MiB; the extra 1 MiB holds the grant, envelope and proof. This is a framework bound, not an HCP
+    requirement.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
