@@ -48,7 +48,7 @@ type Response struct {
 	// covers the published parameters — an applicant mid-application is told its requirements
 	// changed, which is the honest answer. Null only when the criterion's manifest entry
 	// carries none.
-	RequirementsDigest *string `json:"requirementsDigest,omitempty"`
+	RequirementsDigest *string `json:"requirementsDigest"`
 	Ext                *Ext    `json:"ext,omitempty"`
 }
 

@@ -23,7 +23,7 @@ type Response struct {
 	// The criterion's requirementsDigest after the change. It moves when withdrawn is true,
 	// because the digest covers the published parameters; it is unchanged when withdrawn is
 	// false. Null only when the criterion's manifest entry carries none.
-	RequirementsDigest *string `json:"requirementsDigest,omitempty"`
+	RequirementsDigest *string `json:"requirementsDigest"`
 	Ext                *Ext    `json:"ext,omitempty"`
 }
 
