@@ -615,7 +615,11 @@ pub struct Payload {
     pub dealing: Dealing,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -692,7 +696,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 #[non_exhaustive]
 pub struct Response {
     pub election: ElectionSummary,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub phase: TrusteePhase,
 }

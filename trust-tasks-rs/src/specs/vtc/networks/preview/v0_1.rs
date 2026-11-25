@@ -256,10 +256,18 @@ impl<'de> ::serde::Deserialize<'de> for FrameworkVersion {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The DID the administrator expects at `url`. When present, the community refuses if the network found there answers as another DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub network: ::std::option::Option<PayloadNetwork>,
     ///The network's API base, as the network's administrators gave it.
     pub url: ::std::string::String,
@@ -340,18 +348,31 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNetwork {
 #[non_exhaustive]
 pub struct Response {
     ///The network's description, from its profile.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<ResponseDescription>,
     ///The network's state for the community's entry, when it holds a published one: `listed` (not yet acknowledged), `acknowledged` (a member), `repudiated` (the community rejected the listing) or `suspended`.
     #[serde(
         rename = "entryState",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub entry_state: ::std::option::Option<ResponseEntryState>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub framework: ::std::option::Option<Framework>,
     ///`true` only when the network holds an entry for the community whose listing verifies as the network's and lists the community as a community.
     pub listed: bool,
@@ -359,6 +380,7 @@ pub struct Response {
     #[serde(
         rename = "membershipState",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_state: ::std::option::Option<ResponseMembershipState>,
@@ -370,11 +392,16 @@ pub struct Response {
     #[serde(
         rename = "notListedReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub not_listed_reason: ::std::option::Option<ResponseNotListedReason>,
     ///The network's identified owner (VTI-VTN-002), from its profile.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub owner: ::std::option::Option<ResponseOwner>,
     ///The roles the network asks members to register a group for. `vtc/networks/join` must assign a group to each one marked `required`.
     pub roles: ::std::vec::Vec<Role>,
@@ -827,7 +854,11 @@ impl<'de> ::serde::Deserialize<'de> for ResponseOwner {
 #[non_exhaustive]
 pub struct Role {
     ///What the network uses the role for.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<RoleDescription>,
     ///The role's name, as `vtc/networks/join` assigns a group to it.
     pub name: RoleName,

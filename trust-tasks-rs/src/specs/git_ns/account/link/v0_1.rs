@@ -197,7 +197,11 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The forge whose account to link.
     pub forge: ForgeHost,
@@ -216,7 +220,11 @@ pub struct Response {
     ///When this attempt lapses if not completed.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Identifies this attempt for git-ns/account/link-status. Opaque; meaningful only to the member who began it.
     #[serde(rename = "linkId")]
@@ -227,6 +235,7 @@ pub struct Response {
     #[serde(
         rename = "userCode",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_code: ::std::option::Option<ResponseUserCode>,

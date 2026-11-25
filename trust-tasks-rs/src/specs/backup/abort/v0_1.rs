@@ -126,7 +126,11 @@ pub struct Payload {
     #[serde(rename = "bundleId")]
     pub bundle_id: PayloadBundleId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -215,7 +219,11 @@ pub struct Response {
     #[serde(rename = "bundleId")]
     pub bundle_id: ResponseBundleId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -154,27 +155,44 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<::std::num::NonZeroU64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record to curate.
     pub key: PayloadKey,
     ///Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub pinned: ::std::option::Option<bool>,
     ///Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.
     pub presentation: AuthorityPresentation,
     ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
     ///The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub status: ::std::option::Option<PayloadStatus>,
 }
 impl Payload {
@@ -371,12 +389,20 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record curated.
     pub key: ::std::string::String,
     ///Whether the record is pinned after the operation.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub pinned: ::std::option::Option<bool>,
     ///The record's standing after the operation.
     pub status: ResponseStatus,

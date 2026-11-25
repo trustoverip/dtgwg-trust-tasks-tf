@@ -120,15 +120,24 @@ pub struct CardBlobRef {
     ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
     pub sha256: CardBlobRefSha256,
     ///Size in bytes of the stored bytes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///Projection only: when `url` stops working.
     #[serde(
         rename = "urlExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -374,11 +383,16 @@ pub struct DirectoryCard {
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "externalCard",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub external_card: ::std::option::Option<ExternalCard>,
@@ -386,6 +400,7 @@ pub struct DirectoryCard {
     #[serde(
         rename = "groupAudience",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub group_audience: ::std::option::Option<Vec<DirectoryCardGroupAudienceItem>>,
@@ -705,6 +720,7 @@ pub struct ExternalCard {
     #[serde(
         rename = "cardDigest",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub card_digest: ::std::option::Option<DigestMultibase>,
@@ -712,6 +728,7 @@ pub struct ExternalCard {
     #[serde(
         rename = "publishedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub published_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1234,31 +1251,44 @@ impl ::std::convert::TryFrom<::std::string::String> for Listing {
 #[non_exhaustive]
 pub struct Payload {
     ///Replaces the member's discoverability whole.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub discoverability: ::std::option::Option<Discoverability>,
     ///Optional: apply only if the card is at this revision, else refuse with `superseded`.
     #[serde(
         rename = "expectedRevision",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_revision: ::std::option::Option<u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Replaces the groups that count as the `groups` audience; `null` returns to every group the member is in.
     #[serde(
         rename = "groupAudience",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub group_audience: ::std::option::Option<::std::option::Option<Vec<GroupId>>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub introductions: ::std::option::Option<Introductions>,
     ///Values to set, keyed by field; `null` clears one. Fields not named are unchanged. Only `member`-sourced fields.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub values: ::std::option::Option<
@@ -1267,7 +1297,7 @@ pub struct Payload {
     ///Visibilities to set, keyed by field; `null` returns a field to its default. Applies to any non-derived field on the card, whoever wrote its value, and to the derived fields the community lets a member widen (`did`).
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub visibility: ::std::option::Option<
@@ -1299,7 +1329,11 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     pub card: DirectoryCard,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "missingRequired")]
     pub missing_required: ::std::vec::Vec<FieldKey>,
@@ -1319,6 +1353,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -1328,6 +1363,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -2519,18 +2555,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

@@ -252,7 +252,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     pub context: AccountContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub id: AccountId,
     #[serde(rename = "sealedSecret")]
@@ -334,7 +338,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWrappingKeyId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub fingerprint: SecretFingerprint,
     #[serde(rename = "setAt")]

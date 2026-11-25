@@ -125,10 +125,18 @@ pub struct Payload {
     ///The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.
     pub did: PayloadDid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional operator-supplied label for the new passkey (e.g. "MacBook Touch ID"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
 }
 impl Payload {
@@ -269,7 +277,11 @@ pub struct Response {
     ///WebAuthn challenge (base64url, no padding; at least 32 random bytes).
     pub challenge: ResponseChallenge,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.
     #[serde(rename = "rpId")]
@@ -281,6 +293,7 @@ pub struct Response {
     #[serde(
         rename = "timeoutMs",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub timeout_ms: ::std::option::Option<u64>,

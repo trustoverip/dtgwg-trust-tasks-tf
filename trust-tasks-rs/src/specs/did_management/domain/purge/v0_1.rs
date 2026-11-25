@@ -122,7 +122,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub name: PayloadName,
     #[serde(rename = "purgeServers", default)]
@@ -198,11 +202,15 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fanout: ::std::option::Option<::std::vec::Vec<ResponseFanoutItem>>,
@@ -571,18 +579,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

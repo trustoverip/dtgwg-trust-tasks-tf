@@ -305,15 +305,21 @@ pub struct Payload {
     #[serde(
         rename = "editedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub edited_at: ::std::option::Option<RecordEditedAt>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL on a `message`: the message this one answers. REQUIRED on a `reaction`: the message it responds to, which a rewrite of the reaction MUST keep.
     #[serde(
         rename = "inReplyTo",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub in_reply_to: ::std::option::Option<MessageReference>,

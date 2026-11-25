@@ -118,12 +118,17 @@ pub struct ContactDocument {
     #[serde(
         rename = "cardVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub card_version: ::std::option::Option<::std::num::NonZeroU64>,
     pub claims: ::std::vec::Vec<ContactDocumentClaimsItem>,
     ///The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub publisher: ::std::option::Option<ContactDocumentPublisher>,
 }
 impl ContactDocument {
@@ -138,7 +143,11 @@ impl ContactDocument {
 #[non_exhaustive]
 pub struct ContactDocumentClaimsItem {
     ///As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub provenance: ::std::option::Option<Provenance>,
     #[serde(rename = "type")]
     pub type_: ClaimType,
@@ -216,7 +225,11 @@ impl<'de> ::serde::Deserialize<'de> for ContactDocumentPublisher {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ContactRevision {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub document: ::std::option::Option<ContactDocument>,
     #[serde(rename = "receivedAt")]
     pub received_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -226,7 +239,7 @@ pub struct ContactRevision {
     #[serde(
         rename = "supersededAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub superseded_at:
@@ -567,13 +580,21 @@ pub struct Payload {
     pub contact_id: Ulid,
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///When true, return the revision metadata (numbers and timestamps) without their documents, so a producer can render a timeline cheaply and fetch only the revision the holder opens.
     #[serde(rename = "includeHistory", default)]
     pub include_history: bool,
     ///A specific revision. Omit for the current one. Naming a reaped revision is an error rather than a silent fall back to the nearest survivor — a caller comparing against history must know when the history is gone.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub rev: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -812,12 +833,17 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -1158,7 +1184,7 @@ pub struct Response {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<ResponseCredentialRefsItem>>,
@@ -1166,28 +1192,45 @@ pub struct Response {
     #[serde(
         rename = "directoryRef",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub directory_ref: ::std::option::Option<DirectoryRef>,
     pub document: ContactDocument,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Present only when `includeHistory` was true. Revision metadata without documents — a timeline is cheap and the documents behind it are not.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub history: ::std::option::Option<::std::vec::Vec<ContactRevision>>,
     #[serde(rename = "knownByPersona")]
     pub known_by_persona: ResponseKnownByPersona,
     ///The holder's lists the contact is on. Absent when it is on none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub lists: ::std::option::Option<ListIds>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub notes: ::std::option::Option<ResponseNotes>,
     ///The holder's private name for the contact. Absent when they gave none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub petname: ::std::option::Option<Petname>,
     pub rev: ::std::num::NonZeroU64,
     ///Whether the holder has starred the contact. Always present: an unstarred contact says `false`, so a consumer never has to guess what absence means.
@@ -1196,6 +1239,7 @@ pub struct Response {
     #[serde(
         rename = "subjectDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_did: ::std::option::Option<ResponseSubjectDid>,
@@ -2275,18 +2319,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

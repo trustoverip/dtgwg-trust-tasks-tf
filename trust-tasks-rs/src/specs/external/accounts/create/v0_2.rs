@@ -43,6 +43,7 @@ pub struct AccountBinding {
     #[serde(
         rename = "grantedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub granted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -56,6 +57,7 @@ pub struct AccountBinding {
     #[serde(
         rename = "scopeCeiling",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope_ceiling: ::std::option::Option<CredentialScopeCeiling>,
@@ -63,7 +65,7 @@ pub struct AccountBinding {
     #[serde(
         rename = "sourceCidrs",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_cidrs: ::std::option::Option<::std::vec::Vec<AccountBindingSourceCidrsItem>>,
@@ -364,6 +366,7 @@ pub struct AccountProbeReportStepsItem {
     #[serde(
         rename = "durationMs",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub duration_ms: ::std::option::Option<u64>,
@@ -372,12 +375,14 @@ pub struct AccountProbeReportStepsItem {
     #[serde(
         rename = "providerError",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub provider_error: ::std::option::Option<AccountProbeReportStepsItemProviderError>,
     #[serde(
         rename = "providerRequestId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub provider_request_id: ::std::option::Option<AccountProbeReportStepsItemProviderRequestId>,
@@ -599,13 +604,18 @@ impl ::std::convert::TryFrom<::std::string::String> for AccountProbeStep {
 #[non_exhaustive]
 pub struct AccountPublicMaterial {
     ///`sui-signer`: the Sui address the key controls.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub address: ::std::option::Option<AccountPublicMaterialAddress>,
     pub algorithm: AccountPublicMaterialAlgorithm,
     ///`aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.
     #[serde(
         rename = "certificatePem",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub certificate_pem: ::std::option::Option<AccountPublicMaterialCertificatePem>,
@@ -616,12 +626,14 @@ pub struct AccountPublicMaterial {
     #[serde(
         rename = "pendingKeyFingerprint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pending_key_fingerprint: ::std::option::Option<DigestMultibase>,
     #[serde(
         rename = "publicKeyJwk",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_key_jwk: ::std::option::Option<AccountPublicMaterialPublicKeyJwk>,
@@ -835,25 +847,50 @@ impl<'de> ::serde::Deserialize<'de> for AccountPublicMaterialCertificatePem {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct AccountPublicMaterialPublicKeyJwk {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub alg: ::std::option::Option<AccountPublicMaterialPublicKeyJwkAlg>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub crv: ::std::option::Option<AccountPublicMaterialPublicKeyJwkCrv>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub e: ::std::option::Option<AccountPublicMaterialPublicKeyJwkE>,
     pub kid: AccountPublicMaterialPublicKeyJwkKid,
     pub kty: AccountPublicMaterialPublicKeyJwkKty,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub n: ::std::option::Option<AccountPublicMaterialPublicKeyJwkN>,
     #[serde(
         rename = "use",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub use_: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub x: ::std::option::Option<AccountPublicMaterialPublicKeyJwkX>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub y: ::std::option::Option<AccountPublicMaterialPublicKeyJwkY>,
 }
 impl AccountPublicMaterialPublicKeyJwk {
@@ -1385,12 +1422,17 @@ pub enum AccountSettings {
     #[serde(rename = "aws-roles-anywhere")]
     AwsRolesAnywhere {
         ///The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         bucket: ::std::option::Option<ProviderBucketName>,
         ///When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
         #[serde(
             rename = "chainedRoleArn",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         chained_role_arn: ::std::option::Option<AwsArn>,
@@ -1398,6 +1440,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "probePrefix",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
@@ -1414,7 +1457,11 @@ pub enum AccountSettings {
     #[serde(rename = "gcp-wif-pinned")]
     GcpWifPinned {
         ///The GCS bucket issuances are scoped within, by a Credential Access Boundary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         bucket: ::std::option::Option<ProviderBucketName>,
         #[serde(rename = "poolId")]
         pool_id: AccountSettingsPoolId,
@@ -1422,6 +1469,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "probePrefix",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
@@ -1433,6 +1481,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "serviceAccount",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         service_account: ::std::option::Option<AccountSettingsServiceAccount>,
@@ -1440,6 +1489,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "signingAlgorithm",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         signing_algorithm: ::std::option::Option<AccountSettingsSigningAlgorithm>,
@@ -1451,6 +1501,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "authorityHost",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         authority_host: ::std::option::Option<AccountSettingsAuthorityHost>,
@@ -1466,16 +1517,25 @@ pub enum AccountSettings {
     #[serde(rename = "oauth2-private-key-jwt")]
     Oauth2PrivateKeyJwt {
         ///The assertion's `aud`. Absent means `tokenEndpoint`.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         audience: ::std::option::Option<AccountSettingsAudience>,
         #[serde(rename = "clientId")]
         client_id: AccountSettingsClientId,
         ///The scopes a binding may request, the ceiling for every issuance.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         scopes: ::std::option::Option<Vec<AccountSettingsScopesItem>>,
         #[serde(
             rename = "signingAlgorithm",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         signing_algorithm: ::std::option::Option<AccountSettingsSigningAlgorithm>,
@@ -1494,6 +1554,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "pathStyle",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         path_style: ::std::option::Option<bool>,
@@ -1501,6 +1562,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "probePrefix",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
@@ -1517,7 +1579,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "allowedObjects",
             default,
-            deserialize_with = "presence::present",
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         allowed_objects: ::std::option::Option<::std::vec::Vec<AccountSettingsAllowedObjectsItem>>,
@@ -1525,7 +1587,7 @@ pub enum AccountSettings {
         #[serde(
             rename = "maxCoinOutPerTx",
             default,
-            deserialize_with = "presence::present",
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         max_coin_out_per_tx:
@@ -2867,11 +2929,23 @@ impl<'de> ::serde::Deserialize<'de> for AwsRegion {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct CredentialScopeCeiling {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub actions: ::std::option::Option<Vec<ProviderObjectAction>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prefixes: ::std::option::Option<Vec<ProviderObjectPrefix>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub scopes: ::std::option::Option<Vec<CredentialScopeCeilingScopesItem>>,
 }
 impl ::std::default::Default for CredentialScopeCeiling {
@@ -3130,6 +3204,7 @@ pub struct ExternalAccount {
     #[serde(
         rename = "lastProbe",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_probe: ::std::option::Option<AccountProbeReport>,
@@ -3140,11 +3215,16 @@ pub struct ExternalAccount {
     #[serde(
         rename = "publicMaterial",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_material: ::std::option::Option<AccountPublicMaterial>,
     ///Static models only; absent until the secret is set.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub secret: ::std::option::Option<AccountSecretInfo>,
     pub settings: AccountSettings,
     pub state: AccountState,
@@ -3289,7 +3369,11 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountLabel {
 #[non_exhaustive]
 pub struct Payload {
     pub context: AccountContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub id: AccountId,
     ///Display name.
@@ -3607,7 +3691,11 @@ impl<'de> ::serde::Deserialize<'de> for ProviderObjectPrefix {
 #[non_exhaustive]
 pub struct Response {
     pub account: ExternalAccount,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -5242,18 +5330,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

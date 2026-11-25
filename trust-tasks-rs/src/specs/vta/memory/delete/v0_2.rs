@@ -242,11 +242,16 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<MemoryVersion>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub key: MemoryKey,
 }
@@ -328,17 +333,26 @@ pub struct Response {
     #[serde(
         rename = "deletedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///True when a live item was removed by this request. False when the key already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way.
     pub existed: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub key: MemoryKey,
     ///The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the key held nothing and no tombstone was written.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub version: ::std::option::Option<MemoryVersion>,
 }
 impl Response {

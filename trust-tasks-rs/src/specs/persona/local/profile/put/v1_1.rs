@@ -248,15 +248,21 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub name: PayloadName,
     #[serde(
         rename = "profileId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
@@ -332,7 +338,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[non_exhaustive]
 pub struct PayloadEntriesItem {
     pub inline: PayloadEntriesItemInline,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub slot: ::std::option::Option<Slot>,
 }
 impl PayloadEntriesItem {
@@ -353,7 +363,11 @@ Adding a `provenance` member to this object would therefore be a privilege escal
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct PayloadEntriesItemInline {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadEntriesItemInlineLabel>,
     #[serde(rename = "type")]
     pub type_: ClaimType,
@@ -493,9 +507,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
@@ -518,6 +540,7 @@ pub struct ResponseCorrelation {
     #[serde(
         rename = "matchesPoolValue",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub matches_pool_value: ::std::option::Option<bool>,

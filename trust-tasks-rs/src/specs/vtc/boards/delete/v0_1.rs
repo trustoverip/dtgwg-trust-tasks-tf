@@ -187,7 +187,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "boardId")]
     pub board_id: BoardId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Why, recorded with the deletion in the community's audit trail.
     pub reason: PayloadReason,
@@ -270,7 +274,11 @@ pub struct Response {
     ///Elections whose content the community removed. Each keeps a tombstone unless the retention is zero.
     #[serde(rename = "electionsRemoved")]
     pub elections_removed: u64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "ideasRemoved")]
     pub ideas_removed: u64,
@@ -295,6 +303,7 @@ pub struct ResponseTombstones {
     #[serde(
         rename = "removeAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

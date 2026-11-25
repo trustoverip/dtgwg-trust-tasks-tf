@@ -126,15 +126,24 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///Admin DID the install URL grants a passkey for.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing note recorded against the invite.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Invite lifetime. Capped at 24 hours.
     #[serde(
         rename = "ttlSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -281,7 +290,11 @@ pub struct Response {
     ///When the invite lapses.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One-shot enrolment URL. Returned once and never retrievable again.
     #[serde(rename = "installUrl")]

@@ -133,10 +133,15 @@ pub struct Payload {
     #[serde(
         rename = "claimSecret",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_secret: ::std::option::Option<PayloadClaimSecret>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
     #[serde(rename = "installToken")]
@@ -277,7 +282,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstallToken {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/install/claim/passkey/start/0.1")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].
     pub options: ::serde_json::Map<::std::string::String, ::serde_json::Value>,

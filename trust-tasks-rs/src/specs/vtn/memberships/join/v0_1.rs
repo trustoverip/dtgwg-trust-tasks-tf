@@ -211,7 +211,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The parent network's DID. This network refuses if the network found at `url` answers as another DID.
     pub network: Did,
@@ -231,7 +235,11 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///This network's membership of the parent as it now stands.
     pub membership: UpstreamMembership,
@@ -433,22 +441,38 @@ impl<'de> ::serde::Deserialize<'de> for UpstreamGroupGroup {
 #[non_exhaustive]
 pub struct UpstreamMembership {
     ///This network's acknowledgement.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub acknowledgement: ::std::option::Option<Credential>,
     ///The parent's grant.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub grant: ::std::option::Option<Credential>,
     ///Groups registered at the parent.
     pub groups: ::std::vec::Vec<UpstreamGroup>,
     ///The parent's listing of this network, as verified.
     pub listing: Credential,
     ///The parent's name.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub name: ::std::option::Option<UpstreamMembershipName>,
     ///The parent network.
     pub network: Did,
     ///This network's repudiation of the listing or grant.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub repudiation: ::std::option::Option<Credential>,
     ///`acknowledged`: this network is a member. `repudiated`: it rejected the parent's listing. `departed`: it left.
     pub state: UpstreamMembershipState,

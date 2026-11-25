@@ -179,18 +179,31 @@ impl ::std::convert::TryFrom<::std::string::String> for ConfigState {
 #[non_exhaustive]
 pub struct CredentialState {
     ///Present with `vta-account`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub account: ::std::option::Option<ExternalAccountId>,
     ///Present with `vta-account`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub context: ::std::option::Option<ExternalAccountContextId>,
     ///Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub fingerprint: ::std::option::Option<DigestMultibase>,
     ///Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.
     #[serde(
         rename = "roomsHoldingCredentials",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rooms_holding_credentials: ::std::option::Option<u64>,
@@ -198,6 +211,7 @@ pub struct CredentialState {
     #[serde(
         rename = "setAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub set_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -584,7 +598,11 @@ pub struct GcsSettings {
     ///The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.
     pub bucket: GcsSettingsBucket,
     pub kind: ::serde_json::Value,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prefix: ::std::option::Option<ObjectPrefix>,
 }
 impl GcsSettings {
@@ -820,7 +838,11 @@ impl<'de> ::serde::Deserialize<'de> for ObjectPrefix {
 pub struct Payload {
     #[serde(rename = "configId")]
     pub config_id: StorageConfigId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -839,7 +861,11 @@ pub struct Response {
     #[serde(rename = "assignedRoomsTruncated")]
     pub assigned_rooms_truncated: bool,
     pub config: StorageConfig,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub facts: StorageConfigFacts,
 }
@@ -919,17 +945,26 @@ pub struct S3Settings {
     ///The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.
     pub bucket: S3SettingsBucket,
     ///The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub endpoint: ::std::option::Option<::std::string::String>,
     pub kind: ::serde_json::Value,
     ///Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.
     #[serde(
         rename = "pathStyle",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path_style: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prefix: ::std::option::Option<ObjectPrefix>,
     ///The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).
     pub region: S3SettingsRegion,
@@ -1101,6 +1136,7 @@ pub enum StorageAuth {
         #[serde(
             rename = "roleArn",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         role_arn: ::std::option::Option<AwsRoleArn>,
@@ -1114,12 +1150,17 @@ pub enum StorageAuth {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct StorageConfig {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub auth: ::std::option::Option<StorageAuth>,
     ///Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
     #[serde(
         rename = "capacityBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub capacity_bytes: ::std::option::Option<u64>,
@@ -1132,6 +1173,7 @@ pub struct StorageConfig {
     #[serde(
         rename = "isDefault",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_default: ::std::option::Option<bool>,
@@ -1142,12 +1184,14 @@ pub struct StorageConfig {
     #[serde(
         rename = "updatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "updatedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<StorageConfigUpdatedBy>,
@@ -1238,7 +1282,11 @@ pub struct StorageConfigFacts {
     pub pending_delete_bytes: u64,
     ///Rooms assigned to this config.
     pub rooms: u64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub walrus: ::std::option::Option<StorageConfigFactsWalrus>,
 }
 impl StorageConfigFacts {
@@ -1255,6 +1303,7 @@ pub struct StorageConfigFactsWalrus {
     #[serde(
         rename = "nextExtensionDueAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_extension_due_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1262,6 +1311,7 @@ pub struct StorageConfigFactsWalrus {
     #[serde(
         rename = "signerAddress",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signer_address: ::std::option::Option<StorageConfigFactsWalrusSignerAddress>,
@@ -1545,6 +1595,7 @@ pub struct StorageHealth {
     #[serde(
         rename = "lastDeleteAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_delete_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1552,18 +1603,21 @@ pub struct StorageHealth {
     #[serde(
         rename = "lastGetAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_get_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "lastProbeAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_probe_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "lastProbeOk",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_probe_ok: ::std::option::Option<bool>,
@@ -1571,6 +1625,7 @@ pub struct StorageHealth {
     #[serde(
         rename = "lastPutAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_put_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

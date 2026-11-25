@@ -128,10 +128,18 @@ pub struct Payload {
     #[serde(rename = "bundleId")]
     pub bundle_id: PayloadBundleId,
     ///True commits and replaces the agent's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub confirm: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.
     pub password: PayloadPassword,
@@ -292,12 +300,17 @@ pub struct Response {
     #[serde(rename = "contextCount")]
     pub context_count: u64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.
     #[serde(
         rename = "importedSecretCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub imported_secret_count: ::std::option::Option<u64>,
@@ -305,12 +318,17 @@ pub struct Response {
     #[serde(rename = "keyCount")]
     pub key_count: u64,
     ///Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<ResponseMessage>,
     ///Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.
     #[serde(
         rename = "sourceDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_did: ::std::option::Option<ResponseSourceDid>,

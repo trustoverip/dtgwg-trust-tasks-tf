@@ -122,7 +122,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -146,7 +150,11 @@ pub struct Response {
     ///How long the maintainer will drain in-flight work before exiting, so a caller knows the expected downtime window.
     #[serde(rename = "drainTimeoutSeconds")]
     pub drain_timeout_seconds: u64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The process supervisor that will bring the maintainer back up, detected by the maintainer. An opaque maintainer-defined label — the framework does not enumerate it (e.g. `systemd`, `kubernetes`, or an explicit operator opt-in). A maintainer that detects no supervisor MUST refuse (see errorCodes) rather than exit unsupervised.
     pub supervisor: ResponseSupervisor,

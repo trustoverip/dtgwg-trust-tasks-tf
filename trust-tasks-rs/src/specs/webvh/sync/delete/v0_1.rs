@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by webvh/sync/delete/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: PayloadMnemonic,
 }
@@ -199,7 +203,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 #[non_exhaustive]
 #[deprecated(note = "superseded by webvh/sync/delete/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: ::std::string::String,
     pub status: ResponseStatus,

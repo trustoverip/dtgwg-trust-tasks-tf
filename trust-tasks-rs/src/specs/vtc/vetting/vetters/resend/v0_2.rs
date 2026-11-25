@@ -122,12 +122,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The vetter to resend the live grant for, on an administrator's behalf. Requires the community-administrator capability. Absent: the request concerns the sender's own live grant, exactly as 0.1.
     #[serde(
         rename = "memberDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<PayloadMemberDid>,

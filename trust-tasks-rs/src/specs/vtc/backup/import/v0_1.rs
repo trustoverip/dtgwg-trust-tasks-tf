@@ -54,7 +54,7 @@ pub struct BackupEnvelope {
     #[serde(
         rename = "sourceDid",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -618,7 +618,11 @@ pub struct Payload {
     ///`false` (default) previews: row counts, no mutation. `true` clears the backed-up keyspaces and applies the backup.
     #[serde(default)]
     pub confirm: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The passphrase the envelope was encrypted under.
     pub password: PayloadPassword,
@@ -695,7 +699,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 pub struct Response {
     ///Per-keyspace row counts written, or that would be written on a preview.
     pub counts: ::std::collections::HashMap<::std::string::String, u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Human-readable summary for the operator.
     pub message: ResponseMessage,
@@ -703,7 +711,7 @@ pub struct Response {
     #[serde(
         rename = "sourceDid",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub source_did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -1375,18 +1383,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

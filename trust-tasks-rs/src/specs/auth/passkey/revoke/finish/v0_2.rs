@@ -41,13 +41,14 @@ pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
     #[serde(
         rename = "clientExtensionResults",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_extension_results:
@@ -139,7 +140,7 @@ pub struct AssertionResponseResponse {
     #[serde(
         rename = "userHandle",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -240,7 +241,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.
     #[serde(rename = "revocationId")]
@@ -323,7 +328,11 @@ pub struct Response {
     #[serde(rename = "credentialId")]
     pub credential_id: ResponseCredentialId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///New in 0.2. What the revoked credential authenticated. `remaining` counts the subject's credentials of this purpose.
     pub purpose: ResponsePurpose,
@@ -1002,18 +1011,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

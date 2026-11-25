@@ -44,15 +44,24 @@ pub struct CardBlobRef {
     ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
     pub sha256: CardBlobRefSha256,
     ///Size in bytes of the stored bytes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///Projection only: when `url` stops working.
     #[serde(
         rename = "urlExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -199,7 +208,11 @@ impl<'de> ::serde::Deserialize<'de> for CardBlobRefSha256 {
 #[non_exhaustive]
 pub struct DirectoryEntry {
     ///Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub connected: ::std::option::Option<bool>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
@@ -208,6 +221,7 @@ pub struct DirectoryEntry {
     #[serde(
         rename = "sharedGroups",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_groups: ::std::option::Option<Vec<DirectoryEntrySharedGroupsItem>>,
@@ -683,13 +697,21 @@ pub enum Payload {
     Variant0 {
         #[serde(rename = "entryId")]
         entry_id: EntryId,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
     },
     Variant1 {
         ///Administrators only: the member's membership DID.
         did: PayloadVariant1Did,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
     },
 }
@@ -764,7 +786,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Did {
 #[non_exhaustive]
 pub struct Response {
     pub entry: DirectoryEntry,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -782,6 +808,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -791,6 +818,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

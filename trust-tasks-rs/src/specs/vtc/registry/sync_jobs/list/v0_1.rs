@@ -128,7 +128,11 @@ pub struct Job {
     ///When the job was enqueued.
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Identifier of the queued job. The handle `vtc/registry/sync-jobs/retry` and `.../discard` take.
     #[serde(rename = "jobId")]
@@ -138,7 +142,7 @@ pub struct Job {
     #[serde(
         rename = "lastAttemptedAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_attempted_at:
@@ -147,7 +151,7 @@ pub struct Job {
     #[serde(
         rename = "lastError",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_error: ::std::option::Option<::std::option::Option<JobLastError>>,
@@ -158,7 +162,7 @@ pub struct Job {
     #[serde(
         rename = "nextAttemptAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_attempt_at:
@@ -167,7 +171,7 @@ pub struct Job {
     #[serde(
         rename = "purgeDueAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_due_at:
@@ -433,15 +437,31 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 #[deprecated(note = "superseded by vtc/registry/sync-jobs/list/0.2")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size; the maintainer clamps to 1..=200 (default 50).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Filter to jobs in this state. Omit for every state.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub state: ::std::option::Option<State>,
 }
 impl ::std::default::Default for Payload {
@@ -466,14 +486,18 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/registry/sync-jobs/list/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<Job>,
     ///Continuation token for the next page, or null when this is the last.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -939,17 +963,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

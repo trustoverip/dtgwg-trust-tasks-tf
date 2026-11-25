@@ -147,10 +147,18 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The requester's membership credential from a member community, where the network's directory admits members only and nothing else admits the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub membership: ::std::option::Option<Membership>,
 }
 impl ::std::default::Default for Payload {
@@ -172,7 +180,11 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The rooms.
     pub rooms: ::std::vec::Vec<RoomDef>,
@@ -250,7 +262,11 @@ impl<'de> ::serde::Deserialize<'de> for RoleName {
 #[non_exhaustive]
 pub struct RoomDef {
     ///What it is for.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<RoomDefDescription>,
     ///The room's id.
     pub id: RoomDefId,
@@ -262,7 +278,11 @@ pub struct RoomDef {
     ///The role whose groups' members may enter.
     pub role: RoleName,
     ///Where the room is.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl RoomDef {

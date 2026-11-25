@@ -189,6 +189,7 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
@@ -196,10 +197,15 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The identity the key will act for — the DID whose standing a document signed by the key is authorized by. Naming it is not claiming it: the consumer establishes that the enrolling party controls this identity from separate authority evidence (Authorization).
     #[serde(rename = "identityDid")]
@@ -287,7 +293,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadIdentityDid {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/signing-key/enroll/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "signingKey")]
     pub signing_key: SigningKey,
@@ -311,6 +321,7 @@ pub struct SigningKey {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
@@ -324,6 +335,7 @@ pub struct SigningKey {
     #[serde(
         rename = "lastUsedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -331,6 +343,7 @@ pub struct SigningKey {
     #[serde(
         rename = "revokedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

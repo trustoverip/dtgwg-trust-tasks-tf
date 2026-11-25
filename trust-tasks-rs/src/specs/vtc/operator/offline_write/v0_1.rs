@@ -130,7 +130,11 @@ pub struct Payload {
     pub command: PayloadCommand,
     ///The DIDs whose access the command changed — the subject of an entry added or removed, the administrator installed or invited, the subject an approver was enrolled for and the approver — in the order the command reports them. Never empty: an offline write that changed nobody's access is not one administrators need to acknowledge.
     pub dids: Vec<PayloadDidsItem>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.
     pub host: PayloadHost,

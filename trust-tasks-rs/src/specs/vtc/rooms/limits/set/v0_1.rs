@@ -42,6 +42,7 @@ pub struct EffectiveLimits {
     #[serde(
         rename = "hostCeilingBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub host_ceiling_bytes: ::std::option::Option<i64>,
@@ -213,7 +214,11 @@ impl ::std::convert::TryFrom<::std::string::String> for LimitSource {
 pub struct LimitTarget {
     pub kind: LimitTargetKind,
     ///The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub member: ::std::option::Option<LimitTargetMember>,
 }
 impl LimitTarget {
@@ -357,19 +362,32 @@ impl<'de> ::serde::Deserialize<'de> for LimitTargetMember {
 #[non_exhaustive]
 pub struct Payload {
     ///`true` removes the target's override, so the policy's or the community's default applies again. Exclusive with `limits`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub clear: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///With a `room` target only: `false` refuses every new upload to the room; reads continue.
     #[serde(
         rename = "filesEnabled",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub files_enabled: ::std::option::Option<bool>,
     ///The override, replacing any previous one at this target wholesale.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limits: ::std::option::Option<ScopeLimits>,
     ///Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
     pub reason: PayloadReason,
@@ -513,7 +531,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub limits: EffectiveLimits,
     ///True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.
@@ -527,6 +549,7 @@ pub struct Response {
     #[serde(
         rename = "targetLimits",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target_limits: ::std::option::Option<ScopeLimits>,
@@ -610,10 +633,18 @@ pub struct RoomLimits {
     #[serde(rename = "filesEnabled")]
     pub files_enabled: bool,
     ///Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub member: ::std::option::Option<ScopeLimits>,
     ///Limits on the room as a whole.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub room: ::std::option::Option<ScopeLimits>,
 }
 impl RoomLimits {
@@ -631,6 +662,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_bytes: ::std::option::Option<u64>,
@@ -638,6 +670,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFileBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_file_bytes: ::std::option::Option<i64>,
@@ -645,6 +678,7 @@ pub struct ScopeLimits {
     #[serde(
         rename = "maxFiles",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_files: ::std::option::Option<u64>,
@@ -680,6 +714,7 @@ pub struct Usage {
     #[serde(
         rename = "reservedFiles",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reserved_files: ::std::option::Option<u64>,

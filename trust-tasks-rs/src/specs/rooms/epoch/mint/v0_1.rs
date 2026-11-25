@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -176,20 +177,36 @@ pub struct Payload {
     **Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.
 
     OPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub commit: ::std::option::Option<PayloadCommit>,
     ///The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key.
     pub epoch: i64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub link: ::std::option::Option<EpochLink>,
     ///Must confer the `admin` action at this room's scope. Restricting epoch minting matters: if any key-holder could mint one, any member could evict any other by declining to seal the new key to them — silently, and with no server-side check possible on a room whose membership the host cannot see.
     pub presentation: AuthorityPresentation,
     ///Optional operator-facing rationale, recorded in the room's audit.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room whose epoch advances.
     #[serde(rename = "roomId")]
@@ -332,7 +349,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[non_exhaustive]
 pub struct Response {
     pub epoch: i64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,

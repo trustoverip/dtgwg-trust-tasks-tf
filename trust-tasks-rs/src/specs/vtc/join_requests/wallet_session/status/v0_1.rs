@@ -44,6 +44,7 @@ pub struct Evidence {
     #[serde(
         rename = "heldUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub held_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -209,7 +210,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The session to read, as vtc/join-requests/wallet-session/start returned it.
     #[serde(rename = "sessionId")]
@@ -296,7 +301,11 @@ pub struct PresentedCredential {
     ///The identifier of the credential's issuer as the community verified it — a DID, or for an issuer identified by an X.509 certificate, the certificate subject or hash the community's policy names it by.
     pub issuer: PresentedCredentialIssuer,
     ///The SD-JWT VC credential type (`vct`). Present for SD-JWT VC credentials.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub vct: ::std::option::Option<PresentedCredentialVct>,
 }
 impl PresentedCredential {
@@ -559,20 +568,33 @@ impl<'de> ::serde::Deserialize<'de> for PresentedCredentialVct {
 #[non_exhaustive]
 pub struct Response {
     ///Present only when `state` is `presented`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub evidence: ::std::option::Option<Evidence>,
     ///When the session closes, or closed, if unanswered.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Why the session ended `refused`. `presentationInvalid`: the response or a presentation failed verification — decryption, `state`, signature, key binding, nonce or audience. `queryNotSatisfied`: the presentations verified but do not satisfy the query. `issuerNotTrusted`: a credential's issuer is not one the criterion accepts. `statusNotValid`: a credential's status is revoked or suspended, or could not be read. `walletDeclined`: the wallet answered with an OpenID4VP error, such as `access_denied`. Present only when `state` is `refused`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<ResponseReason>,
     ///The join request the session's evidence is recorded on. Present when the session was bound to one, or its evidence has since been attached to one by a submission.
     #[serde(
         rename = "requestId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<ResponseRequestId>,

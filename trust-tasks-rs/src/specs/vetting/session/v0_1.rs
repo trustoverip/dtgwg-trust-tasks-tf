@@ -493,7 +493,11 @@ pub struct Payload {
     ///When the session lapses: no card is accepted for it afterwards, and the card's own `expiresAt` may not be later.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How this session is conducted.
     pub method: VettingMethod,
@@ -501,6 +505,7 @@ pub struct Payload {
     #[serde(
         rename = "optionalClaims",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_claims: ::std::option::Option<Vec<PayloadOptionalClaimsItem>>,
@@ -849,7 +854,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequiredClaimsItem {
 #[non_exhaustive]
 pub struct Response {
     pub card: VettingCard,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

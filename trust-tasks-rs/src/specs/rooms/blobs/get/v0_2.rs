@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -493,9 +494,17 @@ pub struct Payload {
     #[serde(rename = "blobRef")]
     pub blob_ref: BlobRef,
     ///True when the producer accepts a storage URL for the object. Absent or false: the host answers in proxied mode.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub direct: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Must confer the `read` action at this room's scope. Its leaf's subject must be the party the host authenticated for this request.
     pub presentation: AuthorityPresentation,
@@ -577,20 +586,29 @@ pub struct Response {
     #[serde(
         rename = "downloadId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub download_id: ::std::option::Option<TransferId>,
     ///When the handle (proxied) or the target (direct) stops being honoured.
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The ciphertext manifest committed at upload. A reader MUST check that its digest equals the requested BlobRef before relying on it, and every chunk against it on arrival.
     pub manifest: BlobManifest,
     ///`direct`: fetch the object over `target`. `proxied`: fetch its chunks with rooms/blobs/chunk under `downloadId`.
     pub mode: TransferMode,
     ///Direct mode only: a GET for the one object holding this blob, expiring within minutes. Ranged requests MAY be permitted. Absent in proxied mode.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub target: ::std::option::Option<TransferTarget>,
 }
 impl Response {
@@ -740,7 +758,7 @@ pub struct TransferTarget {
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub headers: ::std::option::Option<
@@ -1511,18 +1529,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

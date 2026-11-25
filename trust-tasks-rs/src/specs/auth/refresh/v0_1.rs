@@ -125,7 +125,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by auth/refresh/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The refresh token previously issued in a TokenBundle. Consumers verify it server-side; producers treat it as opaque.
     #[serde(rename = "refreshToken")]
@@ -133,7 +137,7 @@ pub struct Payload {
     ///Optional capability tags requested on the new access token. MAY be narrower than the original session's scope; consumers MUST NOT widen scope on refresh.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope: ::std::option::Option<::std::vec::Vec<PayloadScopeItem>>,
@@ -269,10 +273,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopeItem {
 #[deprecated(note = "superseded by auth/refresh/0.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional session snapshot. Consumers SHOULD include it so the producer can refresh client-side state (acr changes after step-up, scope changes after policy edits) without a separate whoami call.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub session: ::std::option::Option<Session>,
     ///New access token. If the consumer's policy rotates refresh tokens on each use, a new refreshToken is included; otherwise the producer continues using the previously-issued one.
     pub tokens: TokenBundle,
@@ -289,12 +301,16 @@ impl Response {
 #[non_exhaustive]
 pub struct Session {
     ///Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub acr: ::std::option::Option<::std::string::String>,
     ///Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub amr: ::std::option::Option<::std::vec::Vec<SessionAmrItem>>,
@@ -302,7 +318,11 @@ pub struct Session {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
     pub id: SessionId,
@@ -507,12 +527,17 @@ pub struct TokenBundle {
     #[serde(rename = "expiresIn")]
     pub expires_in: ::std::num::NonZeroU64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Seconds from issuance until the refresh token expires, when one was issued.
     #[serde(
         rename = "refreshExpiresIn",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refresh_expires_in: ::std::option::Option<::std::num::NonZeroU64>,
@@ -520,13 +545,14 @@ pub struct TokenBundle {
     #[serde(
         rename = "refreshToken",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refresh_token: ::std::option::Option<TokenBundleRefreshToken>,
     ///Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scope: ::std::option::Option<::std::vec::Vec<TokenBundleScopeItem>>,
@@ -1265,18 +1291,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"offending\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

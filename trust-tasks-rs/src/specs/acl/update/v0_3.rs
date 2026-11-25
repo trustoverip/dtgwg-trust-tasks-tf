@@ -44,12 +44,17 @@ pub struct AclEntry {
     ///REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{"scope": "all"}` (unrestricted — every context the maintainer has), `{"scope": "none"}` (may act nowhere), or `{"scope": "contexts", "contexts": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`.
     pub act: AuthorityScope,
     ///OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub approve: ::std::option::Option<AuthorityScope>,
     ///OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{"scope": "ceiling"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{"scope": "none"}`, or `{"scope": "listed", "grants": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{"scope": "none"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve.
     #[serde(
         rename = "approveCapabilities",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approve_capabilities: ::std::option::Option<ApproveCapabilityScope>,
@@ -58,6 +63,7 @@ pub struct AclEntry {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -65,6 +71,7 @@ pub struct AclEntry {
     #[serde(
         rename = "createdBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<::std::string::String>,
@@ -72,6 +79,7 @@ pub struct AclEntry {
     #[serde(
         rename = "delegatedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delegated_by: ::std::option::Option<AclEntryDelegatedBy>,
@@ -79,16 +87,25 @@ pub struct AclEntry {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
     pub keys: KeyScope,
     ///Optional human-readable label. Confers nothing.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<AclEntryLabel>,
     ///REQUIRED explicit purpose scope: what this subject may use content it reads for — the purpose a request for a purpose-bound operation (a read of content held for the principal, or a refusal that carries such content) names, and the maintainer records in that operation's audit record. Exactly one of `{"scope": "any"}` (any purpose EXCEPT `modelTraining`) or `{"scope": "listed", "purposes": [...]}` with at least one Purpose. There is no implicit form: an entry without `purposes`, or with an empty list, is malformed and MUST be refused, never read as `any`. A maintainer that adopts this version writes `any` on every entry that predates it before serving a purpose-bound operation under it (VTI-ACL-101). Delegated purposes are a subset of the granter's: a granter stating `any` MAY delegate a list; a granter stating a list MUST NOT delegate `any`, and no granter delegates `modelTraining` unless its own entry names it (acl/grant `purposeOutsideDelegator`). A maintainer MAY refuse by policy to grant a purpose, naming it, when the entry is written (acl/grant `purposeRefused`), never by writing the entry without it. A purpose is a declaration, not a proof: the maintainer cannot see what the subject does with content, and holds it to what it declared.
     pub purposes: PurposeScope,
@@ -97,6 +114,7 @@ pub struct AclEntry {
     #[serde(
         rename = "stepUp",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up: ::std::option::Option<AclEntryStepUp>,
@@ -105,6 +123,7 @@ pub struct AclEntry {
     #[serde(
         rename = "updatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -112,6 +131,7 @@ pub struct AclEntry {
     #[serde(
         rename = "updatedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
@@ -305,10 +325,18 @@ impl<'de> ::serde::Deserialize<'de> for AclEntryRole {
 #[non_exhaustive]
 pub struct AclEntryStepUp {
     ///VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub approver: ::std::option::Option<::std::string::String>,
     ///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub require: ::std::option::Option<AclEntryStepUpRequire>,
 }
 impl ::std::default::Default for AclEntryStepUp {
@@ -626,11 +654,19 @@ impl<'de> ::serde::Deserialize<'de> for Capability {
 #[non_exhaustive]
 pub struct CapabilityGrant {
     ///`true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub additive: ::std::option::Option<bool>,
     pub capability: Capability,
     ///Optional qualifier. Absent covers every resource of the capability's kind.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub resource: ::std::option::Option<ResourceQualifier>,
 }
 impl CapabilityGrant {
@@ -646,7 +682,11 @@ impl CapabilityGrant {
 pub struct CapabilityRef {
     pub capability: Capability,
     ///Optional qualifier. Absent covers every resource of the capability's kind.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub resource: ::std::option::Option<ResourceQualifier>,
 }
 impl CapabilityRef {
@@ -1001,52 +1041,82 @@ impl KeyScopeNone {
 #[non_exhaustive]
 pub struct Payload {
     ///Replacement act scope, in the same explicit form as the entry's (`all`, `none`, or a non-empty context list). A replacement that WIDENS or equals the stored scope is accepted, subject to the granter bound. NARROWING THE ACT SCOPE IS A REVOCATION and a consumer MUST refuse it here with `narrowingNotPermitted`, directing the caller to acl/revoke, so that every removal of where a subject may act passes through the task that is audited and reasoned as a revocation.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub act: ::std::option::Option<AuthorityScope>,
     ///Replacement approve scope. To withdraw approve authority entirely, send `{"scope": "none"}` — there is no null form, because the explicit value is the only spelling that cannot be misread. Widening is an escalation vector (a subject able to approve can ratify operations it could not authorize) and is bounded by the granter's own approve authority. Narrowing is accepted here and is a privilege reduction (see the specification).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub approve: ::std::option::Option<AuthorityScope>,
     ///Replacement approvable-capability scope, applied wholesale. Omitted leaves it unchanged. `{"scope": "ceiling"}` lets the subject approve its role's full approve ceiling within its approve scope (a privilege increase); `{"scope": "none"}` withdraws it; `listed` states the exact set. There is no null form. Bounded by the granter's own approve authority.
     #[serde(
         rename = "approveCapabilities",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approve_capabilities: ::std::option::Option<ApproveCapabilityScope>,
     ///Replacement capability scope, applied wholesale, in the same explicit form as the entry's. Omitted leaves it unchanged. `{"scope": "ceiling"}` returns the entry to its role's full ceiling — a privilege INCREASE, bounded and gated like any widening; `{"scope": "none"}` removes every capability; `listed` states the exact set. There is no null form. Every listed capability is checked as on a grant (registry, ceiling, additive, granter bound). A replacement that removes a capability the entry held is a privilege reduction.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub capabilities: ::std::option::Option<CapabilityScope>,
     ///Replacement expiry. Explicit `null` makes the entry permanent — a privilege increase, which a consumer SHOULD gate at least as strictly as the original grant, and which is refused where the granter's own entry expires.
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
         ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Replacement key scope, applied wholesale. Omitted leaves it unchanged. `{"scope": "all"}` lets the subject reach every key within its act scope again — a privilege increase a consumer SHOULD gate like clearing `expiresAt`; `{"scope": "none"}` removes every key; `listed` states the exact set. There is no null form. A replacement that narrows the stored key scope IS a privilege reduction: it is accepted here, because acl/revoke/0.3 narrows only the act scope, but the consumer MUST audit it as a reduction and apply it at the subject's next authorization decision.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub keys: ::std::option::Option<KeyScope>,
     ///Replacement human-readable label. Explicit `null` clears it. Omitted leaves it unchanged.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<::std::option::Option<PayloadLabel>>,
     ///Replacement purpose scope, applied wholesale. Omitted leaves it unchanged. `{"scope": "any"}` lets the subject use what it reads for any purpose but `modelTraining` — a privilege increase over a list, bounded by the granter's own purposes like any grant (`purposeOutsideDelegator`); `listed` states the exact set. There is no null form and no empty list. A replacement that narrows the stored purpose scope IS a privilege reduction: the consumer MUST audit it as a reduction and apply it at the subject's next purpose-bound operation.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purposes: ::std::option::Option<PurposeScope>,
     ///Optional human-readable rationale, recorded with the change.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     #[serde(
         rename = "stepUp",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up: ::std::option::Option<PayloadStepUp>,
@@ -1185,14 +1255,14 @@ pub struct PayloadStepUp {
     ///VID that ratifies step-up for this subject. `null` clears it.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approver: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Minimum step-up mode. `null` clears the per-entry override.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require: ::std::option::Option<::std::option::Option<PayloadStepUpRequire>>,
@@ -1641,7 +1711,11 @@ pub struct Response {
     ///The realized entry the maintainer now holds, after the amendment.
     pub entry: AclEntry,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -3220,18 +3294,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"purposes\":{\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"purposes\"],\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

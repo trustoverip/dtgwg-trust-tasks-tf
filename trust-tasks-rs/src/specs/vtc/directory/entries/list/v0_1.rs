@@ -45,15 +45,24 @@ pub struct CardBlobRef {
     ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
     pub sha256: CardBlobRefSha256,
     ///Size in bytes of the stored bytes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///Projection only: when `url` stops working.
     #[serde(
         rename = "urlExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -200,7 +209,11 @@ impl<'de> ::serde::Deserialize<'de> for CardBlobRefSha256 {
 #[non_exhaustive]
 pub struct DirectoryEntry {
     ///Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub connected: ::std::option::Option<bool>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
@@ -209,6 +222,7 @@ pub struct DirectoryEntry {
     #[serde(
         rename = "sharedGroups",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_groups: ::std::option::Option<Vec<DirectoryEntrySharedGroupsItem>>,
@@ -746,25 +760,45 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 #[deprecated(note = "superseded by vtc/directory/entries/list/0.2")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`, valid only for the same caller and question.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Facet filters: an entry matches when, for every filter, its value of the field is one of `values`. Only facets visible to the caller.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub filters: ::std::option::Option<::std::vec::Vec<PayloadFiltersItem>>,
     ///Restrict to members of this community group, as far as the caller may see its members.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub group: ::std::option::Option<GroupId>,
     ///Page size; the community clamps to 1..=100 (default 25).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Search text. At least three characters, or a whole nickname for an exact-nickname search.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub query: ::std::option::Option<PayloadQuery>,
 }
 impl ::std::default::Default for Payload {
@@ -988,12 +1022,16 @@ impl<'de> ::serde::Deserialize<'de> for PayloadQuery {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/directory/entries/list/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Counts for the facets visible to the caller, over the whole result. Absent when none is.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub facets: ::std::option::Option<::std::vec::Vec<ResponseFacetsItem>>,
@@ -1002,7 +1040,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<ResponseNextCursor>>,
@@ -1033,12 +1071,17 @@ impl ResponseFacetsItem {
 #[non_exhaustive]
 pub struct ResponseFacetsItemValuesItem {
     ///Matching entries. Absent when below the community's threshold.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub count: ::std::option::Option<u64>,
     ///Present instead of `count` when the count is below the threshold *k*: there are fewer than this many.
     #[serde(
         rename = "fewerThan",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fewer_than: ::std::option::Option<i64>,
@@ -1177,6 +1220,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -1186,6 +1230,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -2230,18 +2275,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

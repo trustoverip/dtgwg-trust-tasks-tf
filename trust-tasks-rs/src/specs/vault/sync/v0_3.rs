@@ -138,6 +138,7 @@ pub struct AttachmentRef {
     #[serde(
         rename = "contentType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub content_type: ::std::option::Option<::std::string::String>,
@@ -432,18 +433,28 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The most events to return; the responder chooses a default and MAY return fewer. Maintainer-defined ceiling.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///The seq value the consumer last received. Omit on first sync (= full snapshot). When supplied, the maintainer returns events with seq > sinceSeq.
     #[serde(
         rename = "sinceSeq",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_seq: ::std::option::Option<u64>,
@@ -614,7 +625,11 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyChangedEventChange
 pub struct Response {
     ///Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.2's push form.
     pub events: ::std::vec::Vec<SyncEvent>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The seq value the consumer should persist for its next vault/sync call. Equal to the highest event seq in this response, or the consumer's prior `sinceSeq` if the response was empty.
     #[serde(rename = "newSinceSeq")]
@@ -748,6 +763,7 @@ pub enum SiteTarget {
         #[serde(
             rename = "teamId",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         team_id: ::std::option::Option<SiteTargetTeamId>,
@@ -1143,7 +1159,7 @@ pub struct VaultEntry {
     ///References to encrypted blobs associated with the entry (recovery codes, PEM files, screenshots of authenticator setup). The blobs themselves are fetched via a separate mechanism the maintainer documents; metadata view exposes only the descriptor.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attachments: ::std::option::Option<::std::vec::Vec<AttachmentRef>>,
@@ -1151,6 +1167,7 @@ pub struct VaultEntry {
     #[serde(
         rename = "breachedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub breached_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1163,6 +1180,7 @@ pub struct VaultEntry {
     #[serde(
         rename = "createdBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<::std::string::String>,
@@ -1170,6 +1188,7 @@ pub struct VaultEntry {
     #[serde(
         rename = "customFieldNames",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub custom_field_names: ::std::option::Option<Vec<VaultEntryCustomFieldNamesItem>>,
@@ -1177,14 +1196,23 @@ pub struct VaultEntry {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional URI of an icon to display in the consumer UI. Maintainers MAY fetch and cache; consumers SHOULD treat as untrusted content and fetch via a sandboxed pipeline.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub favicon: ::std::option::Option<::std::string::String>,
     ///Opaque vault-maintainer-assigned identifier for the entry. ULID/UUID/base32 are common; the wire spec only requires non-empty string equality.
     pub id: VaultEntryId,
@@ -1194,16 +1222,22 @@ pub struct VaultEntry {
     #[serde(
         rename = "lastUsedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Non-sensitive notes the user attached to the entry. Visible in metadata view (suitable for support contact, account number, expiry policy memos). SENSITIVE notes belong in the secret payload as a `secureNotes` field — those are only released by vault/release/0.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub notes: ::std::option::Option<VaultEntryNotes>,
     ///Set whenever the password component of the secret payload is rotated. Maintainers MUST update this on every secret-material change for entries of kind `password` (or any kind that carries a password component). Used by consumers to surface rotation-overdue warnings.
     #[serde(
         rename = "passwordChangedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub password_changed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1211,6 +1245,7 @@ pub struct VaultEntry {
     #[serde(
         rename = "principalDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub principal_did: ::std::option::Option<VaultEntryPrincipalDid>,
@@ -1218,10 +1253,18 @@ pub struct VaultEntry {
     #[serde(rename = "secretKind")]
     pub secret_kind: SecretKind,
     ///Opaque maintainer-defined selector strings fed to the policy engine when this entry is requested (e.g. "recent_uv_required", "network_class=corp", "step_up_push"). Consumers MUST treat selectors as opaque; they exist for policy authoring on the maintainer side.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub selectors: ::std::option::Option<Vec<VaultEntrySelectorsItem>>,
     ///User-defined tags for organisation and filtering (e.g. ["family", "finance"]). Maintainers MAY enforce a maximum count; the wire spec does not.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tags: ::std::option::Option<Vec<VaultEntryTagsItem>>,
     ///One or more binding targets — web origins, mobile app identifiers, and/or DIDs — that this credential applies to. A request from any matching target uses this entry. A typical entry for a service that exists as both a website and mobile apps will list a web origin, an iOS bundle id, and an Android package id; passkeys for that service typically list only the origin (because iOS Associated Domains and Android Asset Links bind apps to the domain at the OS level).
     pub targets: ::std::vec::Vec<SiteTarget>,
@@ -1231,6 +1274,7 @@ pub struct VaultEntry {
     #[serde(
         rename = "updatedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_by: ::std::option::Option<::std::string::String>,
@@ -2829,18 +2873,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"oldestRetainedSeq\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

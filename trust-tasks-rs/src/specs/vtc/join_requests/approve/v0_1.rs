@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/join-requests/decide/0.1")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The join request to approve.
     pub id: PayloadId,
@@ -200,7 +204,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/join-requests/decide/0.1")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestId")]
     pub request_id: ResponseRequestId,

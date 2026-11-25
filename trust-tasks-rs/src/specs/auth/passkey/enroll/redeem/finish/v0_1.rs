@@ -41,13 +41,14 @@ pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
     #[serde(
         rename = "clientExtensionResults",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_extension_results:
@@ -139,7 +140,7 @@ pub struct AssertionResponseResponse {
     #[serde(
         rename = "userHandle",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -158,13 +159,14 @@ pub struct AttestationResponse {
     #[serde(
         rename = "authenticatorAttachment",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<AttestationResponseAuthenticatorAttachment>,
     #[serde(
         rename = "clientExtensionResults",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_extension_results:
@@ -256,7 +258,7 @@ pub struct AttestationResponseResponse {
     pub client_data_json: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -362,6 +364,7 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<PayloadDeviceLabel>,
@@ -369,12 +372,17 @@ pub struct Payload {
     #[serde(rename = "enrollmentId")]
     pub enrollment_id: PayloadEnrollmentId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///AuthenticatorAssertionResponse over the start's uvOptions. REQUIRED exactly when start returned uvOptions.
     #[serde(
         rename = "uvCredential",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub uv_credential: ::std::option::Option<AssertionResponse>,
@@ -515,11 +523,16 @@ pub struct Response {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<ResponseDeviceLabel>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///What the credential authenticates.
     pub purpose: ResponsePurpose,
@@ -1471,18 +1484,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

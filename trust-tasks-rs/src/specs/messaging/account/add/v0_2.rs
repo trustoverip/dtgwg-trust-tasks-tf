@@ -42,6 +42,7 @@ pub struct Account {
     #[serde(
         rename = "accessListCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub access_list_count: ::std::option::Option<u64>,
@@ -54,6 +55,7 @@ pub struct Account {
     #[serde(
         rename = "lastAuthenticatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_authenticated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -61,12 +63,14 @@ pub struct Account {
     #[serde(
         rename = "lastReceivedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_received_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "queueLimits",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queue_limits: ::std::option::Option<QueueLimits>,
@@ -74,6 +78,7 @@ pub struct Account {
     #[serde(
         rename = "receiveQueueBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_queue_bytes: ::std::option::Option<u64>,
@@ -81,6 +86,7 @@ pub struct Account {
     #[serde(
         rename = "receiveQueueCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_queue_count: ::std::option::Option<u64>,
@@ -88,6 +94,7 @@ pub struct Account {
     #[serde(
         rename = "sendQueueBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_queue_bytes: ::std::option::Option<u64>,
@@ -95,11 +102,16 @@ pub struct Account {
     #[serde(
         rename = "sendQueueCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_queue_count: ::std::option::Option<u64>,
     ///Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub stats: ::std::option::Option<AccountStats>,
 }
 impl Account {
@@ -117,6 +129,7 @@ pub struct AccountStats {
     #[serde(
         rename = "bytesReceived",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bytes_received: ::std::option::Option<u64>,
@@ -124,6 +137,7 @@ pub struct AccountStats {
     #[serde(
         rename = "bytesSent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bytes_sent: ::std::option::Option<u64>,
@@ -131,6 +145,7 @@ pub struct AccountStats {
     #[serde(
         rename = "messagesReceived",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub messages_received: ::std::option::Option<u64>,
@@ -138,6 +153,7 @@ pub struct AccountStats {
     #[serde(
         rename = "messagesSent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub messages_sent: ::std::option::Option<u64>,
@@ -145,6 +161,7 @@ pub struct AccountStats {
     #[serde(
         rename = "receivedByProtocol",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub received_by_protocol: ::std::option::Option<ProtocolCounts>,
@@ -152,6 +169,7 @@ pub struct AccountStats {
     #[serde(
         rename = "sentByProtocol",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sent_by_protocol: ::std::option::Option<ProtocolCounts>,
@@ -336,6 +354,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "accessListMode",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub access_list_mode: ::std::option::Option<MediatorAclAccessListMode>,
@@ -343,16 +362,22 @@ pub struct MediatorAcl {
     #[serde(
         rename = "anonReceive",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anon_receive: ::std::option::Option<bool>,
     ///The account is blocked from authenticating and transacting.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub blocked: ::std::option::Option<bool>,
     ///May create out-of-band invitations.
     #[serde(
         rename = "createInvites",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub create_invites: ::std::option::Option<bool>,
@@ -360,16 +385,22 @@ pub struct MediatorAcl {
     #[serde(
         rename = "didcommEnabled",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub didcomm_enabled: ::std::option::Option<bool>,
     ///Messages for this account may be stored locally at this mediator for pickup.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub local: ::std::option::Option<bool>,
     ///May be the next hop of a forwarded message.
     #[serde(
         rename = "receiveForwarded",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_forwarded: ::std::option::Option<bool>,
@@ -377,6 +408,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "receiveMessages",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_messages: ::std::option::Option<bool>,
@@ -384,6 +416,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageList",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_list: ::std::option::Option<bool>,
@@ -391,6 +424,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageReceiveQueueLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_receive_queue_limit: ::std::option::Option<bool>,
@@ -398,6 +432,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "selfManageSendQueueLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub self_manage_send_queue_limit: ::std::option::Option<bool>,
@@ -405,6 +440,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "sendForwarded",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_forwarded: ::std::option::Option<bool>,
@@ -412,6 +448,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "sendMessages",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_messages: ::std::option::Option<bool>,
@@ -419,6 +456,7 @@ pub struct MediatorAcl {
     #[serde(
         rename = "tspEnabled",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tsp_enabled: ::std::option::Option<bool>,
@@ -519,17 +557,26 @@ pub struct Payload {
     #[serde(rename = "accountType", default = "defaults::payload_account_type")]
     pub account_type: AccountType,
     ///Initial access-control capabilities. Members omitted take the mediator's configured defaults.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub acl: ::std::option::Option<MediatorAcl>,
     ///The DID of the account to register.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Initial queued-message limits. Members omitted take the mediator's configured defaults.
     #[serde(
         rename = "queueLimits",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queue_limits: ::std::option::Option<QueueLimits>,
@@ -546,20 +593,33 @@ impl Payload {
 #[non_exhaustive]
 pub struct ProtocolCounts {
     ///DIDComm v2 (JWE/JWS).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub didcomm: ::std::option::Option<u64>,
     ///A DIDComm v1 envelope.
     #[serde(
         rename = "didcommV1",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub didcomm_v1: ::std::option::Option<u64>,
     ///Anything the mediator could not classify.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub other: ::std::option::Option<u64>,
     ///A Trust Spanning Protocol message.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tsp: ::std::option::Option<u64>,
 }
 impl ::std::default::Default for ProtocolCounts {
@@ -587,6 +647,7 @@ pub struct QueueLimits {
     #[serde(
         rename = "receiveQueueLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub receive_queue_limit: ::std::option::Option<i64>,
@@ -594,6 +655,7 @@ pub struct QueueLimits {
     #[serde(
         rename = "sendQueueLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_queue_limit: ::std::option::Option<i64>,
@@ -620,7 +682,11 @@ pub struct Response {
     ///The full realized mediator view of the newly created account.
     pub account: Account,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

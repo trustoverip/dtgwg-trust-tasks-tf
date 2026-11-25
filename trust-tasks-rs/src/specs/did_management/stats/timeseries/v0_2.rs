@@ -123,12 +123,24 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<PayloadDomain>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub mnemonic: ::std::option::Option<PayloadMnemonic>,
     ///The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.
     pub range: PayloadRange,
@@ -340,7 +352,11 @@ pub struct Response {
     ///Width of each bucket.
     #[serde(rename = "bucketSeconds")]
     pub bucket_seconds: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One point per bucket in the window, oldest first, including buckets with no activity.
     pub points: ::std::vec::Vec<ResponsePointsItem>,

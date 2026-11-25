@@ -124,12 +124,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "deviceId")]
     pub device_id: PayloadDeviceId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.
     #[serde(
         rename = "issuedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -345,9 +350,17 @@ pub struct Response {
     pub completed_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "deviceId")]
     pub device_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub diagnostics: ::std::option::Option<ResponseDiagnostics>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub scope: ResponseScope,
 }
@@ -365,12 +378,14 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "cacheBytesWiped",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cache_bytes_wiped: ::std::option::Option<u64>,
     #[serde(
         rename = "keysWiped",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub keys_wiped: ::std::option::Option<u64>,
@@ -378,7 +393,7 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "osHooksInvoked",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub os_hooks_invoked: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -386,7 +401,7 @@ pub struct ResponseDiagnostics {
     #[serde(
         rename = "partialReasons",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub partial_reasons: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -823,18 +838,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"partialReasons\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

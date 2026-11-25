@@ -45,6 +45,7 @@ pub struct Award {
     #[serde(
         rename = "credentialId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<GroupCredentialId>,
@@ -52,6 +53,7 @@ pub struct Award {
     #[serde(
         rename = "decidedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -62,22 +64,36 @@ pub struct Award {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "givenBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub given_by: ::std::option::Option<EntryId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub note: ::std::option::Option<AwardNote>,
     #[serde(rename = "offeredAt")]
     pub offered_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub shared: ::std::option::Option<AwardShare>,
     pub state: AwardState,
 }
@@ -221,6 +237,7 @@ pub struct AwardShare {
     #[serde(
         rename = "bakedImageUrl",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub baked_image_url: ::std::option::Option<::std::string::String>,
@@ -655,10 +672,18 @@ pub enum Payload {
     Variant0 {
         #[serde(rename = "badgeId")]
         badge_id: BadgeId,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         ///What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         note: ::std::option::Option<AwardNote>,
         ///The members to offer the badge to. Exactly one of `to` and `group` is present.
         to: Vec<EntryId>,
@@ -666,12 +691,20 @@ pub enum Payload {
     Variant1 {
         #[serde(rename = "badgeId")]
         badge_id: BadgeId,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         ///Offer the badge to every active member of this group whose member list the signer may see. Exactly one of `to` and `group` is present.
         group: GroupId,
         ///What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         note: ::std::option::Option<AwardNote>,
     },
 }
@@ -683,7 +716,11 @@ pub enum Payload {
 pub struct Response {
     ///The offers recorded, each in state `offered`.
     pub awards: ::std::vec::Vec<Award>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Members the badge was not offered to, and why. Never an error: the rest of the offers stand.
     pub skipped: ::std::vec::Vec<ResponseSkippedItem>,

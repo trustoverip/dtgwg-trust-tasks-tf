@@ -128,10 +128,15 @@ pub struct Payload {
     #[serde(
         rename = "dryRun",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -407,7 +412,11 @@ pub struct Response {
     ///True when nothing was written. Echoed so a report is self-describing: a plan and a receipt are otherwise the same shape.
     #[serde(rename = "dryRun")]
     pub dry_run: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The renames performed, or in a dry run the ones that would be.
     pub moved: ::std::vec::Vec<RealignedKey>,

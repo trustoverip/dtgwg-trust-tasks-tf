@@ -127,7 +127,11 @@ pub struct Payload {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
     pub entity_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub resource: ::std::string::String,
 }
@@ -143,10 +147,18 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by registry/record/delete/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional human-readable detail.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<ResponseMessage>,
     ///Whether the record was deleted.
     pub ok: bool,

@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The hosting domain whose DIDs the server deletes.
     pub domain: PayloadDomain,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The hosting server whose copy of the domain is purged.
     #[serde(rename = "instanceId")]
@@ -266,7 +270,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 #[non_exhaustive]
 pub struct Response {
     pub domain: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "instanceId")]
     pub instance_id: ::std::string::String,

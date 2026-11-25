@@ -461,7 +461,11 @@ pub struct Payload {
     pub expected_sha256: ExpectedSha256,
     #[serde(rename = "expectedSizeBytes")]
     pub expected_size_bytes: ExpectedSizeBytes,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub target: UploadTarget,
 }
@@ -478,7 +482,11 @@ impl Payload {
 pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "uploadId")]
     pub upload_id: UploadId,
@@ -566,11 +574,16 @@ pub struct UploadTarget {
     #[serde(
         rename = "ifMatch",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub if_match: ::std::option::Option<WebsiteEtag>,
     pub kind: UploadTargetKind,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub path: ::std::option::Option<WebsitePath>,
 }
 impl UploadTarget {

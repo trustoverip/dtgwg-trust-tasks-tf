@@ -125,7 +125,11 @@ pub struct Payload {
     ///Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.
     pub algorithm: PayloadAlgorithm,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.
     #[serde(rename = "hashAlgorithm")]
@@ -461,7 +465,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNamespace {
 pub struct Response {
     ///The algorithm the signature was made with — the one the request named.
     pub algorithm: ResponseAlgorithm,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The key that produced the signature. Echoed so a response separated from its request is still attributable.
     #[serde(rename = "keyId")]

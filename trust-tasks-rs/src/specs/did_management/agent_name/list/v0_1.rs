@@ -142,9 +142,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional explicit hosting domain, for disambiguation per category CONVENTIONS §3. When present it MUST match the slot's recorded domain.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The hosted DID slot whose agent-name registry is being read.
     pub mnemonic: PayloadMnemonic,
@@ -223,9 +231,17 @@ pub struct Response {
     #[serde(rename = "agentNames")]
     pub agent_names: ::std::vec::Vec<AgentNameEntry>,
     ///The slot's hosting domain. Omitted (rather than empty) for an un-domained legacy slot.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The slot the listing is for, echoed.
     pub mnemonic: ::std::string::String,

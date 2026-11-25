@@ -411,7 +411,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vta/backup/initiate-import/1.1")]
 pub struct Payload {
     ///Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub algorithm: ::std::option::Option<PayloadAlgorithm>,
     ///Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.
     #[serde(rename = "expectedSha256")]
@@ -420,7 +424,11 @@ pub struct Payload {
     #[serde(rename = "expectedSizeBytes")]
     pub expected_size_bytes: ::std::num::NonZeroU64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -562,13 +570,18 @@ pub struct Response {
     #[serde(
         rename = "completionHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub completion_hint: ::std::option::Option<ResponseCompletionHint>,
     ///Where to write the bytes, on what terms, and until when.
     pub descriptor: BundleDescriptor,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

@@ -628,12 +628,24 @@ impl ::std::convert::TryFrom<::std::string::String> for OfferState {
 #[deprecated(note = "superseded by vtc/rooms/offers/list/0.4")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size. The community chooses when absent (50 in the reference implementation).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl ::std::default::Default for Payload {
@@ -719,13 +731,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/rooms/offers/list/0.4")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<Offer>,
     ///Present when more remain; pass it as `cursor`.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

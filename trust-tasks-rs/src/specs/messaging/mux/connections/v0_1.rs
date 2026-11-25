@@ -50,6 +50,7 @@ pub struct ConnectionMember {
     #[serde(
         rename = "grantId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_id: ::std::option::Option<GrantId>,
@@ -587,26 +588,47 @@ impl ::std::convert::TryFrom<::std::string::String> for MuxWire {
 #[non_exhaustive]
 pub struct Payload {
     ///An opaque continuation token from a previous response's `nextCursor`, bound to the requester and the other request members; a responder MUST NOT accept a cursor it did not issue.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The most connections to return, at most 100; the responder chooses a default (50) and MAY return fewer.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only connections carrying this member DID, active or not; each connection's `members` then holds that member's entry alone.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub member: ::std::option::Option<MuxDid>,
     ///The most member entries the page carries, summed over all its connections; the responder's default is 1000. `0` returns connections without members — `memberCount` is still exact.
     #[serde(
         rename = "memberLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_limit: ::std::option::Option<i64>,
     ///Only connections authenticated as this principal DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub principal: ::std::option::Option<MuxDid>,
 }
 impl ::std::default::Default for Payload {
@@ -698,12 +720,17 @@ pub struct Response {
     pub connections: ::std::vec::Vec<MuxConnection>,
     pub coverage: MuxCoverage,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

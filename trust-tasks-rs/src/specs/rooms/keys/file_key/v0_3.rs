@@ -123,10 +123,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.
     #[serde(rename = "fileId")]
@@ -137,6 +145,7 @@ pub struct Payload {
     #[serde(
         rename = "purposeOfUse",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purpose_of_use: ::std::option::Option<RecordPurpose>,
@@ -516,7 +525,11 @@ impl ::std::fmt::Display for RecordPurpose {
 pub struct Response {
     ///The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.
     pub key: ResponseKey,

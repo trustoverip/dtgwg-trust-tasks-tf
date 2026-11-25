@@ -198,17 +198,29 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The room's host, as a DID: where the withdrawal, if any, is delivered first and the room's epoch advances.
     pub host: PayloadHost,
     ///The DID whose leaf is removed and, on a room that is not private, whose credentials the room withdraws. Never the recipient's own leaf.
     pub member: PayloadMember,
     ///Any other host serving the room, as DIDs. On a room that is not private, each is delivered the withdrawal too: a host that does not hold it honours the member's credentials still. Unused on a private room.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub mirrors: ::std::option::Option<Vec<PayloadMirrorsItem>>,
     ///Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential. Never put into the revocation list.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room whose group loses a member. The recipient MUST hold its group and a signing key for it.
     #[serde(rename = "roomId")]
@@ -217,11 +229,16 @@ pub struct Payload {
     #[serde(
         rename = "signingKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_key_id: ::std::option::Option<PayloadSigningKeyId>,
     ///OPTIONAL. When the last credential the room issued `member` expires, after which the withdrawal can be dropped from the room's list. Unused on a private room.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Payload {
@@ -615,7 +632,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSigningKeyId {
 pub struct Response {
     ///The room epoch after the removal, as the host recorded it.
     pub epoch: i64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Who was removed.
     pub member: ResponseMember,
@@ -623,17 +644,22 @@ pub struct Response {
     #[serde(
         rename = "mirrorsPending",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mirrors_pending: ::std::option::Option<::std::vec::Vec<ResponseMirrorsPendingItem>>,
     ///The revocation list carrying the withdrawal, as `host` accepted it. Present exactly when `withdrawn` is true.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub revocation: ::std::option::Option<RevocationHead>,
     ///The withdrawal's `revokedAt`: credentials the room issued `member` before it are refused, and fresh ones issued after it are not. Present only when `withdrawn` is true.
     #[serde(
         rename = "revokedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1359,18 +1385,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"code\":{\"maxLength\":128,\"type\":\"string\"},\"stage\":{\"enum\":[\"revocation\",\"advance\"],\"type\":\"string\"}},\"required\":[\"stage\"],\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

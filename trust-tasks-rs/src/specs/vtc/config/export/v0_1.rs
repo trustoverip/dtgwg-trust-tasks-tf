@@ -47,7 +47,7 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "contactEmail",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub contact_email: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -55,15 +55,20 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<CommunityProfileSnapshotDescription>,
     ///Opaque community-defined extension bag.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -73,18 +78,22 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "logoUrl",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub logo_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub name: CommunityProfileSnapshotName,
     ///The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub personhood: ::std::option::Option<PersonhoodGovernance>,
     #[serde(
         rename = "publicUrl",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -92,6 +101,7 @@ pub struct CommunityProfileSnapshot {
     #[serde(
         rename = "relationshipIdentifierDefault",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relationship_identifier_default:
@@ -419,6 +429,7 @@ pub struct ConfigExportDocument {
     #[serde(
         rename = "communityProfile",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub community_profile: ::std::option::Option<CommunityProfileSnapshot>,
@@ -428,7 +439,11 @@ pub struct ConfigExportDocument {
     ///When the export was taken. Provenance for the operator; a consumer does not act on it.
     #[serde(rename = "exportedAt")]
     pub exported_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.
     #[serde(rename = "schemaVersion")]
@@ -529,7 +544,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -559,7 +578,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "acceptedIdvps",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepted_idvps:
@@ -568,7 +587,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "governanceFrameworkUrl",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub governance_framework_url:
@@ -577,6 +596,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "realHuman",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub real_human: ::std::option::Option<bool>,
@@ -584,6 +604,7 @@ pub struct PersonhoodGovernance {
     #[serde(
         rename = "singleMembership",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub single_membership: ::std::option::Option<bool>,
@@ -670,7 +691,11 @@ impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
 pub struct Response {
     ///The portable configuration document, ready to feed back to vtc/config/import.
     pub document: ConfigExportDocument,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -1218,17 +1243,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

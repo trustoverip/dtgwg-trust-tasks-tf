@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/oob/respond/0.3")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A complete, signed auth/oob/grant/0.1 Trust Task document, issued by the identified DID and signed by its VTA for `assertionMethod`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.
     pub grant: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -141,7 +145,11 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/oob/respond/0.3")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///`approved` when the grant approved and every check passed; `declined` when the grant declined.
     pub status: ResponseStatus,

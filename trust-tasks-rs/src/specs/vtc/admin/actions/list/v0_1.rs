@@ -47,6 +47,7 @@ pub struct Action {
     #[serde(
         rename = "approversRemaining",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approvers_remaining: ::std::option::Option<u64>,
@@ -56,12 +57,17 @@ pub struct Action {
     ///`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one.
     pub category: ActionCategory,
     ///Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub challenge: ::std::option::Option<ActionChallenge>,
     ///When the action left `open`. Present exactly when `status` is not `open`.
     #[serde(
         rename = "closedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -69,6 +75,7 @@ pub struct Action {
     #[serde(
         rename = "closedReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closed_reason: ::std::option::Option<ActionClosedReason>,
@@ -79,10 +86,15 @@ pub struct Action {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
     pub kind: ActionKind,
@@ -97,6 +109,7 @@ pub struct Action {
     #[serde(
         rename = "requesterOpenActions",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requester_open_actions: ::std::option::Option<u64>,
@@ -104,7 +117,11 @@ pub struct Action {
     pub status: ActionStatus,
     pub summary: Summary,
     ///The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub threshold: ::std::option::Option<::std::num::NonZeroU64>,
     ///The Type URI of the parked operation — the Trust Task the community will execute when the action completes. Together with `payload` it is exactly what will run.
     #[serde(rename = "typeUri")]
@@ -1065,15 +1082,27 @@ impl<'de> ::serde::Deserialize<'de> for FieldPointer {
 #[deprecated(note = "superseded by vtc/admin/actions/list/0.3")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`, valid only with the same `view` and `since` it was issued for.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum number of actions in the page. The community MAY return fewer.
     #[serde(default = "defaults::default_nzu64::<::std::num::NonZeroU64, 25>")]
     pub limit: ::std::num::NonZeroU64,
     ///Only with `view: history`: return actions closed at or after this instant. Supplied with any other view it is refused with `invalidFilter` rather than ignored, so a caller never reads a silently unfiltered page as a filtered one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///`waitingForMe` — open actions on which the caller is an eligible approver or acknowledger and has not yet decided. `requestedByMe` — open actions the caller requested. `history` — closed actions the caller requested, decided, or (with the audit-read capability) any closed action, newest first. `all` — every action the caller may see, open and closed.
     pub view: PayloadView,
@@ -1224,12 +1253,17 @@ pub struct Response {
     ///The page, in the view's order: open views by `expiresAt` soonest first (non-expiring last, then by `createdAt`), `history` by `closedAt` newest first, `all` open-before-closed in those orders. An empty array is a successful answer: nothing in this view.
     pub actions: ::std::vec::Vec<Action>,
     pub counts: ResponseCounts,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Present when more actions follow. Pass it back as `cursor` with the same `view` and `since`.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -1326,7 +1360,11 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 #[non_exhaustive]
 pub struct Summary {
     ///One or two sentences from the template saying what executing the operation will do.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub effect: ::std::option::Option<SummaryEffect>,
     ///Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.
     pub fields: ::std::collections::HashMap<SummaryFieldsKey, Field>,

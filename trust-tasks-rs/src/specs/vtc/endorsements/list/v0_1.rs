@@ -109,7 +109,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
@@ -118,6 +118,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "issuedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -136,7 +137,7 @@ pub struct Endorsement {
     ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -149,7 +150,7 @@ pub struct Endorsement {
     #[serde(
         rename = "revokedAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at:
@@ -443,24 +444,38 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vtc/endorsements/list/0.2")]
 pub struct Payload {
     ///Opaque continuation token from a previous page's nextCursor.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Include revoked rows. Defaults to true — both live and revoked rows surface; consumers filter on revokedAt.
     #[serde(
         rename = "includeRevoked",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_revoked: ::std::option::Option<bool>,
     ///Page size; the maintainer clamps to 1..=200 (default 50).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Filter to endorsements about this subject.
     #[serde(
         rename = "subjectDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_did: ::std::option::Option<PayloadSubjectDid>,
@@ -468,6 +483,7 @@ pub struct Payload {
     #[serde(
         rename = "typeUri",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_uri: ::std::option::Option<PayloadTypeUri>,
@@ -619,14 +635,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/endorsements/list/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<Endorsement>,
     ///Continuation token for the next page, or null when this is the last.
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -634,7 +654,7 @@ pub struct Response {
     #[serde(
         rename = "totalEstimate",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub total_estimate: ::std::option::Option<::std::option::Option<i64>>,
@@ -1116,18 +1136,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

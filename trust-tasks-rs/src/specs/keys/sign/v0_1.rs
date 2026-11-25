@@ -125,7 +125,11 @@ pub struct Payload {
     ///Signature algorithm to use. MUST be compatible with the named key's `keyType`.
     pub algorithm: SignAlgorithm,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Identifier of the key to sign with. The key MUST be `active`. Which keys a producer may name is the whole of this task's authorization story — the maintainer signs the bytes it is given without inspecting them.
     #[serde(rename = "keyId")]
@@ -204,7 +208,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 #[non_exhaustive]
 pub struct Response {
     pub algorithm: SignAlgorithm,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The key that produced the signature. Echoed so a response separated from its request is still attributable.
     #[serde(rename = "keyId")]

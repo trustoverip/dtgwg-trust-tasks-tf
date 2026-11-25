@@ -310,7 +310,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "downloadId")]
     pub download_id: TransferId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
 }
@@ -329,7 +333,11 @@ pub struct Response {
     ///The digest of this chunk's raw bytes, restated from the manifest. The reader checks the bytes against the manifest it verified, not against this restatement.
     #[serde(rename = "digestMultibase")]
     pub digest_multibase: DigestMultibase,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
 }

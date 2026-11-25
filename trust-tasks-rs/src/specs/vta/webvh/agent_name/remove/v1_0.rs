@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///DID the name is bound to.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The name, without the host — the full form is `<host>/@<name>`.
     pub name: PayloadName,
@@ -261,7 +265,11 @@ pub struct Response {
     pub did: ::std::string::String,
     ///Whether the name resolves after this call.
     pub enabled: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub name: ::std::string::String,
 }

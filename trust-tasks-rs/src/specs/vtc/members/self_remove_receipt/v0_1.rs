@@ -126,7 +126,11 @@ pub struct Payload {
     pub did: PayloadDid,
     ///How the member's published record was handled.
     pub disposition: PayloadDisposition,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///True once the removal has actually taken effect — not merely been accepted.
     pub removed: bool,
@@ -262,7 +266,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDisposition {
 pub struct Response {
     ///The member received the receipt.
     pub acknowledged: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

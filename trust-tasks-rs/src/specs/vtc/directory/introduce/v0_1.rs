@@ -258,16 +258,28 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 pub struct Payload {
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A short note to the introduced member. Plain text.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<PayloadMessage>,
     ///A pairwise DID the sender's agent minted for this relationship alone. The introduced member answers it directly, never through the community.
     #[serde(rename = "replyTo")]
     pub reply_to: PayloadReplyTo,
     ///Fields of the sender's own card to include. The community fills their values from the card and drops any whose visibility does not already cover the recipient.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub share: ::std::option::Option<Vec<FieldKey>>,
 }
 impl Payload {
@@ -407,7 +419,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReplyTo {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Always `accepted`.
     pub status: ::std::string::String,

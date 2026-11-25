@@ -183,14 +183,30 @@ impl ::std::convert::TryFrom<::std::string::String> for MembershipChange {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct MembershipFilter {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub changes: ::std::option::Option<Vec<MembershipChange>>,
     ///Only events whose `principal` or `member` is one of these accounts.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub dids: ::std::option::Option<Vec<Vid>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sources: ::std::option::Option<Vec<MuxSource>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub wires: ::std::option::Option<Vec<MuxWire>>,
 }
 impl ::std::default::Default for MembershipFilter {
@@ -214,17 +230,30 @@ impl MembershipFilter {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct MonitorFilter {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub channels: ::std::option::Option<Vec<TrafficChannel>>,
     ///Only events whose `from` or `to` is one of these accounts.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub dids: ::std::option::Option<Vec<Vid>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub directions: ::std::option::Option<Vec<TrafficDirection>>,
     ///Only events that carry an `outcome`.
     #[serde(
         rename = "failuresOnly",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub failures_only: ::std::option::Option<bool>,
@@ -232,12 +261,21 @@ pub struct MonitorFilter {
     #[serde(
         rename = "messageTypePrefixes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub message_type_prefixes: ::std::option::Option<Vec<MonitorFilterMessageTypePrefixesItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub protocols: ::std::option::Option<Vec<WireProtocol>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub stages: ::std::option::Option<Vec<TrafficStage>>,
 }
 impl ::std::default::Default for MonitorFilter {
@@ -449,15 +487,24 @@ impl ::std::convert::TryFrom<::std::string::String> for MuxWire {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Selects the traffic events the subscription receives. Absent or empty selects every traffic event the requester is entitled to see.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub filter: ::std::option::Option<MonitorFilter>,
     ///How long the subscription lives unless renewed. Default 300.
     #[serde(
         rename = "leaseSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lease_seconds: ::std::option::Option<i64>,
@@ -465,21 +512,31 @@ pub struct Payload {
     #[serde(
         rename = "maxEventsPerSecond",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_events_per_second: ::std::option::Option<::std::num::NonZeroU64>,
     ///Opts the subscription in to mux membership events and selects which. Absent: no membership events — they are never sent by default.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub membership: ::std::option::Option<MembershipFilter>,
     ///Renew or re-filter an existing subscription held by the same requester. Omitted = create a new one.
     #[serde(
         rename = "subscriptionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subscription_id: ::std::option::Option<PayloadSubscriptionId>,
     ///False turns traffic events off, so that the subscription receives only the membership events it opts in to; `filter` MUST then be absent. Absent or true keeps them on, as in 0.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub traffic: ::std::option::Option<bool>,
 }
 impl ::std::default::Default for Payload {
@@ -568,7 +625,11 @@ pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The filter in force, after the mediator narrowed it to what the requester is entitled to see.
     pub filter: MonitorFilter,
@@ -576,12 +637,20 @@ pub struct Response {
     #[serde(rename = "maxEventsPerSecond")]
     pub max_events_per_second: ::std::num::NonZeroU64,
     ///The membership filter in force, after the mediator narrowed it to what the requester is entitled to see. Absent when the subscription receives no membership events — because none were asked for, or because the mediator does not offer them (mux not enabled, or a mediator implementing only 0.1).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub membership: ::std::option::Option<MembershipFilter>,
     #[serde(rename = "subscriptionId")]
     pub subscription_id: ResponseSubscriptionId,
     ///Present and false exactly when the subscription receives no traffic events.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub traffic: ::std::option::Option<bool>,
 }
 impl Response {

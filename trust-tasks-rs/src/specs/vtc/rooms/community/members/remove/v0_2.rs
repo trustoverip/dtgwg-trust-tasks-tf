@@ -348,7 +348,11 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberState {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub member: PayloadMember,
     pub reason: Reason,
@@ -556,18 +560,31 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[non_exhaustive]
 pub struct Response {
     ///On a sealed tier, the room epoch after the removal.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub epoch: ::std::option::Option<i64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub member: RoomMember,
     ///On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub revocation: ::std::option::Option<RevocationHead>,
     ///Present with `revocation`: the withdrawal's time.
     #[serde(
         rename = "revokedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -603,6 +620,7 @@ pub struct RoomMember {
     #[serde(
         rename = "admittedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -612,6 +630,7 @@ pub struct RoomMember {
     #[serde(
         rename = "removedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

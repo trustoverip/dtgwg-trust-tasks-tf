@@ -129,7 +129,11 @@ pub struct Payload {
     ///The DIDs to test for membership in the account's access list.
     pub entries: ::std::vec::Vec<Vid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -149,7 +153,11 @@ pub struct Response {
     ///The account whose access list was checked.
     pub did: Vid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The supplied entries that are present in the account's access list.
     pub present: ::std::vec::Vec<Vid>,

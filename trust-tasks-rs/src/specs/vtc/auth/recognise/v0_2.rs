@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/auth/recognise/0.3")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     /**
     A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.
@@ -145,7 +149,11 @@ impl Payload {
 #[deprecated(note = "superseded by vtc/auth/recognise/0.3")]
 pub struct Response {
     pub data: ResponseData,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
     #[serde(rename = "sessionId")]

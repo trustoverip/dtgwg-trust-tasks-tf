@@ -127,7 +127,11 @@ pub struct Payload {
     pub did_id: PayloadDidId,
     ///Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.
     pub disabled: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The slot's complete did.jsonl — one log entry per line — not a delta.
     #[serde(rename = "logContent")]
@@ -141,6 +145,7 @@ pub struct Payload {
     #[serde(
         rename = "witnessContent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<PayloadWitnessContent>,
@@ -392,7 +397,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitnessContent {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: ResponseMnemonic,
     ///`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.

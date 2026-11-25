@@ -201,17 +201,23 @@ pub struct Payload {
     #[serde(
         rename = "clientIdPrefix",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_id_prefix: ::std::option::Option<PayloadClientIdPrefix>,
     ///The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.
     pub criterion: DigestMultibase,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.
     #[serde(
         rename = "requestId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<PayloadRequestId>,
@@ -359,7 +365,11 @@ pub struct Response {
     ///When the session closes if no wallet has answered it. Minutes, not hours.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.
     #[serde(rename = "sessionId")]

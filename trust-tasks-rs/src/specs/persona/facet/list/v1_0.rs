@@ -130,6 +130,7 @@ pub struct Facet {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -138,7 +139,11 @@ pub struct Facet {
     pub face_ids: Vec<Ulid>,
     #[serde(rename = "facetId")]
     pub facet_id: Ulid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub icon: ::std::option::Option<FacetIcon>,
     pub name: FacetName,
     #[serde(rename = "updatedAt")]
@@ -367,9 +372,17 @@ impl<'de> ::serde::Deserialize<'de> for FacetName {
 #[deprecated(note = "retired; use persona/world/list/1.0")]
 pub struct Payload {
     ///Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The page size to ask for — never a cap on the result. A consumer that wants every facet follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture.
     #[serde(default = "defaults::default_nzu64::<::std::num::NonZeroU64, 100>")]
@@ -455,13 +468,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[non_exhaustive]
 #[deprecated(note = "retired; use persona/world/list/1.0")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub facets: ::std::vec::Vec<Facet>,
     ///Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

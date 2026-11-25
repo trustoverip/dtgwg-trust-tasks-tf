@@ -42,6 +42,7 @@ pub struct CredentialDescriptor {
     #[serde(
         rename = "archivedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub archived_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -49,6 +50,7 @@ pub struct CredentialDescriptor {
     #[serde(
         rename = "deletedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -56,6 +58,7 @@ pub struct CredentialDescriptor {
     #[serde(
         rename = "graceUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grace_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -64,13 +67,22 @@ pub struct CredentialDescriptor {
     #[serde(
         rename = "issuerDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issuer_did: ::std::option::Option<Did>,
     ///Omitted for active credentials, so an active-only result is unchanged by this member's existence.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub lifecycle: ::std::option::Option<VaultLifecycle>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purpose: ::std::option::Option<CredentialPurpose>,
     pub status: CredentialStatus,
     ///VC `type` tags carried by the credential.
@@ -78,12 +90,14 @@ pub struct CredentialDescriptor {
     #[serde(
         rename = "validFrom",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -506,16 +520,22 @@ pub struct Payload {
     #[serde(
         rename = "communityDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub community_did: ::std::option::Option<Did>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Modifier, not a filter: also return archived credentials matching the other constraints. Absent means false.
     #[serde(
         rename = "includeArchived",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_archived: ::std::option::Option<bool>,
@@ -523,6 +543,7 @@ pub struct Payload {
     #[serde(
         rename = "includeDeleted",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -530,19 +551,29 @@ pub struct Payload {
     #[serde(
         rename = "issuerDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issuer_did: ::std::option::Option<Did>,
     ///Match the maintainer's semantic classification of the credential.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purpose: ::std::option::Option<CredentialPurpose>,
     ///Match the validity dimension.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub status: ::std::option::Option<CredentialStatus>,
     ///Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own.
     #[serde(
         rename = "subjectDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_did: ::std::option::Option<Did>,
@@ -550,6 +581,7 @@ pub struct Payload {
     #[serde(
         rename = "type",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub type_: ::std::option::Option<PayloadType>,
@@ -645,7 +677,11 @@ pub struct Response {
     ///Matching descriptors. Empty when nothing matched — a successful answer, not an error.
     pub credentials: ::std::vec::Vec<CredentialDescriptor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

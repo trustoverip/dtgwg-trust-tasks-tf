@@ -525,28 +525,43 @@ pub struct Payload {
     #[serde(
         rename = "contextId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<PayloadContextId>,
     ///Opaque position from a previous response's `nextCursor`. The VTA accepts only a cursor it issued, for the same filters.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Include deactivated DIDs. Absent means no.
     #[serde(
         rename = "includeDeactivated",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deactivated: ::std::option::Option<bool>,
     ///The most DIDs to return. Absent lets the VTA choose.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only DIDs published through this hosting server.
     #[serde(
         rename = "serverId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub server_id: ::std::option::Option<PayloadServerId>,
@@ -754,12 +769,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 pub struct Response {
     ///Matching DIDs the caller may see. An empty array is a successful answer, and does not imply the VTA holds none.
     pub dids: ::std::vec::Vec<WebsDidRecord>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Position of the next page. Absent on the last page.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -850,6 +870,7 @@ pub struct WebsDidRecord {
     #[serde(
         rename = "deactivatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deactivated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -860,7 +881,11 @@ pub struct WebsDidRecord {
     pub did_json_url: ::std::string::String,
     ///The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.
     pub domain: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.
     #[serde(rename = "keriCesrUrl")]
@@ -872,17 +897,26 @@ pub struct WebsDidRecord {
     #[serde(rename = "keyAgreementKeyId")]
     pub key_agreement_key_id: ::std::string::String,
     ///Operator-facing label. Never published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<WebsDidRecordLabel>,
     ///The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.
     #[serde(
         rename = "nextKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_key_id: ::std::option::Option<::std::string::String>,
     ///Whether this is its context's primary DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub primary: ::std::option::Option<bool>,
     ///Sequence number of the latest event in the key event log.
     #[serde(rename = "sequenceNumber")]

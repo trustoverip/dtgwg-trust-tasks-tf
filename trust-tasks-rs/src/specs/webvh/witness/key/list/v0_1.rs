@@ -122,7 +122,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -143,7 +147,11 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Every witness identity the service holds, ordered by createdAt. Empty when it holds none.
     pub keys: ::std::vec::Vec<WitnessKey>,
@@ -164,7 +172,11 @@ pub struct WitnessKey {
     ///The witness identity's DID (for example a `did:key`) — the value a did:webvh log names in its `witness` parameter, and the controller of the key that signs its proofs.
     pub did: WitnessKeyDid,
     ///Operator-chosen display label. Untrusted free text. Absent when none was given.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<WitnessKeyLabel>,
     ///How many witness proofs this identity has signed.
     #[serde(rename = "proofsSigned")]

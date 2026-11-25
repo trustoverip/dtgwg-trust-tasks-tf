@@ -466,7 +466,11 @@ pub struct Payload {
     pub community: PayloadCommunity,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -543,7 +547,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 #[non_exhaustive]
 pub struct Response {
     ///Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub authorization: ::std::option::Option<SignedRequest>,
     pub complaints: ::std::vec::Vec<ResponseComplaintsItem>,
     pub confirmed: ::std::vec::Vec<TrusteeIndex>,
@@ -553,14 +561,23 @@ pub struct Response {
     #[serde(
         rename = "electionKey",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub election_key: ::std::option::Option<ElectionKey>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub phase: TrusteePhase,
     ///Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub steps: ::std::option::Option<TrusteeCeremony>,
     ///What remains to be decrypted, once voting has closed.
     pub targets: ::std::vec::Vec<DecryptionTarget>,
@@ -582,7 +599,11 @@ pub struct ResponseComplaintsItem {
     pub dealer: TrusteeIndex,
     pub justified: bool,
     pub recipient: TrusteeIndex,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub share: ::std::option::Option<GroupScalar>,
 }
 impl ResponseComplaintsItem {

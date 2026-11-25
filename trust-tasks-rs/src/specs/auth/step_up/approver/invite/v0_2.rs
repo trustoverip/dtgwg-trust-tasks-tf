@@ -184,10 +184,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A suggested label for the approver. The subject MAY override it at redeem/finish.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ApproverLabel>,
     ///The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.
     pub subject: PayloadSubject,
@@ -195,6 +203,7 @@ pub struct Payload {
     #[serde(
         rename = "ttlSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -283,7 +292,11 @@ pub struct Response {
     ///When the invite stops being redeemable.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.
     #[serde(rename = "inviteId")]

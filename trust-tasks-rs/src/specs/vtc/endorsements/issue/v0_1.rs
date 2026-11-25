@@ -108,7 +108,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
@@ -117,6 +117,7 @@ pub struct CredentialReference {
     #[serde(
         rename = "issuedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -135,7 +136,7 @@ pub struct Endorsement {
     ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -148,7 +149,7 @@ pub struct Endorsement {
     #[serde(
         rename = "revokedAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at:
@@ -442,7 +443,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one. Under `vetted/1` it MUST validate against the registry's vetting schema (`https://registry.trustoverip.org/dtg/vsc/vetted/1/vetting.schema.json`), its `community` MUST be this community's DID, and it MUST NOT carry the vetter-only members `identityCommitment`, `cardDigestMultibase` or `declaredRelationship`.
     pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///DID of the statement's subject (becomes credentialSubject.id).
     #[serde(rename = "subjectDid")]
@@ -454,6 +459,7 @@ pub struct Payload {
     #[serde(
         rename = "validitySeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub validity_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -595,7 +601,11 @@ pub struct Response {
     ///The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` `directed` or `public` (the community's own correlation scope: `directed` at minimum, `public` where it is open to outsiders), `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Under `vetted/1` it also carries `taskContext` = this request's `id` and `taskDigestMultibase` = this request's task digest (SPEC §4.9.3), which are this exchange's outcome evidence binding. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub endorsement: Endorsement,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -1091,18 +1101,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

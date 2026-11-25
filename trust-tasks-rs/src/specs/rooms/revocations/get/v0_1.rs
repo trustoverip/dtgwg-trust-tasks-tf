@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -74,7 +75,11 @@ pub struct CredentialRevocation {
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl CredentialRevocation {
@@ -235,7 +240,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Must confer the `admin` action at this room's scope. The list names withdrawn parties on `open` and `attributed` rooms, which is the room's administration and not a member's business.
     pub presentation: AuthorityPresentation,
@@ -316,17 +325,26 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///When the host began enforcing `list`. Present with it.
     #[serde(
         rename = "inForceAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub in_force_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The list the host holds, as the room signed it. Absent when the host holds none. A reader MUST verify it as a host does — the room's own key, this room — before relying on it, and MUST NOT adopt it in place of a list it holds at a higher sequence.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub list: ::std::option::Option<RevocationList>,
     #[serde(rename = "roomId")]
     pub room_id: ResponseRoomId,
@@ -540,7 +558,11 @@ pub struct RoomRevocation {
     #[serde(rename = "revokedAt")]
     pub revoked_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl RoomRevocation {
@@ -561,7 +583,11 @@ pub struct SubjectRevocation {
     ///The party withdrawn. Never the room itself.
     pub subject: SubjectRevocationSubject,
     ///OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl SubjectRevocation {

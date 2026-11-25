@@ -125,7 +125,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "retired; use vta/did-templates/delete/2.0")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Resource id — the name of the global template to remove.
     pub name: PayloadName,
@@ -204,7 +208,11 @@ pub struct Response {
     ///Always true on success.
     pub deleted: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The deleted template's name, echoed for audit pipelines.
     pub name: ::std::string::String,

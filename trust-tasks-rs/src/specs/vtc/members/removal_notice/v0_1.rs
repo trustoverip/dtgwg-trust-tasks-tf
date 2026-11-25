@@ -134,10 +134,18 @@ pub struct Payload {
     pub did: PayloadDid,
     ///How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.
     pub disposition: PayloadDisposition,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {

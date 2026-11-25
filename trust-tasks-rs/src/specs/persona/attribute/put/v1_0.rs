@@ -248,31 +248,53 @@ pub struct Payload {
     #[serde(
         rename = "attributeId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_id: ::std::option::Option<Ulid>,
     ///Vault identifiers of credentials in which a third party endorses this value. Inventory, not evidence — see the `endorsements` member of the shared Attribute. Replaced whole by each put; omit or send empty for none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub endorsements: ::std::option::Option<Vec<PayloadEndorsementsItem>>,
     ///Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only.
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The holder's own words, for their own picker. Never disclosed to a verifier.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
     pub provenance: Provenance,
     ///What it takes to disclose this value. OPTIONAL, with the same meaning for absence as `sensitivity`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub release: ::std::option::Option<ReleaseRequirement>,
     ///How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sensitivity: ::std::option::Option<Sensitivity>,
     #[serde(rename = "type")]
     pub type_: ClaimType,
@@ -507,12 +529,17 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -919,30 +946,39 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 pub struct Response {
     #[serde(rename = "attributeId")]
     pub attribute_id: Ulid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
     ///True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement.
     pub created: bool,
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.
     #[serde(
         rename = "heldByPin",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub held_by_pin: ::std::option::Option<::std::vec::Vec<ResponseHeldByPinItem>>,
     ///Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refreshed: ::std::option::Option<::std::vec::Vec<ResponseRefreshedItem>>,
@@ -966,6 +1002,7 @@ pub struct ResponseCorrelation {
     #[serde(
         rename = "sharedWithProfileCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_with_profile_count: ::std::option::Option<u64>,
@@ -2074,18 +2111,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

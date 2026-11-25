@@ -127,7 +127,11 @@ pub struct Payload {
     ///The accounts to strip admin rights from (demoting them to standard).
     pub dids: ::std::vec::Vec<Vid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -143,7 +147,11 @@ impl Payload {
 #[deprecated(note = "retired; use messaging/account/update/0.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The accounts whose admin rights were removed.
     pub stripped: ::std::vec::Vec<Vid>,

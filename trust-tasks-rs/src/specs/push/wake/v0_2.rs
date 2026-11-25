@@ -123,17 +123,33 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///OPTIONAL. Approximate count of queued messages. Advisory only.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub count: ::std::option::Option<u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The opaque gateway-issued handle to wake.
     pub handle: PayloadHandle,
     ///OPTIONAL. The mediator holding the queued messages, so a multi-mediator consumer knows which to drain. A hint — echoed into the contentless push.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub mediator: ::std::option::Option<::std::string::String>,
     ///OPTIONAL. A hint the consumer MAY map to platform priority/alert behavior.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub urgency: ::std::option::Option<PayloadUrgency>,
     ///Push binding wire version.
     pub v: i64,
@@ -269,7 +285,11 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadUrgency {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Outcome of the wake: `delivered` (push service accepted) or `tokenUnregistered` (dead token; handle dropped — see push/wake:token_unregistered).
     pub status: ResponseStatus,

@@ -197,6 +197,7 @@ pub struct MemoryRecord {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -206,6 +207,7 @@ pub struct MemoryRecord {
     #[serde(
         rename = "deletedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -214,12 +216,17 @@ pub struct MemoryRecord {
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The remembered text. Absent when this is a tombstone or a metadata-only view.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub value: ::std::option::Option<MemoryValue>,
     ///Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
     #[serde(
         rename = "valueBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_bytes: ::std::option::Option<u64>,
@@ -379,15 +386,24 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
     ///An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue. Consumers MUST treat it as opaque: never construct, decode, mutate, or infer meaning from one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Snapshot mode only: when true, tombstones still inside the retention window are returned alongside live items. Defaults to false. In change-feed mode tombstones are always returned and this member MUST NOT be set to false — a change feed that omits deletions cannot converge.
     #[serde(
         rename = "includeDeleted",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_deleted: ::std::option::Option<bool>,
@@ -395,19 +411,29 @@ pub struct Payload {
     #[serde(
         rename = "includeValues",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_values: ::std::option::Option<bool>,
     ///The most items to return; the responder chooses a default and MAY return fewer, which is likely when `includeValues` is in effect and the values are large.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Restrict to items whose `key` begins with this byte prefix, compared over the UTF-8 encoding. Lets an agent recall one family of items — `contact/`, `preference/` — without dragging the whole context through the response.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prefix: ::std::option::Option<PayloadPrefix>,
     ///Watermark. Selects change-feed mode: only items whose `version` is strictly greater are returned, tombstones included. Supply the `highWatermark` from the previous sync, or 0 for a first full pull in change-feed form.
     #[serde(
         rename = "sinceVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -546,7 +572,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPrefix {
 #[deprecated(note = "superseded by vta/memory/list/0.3")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The context's current counter value; 0 for a context that has never been written. This is what a consumer stores as its next `sinceVersion` — NOT the maximum version among `items`, which is wrong whenever a `prefix` filtered a later change out, and undefined when the page is empty. A paginating consumer MUST NOT advance its stored watermark until it has drained the final page — the one with no `nextCursor` — because the pages of one feed share this value and adopting it early would skip the items still to come.
     #[serde(rename = "highWatermark")]
@@ -557,6 +587,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,
@@ -564,6 +595,7 @@ pub struct Response {
     #[serde(
         rename = "tombstoneRetentionSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_retention_seconds: ::std::option::Option<u64>,

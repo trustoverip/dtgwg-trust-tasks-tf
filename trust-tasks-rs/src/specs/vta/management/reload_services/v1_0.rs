@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. Note the limit stated in the specification: an ecosystem must not use this slot to add selective reload, inline configuration, or a skip-validation flag, which are the members the empty payload exists to exclude.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -145,7 +149,11 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The recipient's account of what it is doing. Advisory free text, deliberately not an enum: a producer must not parse it or branch on its value, because the reliable signal is whether the agent answers afterwards, not what it said before restarting. Bounded per §7.3 item 19 — the value lands in transcripts and audit entries.
     pub status: ResponseStatus,

@@ -52,6 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -159,12 +160,20 @@ pub struct Payload {
     #[serde(rename = "beforeEpoch")]
     pub before_epoch: i64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Must confer `admin` at this room's scope. Not `curate`, and not `write`: pruning is not a statement about any record, and every member who can write can curate. It ends the room's ability to open a span of its own history, for everyone, which is the same class of act as advancing the epoch.
     pub presentation: AuthorityPresentation,
     ///Why, for the room's audit trail. A prune is irreversible and unattributable after the fact — the rungs are simply gone — so the only record of intent is the one made at the time.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room to prune.
     #[serde(rename = "roomId")]
@@ -244,7 +253,11 @@ pub struct Response {
     ///The lowest epoch the chain still reaches, after pruning. **Not a restatement of `beforeEpoch`**: a chain with a gap in it already stopped somewhere, and a prune below that gap changes nothing about how far back a member can actually walk. Reporting the request back would tell an operator they had achieved something they had not.
     #[serde(rename = "earliestRung")]
     pub earliest_rung: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many rungs were dropped. `0` is a success: the chain already went back no further, and a caller that read it as a failure would retry an operation that has nothing left to do.
     pub pruned: u64,

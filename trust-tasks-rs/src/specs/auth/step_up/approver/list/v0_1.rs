@@ -45,12 +45,17 @@ pub struct Approver {
     pub enrolled_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "enrolledVia")]
     pub enrolled_via: EnrolledVia,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ApproverLabel>,
     ///When a statement by this approver last satisfied a step-up. Absent when it never has.
     #[serde(
         rename = "lastUsedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -419,10 +424,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Whose approvers to list. Absent means the caller. A subject other than the caller is answered only for an administrator whose standing covers it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
 impl ::std::default::Default for Payload {
@@ -513,7 +526,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 pub struct Response {
     ///The subject's live approvers — at most five, so the whole set is always returned.
     pub approvers: ::std::vec::Vec<Approver>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

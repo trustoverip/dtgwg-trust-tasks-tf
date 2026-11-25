@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -516,10 +517,15 @@ pub struct Payload {
     #[serde(
         rename = "directParts",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub direct_parts: ::std::option::Option<PartPlan>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The ciphertext manifest. Its digest is the BlobRef the blob will have once committed.
     pub manifest: BlobManifest,
@@ -532,6 +538,7 @@ pub struct Payload {
     #[serde(
         rename = "uploadKey",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub upload_key: ::std::option::Option<PayloadUploadKey>,
@@ -676,12 +683,17 @@ pub struct Response {
     #[serde(
         rename = "alreadyCommitted",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub already_committed: ::std::option::Option<bool>,
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The indices the host does not yet hold, in ascending order: chunk indices in proxied mode, part indices in direct mode. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed.
     pub missing: Vec<ChunkIndex>,
@@ -690,7 +702,7 @@ pub struct Response {
     ///Direct mode only: a PUT target for each of some or all of the `missing` parts. A host MAY issue targets for only some of them; the producer begins again, with the identical manifest and plan, for the rest and for any whose target lapsed. Absent in proxied mode.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub targets: ::std::option::Option<::std::vec::Vec<TransferTarget>>,
@@ -844,7 +856,7 @@ pub struct TransferTarget {
     ///Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub headers: ::std::option::Option<
@@ -1797,18 +1809,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"maxOpen\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

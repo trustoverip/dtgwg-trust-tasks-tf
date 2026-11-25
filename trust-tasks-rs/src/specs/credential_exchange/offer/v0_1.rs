@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///An OID4VCI Credential Offer object, carried verbatim. Its members are defined by OpenID for Verifiable Credential Issuance and are deliberately NOT re-specified here — this task is the transport, authentication and threading envelope, and re-stating a foreign specification's shape would create a second source of truth that drifts. snake_case member names are OID4VCI's own.
     pub credential_offer: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {

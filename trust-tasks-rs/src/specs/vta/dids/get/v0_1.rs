@@ -170,12 +170,17 @@ pub struct DidSummary {
     #[serde(rename = "alsoKnownAs")]
     pub also_known_as: ::std::vec::Vec<::std::string::String>,
     ///The DID class the identity was created in. Absent where none was recorded; a VTA never infers one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub class: ::std::option::Option<DidClass>,
     ///The context the identity belongs to. Absent for an identity in no context, which only an unrestricted caller sees.
     #[serde(
         rename = "contextId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_id: ::std::option::Option<::std::string::String>,
@@ -186,17 +191,26 @@ pub struct DidSummary {
     pub deactivated: bool,
     ///The identity, in the form it is presented in. A did:scid:vh:1 identity is presented in its did:scid form or its did:webvh form, and the other is in `alsoKnownAs`.
     pub did: DidSummaryDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The VTA's id for the identity's current key agreement key. Absent where it has none.
     #[serde(
         rename = "keyAgreementKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_agreement_key_id: ::std::option::Option<::std::string::String>,
     ///The VTA's own label for the identity. Not published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<::std::string::String>,
     ///The identity's key assurance level. `1` for every identity that is not a key-role identity.
     pub level: KeyAssuranceLevel,
@@ -206,7 +220,7 @@ pub struct DidSummary {
     #[serde(
         rename = "methodDetails",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub method_details: ::std::option::Option<
@@ -221,6 +235,7 @@ pub struct DidSummary {
     #[serde(
         rename = "serverId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub server_id: ::std::option::Option<::std::string::String>,
@@ -228,6 +243,7 @@ pub struct DidSummary {
     #[serde(
         rename = "signingKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_key_id: ::std::option::Option<::std::string::String>,
@@ -428,7 +444,11 @@ impl<'de> ::serde::Deserialize<'de> for KeyAssuranceLevel {
 pub struct Payload {
     ///The identity to summarise. Either form of a did:scid:vh:1 identity.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -511,7 +531,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 pub struct Response {
     ///The identity's summary.
     pub did: DidSummary,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -951,18 +975,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

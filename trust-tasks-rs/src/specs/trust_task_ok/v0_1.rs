@@ -50,12 +50,16 @@ pub struct Payload {
     ///Vendor-namespaced extension data per SPEC.md §4.5.1. Every immediate child key MUST be a reverse-DNS prefix the producer of this document controls.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence or content.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<PayloadMessage>,
     /**
     Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.
@@ -63,7 +67,7 @@ pub struct Payload {
     A consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.*/
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub refs: ::std::option::Option<::std::vec::Vec<PayloadRefsItem>>,
@@ -369,17 +373,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

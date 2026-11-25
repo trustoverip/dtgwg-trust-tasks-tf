@@ -250,7 +250,11 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 pub struct Payload {
     #[serde(rename = "bindingId")]
     pub binding_id: BindingId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
@@ -332,7 +336,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 pub struct Response {
     #[serde(rename = "bindingId")]
     pub binding_id: BindingId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.
     pub state: ResponseState,

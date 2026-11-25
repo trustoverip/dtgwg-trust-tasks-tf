@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     pub config: PayloadConfig,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub service: ServiceKind,
 }
@@ -139,12 +143,17 @@ impl Payload {
 #[non_exhaustive]
 pub struct PayloadConfig {
     ///`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub force: ::std::option::Option<bool>,
     ///`didcomm` only: trust-ping round-trip budget. Default 10.
     #[serde(
         rename = "handshakeTimeoutSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub handshake_timeout_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -152,11 +161,16 @@ pub struct PayloadConfig {
     #[serde(
         rename = "mediatorDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mediator_did: ::std::option::Option<PayloadConfigMediatorDid>,
     ///Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<PayloadConfigUrl>,
 }
 impl ::std::default::Default for PayloadConfig {
@@ -298,7 +312,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConfigUrl {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub result: ServiceMutationResult,
 }
@@ -386,6 +404,7 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "drainEndsAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drain_ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -393,13 +412,18 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "drainingMediator",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub draining_mediator: ::std::option::Option<::std::string::String>,
     ///RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
     #[serde(rename = "effectiveAt")]
     pub effective_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
     #[serde(rename = "logEntryVersionId")]
@@ -411,6 +435,7 @@ pub struct ServiceMutationResult {
     #[serde(
         rename = "vtaDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<::std::string::String>,

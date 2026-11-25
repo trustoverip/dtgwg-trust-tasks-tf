@@ -263,7 +263,11 @@ pub struct Payload {
     ///The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.
     #[serde(rename = "criterionId")]
     pub criterion_id: PayloadCriterionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The holder the query is for — the prospective member whose agent will answer it.
     #[serde(rename = "holderDid")]
@@ -411,7 +415,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHolderDid {
 pub struct Response {
     ///Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.
     pub delivered: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Echoed.
     #[serde(rename = "holderDid")]

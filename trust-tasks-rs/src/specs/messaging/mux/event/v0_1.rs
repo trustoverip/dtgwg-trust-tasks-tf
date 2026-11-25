@@ -193,6 +193,7 @@ pub struct MemberChange {
     #[serde(
         rename = "deliveryActive",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivery_active: ::std::option::Option<bool>,
@@ -202,6 +203,7 @@ pub struct MemberChange {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -209,13 +211,18 @@ pub struct MemberChange {
     #[serde(
         rename = "grantId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_id: ::std::option::Option<GrantId>,
     ///Why the member changed: an AttachReason value in an `attached` event, a DetachReason value in a `detached` event.
     pub reason: MemberChangeReason,
     ///`attached` only: the scope now in force for the member.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub scope: ::std::option::Option<MuxScope>,
 }
 impl MemberChange {
@@ -569,24 +576,33 @@ impl ::std::convert::TryFrom<::std::string::String> for MuxScopeValue {
 #[non_exhaustive]
 pub struct Payload {
     ///`refused` only, REQUIRED: the mediator's stable refusal code, the same code a traffic-monitor `refused` event reports.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub code: ::std::option::Option<PayloadCode>,
     ///`attached` and `detached` only, REQUIRED: the members that changed, batched. A larger change is split across several events.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dids: ::std::option::Option<::std::vec::Vec<MemberChange>>,
     ///Which event this is. Each kind carries the members the specification lists for it, and no others.
     pub event: PayloadEvent,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///`refused` only, REQUIRED: the lowercase hex SHA-256 of the refused frame's exact bytes — the identifier `tsp-ack` already uses.
     #[serde(
         rename = "frameId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub frame_id: ::std::option::Option<PayloadFrameId>,
@@ -594,6 +610,7 @@ pub struct Payload {
     #[serde(
         rename = "maxAttachLifetimeSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_attach_lifetime_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -601,6 +618,7 @@ pub struct Payload {
     #[serde(
         rename = "maxDidsPerConnection",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_dids_per_connection: ::std::option::Option<::std::num::NonZeroU64>,
@@ -608,6 +626,7 @@ pub struct Payload {
     #[serde(
         rename = "maxGrantLifetimeSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_grant_lifetime_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -615,6 +634,7 @@ pub struct Payload {
     #[serde(
         rename = "muxNonce",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mux_nonce: ::std::option::Option<MuxNonce>,
@@ -622,22 +642,36 @@ pub struct Payload {
     #[serde(
         rename = "pendingNotices",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pending_notices: ::std::option::Option<u64>,
     ///`refused` only, OPTIONAL: a short human-readable explanation. Never message content.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///`refused` only, OPTIONAL: the member DID or principal the frame was addressed to, when the mediator could read it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub receiver: ::std::option::Option<MuxDid>,
     ///`refused` only, OPTIONAL: the frame's sender, when the mediator could read it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sender: ::std::option::Option<MuxDid>,
     ///`ready` only, OPTIONAL: when the principal's authentication of this connection expires and the connection closes. An attach statement's `exp` may not be later.
     #[serde(
         rename = "sessionExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -645,6 +679,7 @@ pub struct Payload {
     #[serde(
         rename = "sessionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<SessionId>,
@@ -1367,17 +1402,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

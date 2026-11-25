@@ -125,19 +125,28 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/keys/backfill/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Fetch only rungs at or below this epoch. Absent means from the room's current epoch down. A recipient that already reads to some epoch SHOULD pass it, so a host serves the part that is missing rather than the whole chain.
     #[serde(
         rename = "fromEpoch",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub from_epoch: ::std::option::Option<::std::num::NonZeroU64>,
     ///The host to fetch from, as a DID. Named by the caller because nothing maps a room to its host: a room is portable — re-point it and it has moved — so a remembered host is a value that goes stale, and the recipient holds key custody rather than a hosting record. A caller who names the wrong host learns so as a refusal from a party that does not serve this room, which is loud and immediate.
     pub host: ::std::string::String,
     ///Maximum rungs to request in one pass, highest `epoch` first. A host MAY return fewer. A caller walking a long history calls again with `fromEpoch` set below what it has.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///The room to backfill. The recipient MUST already hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so fetching them for a room one is not in would retain key material for nothing.
     #[serde(rename = "roomId")]
@@ -158,15 +167,27 @@ pub struct Response {
     ///The earliest epoch the recipient can now derive a key for, having walked what it holds. **This is the answer worth having**, and it is not derivable from `fetched`: a rung extends reach only if every rung above it is present, so a chain served with a gap in it moves this number not at all. `1` means the room's whole retained history is readable.
     #[serde(rename = "earliestReadableEpoch")]
     pub earliest_readable_epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many rungs the host served. Reported separately from `stored` and from the reach so a caller can tell the three ways this ends: nothing served (the host has no more), served and stored but the reach did not move (a gap), or served and the reach moved.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub fetched: ::std::option::Option<u64>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
     ///How many of them the recipient did not already hold. Zero alongside a positive `fetched` means the chain was already delivered, which is what a retry looks like.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub stored: ::std::option::Option<u64>,
 }
 impl Response {

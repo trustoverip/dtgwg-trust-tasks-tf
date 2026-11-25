@@ -147,10 +147,18 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The requester's membership credential from a member community, where the network's directory admits members only and nothing else admits the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub membership: ::std::option::Option<Membership>,
 }
 impl ::std::default::Default for Payload {
@@ -172,7 +180,11 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The roles, each with whether a party must register a group for it.
     pub roles: ::std::vec::Vec<RoleDef>,
@@ -189,7 +201,11 @@ impl Response {
 #[non_exhaustive]
 pub struct RoleDef {
     ///What the role is for.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<RoleDefDescription>,
     pub name: RoleName,
     ///Whether a party must register a group for it before its acknowledgement is accepted.

@@ -194,7 +194,11 @@ pub struct Payload {
     ///The epoch being voided: the member DID's current one, as messaging/mux/admin-list with `member` reports it.
     pub epoch: u64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -215,7 +219,11 @@ pub struct Response {
     #[serde(rename = "epochAdvanced")]
     pub epoch_advanced: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many grants that were active this request moved to `epochRevoked`.
     #[serde(rename = "revokedGrants")]

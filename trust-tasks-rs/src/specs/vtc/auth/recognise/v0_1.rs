@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "retired; use vtc/auth/recognise/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A foreign-issued Verifiable Endorsement Credential carrying the role grant, with its own eddsa-jcs-2022 proof (opaque here).
     pub vec: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -144,7 +148,11 @@ impl Payload {
 #[deprecated(note = "retired; use vtc/auth/recognise/0.2")]
 pub struct Response {
     pub data: ResponseData,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
     #[serde(rename = "sessionId")]

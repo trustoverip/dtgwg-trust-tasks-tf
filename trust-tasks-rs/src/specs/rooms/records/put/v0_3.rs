@@ -52,6 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -272,19 +273,32 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/records/put/0.6")]
 pub struct Payload {
     ///The blobs this record keeps alive: today at most one, the file the record carries. Cleartext on every tier, because the host must know which blobs a record references to refuse a record naming a blob it does not hold, to count usage, and to collect a blob no record names. Every blob named MUST have been committed in THIS room (rooms/blobs/upload/commit). An array so that several files per record is a later minor version rather than a reshaped member. Omit for a record with no file; a rewrite that omits it releases whatever blob the previous version named.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cleartext: ::std::option::Option<PayloadCleartext>,
     ///Optional precondition. Omit to overwrite unconditionally; `0` means create-only and fails if the key exists. On mismatch the host returns `rooms/records/put:versionConflict` CARRYING THE CURRENT VERSION AND RECORD — a bare rejection would force a re-read, and between rejection and re-read the record can change again, so the pattern has no fixed point under contention.
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<u64>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.
     pub key: PayloadKey,
@@ -294,7 +308,11 @@ pub struct Payload {
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
     ///REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sealed: ::std::option::Option<SealedRecord>,
 }
 impl Payload {
@@ -309,26 +327,47 @@ impl Payload {
 #[non_exhaustive]
 pub struct PayloadCleartext {
     ///What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub basis: ::std::option::Option<RecordBasis>,
     pub body: PayloadCleartextBody,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub confidence: ::std::option::Option<RecordConfidence>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<PayloadCleartextDescription>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub evidence: ::std::option::Option<RecordEvidenceList>,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tags: ::std::option::Option<::std::vec::Vec<PayloadCleartextTagsItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub title: ::std::option::Option<PayloadCleartextTitle>,
     #[serde(
         rename = "validFor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_for: ::std::option::Option<PermittedUse>,
@@ -336,6 +375,7 @@ pub struct PayloadCleartext {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<RecordValidUntil>,
@@ -654,10 +694,18 @@ What the author permits the record to be used for — for example, that a learne
 #[non_exhaustive]
 pub struct PermittedUse {
     ///The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub note: ::std::option::Option<PermittedUseNote>,
     ///Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purposes: ::std::option::Option<Vec<::std::string::String>>,
 }
 impl ::std::default::Default for PermittedUse {
@@ -891,7 +939,11 @@ pub struct RecordEvidenceCredential {
     #[serde(rename = "credentialId")]
     pub credential_id: RecordEvidenceCredentialCredentialId,
     ///OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub digest: ::std::option::Option<DigestMultibase>,
     pub kind: ::serde_json::Value,
 }
@@ -996,11 +1048,16 @@ pub struct RecordEvidenceRecord {
     #[serde(
         rename = "roomId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_id: ::std::option::Option<RecordEvidenceRecordRoomId>,
     ///The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl RecordEvidenceRecord {
@@ -1186,9 +1243,17 @@ impl ::std::fmt::Display for RecordValidUntil {
 #[deprecated(note = "superseded by rooms/records/put/0.6")]
 pub struct Response {
     ///The epoch the record was stored under.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The stored record's key.
     pub key: ResponseKey,
@@ -1277,7 +1342,11 @@ pub struct SealedRecord {
     A host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.
 
     A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub version: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl SealedRecord {
@@ -2188,18 +2257,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"limit\":{\"minimum\":0,\"type\":\"integer\"},\"measure\":{\"enum\":[\"maxFiles\",\"maxFileBytes\",\"maxBytes\"],\"type\":\"string\"},\"requested\":{\"minimum\":0,\"type\":\"integer\"},\"scope\":{\"enum\":[\"member\",\"room\",\"storage\",\"host\"],\"type\":\"string\"},\"used\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"scope\",\"measure\",\"limit\",\"used\",\"requested\"],\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

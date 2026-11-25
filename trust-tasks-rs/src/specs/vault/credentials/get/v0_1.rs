@@ -125,7 +125,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "retired; use vault/credentials/get/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
     pub id: PayloadId,
@@ -207,7 +211,11 @@ pub struct Response {
     ///The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

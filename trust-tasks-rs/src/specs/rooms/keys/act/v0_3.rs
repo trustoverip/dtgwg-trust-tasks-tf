@@ -127,7 +127,11 @@ pub struct Payload {
     ///The room request to complete, as the client will send it, minus its presentation and its proof.
     pub document: UnsignedRoomRequest,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -147,10 +151,15 @@ pub struct Response {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The member the recipient signed as: the completed document's `issuer`.
     pub principal: ResponsePrincipal,
@@ -253,17 +262,26 @@ pub struct UnsignedRoomRequest {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The request's identifier, set by the client. The host keys duplicate-execution protection on it.
     pub id: UnsignedRoomRequestId,
     #[serde(rename = "issuedAt")]
     pub issued_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the offer types (vtc/rooms/offers/list/0.1, vtc/rooms/offers/accept/0.1), where it is the DID the community addressed its offer to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub issuer: ::std::option::Option<UnsignedRoomRequestIssuer>,
     ///The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted (Recipient item 10).
     pub payload: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -272,6 +290,7 @@ pub struct UnsignedRoomRequest {
     #[serde(
         rename = "threadId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub thread_id: ::std::option::Option<UnsignedRoomRequestThreadId>,

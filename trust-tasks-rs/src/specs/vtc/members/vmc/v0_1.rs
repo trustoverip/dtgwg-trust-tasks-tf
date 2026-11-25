@@ -122,12 +122,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.
     #[serde(
         rename = "requestId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<PayloadRequestId>,
@@ -204,7 +209,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The delivering member, as proven by the transport.
     #[serde(rename = "memberDid")]
@@ -213,6 +222,7 @@ pub struct Response {
     #[serde(
         rename = "requestId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub request_id: ::std::option::Option<ResponseRequestId>,

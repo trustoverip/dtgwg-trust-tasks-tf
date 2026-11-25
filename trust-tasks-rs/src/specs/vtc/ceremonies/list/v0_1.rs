@@ -39,7 +39,11 @@ pub mod error {
 #[non_exhaustive]
 pub struct CeremonyManifest {
     ///One-line explanation shown beside the label.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub blurb: ::std::option::Option<CeremonyManifestBlurb>,
     /**
     A JSON skeleton of the verified `Facts` input this ceremony evaluates, with `$field:<key>`, `$now` and `$if` directives an operator console materialises from the form above.
@@ -48,7 +52,7 @@ pub struct CeremonyManifest {
     #[serde(
         rename = "factsTemplate",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub facts_template:
@@ -56,7 +60,7 @@ pub struct CeremonyManifest {
     ///Field definitions the UI renders. An unrecognised field type MUST render generically, never be dropped.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub fields: ::std::option::Option<
@@ -67,12 +71,20 @@ pub struct CeremonyManifest {
     ///Whether the ceremony is automatic, operator-driven, or advisory.
     pub nature: CeremonyManifestNature,
     ///Policy package backing the decision.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub pkg: ::std::option::Option<CeremonyManifestPkg>,
     ///Governance purpose this ceremony decides, e.g. join, removal.
     pub purpose: CeremonyManifestPurpose,
     ///Whether the ceremony is actually reachable in this deployment.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub wired: ::std::option::Option<CeremonyManifestWired>,
 }
 impl CeremonyManifest {
@@ -530,7 +542,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -553,7 +569,11 @@ impl Payload {
 pub struct Response {
     ///Every ceremony this maintainer implements.
     pub ceremonies: ::std::vec::Vec<CeremonyManifest>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -839,17 +859,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

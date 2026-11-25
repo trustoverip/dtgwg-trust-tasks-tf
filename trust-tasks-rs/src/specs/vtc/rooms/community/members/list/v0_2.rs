@@ -278,18 +278,34 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberStateV2 {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size. The community chooses when absent (50 in the reference implementation).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///The room's identifier: its DID.
     #[serde(rename = "roomId")]
     pub room_id: PayloadRoomId,
     ///Only members in this state.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub state: ::std::option::Option<MemberStateV2>,
 }
 impl Payload {
@@ -427,13 +443,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<RoomMemberV2>,
     ///Present when more remain; pass it as `cursor`.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -515,6 +536,7 @@ pub struct RoomMemberV2 {
     #[serde(
         rename = "admittedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -524,6 +546,7 @@ pub struct RoomMemberV2 {
     #[serde(
         rename = "removedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -532,6 +555,7 @@ pub struct RoomMemberV2 {
     #[serde(
         rename = "suspendedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub suspended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

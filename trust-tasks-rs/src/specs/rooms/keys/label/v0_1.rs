@@ -123,22 +123,39 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///The member's new description, replacing any they had. Absent: unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<PersonalLabelDescription>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The member's new name for the room, replacing any they had. Absent: unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PersonalLabelName>,
     ///The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.
     pub member: PayloadMember,
     ///The member's new notes, replacing any they had. Absent: unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
     ///Remove the member's description. Only `true` is accepted.
     #[serde(
         rename = "removeDescription",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_description: ::std::option::Option<bool>,
@@ -146,6 +163,7 @@ pub struct Payload {
     #[serde(
         rename = "removeLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_label: ::std::option::Option<bool>,
@@ -153,6 +171,7 @@ pub struct Payload {
     #[serde(
         rename = "removeNotes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_notes: ::std::option::Option<bool>,
@@ -160,6 +179,7 @@ pub struct Payload {
     #[serde(
         rename = "removeTags",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_tags: ::std::option::Option<bool>,
@@ -167,7 +187,11 @@ pub struct Payload {
     #[serde(rename = "roomId")]
     pub room_id: PayloadRoomId,
     ///The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tags: ::std::option::Option<PersonalLabelTags>,
 }
 impl Payload {
@@ -307,13 +331,29 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct PersonalLabel {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<PersonalLabelDescription>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PersonalLabelName>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub notes: ::std::option::Option<PersonalLabelNotes>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tags: ::std::option::Option<PersonalLabelTags>,
     ///When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.
     #[serde(rename = "updatedAt")]
@@ -637,12 +677,20 @@ impl ::std::convert::From<Vec<PersonalLabelTag>> for PersonalLabelTags {
 pub struct Response {
     ///`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.
     pub changed: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Repeated from the request.
     pub member: ResponseMember,
     ///The label as it now stands. Absent when no detail remains: removing the last one removes the label.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub personal: ::std::option::Option<PersonalLabel>,
     ///Repeated from the request.
     #[serde(rename = "roomId")]

@@ -186,21 +186,33 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/bridge/result/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub error: ::std::option::Option<PayloadError>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The job, as git-ns/bridge/job named it.
     #[serde(rename = "jobId")]
     pub job_id: PayloadJobId,
     ///`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.
     pub outcome: PayloadOutcome,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub repo: ::std::option::Option<PayloadRepo>,
     ///Per-step outcomes, in the order they ran.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub steps: ::std::option::Option<::std::vec::Vec<PayloadStepsItem>>,
@@ -218,7 +230,11 @@ impl Payload {
 pub struct PayloadError {
     ///Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.
     pub code: PayloadErrorCode,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<PayloadErrorMessage>,
 }
 impl PayloadError {
@@ -501,7 +517,11 @@ impl PayloadRepo {
 #[non_exhaustive]
 pub struct PayloadStepsItem {
     ///Human-readable detail, typically for a failure.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub detail: ::std::option::Option<PayloadStepsItemDetail>,
     ///`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.
     pub outcome: PayloadStepsItemOutcome,
@@ -788,7 +808,11 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/bridge/result/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "jobId")]
     pub job_id: ResponseJobId,
@@ -1260,18 +1284,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

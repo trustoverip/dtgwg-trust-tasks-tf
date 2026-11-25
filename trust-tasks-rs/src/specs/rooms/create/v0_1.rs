@@ -202,11 +202,16 @@ pub struct Payload {
     #[serde(
         rename = "anchorCadence",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.
     #[serde(rename = "ownerDid")]
@@ -215,6 +220,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -222,6 +228,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionPolicy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -246,12 +253,17 @@ pub struct Response {
     #[serde(
         rename = "anchorCadence",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Always 1 for a new room.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,

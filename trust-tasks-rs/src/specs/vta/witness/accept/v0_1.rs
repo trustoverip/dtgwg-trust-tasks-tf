@@ -240,7 +240,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vta/witness/accept/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The witness/session/submit/0.1 #response the witness returned, exactly as received, under the witness's proof. It carries the VWC and its vwcDigestMultibase.
     pub response: CarriedDocument,
@@ -263,7 +267,11 @@ pub struct Response {
     #[serde(rename = "credentialId")]
     pub credential_id: ResponseCredentialId,
     pub evidence: Evidence,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "sessionId")]
     pub session_id: SessionId,

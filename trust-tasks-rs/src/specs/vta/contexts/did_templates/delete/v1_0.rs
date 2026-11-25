@@ -128,7 +128,11 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Resource id of the template to remove within the context scope.
     pub name: PayloadName,
@@ -266,7 +270,11 @@ pub struct Response {
     ///True on successful removal.
     pub deleted: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The template name that was removed; echoes the request `name`.
     pub name: ::std::string::String,

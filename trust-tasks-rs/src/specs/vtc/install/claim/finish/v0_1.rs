@@ -127,7 +127,11 @@ pub struct Payload {
     ///Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.
     #[serde(rename = "didBindingSignature")]
     pub did_binding_signature: PayloadDidBindingSignature,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "installToken")]
     pub install_token: PayloadInstallToken,
@@ -330,7 +334,11 @@ pub struct Response {
     ///Candidate admin DID derived from the passkey's Ed25519 public key.
     #[serde(rename = "adminDid")]
     pub admin_did: ResponseAdminDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.
     #[serde(rename = "setupSessionToken")]

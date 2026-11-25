@@ -125,7 +125,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by vtc/registry/sync-jobs/retry/0.2")]
 pub enum Payload {
     Variant0 {
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         ///The single job to requeue, from `vtc/registry/sync-jobs/list`.
         #[serde(rename = "jobId")]
@@ -135,7 +139,11 @@ pub enum Payload {
         ///Requeue every job in the terminal `failed` state. Spelled as its own member rather than an absent `jobId` so that a client bug which drops the identifier cannot silently become a bulk operation.
         #[serde(rename = "allFailed")]
         all_failed: bool,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
     },
 }
@@ -204,7 +212,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0JobId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Requeued {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "jobId")]
     pub job_id: RequeuedJobId,
@@ -212,6 +224,7 @@ pub struct Requeued {
     #[serde(
         rename = "memberDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_did: ::std::option::Option<RequeuedMemberDid>,
@@ -346,7 +359,11 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedMemberDid {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/registry/sync-jobs/retry/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Jobs now scheduled for dispatch. Empty is a valid answer and is not an error.
     pub requeued: ::std::vec::Vec<Requeued>,
@@ -364,7 +381,11 @@ impl Response {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Skipped {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "jobId")]
     pub job_id: SkippedJobId,

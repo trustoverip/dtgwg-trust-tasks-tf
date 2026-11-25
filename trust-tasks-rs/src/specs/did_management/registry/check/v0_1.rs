@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by did-management/registry/check/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The registry identifier of the instance to re-evaluate.
     #[serde(rename = "instanceId")]
@@ -204,7 +208,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by did-management/registry/check/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The entry as it stands after the re-evaluation.
     pub instance: ServiceInstance,
@@ -224,7 +232,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "advertisedServices",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub advertised_services:
@@ -235,22 +243,31 @@ pub struct ServiceInstance {
     #[serde(
         rename = "enabledMethods",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub enabled_methods: ::std::option::Option<::std::vec::Vec<ServiceInstanceEnabledMethodsItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.
     #[serde(rename = "instanceId")]
     pub instance_id: ServiceInstanceInstanceId,
     ///Operator-chosen display label. Untrusted free text.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ServiceInstanceLabel>,
     ///When the instance last answered a health probe. Absent when it never has.
     #[serde(
         rename = "lastHealthCheck",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_health_check: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -258,6 +275,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "lastInbound",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_inbound: ::std::option::Option<TransportObservation>,
@@ -265,6 +283,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "lastOutbound",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_outbound: ::std::option::Option<TransportObservation>,
@@ -272,6 +291,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "publicUrl",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub public_url: ::std::option::Option<::std::string::String>,
@@ -287,6 +307,7 @@ pub struct ServiceInstance {
     #[serde(
         rename = "servicesCheckedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub services_checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1346,18 +1367,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

@@ -125,7 +125,11 @@ pub struct Payload {
     ///The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.
     pub did: PayloadDid,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.
     pub fragment: PayloadFragment,
@@ -260,7 +264,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadFragment {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Response {

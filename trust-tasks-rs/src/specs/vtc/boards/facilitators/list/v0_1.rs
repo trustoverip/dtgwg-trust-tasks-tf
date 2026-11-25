@@ -45,6 +45,7 @@ pub struct Appointment {
     #[serde(
         rename = "appointedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub appointed_by: ::std::option::Option<EntryId>,
@@ -55,6 +56,7 @@ pub struct Appointment {
     #[serde(
         rename = "reviewEndsAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub review_ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -282,7 +284,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "boardId")]
     pub board_id: BoardId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -298,7 +304,11 @@ impl Payload {
 pub struct Response {
     #[serde(rename = "boardId")]
     pub board_id: BoardId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The board's appointments, by entry, oldest first. Holders of `vtc.boards.manage` unqualified or through a role are not listed: they facilitate every board.
     pub facilitators: ::std::vec::Vec<Appointment>,

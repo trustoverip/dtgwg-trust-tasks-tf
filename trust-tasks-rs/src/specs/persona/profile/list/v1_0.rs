@@ -279,9 +279,17 @@ impl<'de> ::serde::Deserialize<'de> for FaceReachContextIdsItem {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Include retired faces. Off by default: a retired face is one the holder has stopped being, and a picker that offered it back would undo the decision by accident.
     #[serde(rename = "includeRetired", default)]
@@ -372,6 +380,7 @@ pub struct Profile {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -379,7 +388,7 @@ pub struct Profile {
     #[serde(
         rename = "credentialRefs",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_refs: ::std::option::Option<::std::vec::Vec<ProfileCredentialRefsItem>>,
@@ -388,12 +397,17 @@ pub struct Profile {
     pub name: ProfileName,
     #[serde(rename = "profileId")]
     pub profile_id: Ulid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reach: ::std::option::Option<FaceReach>,
     ///When the face was retired. Present exactly when `status` is `retired`.
     #[serde(
         rename = "retiredAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retired_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -490,7 +504,11 @@ pub enum ProfileEntry {
     Variant0 {
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         slot: ::std::option::Option<Slot>,
     },
     Variant1 {
@@ -498,7 +516,11 @@ pub enum ProfileEntry {
         pin_version: Version,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         slot: ::std::option::Option<Slot>,
     },
     Variant2 {
@@ -506,12 +528,20 @@ pub enum ProfileEntry {
         override_: ProfileEntryVariant2Override,
         #[serde(rename = "ref")]
         ref_: Ulid,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         slot: ::std::option::Option<Slot>,
     },
     Variant3 {
         inline: ProfileEntryVariant3Inline,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         slot: ::std::option::Option<Slot>,
     },
 }
@@ -521,7 +551,11 @@ pub enum ProfileEntry {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant2Override {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ProfileEntryVariant2OverrideLabel>,
     pub value: ::serde_json::Value,
 }
@@ -595,7 +629,11 @@ impl<'de> ::serde::Deserialize<'de> for ProfileEntryVariant2OverrideLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ProfileEntryVariant3Inline {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ProfileEntryVariant3InlineLabel>,
     pub provenance: Provenance,
     #[serde(rename = "type")]
@@ -899,12 +937,17 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -1240,12 +1283,17 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant3Source {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Present when more remain. Its absence is the only exhaustion signal.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -2123,18 +2171,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

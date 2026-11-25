@@ -52,6 +52,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -155,15 +156,24 @@ pub struct Payload {
     ///The DID the host sends the signal to, over a transport that DID's document advertises and the host speaks. Chosen by the member. It identifies the watch: a request naming the same room and address re-arms or cancels that watch, and one naming another address is another watch. On a `private` room it MUST be a DID the member uses for nothing else (*Security & Privacy*).
     pub address: PayloadAddress,
     ///End the watch on this room and address. Only `true` is meaningful, so only `true` is accepted. A producer sends neither `sinceVersion` nor `leaseSeconds` with it, and a host ignores them on a cancel. A cancel of a watch the host does not hold succeeds and says `armed: false`, so a retry is harmless.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cancel: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`. Absent means the host's default.
     #[serde(
         rename = "leaseSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lease_seconds: ::std::option::Option<i64>,
@@ -176,6 +186,7 @@ pub struct Payload {
     #[serde(
         rename = "sinceVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub since_version: ::std::option::Option<u64>,
@@ -323,10 +334,15 @@ pub struct Response {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "roomId")]
     pub room_id: ResponseRoomId,

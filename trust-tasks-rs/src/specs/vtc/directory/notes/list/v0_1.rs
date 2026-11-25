@@ -49,6 +49,7 @@ pub struct AdminNote {
     #[serde(
         rename = "followUp",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -58,14 +59,23 @@ pub struct AdminNote {
     #[serde(
         rename = "redactedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub redacted_by: ::std::option::Option<NoteId>,
     ///Present on a redaction: the earlier note this one withdraws.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub redacts: ::std::option::Option<NoteId>,
     ///The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub text: ::std::option::Option<NoteText>,
 }
 impl AdminNote {
@@ -416,14 +426,26 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/directory/notes/list/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size; clamped to 1..=100 (default 50).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -500,14 +522,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/directory/notes/list/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Newest first. A redacted note appears without `text`, with `redactedBy`.
     pub items: ::std::vec::Vec<AdminNote>,
     #[serde(
         rename = "nextCursor",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::option::Option<ResponseNextCursor>>,
@@ -935,18 +961,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

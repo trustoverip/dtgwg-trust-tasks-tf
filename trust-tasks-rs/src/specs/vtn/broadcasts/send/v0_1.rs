@@ -39,12 +39,20 @@ pub mod error {
 #[non_exhaustive]
 pub struct BroadcastRecord {
     ///For a sent message, the administrator that sent it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub actor: ::std::option::Option<Did>,
     ///Whether this network sent it or received it to relay.
     pub direction: BroadcastRecordDirection,
     ///For a received message, the network that delivered it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub from: ::std::option::Option<Did>,
     ///The message id.
     pub id: BroadcastRecordId,
@@ -440,14 +448,23 @@ pub struct Payload {
     ///The message text.
     pub body: PayloadBody,
     ///What kind of message it is, for the receiving group to sort on: `notice` (the default), `request-for-action`, `room-invite`, or another the network's framework names.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub class: ::std::option::Option<PayloadClass>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Where replies go, such as a URL or DID for a network data room, so that a broadcast never becomes reply-all.
     #[serde(
         rename = "replyTo",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reply_to: ::std::option::Option<PayloadReplyTo>,
@@ -715,19 +732,27 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[non_exhaustive]
 pub struct Receipt {
     ///Why, for anything but `delivered`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub detail: ::std::option::Option<ReceiptDetail>,
     ///The group delivered to.
     pub group: ReceiptGroup,
     ///The member that owns it.
     pub member: Did,
     ///Whether the group is a network group, which relays further.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub network: ::std::option::Option<bool>,
     ///The receipts the network group's own relay returned.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub relayed: ::std::option::Option<::std::vec::Vec<Receipt>>,
@@ -863,7 +888,11 @@ impl<'de> ::serde::Deserialize<'de> for ReceiptGroup {
 #[non_exhaustive]
 pub struct Response {
     pub broadcast: BroadcastRecord,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -1417,18 +1446,4 @@ pub mod error_codes {
             "{\"properties\":{\"role\":{\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

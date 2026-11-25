@@ -521,12 +521,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The DID.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Return the DID's keri.cesr stream as well as the record. Absent means no. The stream is the DID's whole key event history and its designations, and is the only thing the derived document can be checked against.
     #[serde(
         rename = "includeKeriCesr",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_keri_cesr: ::std::option::Option<bool>,
@@ -603,12 +608,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The keri.cesr stream as the VTA last published it, present only when `includeKeriCesr` was true. Its absence means it was not asked for, never that the DID has no history.
     #[serde(
         rename = "keriCesr",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub keri_cesr: ::std::option::Option<::std::string::String>,
@@ -617,6 +627,7 @@ pub struct Response {
     #[serde(
         rename = "rotationStaged",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rotation_staged: ::std::option::Option<bool>,
@@ -648,6 +659,7 @@ pub struct WebsDidRecord {
     #[serde(
         rename = "deactivatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deactivated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -658,7 +670,11 @@ pub struct WebsDidRecord {
     pub did_json_url: ::std::string::String,
     ///The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.
     pub domain: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.
     #[serde(rename = "keriCesrUrl")]
@@ -670,17 +686,26 @@ pub struct WebsDidRecord {
     #[serde(rename = "keyAgreementKeyId")]
     pub key_agreement_key_id: ::std::string::String,
     ///Operator-facing label. Never published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<WebsDidRecordLabel>,
     ///The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.
     #[serde(
         rename = "nextKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_key_id: ::std::option::Option<::std::string::String>,
     ///Whether this is its context's primary DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub primary: ::std::option::Option<bool>,
     ///Sequence number of the latest event in the key event log.
     #[serde(rename = "sequenceNumber")]

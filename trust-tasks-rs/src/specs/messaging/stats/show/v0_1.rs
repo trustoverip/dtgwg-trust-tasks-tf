@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -152,21 +156,31 @@ pub struct QueueDepth {
     #[serde(
         rename = "deliveredUnacked",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivered_unacked: ::std::option::Option<u64>,
     ///The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<i64>,
     ///Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.
     #[serde(
         rename = "oldestAgeSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_age_seconds: ::std::option::Option<u64>,
     ///count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub saturation: ::std::option::Option<f64>,
 }
 impl QueueDepth {
@@ -182,14 +196,23 @@ impl QueueDepth {
 pub struct Response {
     pub connections: ResponseConnections,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub forwarding: ResponseForwarding,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub queues: ::std::option::Option<ResponseQueues>,
     #[serde(
         rename = "startedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub started_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -216,6 +239,7 @@ pub struct ResponseConnections {
     #[serde(
         rename = "websocketMax",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub websocket_max: ::std::option::Option<u64>,
@@ -235,6 +259,7 @@ pub struct ResponseForwarding {
     #[serde(
         rename = "circuitBreaker",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub circuit_breaker: ::std::option::Option<ResponseForwardingCircuitBreaker>,
@@ -244,6 +269,7 @@ pub struct ResponseForwarding {
     #[serde(
         rename = "queueLimit",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queue_limit: ::std::option::Option<u64>,
@@ -327,15 +353,27 @@ pub struct ResponseQueues {
     ///Accounts the survey covered.
     pub accounts: u64,
     ///Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub receive: ::std::option::Option<QueueDepth>,
     ///Totals across every surveyed send queue; `saturation` is the maximum of any single queue.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub send: ::std::option::Option<QueueDepth>,
     #[serde(rename = "surveyedAt")]
     pub surveyed_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The survey stopped before covering every account.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub truncated: ::std::option::Option<bool>,
 }
 impl ResponseQueues {
@@ -352,6 +390,7 @@ pub struct ResponseTotals {
     #[serde(
         rename = "deletedBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub deleted_bytes: ::std::option::Option<u64>,
@@ -360,12 +399,14 @@ pub struct ResponseTotals {
     #[serde(
         rename = "invitationsClaimed",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub invitations_claimed: ::std::option::Option<u64>,
     #[serde(
         rename = "invitationsCreated",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub invitations_created: ::std::option::Option<u64>,
@@ -380,24 +421,28 @@ pub struct ResponseTotals {
     #[serde(
         rename = "sessionsAuthenticated",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sessions_authenticated: ::std::option::Option<u64>,
     #[serde(
         rename = "sessionsCreated",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sessions_created: ::std::option::Option<u64>,
     #[serde(
         rename = "websocketClosed",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub websocket_closed: ::std::option::Option<u64>,
     #[serde(
         rename = "websocketOpened",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub websocket_opened: ::std::option::Option<u64>,

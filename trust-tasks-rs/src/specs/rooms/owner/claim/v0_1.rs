@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -151,14 +152,22 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.
     pub nomination: ::std::string::String,
     ///The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents.
     pub presentation: AuthorityPresentation,
     ///Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The room being claimed.
     #[serde(rename = "roomId")]
@@ -234,7 +243,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The owner after the claim — the claimant.
     #[serde(rename = "ownerDid")]

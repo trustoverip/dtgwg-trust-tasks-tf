@@ -202,11 +202,16 @@ pub struct Payload {
     #[serde(
         rename = "anchorCadence",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.
     #[serde(rename = "ownerDid")]
@@ -215,6 +220,7 @@ pub struct Payload {
     #[serde(
         rename = "recordRetention",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_retention: ::std::option::Option<RecordRetention>,
@@ -222,6 +228,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -229,6 +236,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionPolicy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -256,12 +264,17 @@ How long a room keeps its records, by age: the room's **record retention**. Reco
 #[non_exhaustive]
 pub struct RecordRetention {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Days a record is kept after it last changed, whatever its standing. A record — `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is eligible, **unless it is pinned**: pinning says what matters in the room, and a room that wants a pinned record gone unpins it first. Absent means records are never eligible by age.
     #[serde(
         rename = "recordDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -269,6 +282,7 @@ pub struct RecordRetention {
     #[serde(
         rename = "tombstoneDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -298,17 +312,23 @@ pub struct Response {
     #[serde(
         rename = "anchorCadence",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Always 1 for a new room.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record retention the host recorded, echoed for the same reason `anchorCadence` is: a caller learns what is in force rather than what it asked for. Absent when none was recorded.
     #[serde(
         rename = "recordRetention",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_retention: ::std::option::Option<RecordRetention>,

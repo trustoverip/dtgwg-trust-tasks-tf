@@ -128,6 +128,7 @@ pub struct Payload {
     #[serde(
         rename = "addMediatorService",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub add_mediator_service: ::std::option::Option<bool>,
@@ -135,6 +136,7 @@ pub struct Payload {
     #[serde(
         rename = "addTspService",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub add_tsp_service: ::std::option::Option<bool>,
@@ -142,7 +144,7 @@ pub struct Payload {
     #[serde(
         rename = "additionalServices",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub additional_services: ::std::option::Option<
@@ -155,7 +157,7 @@ pub struct Payload {
     #[serde(
         rename = "didDocument",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_document:
@@ -164,30 +166,49 @@ pub struct Payload {
     #[serde(
         rename = "didLog",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_log: ::std::option::Option<::std::string::String>,
     ///Hosting domain to publish under, when the server serves more than one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Existing key-agreement key to publish. Absent mints a new one.
     #[serde(
         rename = "kaKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ka_key_id: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Explicit path label under the host. Shorthand for pathMode `explicit`; supplying both is an error.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub path: ::std::option::Option<::std::string::String>,
     ///How the path under the host is chosen. Absent means `autoAssign`.
     #[serde(
         rename = "pathMode",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub path_mode: ::std::option::Option<WebvhPathMode>,
@@ -198,6 +219,7 @@ pub struct Payload {
     #[serde(
         rename = "preRotationCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pre_rotation_count: ::std::option::Option<u64>,
@@ -205,6 +227,7 @@ pub struct Payload {
     #[serde(
         rename = "serverId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub server_id: ::std::option::Option<::std::string::String>,
@@ -212,6 +235,7 @@ pub struct Payload {
     #[serde(
         rename = "setPrimary",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub set_primary: ::std::option::Option<bool>,
@@ -219,16 +243,22 @@ pub struct Payload {
     #[serde(
         rename = "signingKeyId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_key_id: ::std::option::Option<::std::string::String>,
     ///DID template to render the document from (see vta/did-templates/*).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub template: ::std::option::Option<::std::string::String>,
     ///Context whose templates to resolve `template` against. Absent uses the global scope, which is a different namespace and may hold a different template of the same name.
     #[serde(
         rename = "templateContext",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_context: ::std::option::Option<::std::string::String>,
@@ -236,14 +266,18 @@ pub struct Payload {
     #[serde(
         rename = "templateVars",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub template_vars: ::std::option::Option<
         ::std::collections::HashMap<::std::string::String, ::std::string::String>,
     >,
     ///Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
 }
 impl Payload {
@@ -385,12 +419,16 @@ pub struct Response {
     #[serde(
         rename = "didDocument",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did_document:
         ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "kaKeyId")]
     pub ka_key_id: ::std::string::String,
@@ -398,11 +436,16 @@ pub struct Response {
     #[serde(
         rename = "logEntry",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub log_entry: ::std::option::Option<::std::string::String>,
     ///The hosting server's handle for the record. Absent for a serverless DID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub mnemonic: ::std::option::Option<::std::string::String>,
     pub portable: bool,
     ///Successor keys committed. `0` means pre-rotation is off for this DID.
@@ -413,6 +456,7 @@ pub struct Response {
     #[serde(
         rename = "serverId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub server_id: ::std::option::Option<::std::string::String>,
@@ -1164,18 +1208,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

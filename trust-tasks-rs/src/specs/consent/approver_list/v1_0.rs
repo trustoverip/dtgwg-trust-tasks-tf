@@ -45,12 +45,17 @@ pub struct ApproverBinding {
     ///Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
     pub platform: ApproverBindingPlatform,
     ///Optional. How to deliver the prompt; defaults to bridge-relay when omitted.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub route: ::std::option::Option<Route>,
     ///Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.
     #[serde(
         rename = "routeHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route_hint: ::std::option::Option<::std::string::String>,
@@ -328,12 +333,24 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional. Restrict to this context path.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub context: ::std::option::Option<PayloadContext>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional. Restrict to this platform tag.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub platform: ::std::option::Option<PayloadPlatform>,
 }
 impl ::std::default::Default for Payload {
@@ -476,7 +493,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 pub struct Response {
     ///Matching approver bindings.
     pub approvers: ::std::vec::Vec<ApproverBinding>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

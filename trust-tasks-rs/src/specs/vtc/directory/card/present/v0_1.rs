@@ -194,9 +194,17 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional: also clear any named field the presentation does not answer. Absent: false.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub clear: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The `credential`-sourced fields this presentation answers.
     pub fields: Vec<FieldKey>,
@@ -296,7 +304,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPresentationString {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub revision: u64,
     ///The values now on the card, keyed by field.
@@ -317,6 +329,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -326,6 +339,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

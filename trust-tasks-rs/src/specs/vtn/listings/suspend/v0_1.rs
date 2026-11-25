@@ -187,7 +187,11 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 #[non_exhaustive]
 pub struct Entry {
     ///The party's acknowledgement (VMC carrying the grant's digest).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ack: ::std::option::Option<Credential>,
     ///When the party was first listed.
     #[serde(rename = "createdAt")]
@@ -195,21 +199,37 @@ pub struct Entry {
     ///The listed party's DID.
     pub did: Did,
     ///The signed membership grant (VMC), once the party acknowledged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub grant: ::std::option::Option<Issued>,
     ///Every transition, oldest first.
     pub history: ::std::vec::Vec<StateChange>,
     pub kind: EntryKind,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<Label>,
     ///The listing credential (`lists/1`).
     pub listing: Issued,
     ///The unsigned membership grant offered to the party, before it acknowledged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub offer: ::std::option::Option<Issued>,
     pub profile: EntryProfile,
     ///The party's repudiation (`repudiates/1`) of the listing or the grant.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub repudiation: ::std::option::Option<Credential>,
     pub state: EntryState,
     ///When the entry last changed.
@@ -288,11 +308,23 @@ impl ::std::convert::TryFrom<::std::string::String> for EntryKind {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct EntryProfile {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<Description>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tags: ::std::option::Option<Tags>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<Url>,
 }
 impl ::std::default::Default for EntryProfile {
@@ -554,10 +586,18 @@ impl<'de> ::serde::Deserialize<'de> for Label {
 pub struct Payload {
     ///The DID of the entry.
     pub did: Did,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Why, recorded in the entry's history and the audit trail.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<Reason>,
 }
 impl Payload {
@@ -631,7 +671,11 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[non_exhaustive]
 pub struct Response {
     pub entry: Entry,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -649,9 +693,17 @@ pub struct StateChange {
     #[serde(rename = "changedAt")]
     pub changed_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The state before; absent for the first listing.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub from: ::std::option::Option<EntryState>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<Reason>,
     pub to: EntryState,
 }

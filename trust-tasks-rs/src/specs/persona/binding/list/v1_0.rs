@@ -124,9 +124,17 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(default = "defaults::default_nzu64::<::std::num::NonZeroU64, 100>")]
     pub limit: ::std::num::NonZeroU64,
@@ -260,11 +268,16 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -344,6 +357,7 @@ pub struct ResponsePersonasItem {
     #[serde(
         rename = "claimCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub claim_count: ::std::option::Option<u64>,
@@ -351,11 +365,16 @@ pub struct ResponsePersonasItem {
     #[serde(
         rename = "isLocal",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_local: ::std::option::Option<bool>,
     ///The name the holder chose for this context to call the face. Absent when they chose none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ResponsePersonasItemLabel>,
     #[serde(rename = "personaDid")]
     pub persona_did: ResponsePersonasItemPersonaDid,
@@ -363,11 +382,16 @@ pub struct ResponsePersonasItem {
     #[serde(
         rename = "profileName",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_name: ::std::option::Option<ResponsePersonasItemProfileName>,
     ///When this binding ends on its own. Absent when it lasts until changed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl ResponsePersonasItem {

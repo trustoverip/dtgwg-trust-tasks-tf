@@ -47,6 +47,7 @@ pub struct Action {
     #[serde(
         rename = "approversRemaining",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub approvers_remaining: ::std::option::Option<u64>,
@@ -57,18 +58,24 @@ pub struct Action {
     #[serde(
         rename = "cancellableBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub cancellable_by: ::std::option::Option<ActionCancellableBy>,
     ///`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.
     pub category: ActionCategory,
     ///Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub challenge: ::std::option::Option<ActionChallenge>,
     ///When the action left `open`. Present exactly when `status` is not `open`.
     #[serde(
         rename = "closedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -76,6 +83,7 @@ pub struct Action {
     #[serde(
         rename = "closedReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closed_reason: ::std::option::Option<ActionClosedReason>,
@@ -86,10 +94,15 @@ pub struct Action {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
     pub kind: ActionKind,
@@ -97,6 +110,7 @@ pub struct Action {
     #[serde(
         rename = "landsAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub lands_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -111,6 +125,7 @@ pub struct Action {
     #[serde(
         rename = "requesterOpenActions",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requester_open_actions: ::std::option::Option<u64>,
@@ -118,7 +133,11 @@ pub struct Action {
     pub status: ActionStatus,
     pub summary: Summary,
     ///The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub threshold: ::std::option::Option<::std::num::NonZeroU64>,
     ///The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.
     #[serde(rename = "typeUri")]
@@ -1150,7 +1169,11 @@ pub struct Payload {
     ///The action to fetch — from a next-step hint, a list entry, or a notification.
     #[serde(rename = "actionId")]
     pub action_id: ActionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -1166,7 +1189,11 @@ impl Payload {
 #[deprecated(note = "superseded by vtc/admin/actions/show/0.3")]
 pub struct Response {
     pub action: Action,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -1181,7 +1208,11 @@ impl Response {
 #[non_exhaustive]
 pub struct Summary {
     ///One or two sentences from the template saying what executing the operation will do.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub effect: ::std::option::Option<SummaryEffect>,
     ///Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.
     pub fields: ::std::collections::HashMap<SummaryFieldsKey, Field>,

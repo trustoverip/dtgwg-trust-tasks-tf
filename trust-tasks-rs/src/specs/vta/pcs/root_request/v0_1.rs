@@ -148,7 +148,11 @@ pub struct Payload {
     ///The context the engine belongs to. Its key is derived from this context's base.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The class label to enrol under: the community's current one.
     pub label: PayloadLabel,
@@ -813,7 +817,11 @@ impl<'de> ::serde::Deserialize<'de> for PublishedEventEventId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub request: RootRequest,
 }
@@ -970,10 +978,18 @@ impl<'de> ::serde::Deserialize<'de> for RootRequestLabel {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RootRequestRequest {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub encoding: ::std::option::Option<RootRequestRequestEncoding>,
     pub proof: RootRequestRequestProof,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub t0: ::std::option::Option<RootRequestRequestT0>,
 }
 impl RootRequestRequest {

@@ -44,15 +44,24 @@ pub struct CardBlobRef {
     ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
     pub sha256: CardBlobRefSha256,
     ///Size in bytes of the stored bytes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///Projection only: when `url` stops working.
     #[serde(
         rename = "urlExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -722,6 +731,7 @@ pub struct GroupJoinRequest {
     #[serde(
         rename = "decidedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -729,6 +739,7 @@ pub struct GroupJoinRequest {
     #[serde(
         rename = "decidedBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decided_by: ::std::option::Option<GroupJoinRequestDecidedBy>,
@@ -736,7 +747,11 @@ pub struct GroupJoinRequest {
     pub entry_id: EntryId,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<JoinRequestMessage>,
     #[serde(rename = "requestId")]
     pub request_id: JoinRequestId,
@@ -890,7 +905,7 @@ pub struct GroupMember {
     #[serde(
         rename = "credentialId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_id: ::std::option::Option<::std::option::Option<GroupCredentialId>>,
@@ -898,13 +913,18 @@ pub struct GroupMember {
     #[serde(
         rename = "credentialValidUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
     ///The member's directory fields that the caller may see, projected exactly as vtc/directory/entries/show would project them. Absent when the caller may see none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub fields: ::std::option::Option<EntryFields>,
     pub since: ::chrono::DateTime<::chrono::offset::Utc>,
     pub source: MembershipSource,
@@ -1177,11 +1197,19 @@ impl ::std::convert::TryFrom<::std::string::String> for MembershipSource {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<JoinRequestMessage>,
 }
 impl Payload {
@@ -1198,17 +1226,29 @@ pub struct Response {
     ///The membership credential offered, or null when the group issues none or the outcome is `requested`.
     #[serde(rename = "credentialId")]
     pub credential_id: ::std::option::Option<GroupCredentialId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
     ///Present when `outcome` is `joined`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub member: ::std::option::Option<GroupMember>,
     ///`joined`: a member now. `requested`: a request awaits a manager. `optOutWithdrawn`: the caller's opt-out of a dynamic group is undone, but its rule does not admit them now; they become a member when it does.
     pub outcome: ResponseOutcome,
     ///Present when `outcome` is `requested`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub request: ::std::option::Option<GroupJoinRequest>,
 }
 impl Response {
@@ -1291,6 +1331,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "credentialType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_type: ::std::option::Option<VerifiedValueCredentialType>,
@@ -1300,6 +1341,7 @@ pub struct VerifiedValue {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -2371,18 +2413,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"code\":{\"maxLength\":128,\"type\":\"string\"},\"message\":{\"maxLength\":500,\"type\":\"string\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

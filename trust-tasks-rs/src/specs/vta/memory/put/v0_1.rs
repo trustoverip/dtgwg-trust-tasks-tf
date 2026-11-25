@@ -128,7 +128,11 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: ::std::string::String,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Agent-chosen identifier for the item; re-putting the same key upserts.
     pub key: ::std::string::String,
@@ -147,7 +151,11 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vta/memory/put/0.3")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The stored item's key.
     pub key: ::std::string::String,

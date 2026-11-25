@@ -588,6 +588,7 @@ pub struct Payload {
     #[serde(
         rename = "alsoKnownAs",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub also_known_as: ::std::option::Option<Vec<PayloadAlsoKnownAsItem>>,
@@ -597,23 +598,37 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version_id: ::std::option::Option<PayloadExpectedVersionId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator-facing audit label. Never published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///Derive a fresh X25519 key agreement key and designate it in place of the current one. Absent or false keeps the current key.
     #[serde(
         rename = "rotateKeyAgreementKey",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rotate_key_agreement_key: ::std::option::Option<bool>,
     ///The designated services to stand from now on, replacing the set in force. Absent leaves the services as they are.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub services: ::std::option::Option<ServiceSet>,
 }
 impl Payload {
@@ -875,7 +890,11 @@ pub struct Response {
     #[serde(rename = "alsoKnownAs")]
     pub also_known_as: ::std::vec::Vec<::std::string::String>,
     pub did: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The key agreement key in force after the update, in CESR.
     #[serde(rename = "keyAgreementKey")]
@@ -972,7 +991,7 @@ pub struct ServiceSet {
     ///Further services in the set. Absent means none. None may use `#didcomm` or `#tsp`.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub additional: ::std::option::Option<::std::vec::Vec<DesignatedService>>,
@@ -1522,18 +1541,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"hostError\":{\"type\":\"string\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

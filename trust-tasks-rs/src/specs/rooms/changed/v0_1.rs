@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT put anything here about what changed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The highest version the room had taken when the host sent the signal: the version a `rooms/records/list` with the member's watermark as `sinceVersion` would at least reach. A hint for the reader, who learns what changed only by listing.
     #[serde(rename = "latestVersion")]

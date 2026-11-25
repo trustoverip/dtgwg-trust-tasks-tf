@@ -194,18 +194,34 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///A challenge the proof's verifier issued, copied into the proof's `challenge` member verbatim (W3C Data Integrity). Absent means the proof carries none. The custodian does not interpret it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub challenge: ::std::option::Option<PayloadChallenge>,
     ///The proof's `created` value (an XML Schema dateTimeStamp, as Data Integrity requires). Absent means the custodian's own clock at signing. When present, the custodian refuses a value outside its acceptance window around its own clock with `keys:invalidArgument`: the key's signature dates the proof, so the producer cannot back- or forward-date it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The JSON document to secure — a verifiable credential, a Trust Task document, or another document that names its own signer. It MUST NOT carry `proof`, and MUST carry `issuer` (a DID, or an object whose `id` is a DID) or `controller` (a DID, or an array holding exactly one DID), every one present naming the DID the key belongs to. The custodian checks these rules itself (`proofPresent`, `documentInvalid`, `issuerMismatch`) rather than the schema, because the document is carried whole and every member is signed as given: a typed document would drop the members it does not name. The custodian serialises the whole object with RFC 8785.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The security domain the proof is restricted to, copied into the proof's `domain` member verbatim (W3C Data Integrity). Absent means the proof carries none. The custodian does not interpret it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<PayloadDomain>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active`, `ed25519`, and a verification method of the DID the document names as its issuer or controller.
     #[serde(rename = "keyId")]
@@ -214,6 +230,7 @@ pub struct Payload {
     #[serde(
         rename = "proofPurpose",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub proof_purpose: ::std::option::Option<PayloadProofPurpose>,
@@ -473,19 +490,28 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadProofPurpose {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Proof {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub challenge: ::std::option::Option<::std::string::String>,
     ///The document's own `@context`, copied into the proof configuration as `eddsa-jcs-2022` requires when the document has one; absent otherwise.
     #[serde(
         rename = "@context",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context: ::std::option::Option<ProofContext>,
     pub created: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The only cryptosuite this version defines.
     pub cryptosuite: ProofCryptosuite,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<::std::string::String>,
     #[serde(rename = "proofPurpose")]
     pub proof_purpose: ProofProofPurpose,
@@ -769,7 +795,11 @@ impl<'de> ::serde::Deserialize<'de> for ProofVerificationMethod {
 pub struct Response {
     ///The request's document, unchanged, with `proof` added. Every other member is exactly as the producer sent it.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The key that produced the proof. Echoed so a response separated from its request is still attributable.
     #[serde(rename = "keyId")]

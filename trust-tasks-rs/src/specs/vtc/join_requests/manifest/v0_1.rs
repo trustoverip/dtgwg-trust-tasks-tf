@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vtc/join-requests/manifest/0.4")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -149,7 +153,11 @@ pub struct Response {
     #[serde(rename = "communityDid")]
     pub community_did: ResponseCommunityDid,
     pub criteria: ::std::vec::Vec<ResponseCriteriaItem>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -222,7 +230,11 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCommunityDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ResponseCriteriaItem {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<ResponseCriteriaItemDescription>,
     pub id: ResponseCriteriaItemId,
     ///The presentation-definition an applicant must satisfy for this criterion (opaque here).

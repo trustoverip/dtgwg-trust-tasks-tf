@@ -189,7 +189,11 @@ impl<'de> ::serde::Deserialize<'de> for Origin {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`.
     #[serde(rename = "requestId")]
@@ -333,7 +337,11 @@ pub struct Response {
     ///When the decision window, started by the claim, closes, as an RFC 3339 date-time. Prove, respond and redeem must all complete before it. At most 180 s after the claim; 120 s RECOMMENDED.
     #[serde(rename = "decisionClosesAt")]
     pub decision_closes_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub origin: Origin,
     pub purpose: Purpose,

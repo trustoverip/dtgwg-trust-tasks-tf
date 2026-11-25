@@ -187,12 +187,14 @@ pub struct MessageMeta {
     #[serde(
         rename = "deliveredAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivered_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "deliveryState",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivery_state: ::std::option::Option<DeliveryState>,
@@ -200,16 +202,25 @@ pub struct MessageMeta {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The sender, where the mediator knows it. Absent for anonymous messages.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub from: ::std::option::Option<Vid>,
     ///The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.
     #[serde(rename = "msgId")]
     pub msg_id: MessageMetaMsgId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub protocol: ::std::option::Option<WireProtocol>,
     pub queue: Queue,
     ///When the mediator stored the message.
@@ -218,7 +229,11 @@ pub struct MessageMeta {
     ///Stored size in bytes.
     pub size: u64,
     ///The recipient account.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub to: ::std::option::Option<Vid>,
 }
 impl MessageMeta {
@@ -295,19 +310,39 @@ impl<'de> ::serde::Deserialize<'de> for MessageMetaMsgId {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///The account whose queue to list. Omitted = the requester's own account. A requester without administrative standing may name only itself.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub did: ::std::option::Option<Vid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum messages per page. The mediator chooses a default when omitted.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only messages exchanged with this counterparty.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub peer: ::std::option::Option<Vid>,
     pub queue: Queue,
 }
@@ -443,7 +478,11 @@ impl ::std::convert::TryFrom<::std::string::String> for Queue {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The page, oldest first.
     pub messages: ::std::vec::Vec<MessageMeta>,
@@ -451,6 +490,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

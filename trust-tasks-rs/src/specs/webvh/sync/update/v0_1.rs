@@ -126,7 +126,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "didId")]
     pub did_id: PayloadDidId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "logContent")]
     pub log_content: PayloadLogContent,
@@ -136,6 +140,7 @@ pub struct Payload {
     #[serde(
         rename = "witnessContent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<::std::string::String>,
@@ -329,7 +334,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 #[non_exhaustive]
 #[deprecated(note = "superseded by webvh/sync/update/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: ::std::string::String,
     pub status: ResponseStatus,

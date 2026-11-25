@@ -126,7 +126,7 @@ pub struct MemberResponse {
     #[serde(
         rename = "currentRoleVacId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_role_vac_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -134,7 +134,7 @@ pub struct MemberResponse {
     #[serde(
         rename = "currentVmcId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub current_vmc_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -151,13 +151,14 @@ pub struct MemberResponse {
     #[serde(
         rename = "joinedViaInvitation",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub joined_via_invitation: ::std::option::Option<bool>,
     ///Optional human-readable label.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub label: ::std::option::Option<::std::option::Option<MemberResponseLabel>>,
@@ -165,7 +166,7 @@ pub struct MemberResponse {
     #[serde(
         rename = "memberVmcId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_vmc_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -173,19 +174,23 @@ pub struct MemberResponse {
     #[serde(
         rename = "memberVmcReceivedAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_vmc_received_at:
         ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub personhood: ::std::option::Option<bool>,
     ///When personhood was most recently asserted. Absent where it never has been. Operator-facing: it belongs on admin-gated reads, and a member's own view of themselves need carry only the flag.
     #[serde(
         rename = "personhoodAssertedAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub personhood_asserted_at:
@@ -199,7 +204,7 @@ pub struct MemberResponse {
     #[serde(
         rename = "statusListIndex",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub status_list_index: ::std::option::Option<::std::option::Option<i64>>,
@@ -463,7 +468,11 @@ impl<'de> ::serde::Deserialize<'de> for MemberResponseRole {
 pub struct Payload {
     ///The member to fetch.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -536,7 +545,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub member: MemberResponse,
 }
@@ -975,18 +988,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

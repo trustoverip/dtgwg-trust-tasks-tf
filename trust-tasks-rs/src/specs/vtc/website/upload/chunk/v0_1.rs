@@ -355,7 +355,11 @@ pub struct Payload {
     pub data: ChunkData,
     #[serde(rename = "digestMultibase")]
     pub digest_multibase: DigestMultibase,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
     #[serde(rename = "uploadId")]
@@ -374,7 +378,11 @@ impl Payload {
 pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub index: ChunkIndex,
     ///Indices still missing after this write.

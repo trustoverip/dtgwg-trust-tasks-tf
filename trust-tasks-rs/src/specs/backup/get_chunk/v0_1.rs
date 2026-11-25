@@ -425,7 +425,11 @@ pub struct Payload {
     #[serde(rename = "bundleId")]
     pub bundle_id: BundleId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Which chunk. Zero-based, below the manifest's chunkCount.
     pub index: ChunkIndex,
@@ -452,7 +456,11 @@ pub struct Response {
     #[serde(rename = "expiresAt")]
     pub expires_at: ExpiresAt,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Echoed, for the same reason.
     pub index: ChunkIndex,

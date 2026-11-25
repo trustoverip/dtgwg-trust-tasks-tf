@@ -339,12 +339,24 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberStateV2 {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a previous page's `nextCursor`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Page size. The community chooses when absent (50 in the reference implementation).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl ::std::default::Default for Payload {
@@ -429,13 +441,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<RoomMembershipV2>,
     ///Present when more remain; pass it as `cursor`.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -642,11 +659,16 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "admittedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub admitted_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Absent when the room has none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<RoomDescription>,
     ///The room's host: this community.
     pub host: RoomMembershipV2Host,
@@ -657,6 +679,7 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "purgeAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub purge_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -664,6 +687,7 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "removedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub removed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -671,6 +695,7 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "repeatAcceptUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub repeat_accept_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -678,6 +703,7 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "roomAccess",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub room_access: ::std::option::Option<ArchiveAccess>,
@@ -691,6 +717,7 @@ pub struct RoomMembershipV2 {
     #[serde(
         rename = "suspendedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub suspended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

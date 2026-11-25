@@ -244,13 +244,18 @@ pub struct Disclosure {
     #[serde(
         rename = "rollCredential",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub roll_credential: ::std::option::Option<RollCredentialDisclosure>,
     ///Whether the party operating the community's VTC also operates the ballot box.
     #[serde(rename = "sameOperator")]
     pub same_operator: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub trustees: ::std::option::Option<Trustees>,
 }
 impl Disclosure {
@@ -788,7 +793,11 @@ pub struct Manifest {
     pub board: ManifestBoard,
     ///The community's DID.
     pub community: ManifestCommunity,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<ManifestDescription>,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
@@ -804,9 +813,17 @@ pub struct Manifest {
     ///Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).
     #[serde(rename = "textReleaseThreshold")]
     pub text_release_threshold: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub title: ::std::option::Option<ManifestTitle>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub trustees: ::std::option::Option<Trustees>,
     #[serde(rename = "votingClosesAt")]
     pub voting_closes_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -1210,10 +1227,18 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 pub struct Payload {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Only where the reader means to read an election whose `credential` roll (voting/_shared/0.4 `RollRule`) names a member party — a party other than the community and its groups that is itself a member of the community, never a group the community has since deleted (VTI-VOT-029) — and the community's records do not otherwise admit them: the reader's presentation of its membership credential for the party `roll.memberOf` names, made by the credential's subject — who signs this document — and bound to this document (VTI-VOT-015, checked as VTI-VOT-025 requires). The community verifies it before, and without reference to, the election the request names, answering `indeterminate` whatever the election where a status list, a trust registry or the issuer's DID document cannot be obtained; it uses the outcome only for such an election, and discards the presentation once it has decided. Without one that passes, such an election is answered `electionUnknown`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub presentation: ::std::option::Option<PayloadPresentation>,
 }
 impl Payload {
@@ -1323,7 +1348,11 @@ pub enum Question {
         min_selections: u64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1336,7 +1365,11 @@ pub enum Question {
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
         partial: bool,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1350,7 +1383,11 @@ pub enum Question {
         min: i64,
         optional: bool,
         options: ::std::vec::Vec<QuestionOption>,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         text: ::std::option::Option<QuestionText>,
     },
     /**
@@ -1363,7 +1400,11 @@ pub enum Question {
         #[serde(rename = "maxLength")]
         max_length: ::std::num::NonZeroU64,
         optional: bool,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         text: ::std::option::Option<QuestionText>,
     },
 }
@@ -1375,7 +1416,11 @@ pub enum Question {
 pub struct QuestionOption {
     pub key: Key,
     ///Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<QuestionOptionLabel>,
 }
 impl QuestionOption {
@@ -1451,30 +1496,34 @@ pub struct QuestionResult {
     pub abstained: u64,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub choice: ::std::option::Option<::std::collections::HashMap<Key, u64>>,
     pub question: Key,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ranking: ::std::option::Option<::std::collections::HashMap<Key, ::std::vec::Vec<u64>>>,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub score: ::std::option::Option<::std::collections::HashMap<Key, QuestionResultScoreValue>>,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub text: ::std::option::Option<::std::vec::Vec<QuestionResultTextItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub withheld: ::std::option::Option<bool>,
 }
 impl QuestionResult {
@@ -1706,10 +1755,18 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrarState {
 #[non_exhaustive]
 pub struct Response {
     ///With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.5).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ceremony: ::std::option::Option<TrusteeCeremony>,
     ///Present once the community has certified the result.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub certified: ::std::option::Option<Certification>,
     ///The board heads the community has kept, oldest first. Empty until the community has read a head.
     pub checkpoints: ::std::vec::Vec<Checkpoint>,
@@ -1719,10 +1776,15 @@ pub struct Response {
     #[serde(
         rename = "electionKey",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub election_key: ::std::option::Option<ElectionKey>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub manifest: Manifest,
     ///The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of `manifest`. A ticket request names it, and every cast is bound to it.
@@ -1735,6 +1797,7 @@ pub struct Response {
     #[serde(
         rename = "ticketsIssued",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tickets_issued: ::std::option::Option<u64>,
@@ -1821,6 +1884,7 @@ pub struct RollCredentialDisclosure {
     #[serde(
         rename = "memberOfName",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of_name: ::std::option::Option<RollCredentialDisclosureMemberOfName>,
@@ -1828,6 +1892,7 @@ pub struct RollCredentialDisclosure {
     #[serde(
         rename = "presenterDisclosed",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presenter_disclosed: ::std::option::Option<::serde_json::Value>,
@@ -2037,12 +2102,17 @@ impl<'de> ::serde::Deserialize<'de> for RollCredentialDisclosureMemberOfName {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct RollRule {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub listed: ::std::option::Option<Vec<RollRuleListedItem>>,
     ///The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a party that is itself an active member of this community — holding a membership credential this community issued it — such as another community, a group of another community, or a network (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted).
     #[serde(
         rename = "memberOf",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of: ::std::option::Option<RollRuleMemberOf>,
@@ -4273,18 +4343,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

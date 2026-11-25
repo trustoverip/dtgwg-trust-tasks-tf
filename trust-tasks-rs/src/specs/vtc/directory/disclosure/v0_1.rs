@@ -192,14 +192,22 @@ pub struct DirectoryDisclosure {
     ///Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.
     #[serde(rename = "adminNotes")]
     pub admin_notes: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.
     #[serde(rename = "externalCards")]
     pub external_cards: bool,
     ///Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.
     pub fields: ::std::vec::Vec<DisclosedField>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub groups: ::std::option::Option<GroupDisclosure>,
     ///The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.
     #[serde(rename = "membershipIdentifiers")]
@@ -226,10 +234,18 @@ pub struct DisclosedField {
     ///The audience a new card gives the field until its member chooses. Never wider than `ceiling`.
     #[serde(rename = "defaultVisibility")]
     pub default_visibility: Audience,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<FieldDescription>,
     ///Whether members may filter on the field and see counts by its values. Absent: false.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub facet: ::std::option::Option<bool>,
     pub key: FieldKey,
     pub label: FieldLabel,
@@ -923,7 +939,11 @@ impl ::std::convert::TryFrom<::std::string::String> for Listing {
 #[non_exhaustive]
 pub struct NewCardDefaults {
     ///From whom a new card accepts introductions. Absent where the community does not deliver introductions.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub introductions: ::std::option::Option<Introductions>,
     ///The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.
     pub listing: Listing,
@@ -1006,7 +1026,11 @@ impl ::std::convert::TryFrom<::std::string::String> for NewCardDefaultsSearch {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -1030,7 +1054,11 @@ pub struct Response {
     #[serde(rename = "communityDid")]
     pub community_did: ResponseCommunityDid,
     pub disclosure: DirectoryDisclosure,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

@@ -125,7 +125,11 @@ pub struct Payload {
     ///A currently-valid bearer access token issued by this community.
     #[serde(rename = "accessToken")]
     pub access_token: PayloadAccessToken,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -201,7 +205,11 @@ pub struct Response {
     ///Session expiry, as an RFC 3339 date-time. Matches the presented token's — the exchange does not extend a session.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The cookie-backed session's identifier.
     #[serde(rename = "sessionId")]

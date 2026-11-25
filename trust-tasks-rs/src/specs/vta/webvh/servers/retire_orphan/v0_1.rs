@@ -126,13 +126,22 @@ pub struct Payload {
     #[serde(
         rename = "expectedDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_did: ::std::option::Option<PayloadExpectedDid>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The hosting server holding the orphaned slot, as the agent has it registered.
     #[serde(rename = "serverId")]
@@ -389,9 +398,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSlotId {
 #[non_exhaustive]
 pub struct Response {
     ///The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub did: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.
     pub retired: bool,

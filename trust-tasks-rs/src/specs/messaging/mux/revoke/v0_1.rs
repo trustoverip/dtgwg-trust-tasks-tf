@@ -339,18 +339,31 @@ pub struct Payload {
     #[serde(rename = "as")]
     pub as_: MuxRole,
     ///As `member` only: the member DID whose grants are revoked; absent means the requester itself.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub did: ::std::option::Option<MuxDid>,
     ///As `principal`: member DIDs whose grants to the requester are revoked. As `member`: principal DIDs whose grants on the member are revoked.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub dids: ::std::option::Option<Vec<MuxDid>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Grants to revoke, by identifier.
     #[serde(
         rename = "grantIds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant_ids: ::std::option::Option<Vec<GrantId>>,
@@ -367,7 +380,11 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Grants this request deleted; their members are detached from every connection before this response is sent, and the principal's replay floor rises so their statements cannot be stored again.
     pub revoked: ::std::vec::Vec<GrantRef>,
@@ -375,7 +392,7 @@ pub struct Response {
     #[serde(
         rename = "unmatchedDids",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub unmatched_dids: ::std::option::Option<::std::vec::Vec<MuxDid>>,
@@ -383,7 +400,7 @@ pub struct Response {
     #[serde(
         rename = "unmatchedGrantIds",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub unmatched_grant_ids: ::std::option::Option<::std::vec::Vec<GrantId>>,
@@ -702,18 +719,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

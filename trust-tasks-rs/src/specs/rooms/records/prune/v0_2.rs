@@ -51,6 +51,7 @@ pub struct AuthorityPresentation {
     #[serde(
         rename = "subjectBinding",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub subject_binding: ::std::option::Option<::std::string::String>,
@@ -154,11 +155,16 @@ pub struct Payload {
     #[serde(
         rename = "dryRun",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as widening what is removed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///What to remove. `retracted`: tombstones older than the record retention's `tombstoneDays`. `aged`: records of any standing, pinned ones excepted, older than its `recordDays`. A set; order carries no meaning. A kind the retention in force states no rule for removes nothing, and a request all of whose kinds are such is refused with `noRetention`.
     pub kinds: Vec<PayloadKindsItem>,
@@ -336,12 +342,17 @@ How long a room keeps its records, by age: the room's **record retention**. Reco
 #[non_exhaustive]
 pub struct RecordRetention {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Days a record is kept after it last changed, whatever its standing. A record — `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is eligible, **unless it is pinned**: pinning says what matters in the room, and a room that wants a pinned record gone unpins it first. Absent means records are never eligible by age.
     #[serde(
         rename = "recordDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -349,6 +360,7 @@ pub struct RecordRetention {
     #[serde(
         rename = "tombstoneDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub tombstone_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -377,6 +389,7 @@ pub struct Response {
     #[serde(
         rename = "blobsReleased",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub blobs_released: ::std::option::Option<u64>,
@@ -384,13 +397,22 @@ pub struct Response {
     #[serde(
         rename = "dryRun",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The mark the prune left, now the room's `lastPrune`. Present when at least one record was removed and the request was not a dry run; absent otherwise.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prune: ::std::option::Option<RecordPrune>,
     ///The record retention the prune was made under, as in force when the host performed it — which is what decided eligibility, and what a caller holding an earlier listing checks the removal against.
     #[serde(rename = "recordRetention")]

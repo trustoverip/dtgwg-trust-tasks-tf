@@ -257,10 +257,15 @@ pub struct Payload {
     #[serde(
         rename = "durationSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub duration_seconds: ::std::option::Option<i64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The identifier to collect for: one whose messaging keys the VTA holds in `contextId` and whose DID document advertises a transport through a mediator.
     pub identifier: Did,
@@ -281,7 +286,11 @@ pub struct Response {
     pub ends_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub identifier: Did,
     ///True when the caller already held a claim for the identifier and this grant moved its end; absent or false for a new claim.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub renewed: ::std::option::Option<bool>,
 }
 impl Response {

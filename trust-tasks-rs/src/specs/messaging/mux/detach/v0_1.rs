@@ -192,7 +192,11 @@ pub struct Payload {
     ///The member DIDs whose session attaches on this connection are removed. A DID appears at most once.
     pub dids: Vec<MuxDid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -209,7 +213,11 @@ pub struct Response {
     ///DIDs whose session attach was removed. Each has left the connection, unless it is also listed in `retainedByGrant`.
     pub detached: ::std::vec::Vec<MuxDid>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///DIDs that had no session attach on this connection. Nothing changed for them.
     #[serde(rename = "notAttached")]

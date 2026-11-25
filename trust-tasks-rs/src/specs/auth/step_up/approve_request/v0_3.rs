@@ -43,7 +43,7 @@ pub struct CredentialDescriptor {
     pub id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
@@ -137,7 +137,7 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -151,7 +151,7 @@ pub struct CredentialRequestOptions {
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -159,14 +159,20 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "rpId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "userVerification",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
@@ -395,6 +401,7 @@ pub struct Payload {
     #[serde(
         rename = "acceptableEvidence",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acceptable_evidence: ::std::option::Option<Vec<PayloadAcceptableEvidenceItem>>,
@@ -402,12 +409,17 @@ pub struct Payload {
     #[serde(
         rename = "boundTo",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub bound_to: ::std::option::Option<PayloadBoundTo>,
     ///base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.
     pub challenge: PayloadChallenge,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Human-readable explanation of WHY the relying party is asking (e.g. "confirm transfer of 1000 USD to bob.example"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.
     pub reason: PayloadReason,
@@ -415,6 +427,7 @@ pub struct Payload {
     #[serde(
         rename = "sessionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_id: ::std::option::Option<PayloadSessionId>,
@@ -424,14 +437,23 @@ pub struct Payload {
     #[serde(
         rename = "targetAcr",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub target_acr: ::std::option::Option<::std::string::String>,
     ///Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ttl: ::std::option::Option<::std::num::NonZeroU64>,
     ///Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub webauthn: ::std::option::Option<CredentialRequestOptions>,
 }
 impl Payload {
@@ -808,10 +830,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/step-up/approve-request/0.6")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Required when status is `refused`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<ResponseReason>,
     ///`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.
     pub status: ResponseStatus,
@@ -1483,18 +1513,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

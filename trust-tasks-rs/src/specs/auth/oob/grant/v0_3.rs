@@ -271,6 +271,7 @@ pub struct Payload {
     #[serde(
         rename = "signingScope",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signing_scope: ::std::option::Option<SigningScope>,

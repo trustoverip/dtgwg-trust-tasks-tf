@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Return the DID's log as well as the record. The log is the DID's whole history and can be large; it is also the only thing a verifier can check the current document against, so a consumer auditing a DID asks for it.
     #[serde(rename = "includeLog", default)]
@@ -199,10 +203,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The DID log, present only when `includeLog` was true. Its absence means it was not asked for — never that the DID has no history.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub log: ::std::option::Option<::std::string::String>,
     pub record: WebvhDidRecord,
 }
@@ -224,7 +236,11 @@ pub struct WebvhDidRecord {
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The DID, e.g. `did:webvh:<scid>:example.com:alice`.
     pub did: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Number of entries in the log.
     #[serde(rename = "logEntryCount")]

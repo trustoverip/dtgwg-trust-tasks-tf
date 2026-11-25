@@ -39,10 +39,18 @@ pub mod error {
 #[non_exhaustive]
 pub struct AttachmentRef {
     ///OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub digest: ::std::option::Option<DigestMultibase>,
     ///OPTIONAL. Suggested filename.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub filename: ::std::option::Option<AttachmentRefFilename>,
     ///Opaque attachment id, resolvable via the bridge's attachment fetch.
     pub id: AttachmentRefId,
@@ -53,6 +61,7 @@ pub struct AttachmentRef {
     #[serde(
         rename = "sizeBytes",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub size_bytes: ::std::option::Option<u64>,
@@ -483,6 +492,7 @@ pub struct Mention {
     #[serde(
         rename = "displayName",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_name: ::std::option::Option<MentionDisplayName>,
@@ -625,7 +635,7 @@ pub struct Payload {
     ///OPTIONAL. Attachments carried by reference, never inline.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attachments: ::std::option::Option<::std::vec::Vec<AttachmentRef>>,
@@ -634,12 +644,17 @@ pub struct Payload {
     pub conversation_id: PayloadConversationId,
     ///`inbound` = platform → agent (the bridge attests what it received and normalized); `outbound` = agent → platform (authored by the agent).
     pub direction: PayloadDirection,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///OPTIONAL. True when the conversation is a group/channel, false (or absent) for a 1:1 DM. Part of the signed record so the audit chain captures where a message was sent, not just its text.
     #[serde(
         rename = "isGroup",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_group: ::std::option::Option<bool>,
@@ -647,26 +662,36 @@ pub struct Payload {
     #[serde(
         rename = "isMention",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub is_mention: ::std::option::Option<bool>,
     ///OPTIONAL. @-mentions carried by the message, ordered to match the U+FFFC sentinel placeholders in `text`: the Nth U+FFFC binds to the Nth entry. Absent/empty when the message mentions no one. The producer is responsible for emitting one U+FFFC sentinel per mention, in order — translating each platform's native mention encoding into this neutral form.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub mentions: ::std::option::Option<::std::vec::Vec<Mention>>,
     ///OPTIONAL. Platform key the message belongs to (e.g. `signal`, `whatsapp`). Advisory.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub platform: ::std::option::Option<PayloadPlatform>,
     ///OPTIONAL on the first message in a conversation; present on every message thereafter. Links to the previous message so the conversation forms a verifiable, ordered chain.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prev: ::std::option::Option<ChainLink>,
     ///OPTIONAL. The `id` of the message this one replies to.
     #[serde(
         rename = "replyToId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reply_to_id: ::std::option::Option<PayloadReplyToId>,
@@ -674,7 +699,11 @@ pub struct Payload {
     #[serde(rename = "sentAt")]
     pub sent_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///OPTIONAL. Plain-text body. Absent for attachment-only messages.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub text: ::std::option::Option<PayloadText>,
 }
 impl Payload {
@@ -1487,18 +1516,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

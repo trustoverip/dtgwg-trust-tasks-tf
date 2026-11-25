@@ -129,6 +129,7 @@ pub struct ListedCredential {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<ListedCredentialDeviceLabel>,
@@ -136,6 +137,7 @@ pub struct ListedCredential {
     #[serde(
         rename = "lastUsedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -146,6 +148,7 @@ pub struct ListedCredential {
     #[serde(
         rename = "signCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sign_count: ::std::option::Option<u64>,
@@ -280,7 +283,11 @@ impl<'de> ::serde::Deserialize<'de> for ListedCredentialDeviceLabel {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Which credentials to list: `session` (sign-in) or `stepUp` (the step-up-only passkeys of auth/passkey/enroll/invite 0.2). REQUIRED, with no default, so an administrator reads exactly the inventory they asked for and a consumer can refuse one it does not disclose to administrators.
     pub purpose: PayloadPurpose,
@@ -421,7 +428,11 @@ pub struct Response {
     ///Every credential of that purpose currently bound to the subject, newest registeredAt first. MAY be empty: a member holding none is not an error.
     pub credentials: ::std::vec::Vec<ListedCredential>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Echo of payload.purpose.
     pub purpose: ResponsePurpose,

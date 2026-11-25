@@ -197,7 +197,11 @@ impl<'de> ::serde::Deserialize<'de> for Capability {
 pub struct CapabilityRef {
     pub capability: Capability,
     ///Optional qualifier. Absent covers every resource of the capability's kind.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub resource: ::std::option::Option<ResourceQualifier>,
 }
 impl CapabilityRef {
@@ -317,6 +321,7 @@ pub struct GroupBinding {
     #[serde(
         rename = "createdBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_by: ::std::option::Option<GroupBindingCreatedBy>,
@@ -612,7 +617,11 @@ impl ::std::convert::From<Vec<MemberAction>> for MemberActions {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "groupId")]
     pub group_id: GroupId,
@@ -690,7 +699,11 @@ impl<'de> ::serde::Deserialize<'de> for ResourceQualifier {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub items: ::std::vec::Vec<GroupBinding>,
 }

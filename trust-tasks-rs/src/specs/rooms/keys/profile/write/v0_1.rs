@@ -123,15 +123,27 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub clear: ::std::option::Option<bool>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
     pub host: PayloadHost,
     ///The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub profile: ::std::option::Option<RoomProfile>,
     ///The room whose profile to set. The recipient MUST hold its principal's membership of it.
     #[serde(rename = "roomId")]
@@ -278,9 +290,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 #[non_exhaustive]
 pub struct Response {
     ///The epoch the profile was sealed under. Absent on an `open` room.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub epoch: ::std::option::Option<::std::num::NonZeroU64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.
     pub key: ResponseKey,
@@ -495,13 +515,25 @@ What a room says about itself to its own members: a name and, optionally, a desc
 #[non_exhaustive]
 pub struct RoomProfile {
     ///What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<RoomProfileDescription>,
     ///One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub emoji: ::std::option::Option<RoomProfileEmoji>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.
     pub name: RoomProfileName,
@@ -509,11 +541,16 @@ pub struct RoomProfile {
     #[serde(
         rename = "recordMembers",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub record_members: ::std::option::Option<Vec<RoomProfileRecordMembersItem>>,
     ///Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub tags: ::std::option::Option<Vec<RoomProfileTagsItem>>,
 }
 impl RoomProfile {

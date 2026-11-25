@@ -192,26 +192,47 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum accounts per page. The mediator chooses a default when omitted.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Omit accounts whose ranked queue holds fewer messages than this. Default 1 (skip empty queues).
     #[serde(
         rename = "minCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_count: ::std::option::Option<u64>,
     ///Which queue to rank by. Default `receive`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub queue: ::std::option::Option<Queue>,
     ///Ranking key, descending. Default `count`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sort: ::std::option::Option<PayloadSort>,
 }
 impl ::std::default::Default for Payload {
@@ -434,21 +455,31 @@ pub struct QueueDepth {
     #[serde(
         rename = "deliveredUnacked",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub delivered_unacked: ::std::option::Option<u64>,
     ///The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<i64>,
     ///Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.
     #[serde(
         rename = "oldestAgeSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oldest_age_seconds: ::std::option::Option<u64>,
     ///count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub saturation: ::std::option::Option<f64>,
 }
 impl QueueDepth {
@@ -465,6 +496,7 @@ pub struct QueueSummary {
     #[serde(
         rename = "accountType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub account_type: ::std::option::Option<AccountType>,
@@ -484,12 +516,17 @@ impl QueueSummary {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,
@@ -498,7 +535,11 @@ pub struct Response {
     #[serde(rename = "snapshotAt")]
     pub snapshot_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The ranking did not cover every account.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub truncated: ::std::option::Option<bool>,
 }
 impl Response {

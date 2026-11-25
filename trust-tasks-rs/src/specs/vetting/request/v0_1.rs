@@ -386,7 +386,11 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationNonce {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct EligibilityPresentationProof {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///e.g. `eddsa-jcs-2022`.
     pub cryptosuite: EligibilityPresentationProofCryptosuite,
@@ -755,16 +759,24 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub availability: ::std::option::Option<PayloadAvailability>,
     ///The community the applicant is applying to and asks to be vetted for.
     pub community: PayloadCommunity,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub introduction:
@@ -773,15 +785,24 @@ pub struct Payload {
     #[serde(rename = "joinDid")]
     pub join_did: PayloadJoinDid,
     ///BCP 47 language tags the applicant can hold a session in, most preferred first.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub languages: ::std::option::Option<Vec<PayloadLanguagesItem>>,
     ///OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub message: ::std::option::Option<PayloadMessage>,
     ///The method the applicant would prefer. A preference: the vetter chooses the session's method.
     #[serde(
         rename = "preferredMethod",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub preferred_method: ::std::option::Option<VettingMethod>,
@@ -789,10 +810,15 @@ pub struct Payload {
     #[serde(
         rename = "requirementsDigest",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requirements_digest: ::std::option::Option<DigestMultibase>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ticket: ::std::option::Option<Ticket>,
 }
 impl Payload {
@@ -1266,16 +1292,22 @@ pub struct Response {
     #[serde(
         rename = "acceptsDocumentation",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepts_documentation: ::std::option::Option<Vec<VettingDocumentation>>,
     #[serde(
         rename = "eligibilityVp",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub eligibility_vp: ::std::option::Option<EligibilityPresentation>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The vetter's handle for this accepted request, carried by the session and any decline.
     #[serde(rename = "requestId")]
@@ -1284,6 +1316,7 @@ pub struct Response {
     #[serde(
         rename = "sessionHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub session_hint: ::std::option::Option<ResponseSessionHint>,
@@ -2382,18 +2415,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

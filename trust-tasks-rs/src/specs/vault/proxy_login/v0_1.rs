@@ -43,6 +43,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "deviceId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_id: ::std::option::Option<ConsumerContextDeviceId>,
@@ -50,6 +51,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "lastUserVerificationAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_user_verification_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -57,6 +59,7 @@ pub struct ConsumerContext {
     #[serde(
         rename = "networkClass",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub network_class: ::std::option::Option<ConsumerContextNetworkClass>,
@@ -594,31 +597,46 @@ pub struct Payload {
     #[serde(
         rename = "consumerContext",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub consumer_context: ::std::option::Option<ConsumerContext>,
     ///Vault entry id to log in with.
     #[serde(rename = "entryId")]
     pub entry_id: PayloadEntryId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub nonce: ::std::option::Option<PayloadNonce>,
     ///Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`.
     #[serde(
         rename = "stepUpProof",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub step_up_proof: ::std::option::Option<StepUpProof>,
     ///Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub target: ::std::option::Option<SiteTarget>,
     ///Optional caller-preferred session TTL in seconds. The maintainer caps server-side per its policy; a higher hint MUST be silently truncated rather than rejected. Drivers that have a fixed-TTL bearer (e.g. SIOP id_tokens with their own `exp`) MUST NOT extend beyond the underlying credential's lifetime regardless of hint.
     #[serde(
         rename = "ttlSecondsHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds_hint: ::std::option::Option<::std::num::NonZeroU64>,
@@ -756,7 +774,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vault/proxy-login/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
     #[serde(rename = "sealedSessionBlob")]
@@ -820,6 +842,7 @@ pub enum SiteTarget {
         #[serde(
             rename = "teamId",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         team_id: ::std::option::Option<SiteTargetTeamId>,

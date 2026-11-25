@@ -125,7 +125,11 @@ pub struct Payload {
     ///The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.
     #[serde(rename = "eventId")]
     pub event_id: PayloadEventId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.
     pub tier: PayloadTier,
@@ -277,6 +281,7 @@ pub struct Response {
     #[serde(
         rename = "closesAfter",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub closes_after: ::std::option::Option<::chrono::naive::NaiveDate>,
@@ -284,13 +289,18 @@ pub struct Response {
     #[serde(
         rename = "dripPerTick",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drip_per_tick: ::std::option::Option<::std::num::NonZeroU64>,
     ///The event the request names.
     #[serde(rename = "eventId")]
     pub event_id: ResponseEventId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.
     #[serde(rename = "groupFloor")]
@@ -299,7 +309,11 @@ pub struct Response {
     #[serde(rename = "groupSize")]
     pub group_size: u64,
     ///Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<ResponseLabel>,
     ///`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.
     pub state: ResponseState,

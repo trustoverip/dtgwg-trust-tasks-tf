@@ -127,9 +127,17 @@ pub struct Payload {
     ///When the community observed the change. Where it coalesced several changes into this hint, the latest of them.
     pub at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Only on a count topic (`actions`, `acknowledgements`, `joinRequests`): the caller's current count for that topic as of `at` — what a console badge shows. Absent on every other topic. A console MAY show it until its re-fetch returns, and MUST prefer the read's own count once it does.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub count: ::std::option::Option<u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The stream position after this hint. A console keeps the latest one and passes it back as `since` when it re-subscribes.
     #[serde(rename = "resumeToken")]

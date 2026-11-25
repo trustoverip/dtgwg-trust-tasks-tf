@@ -126,10 +126,15 @@ pub struct Payload {
     #[serde(
         rename = "drainTtlSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drain_ttl_seconds: ::std::option::Option<u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub service: ServiceKind,
 }
@@ -144,7 +149,11 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub result: RollbackResult,
 }
@@ -163,6 +172,7 @@ pub struct RollbackResult {
     #[serde(
         rename = "drainEndsAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub drain_ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -170,6 +180,7 @@ pub struct RollbackResult {
     #[serde(
         rename = "drainingMediator",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub draining_mediator: ::std::option::Option<::std::string::String>,
@@ -177,10 +188,15 @@ pub struct RollbackResult {
     #[serde(
         rename = "effectiveAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub effective_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
     pub kind: RollbackResultKind,
@@ -188,6 +204,7 @@ pub struct RollbackResult {
     #[serde(
         rename = "logEntryVersionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub log_entry_version_id: ::std::option::Option<::std::string::String>,
@@ -198,6 +215,7 @@ pub struct RollbackResult {
     #[serde(
         rename = "vtaDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vta_did: ::std::option::Option<::std::string::String>,

@@ -125,7 +125,11 @@ pub struct Payload {
     ///Complete the deletion even where what deleting a DID in the subtree requires on its hosting server — removing a did:webvh log, publishing a did:webs deactivation and removing its slot — could not be confirmed: the server unreachable, refusing, or no longer known to the VTA. Default false: such a deletion is refused with `vta/contexts/delete:hostCleanupFailed` and nothing is deleted locally, so the caller can wait for the host and retry. True accepts that the named DIDs may keep resolving and that removing them is now the caller's responsibility; each is reported in `daemonCleanupErrors`.
     #[serde(rename = "abandonHostCopies", default)]
     pub abandon_host_copies: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly.
     #[serde(default)]
@@ -207,13 +211,17 @@ pub struct Response {
     #[serde(
         rename = "daemonCleanupErrors",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub daemon_cleanup_errors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.
     pub deleted: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub id: ::std::string::String,
 }
@@ -463,18 +471,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"hostCleanupFailures\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"minLength\":1,\"type\":\"string\"},\"server\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"reason\"],\"type\":\"object\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"hostCleanupFailures\"],\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

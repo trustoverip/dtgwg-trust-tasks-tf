@@ -198,7 +198,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -289,7 +293,11 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 pub struct Response {
     ///The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.
     pub entries: ::std::vec::Vec<ResponseEntriesItem>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.
     #[serde(rename = "registryVersion")]
@@ -314,13 +322,14 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "minimumSet",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub minimum_set: ::std::option::Option<bool>,
     ///OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub oidc: ::std::option::Option<::std::vec::Vec<ResponseEntriesItemOidcItem>>,
@@ -1266,17 +1275,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

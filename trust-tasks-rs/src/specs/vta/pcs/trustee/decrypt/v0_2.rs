@@ -40,6 +40,7 @@ pub struct DecryptDocument {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -580,7 +581,11 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The targets voting/trustees/status lists.
     pub targets: ::std::vec::Vec<DecryptionTarget>,
@@ -785,7 +790,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTrustee {
 #[non_exhaustive]
 pub struct Response {
     pub document: DecryptDocument,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

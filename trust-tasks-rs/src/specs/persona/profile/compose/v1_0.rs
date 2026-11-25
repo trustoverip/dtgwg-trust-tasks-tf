@@ -220,7 +220,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct HeldClaim {
     #[serde(rename = "attributeId")]
     pub attribute_id: Ulid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub slot: ::std::option::Option<Slot>,
 }
 impl HeldClaim {
@@ -235,12 +239,20 @@ impl HeldClaim {
 #[non_exhaustive]
 pub struct NewClaim {
     ///The holder's note to self for this value. Never disclosed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<NewClaimLabel>,
     ///`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists.
     #[serde(default = "defaults::new_claim_share")]
     pub share: NewClaimShare,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub slot: ::std::option::Option<Slot>,
     #[serde(rename = "type")]
     pub type_: ClaimType,
@@ -390,10 +402,18 @@ pub struct Payload {
     ///The context the face is composed for. A face whose every claim is local lives in this context and nowhere else; a face carrying any pool claim lives above contexts, and is bound into this one when `personaDid` is given.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///What the context may call the face, as on persona/binding/set. Meaningful only when the face is worn (`personaDid` or `wear`); a maintainer MUST refuse it otherwise rather than drop it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<PayloadLabel>,
     ///The holder's name for the face. Never disclosed; what a context may call the face is `label`.
     pub name: PayloadName,
@@ -401,11 +421,16 @@ pub struct Payload {
     #[serde(
         rename = "personaDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub persona_did: ::std::option::Option<PayloadPersonaDid>,
     ///When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only when the face is worn (`personaDid` or `wear`), and refused otherwise or in the past (`untilNotFuture`).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Wear the new face in `contextId` as the persona the holder already uses in `contextId` — the one DID with a binding there, current or cleared. None is refused (`noPersonaHere`): a persona is minted on its own, through the DID-template path, never as a side effect of wearing a face. Several are refused (`personaAmbiguous`, naming them): picking one for the holder would decide which of their identities a context sees. Not with `personaDid`, which names the persona instead.
     #[serde(default)]
@@ -668,16 +693,28 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPersonaDid {
 #[non_exhaustive]
 #[deprecated(note = "superseded by persona/profile/compose/1.1")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub binding: ::std::option::Option<ResponseBinding>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub correlation: ::std::option::Option<ResponseCorrelation>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///For each `share: pool` claim, in request order, the pool attribute the face now references and whether this compose created it. `created: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it. Absent when no claim was pooled.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub pooled: ::std::option::Option<::std::vec::Vec<ResponsePooledItem>>,
@@ -702,6 +739,7 @@ pub struct ResponseBinding {
     #[serde(
         rename = "alsoBoundPersonaCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub also_bound_persona_count: ::std::option::Option<u64>,
@@ -783,6 +821,7 @@ pub struct ResponseCorrelation {
     #[serde(
         rename = "sharedAttributeCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub shared_attribute_count: ::std::option::Option<u64>,
@@ -1941,18 +1980,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

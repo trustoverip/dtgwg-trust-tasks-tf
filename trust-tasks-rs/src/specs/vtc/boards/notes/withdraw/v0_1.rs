@@ -41,19 +41,29 @@ pub struct Author {
     #[serde(
         rename = "entryId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub entry_id: ::std::option::Option<EntryId>,
     #[serde(
         rename = "formerMember",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub former_member: ::std::option::Option<::serde_json::Value>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub name: ::std::option::Option<AuthorName>,
     ///Present when the caller is the author.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub you: ::std::option::Option<::serde_json::Value>,
 }
 impl ::std::default::Default for Author {
@@ -421,6 +431,7 @@ pub struct Note {
     #[serde(
         rename = "hiddenReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub hidden_reason: ::std::option::Option<Reason>,
@@ -428,13 +439,18 @@ pub struct Note {
     #[serde(
         rename = "ideaId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub idea_id: ::std::option::Option<IdeaId>,
     #[serde(rename = "noteId")]
     pub note_id: NoteId,
     pub state: NoteState,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub text: ::std::option::Option<NoteText>,
 }
 impl Note {
@@ -638,7 +654,11 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "noteId")]
     pub note_id: NoteId,
@@ -716,7 +736,11 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub note: Note,
 }

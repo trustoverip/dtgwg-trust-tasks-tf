@@ -39,10 +39,18 @@ pub mod error {
 #[non_exhaustive]
 pub struct AdmittedMembership {
     pub approval: Approval,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<AdmittedMembershipLabel>,
     ///True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.
     pub returning: bool,
@@ -466,10 +474,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.
     pub subject: PayloadSubject,

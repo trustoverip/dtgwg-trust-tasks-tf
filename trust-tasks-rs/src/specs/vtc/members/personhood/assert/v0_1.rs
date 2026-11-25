@@ -126,7 +126,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The member asserting personhood; MUST equal the presentation's holder.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy.
     pub presentation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -203,7 +207,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 #[deprecated(note = "superseded by vtc/members/personhood/assert/0.2")]
 pub struct Response {
     pub did: ResponseDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Always true on success — the flag flipped or stayed asserted.
     pub personhood: bool,

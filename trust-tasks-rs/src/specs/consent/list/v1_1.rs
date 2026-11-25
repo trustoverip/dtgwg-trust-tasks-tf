@@ -40,12 +40,17 @@ pub mod error {
 pub struct ConsentGrant {
     pub effect: Effect,
     ///How the decision was authorized — e.g. "did-signed" (approver's DID signed the consent/decision) or "bridge-attested" (an enrolled bridge relayed the operator's out-of-band choice).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub evidence: ::std::option::Option<::std::string::String>,
     ///Optional. After this time the grant lapses and the subject must be re-consented.
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -56,7 +61,11 @@ pub struct ConsentGrant {
     #[serde(rename = "grantedBy")]
     pub granted_by: ConsentGrantGrantedBy,
     ///Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub scope: ::std::option::Option<Scope>,
     pub subject: ConsentSubject,
 }
@@ -538,20 +547,37 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 #[non_exhaustive]
 pub struct Payload {
     ///Optional. Restrict to grants for this agent VID.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub agent: ::std::option::Option<PayloadAgent>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Optional. Restrict to this platform tag.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub platform: ::std::option::Option<PayloadPlatform>,
     ///Optional. A full subject, to point-check a single conversation.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub subject: ::std::option::Option<ConsentSubject>,
     ///Optional. An opaque incremental-sync token from a previous response's `nextSyncToken`; return only grants changed after it. A responder MUST NOT accept a token it did not issue.
     #[serde(
         rename = "syncToken",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sync_token: ::std::option::Option<::std::string::String>,
@@ -696,7 +722,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Matching consent grants.
     pub grants: ::std::vec::Vec<ConsentGrant>,
@@ -704,6 +734,7 @@ pub struct Response {
     #[serde(
         rename = "nextSyncToken",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_sync_token: ::std::option::Option<::std::string::String>,

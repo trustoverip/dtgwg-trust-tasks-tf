@@ -200,7 +200,11 @@ impl ::std::convert::TryFrom<::std::string::String> for MessageState {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The messages the requester sent and wants the status of, by the mediator's message identifier.
     #[serde(rename = "msgIds")]
@@ -280,7 +284,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMsgIdsItem {
 #[non_exhaustive]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per requested msgId, in request order.
     pub statuses: ::std::vec::Vec<ResponseStatusesItem>,
@@ -302,6 +310,7 @@ pub struct ResponseStatusesItem {
     #[serde(
         rename = "reachedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub reached_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

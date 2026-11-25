@@ -168,19 +168,32 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct CredentialScope {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub actions: ::std::option::Option<Vec<ProviderObjectAction>>,
     ///`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.
     #[serde(
         rename = "objectKey",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub object_key: ::std::option::Option<CredentialScopeObjectKey>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub prefix: ::std::option::Option<ProviderObjectPrefix>,
     ///`oauth2-private-key-jwt` only: the OAuth scopes requested.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub scopes: ::std::option::Option<Vec<CredentialScopeScopesItem>>,
 }
 impl ::std::default::Default for CredentialScope {
@@ -422,7 +435,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     pub account: AccountId,
     pub context: AccountContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub scope: CredentialScope,
     ///Requested lifetime; never more than the binding's `maxTtlSeconds`.
@@ -578,7 +595,11 @@ pub struct Response {
     ///The provider's expiry for the credential, in the clear.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The scope actually granted, which equals the requested one.
     pub scope: CredentialScope,

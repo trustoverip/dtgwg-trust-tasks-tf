@@ -131,10 +131,15 @@ pub struct Payload {
     #[serde(
         rename = "deniedReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub denied_reason: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Echoed from the matching confirm-request.
     pub subject: PayloadSubject,
@@ -330,10 +335,18 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[non_exhaustive]
 #[deprecated(note = "retired; use task-consent/decision/0.2")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Present when status is `rejected` (e.g. "challenge expired").
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<::std::string::String>,
     pub status: ResponseStatus,
 }

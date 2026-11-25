@@ -124,7 +124,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     ///The hosting domain, in canonical form (lowercase, IDNA-folded).
     pub domain: PayloadDomain,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -201,7 +205,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDomain {
 #[non_exhaustive]
 pub struct Response {
     pub domain: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///When the replica will delete the domain's content unless the domain is re-assigned first.
     #[serde(rename = "purgeAt")]

@@ -258,7 +258,11 @@ pub struct Payload {
     pub context_id: PayloadContextId,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The community's published voting parameters. Its `votingKey` MUST be the one the request was registered under.
     pub parameters: VotingParameters,
@@ -549,7 +553,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadResponsePreCredential {
 pub struct Response {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The engine now holds the voter's ticket for the election. The ticket itself is never returned.
     #[serde(rename = "ticketHeld")]

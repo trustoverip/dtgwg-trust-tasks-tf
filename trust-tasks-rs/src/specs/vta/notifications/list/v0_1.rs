@@ -259,6 +259,7 @@ pub struct HeldNotification {
     #[serde(
         rename = "dismissedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dismissed_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -378,6 +379,7 @@ pub struct Notification {
     #[serde(
         rename = "validFrom",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_from: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -385,6 +387,7 @@ pub struct Notification {
     #[serde(
         rename = "validUntil",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub valid_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -470,14 +473,23 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: ContextId,
     ///An opaque cursor from a previous response's `nextCursor`, for the same filters. The VTA refuses one it did not issue.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<PayloadCursor>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Only notifications whose thing is held by this DID — for example, one community's elections.
     #[serde(
         rename = "heldBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub held_by: ::std::option::Option<Did>,
@@ -485,6 +497,7 @@ pub struct Payload {
     #[serde(
         rename = "includeDismissed",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_dismissed: ::std::option::Option<bool>,
@@ -492,14 +505,23 @@ pub struct Payload {
     #[serde(
         rename = "includeLapsed",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_lapsed: ::std::option::Option<bool>,
     ///Only notifications of this kind.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub kind: ::std::option::Option<Kind>,
     ///The most items to return.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
 }
 impl Payload {
@@ -647,6 +669,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<ResponseNextCursor>,

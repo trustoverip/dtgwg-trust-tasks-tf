@@ -126,21 +126,30 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<PayloadDeviceLabel>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///What the redeemed credential may authenticate. `session` (the default, and 0.1's only behaviour): it signs the subject in, with the role and scopes the invite carries. `stepUp`: it is accepted only as the user-verification evidence of a step-up bound to one operation (auth/step-up/approve-response `evidence.kind: webauthn`), never to open or elevate a session; `role` and `scopes` MUST then be absent.
     #[serde(default = "defaults::payload_purpose")]
     pub purpose: PayloadPurpose,
     ///Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub role: ::std::option::Option<::std::string::String>,
     ///Optional scopes to attach on enrollment.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub scopes: ::std::option::Option<::std::vec::Vec<PayloadScopesItem>>,
@@ -150,6 +159,7 @@ pub struct Payload {
     #[serde(
         rename = "ttlSeconds",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ttl_seconds: ::std::option::Option<::std::num::NonZeroU64>,
@@ -413,7 +423,11 @@ pub struct Response {
     pub claim_code: ResponseClaimCode,
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub invite: ResponseInvite,
     ///Echo of the purpose the redeemed credential will have.
@@ -1014,18 +1028,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

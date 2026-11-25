@@ -134,7 +134,11 @@ pub struct InviteSummary {
     ///What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.
     pub purpose: InviteSummaryPurpose,
     ///The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub role: ::std::option::Option<::std::string::String>,
     ///The VID the invite binds a passkey to.
     pub subject: InviteSummarySubject,
@@ -336,22 +340,32 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.
     #[serde(
         rename = "extendBy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extend_by: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(rename = "inviteId")]
     pub invite_id: PayloadInviteId,
     ///The role the invitee will receive. Absent leaves the role unchanged.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub role: ::std::option::Option<PayloadRole>,
 }
 impl Payload {
@@ -486,7 +500,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRole {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub invite: InviteSummary,
 }

@@ -127,7 +127,11 @@ pub struct Payload {
     ///The context the voter belongs to.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.
     pub member: PayloadMember,
@@ -135,6 +139,7 @@ pub struct Payload {
     #[serde(
         rename = "memberOf",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub member_of: ::std::option::Option<PayloadMemberOf>,
@@ -142,6 +147,7 @@ pub struct Payload {
     #[serde(
         rename = "membershipCredential",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub membership_credential: ::std::option::Option<PayloadMembershipCredential>,
@@ -548,6 +554,7 @@ pub struct ReadDocument {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -848,7 +855,11 @@ impl ::std::convert::TryFrom<::std::string::String> for ReadDocumentType {
 #[non_exhaustive]
 pub struct Response {
     pub document: ReadDocument,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

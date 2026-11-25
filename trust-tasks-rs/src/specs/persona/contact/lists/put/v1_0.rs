@@ -39,7 +39,11 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ContactList {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub colour: ::std::option::Option<ListColour>,
     ///How many of the context's contacts are on the list now.
     #[serde(rename = "contactCount")]
@@ -388,29 +392,47 @@ impl ::std::fmt::Display for ListOrder {
 #[deprecated(note = "superseded by persona/contact/lists/put/1.1")]
 pub struct Payload {
     ///The list's colour, replacing any it had. Absent: unchanged (none, on a create).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub colour: ::std::option::Option<ListColour>,
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The list to update. Absent: create a new list, whose identifier the agent assigns and returns.
     #[serde(
         rename = "listId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub list_id: ::std::option::Option<ListId>,
     ///The list's name. Required to create; on an update, replaces the name. Unique within the context.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub name: ::std::option::Option<ListName>,
     ///Where the list sorts among the holder's lists. Absent on a create: after every existing list.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub order: ::std::option::Option<ListOrder>,
     ///Remove the list's colour. Update only. Only `true` is accepted.
     #[serde(
         rename = "removeColour",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_colour: ::std::option::Option<bool>,
@@ -490,7 +512,11 @@ pub struct Response {
     pub changed: bool,
     ///True when this request created the list.
     pub created: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub list: ContactList,
 }

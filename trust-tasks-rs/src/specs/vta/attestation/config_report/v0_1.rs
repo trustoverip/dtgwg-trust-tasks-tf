@@ -123,7 +123,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.
     pub nonce: PayloadNonce,
@@ -209,7 +213,11 @@ pub struct Response {
     ///The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).
     pub evidence: ResponseEvidence,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///When the evidence was produced. Informational: freshness comes from the nonce.
     #[serde(rename = "generatedAt")]

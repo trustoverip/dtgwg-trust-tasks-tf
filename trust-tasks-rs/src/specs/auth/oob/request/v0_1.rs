@@ -181,7 +181,11 @@ impl ::std::convert::TryFrom<::std::string::String> for Mode {
 #[non_exhaustive]
 #[deprecated(note = "superseded by auth/oob/request/0.2")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mode: Mode,
     pub purpose: Purpose,
@@ -325,7 +329,11 @@ pub struct Response {
     ///The instant by which the request must be claimed, as integer UTC epoch seconds — the same unit as the trigger link's `_exp`, into which it is written unchanged. At most 180 s after the request was accepted; 120 s is RECOMMENDED.
     #[serde(rename = "claimDeadline")]
     pub claim_deadline: u64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "requestId")]
     pub request_id: RequestId,

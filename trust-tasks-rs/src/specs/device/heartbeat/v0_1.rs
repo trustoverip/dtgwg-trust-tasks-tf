@@ -124,15 +124,24 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 #[deprecated(note = "superseded by device/heartbeat/0.3")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Updated platform descriptor if it changed since registration (e.g. browser updated).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub platform: ::std::option::Option<::std::string::String>,
     ///Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.
     #[serde(
         rename = "vaultSeq",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub vault_seq: ::std::option::Option<u64>,
@@ -239,13 +248,17 @@ impl ::std::convert::TryFrom<::std::string::String> for QueuedOperationKind {
 #[non_exhaustive]
 #[deprecated(note = "superseded by device/heartbeat/0.3")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.
     #[serde(
         rename = "queuedOperations",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub queued_operations: ::std::option::Option<::std::vec::Vec<QueuedOperation>>,
@@ -256,6 +269,7 @@ pub struct Response {
     #[serde(
         rename = "syncHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub sync_hint: ::std::option::Option<ResponseSyncHint>,
@@ -587,18 +601,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

@@ -126,17 +126,26 @@ pub struct Payload {
     pub approver: PayloadApprover,
     ///The VTA context path this binding applies to.
     pub context: PayloadContext,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Messaging-platform tag, e.g. "signal".
     pub platform: PayloadPlatform,
     ///How the prompt reaches the approver; defaults to bridge-relay.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub route: ::std::option::Option<Route>,
     ///Optional routing detail (e.g. the operator's opaque conversationRef).
     #[serde(
         rename = "routeHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub route_hint: ::std::option::Option<::std::string::String>,
@@ -329,7 +338,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The binding was upserted.
     pub status: ResponseStatus,

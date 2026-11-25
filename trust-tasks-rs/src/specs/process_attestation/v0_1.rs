@@ -43,6 +43,7 @@ pub struct Artifact {
     #[serde(
         rename = "byteLength",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub byte_length: ::std::option::Option<u64>,
@@ -193,7 +194,11 @@ impl<'de> ::serde::Deserialize<'de> for ArtifactDigest {
 #[non_exhaustive]
 pub struct Assessment {
     ///The primitive's confidence in `determination`, as an integer percentage. An integer rather than a fraction because no other specification in this registry puts a floating-point value on the wire: a float's textual form is not stable across JSON implementations, which makes byte-exact re-serialization a language-dependent property.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub confidence: ::std::option::Option<i64>,
     ///Primitive-defined. Deliberately not normalized across primitives: a determination means only what the primitive that produced it defines it to mean.
     pub determination: AssessmentDetermination,
@@ -350,15 +355,27 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 pub struct Disclosed {
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchors: ::std::option::Option<::std::vec::Vec<DisclosedAnchorsItem>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub document: ::std::option::Option<DisclosedDocument>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub integrity: ::std::option::Option<DisclosedIntegrity>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub timeline: ::std::option::Option<DisclosedTimeline>,
 }
 impl ::std::default::Default for Disclosed {
@@ -385,6 +402,7 @@ pub struct DisclosedAnchorsItem {
     #[serde(
         rename = "anchoredAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub anchored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -474,6 +492,7 @@ pub struct DisclosedDocument {
     #[serde(
         rename = "mediaType",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub media_type: ::std::option::Option<DisclosedDocumentMediaType>,
@@ -558,18 +577,21 @@ pub struct DisclosedIntegrity {
     #[serde(
         rename = "chainValid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub chain_valid: ::std::option::Option<bool>,
     #[serde(
         rename = "keyCustody",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_custody: ::std::option::Option<DisclosedIntegrityKeyCustody>,
     #[serde(
         rename = "signatureValid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signature_valid: ::std::option::Option<bool>,
@@ -662,18 +684,21 @@ pub struct DisclosedTimeline {
     #[serde(
         rename = "checkpointCount",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checkpoint_count: ::std::option::Option<u64>,
     #[serde(
         rename = "endedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(
         rename = "startedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub started_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -855,9 +880,17 @@ pub struct Payload {
     ///Verifier-supplied freshness nonce, echoed verbatim in the response. The floor is 16 characters because anti-replay is the only integrity property the request has.
     pub challenge: PayloadChallenge,
     ///Categories the Verifier requests. A Holder MAY return fewer; it MUST NOT return more.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub disclosure: ::std::option::Option<Vec<DisclosureCategory>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -939,12 +972,14 @@ pub enum ReceiptReference {
         #[serde(
             rename = "digestMultibase",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         digest_multibase: ::std::option::Option<DigestMultibase>,
         #[serde(
             rename = "mediaType",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         media_type: ::std::option::Option<ReceiptReferenceMediaType>,
@@ -1094,9 +1129,17 @@ pub enum Response {
         assessment: Assessment,
         ///The request's challenge, echoed verbatim.
         challenge: ResponseChallenge,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         disclosed: ::std::option::Option<Disclosed>,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         #[serde(rename = "receiptReference")]
         receipt_reference: ReceiptReference,
@@ -1107,7 +1150,11 @@ pub enum Response {
         artifact: Artifact,
         ///The request's challenge, echoed verbatim.
         challenge: ResponseChallenge,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
     },
 }
@@ -1769,17 +1816,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

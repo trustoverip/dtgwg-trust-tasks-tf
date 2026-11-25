@@ -143,7 +143,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/keys/chain/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The rungs, in any order. A recipient stores them and reports how far back it can now reach — see the response's `earliestReadableEpoch`.
     pub links: ::std::vec::Vec<EpochLink>,
@@ -166,12 +170,20 @@ pub struct Response {
     ///The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.
     #[serde(rename = "earliestReadableEpoch")]
     pub earliest_readable_epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
     ///How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub stored: ::std::option::Option<u64>,
 }
 impl Response {

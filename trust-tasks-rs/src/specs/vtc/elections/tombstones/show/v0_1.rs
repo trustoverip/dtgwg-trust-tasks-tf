@@ -298,7 +298,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -322,7 +326,11 @@ pub struct Response {
     pub deleted_at: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of the election's manifest, as registered. Every cast was bound to it.
     #[serde(rename = "manifestDigest")]
@@ -331,6 +339,7 @@ pub struct Response {
     #[serde(
         rename = "removeAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub remove_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

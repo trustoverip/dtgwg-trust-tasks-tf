@@ -453,16 +453,22 @@ pub struct Payload {
     #[serde(
         rename = "displayHint",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub display_hint: ::std::option::Option<PayloadDisplayHint>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Digest of the inbound message that prompted this request, when there is one, so an approver deciding on a receive scope can confirm the decision it is being asked to make corresponds to a real arriving message. A digest rather than the content: the approver is deciding whether the agent may read the conversation, and showing them the message in order to ask would disclose what the decision is meant to gate.
     #[serde(
         rename = "firstMessageDigest",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub first_message_digest: ::std::option::Option<PayloadFirstMessageDigest>,

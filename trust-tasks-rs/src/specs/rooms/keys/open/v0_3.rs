@@ -123,12 +123,20 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The record's key within the room.
     pub key: PayloadKey,
     ///OPTIONAL. The one purpose the caller will use the content this request discloses for (VTI-ACL-103), as `RecordPurpose` defines it. A purpose not granted is refused with `purposeNotGranted`. May be omitted where exactly one purpose is granted, or `any`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purpose: ::std::option::Option<RecordPurpose>,
     ///The room the record belongs to. Part of the record's associated data, so a caller naming the wrong room gets an authentication failure rather than someone else's plaintext.
     #[serde(rename = "roomId")]
@@ -462,7 +470,11 @@ impl ::std::fmt::Display for RecordPurpose {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The opened record, base64url. The only thing that crosses back — never the key.
     pub plaintext: ::std::string::String,

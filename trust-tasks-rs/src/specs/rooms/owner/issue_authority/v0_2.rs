@@ -127,7 +127,11 @@ pub struct Payload {
     ///What the subject may do. MUST NOT be empty — an empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer. `curate` is not implied by `write`: pinning, deprecating and retracting are judgements over shared knowledge, not writes.
     pub actions: ::std::vec::Vec<PayloadActionsItem>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The room whose identity issues this credential. The recipient MUST hold a signing key for it — it is signing AS the room, not as itself.
     #[serde(rename = "roomId")]
@@ -286,7 +290,11 @@ pub struct Response {
     ///Its `id`.
     #[serde(rename = "credentialId")]
     pub credential_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

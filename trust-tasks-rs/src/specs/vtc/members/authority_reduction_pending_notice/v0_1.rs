@@ -199,7 +199,11 @@ pub struct Payload {
     pub decided_by: PayloadDecidedBy,
     ///The subject whose authority the pending reduction would reduce — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.
     pub did: PayloadDid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///When the reduction takes effect unless its requester cancels it first. Equal to the parked action's `landsAt`; fixed when the reduction was parked.
     #[serde(rename = "landsAt")]
@@ -208,7 +212,11 @@ pub struct Payload {
     #[serde(rename = "previousRole")]
     pub previous_role: PayloadPreviousRole,
     ///The requesting administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
     ///When the reduction was requested and parked — not when the notice was sent.
     #[serde(rename = "requestedAt")]
@@ -217,6 +225,7 @@ pub struct Payload {
     #[serde(
         rename = "resultingRole",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub resulting_role: ::std::option::Option<PayloadResultingRole>,

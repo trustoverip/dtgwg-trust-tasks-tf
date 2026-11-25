@@ -297,6 +297,7 @@ pub struct GrantView {
     #[serde(
         rename = "attachedNow",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attached_now: ::std::option::Option<bool>,
@@ -304,7 +305,11 @@ pub struct GrantView {
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///True when messaging/mux/update narrowed the effective scope or expiry below what the statement signs.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub narrowed: ::std::option::Option<bool>,
     ///The effective scope: the signed scope, or the narrower one messaging/mux/update set.
     pub scope: MuxScope,
@@ -324,7 +329,11 @@ impl GrantView {
 #[non_exhaustive]
 pub struct MuxDataIntegrityProof {
     ///OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The W3C Data Integrity EdDSA cryptosuite used.
     pub cryptosuite: MuxDataIntegrityProofCryptosuite,
@@ -771,17 +780,26 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The grant to narrow.
     #[serde(rename = "grantId")]
     pub grant_id: GrantId,
     ///The new effective scope. MUST be a subset of the grant's current effective scope.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub scope: ::std::option::Option<MuxScope>,
 }
 impl Payload {
@@ -798,7 +816,11 @@ pub struct Response {
     ///False when the request named the values already in force.
     pub changed: bool,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The grant as it now stands.
     pub grant: GrantView,

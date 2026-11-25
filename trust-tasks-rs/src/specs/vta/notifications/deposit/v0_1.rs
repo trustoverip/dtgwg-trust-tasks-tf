@@ -280,7 +280,11 @@ pub struct Payload {
     #[serde(rename = "contextId")]
     pub context_id: ContextId,
     pub document: DepositedDocument,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {

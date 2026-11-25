@@ -126,10 +126,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub enum Payload {
     Variant0 {
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         ///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         reason: ::std::option::Option<PayloadVariant0Reason>,
         ///The session to revoke. Mutually exclusive with `all`.
         #[serde(rename = "sessionId")]
@@ -139,10 +147,18 @@ pub enum Payload {
         ///When true, revoke every active session the consumer holds for the producer's subject. Mutually exclusive with `sessionId`.
         all: bool,
         ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         ext: ::std::option::Option<Ext>,
         ///Optional human-readable rationale (e.g. "logout", "device-lost", "key-rotation"). Surfaced in audit logs; the framework imposes no vocabulary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         reason: ::std::option::Option<PayloadVariant1Reason>,
     },
 }
@@ -331,7 +347,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Reason {
 #[deprecated(note = "superseded by auth/revoke-session/0.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Number of sessions invalidated by this call. Zero is a valid outcome (e.g. the named sessionId was already revoked).
     #[serde(rename = "revokedCount")]

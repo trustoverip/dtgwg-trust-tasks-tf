@@ -42,26 +42,50 @@ pub struct ActivityItem {
     ///What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it.
     pub action: ActivityItemAction,
     ///Who acted, for an audit item. Absent when a right-to-be-forgotten erasure has removed it from the audit row, and always absent for a job item, which has no actor of its own.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub actor: ::std::option::Option<Did>,
     ///When it happened: the audit row's timestamp, or the job's acceptance time (its creation time if never accepted).
     pub at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///A machine-readable qualifier: `departed` on a departure-triggered change, the old name on a rename, a job's queue state, a drift count. A producer MUST NOT put free-form or personal prose here beyond what the qualifier itself names.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub detail: ::std::option::Option<ActivityItemDetail>,
     ///The namespace the item belongs to. Absent only for a community-wide audit row from before any namespace was unbound (visible to a community administrator with no `namespace` filter only).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub namespace: ::std::option::Option<NamespaceId>,
     ///The resource the item concerns, where it names one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub resource: ::std::option::Option<Resource>,
     ///The right a rights-change item concerns. Absent for a drift report or a job item.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub right: ::std::option::Option<Right>,
     ///Where the item came from: an audit row or a bridge job.
     pub source: Source,
     ///Whose right it was, for a rights-change audit item. Absent likewise on erasure, and always absent for a job item.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub subject: ::std::option::Option<Did>,
 }
 impl ActivityItem {
@@ -426,15 +450,31 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[deprecated(note = "superseded by git-ns/activity/list/0.3")]
 pub struct Payload {
     ///Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `namespace` from the request that produced it — start a fresh query instead.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub cursor: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Maximum items to return in this page. A VTC clamps to 1..=500 (default 100).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub limit: ::std::option::Option<::std::num::NonZeroU64>,
     ///Only activity in this namespace. Absent: every administered namespace.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub namespace: ::std::option::Option<NamespaceId>,
 }
 impl ::std::default::Default for Payload {
@@ -532,7 +572,11 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/activity/list/0.3")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Items in administered namespaces, newest (`at`) first.
     pub items: ::std::vec::Vec<ActivityItem>,
@@ -540,6 +584,7 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub next_cursor: ::std::option::Option<::std::string::String>,

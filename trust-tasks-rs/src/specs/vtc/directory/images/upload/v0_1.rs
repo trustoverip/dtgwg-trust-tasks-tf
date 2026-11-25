@@ -44,15 +44,24 @@ pub struct CardBlobRef {
     ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
     pub sha256: CardBlobRefSha256,
     ///Size in bytes of the stored bytes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub size: ::std::option::Option<::std::num::NonZeroU64>,
     ///Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///Projection only: when `url` stops working.
     #[serde(
         rename = "urlExpiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub url_expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -353,7 +362,11 @@ impl ::std::convert::TryFrom<::std::string::String> for ImageMediaType {
 pub struct Payload {
     ///The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded.
     pub data: PayloadData,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The media type of `data` as sent. The community may store another: it re-encodes.
     #[serde(rename = "mediaType")]
@@ -440,7 +453,11 @@ pub struct Response {
     ///When the community erases the image if no card holds it by then.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The stored, re-encoded image, without `url` or `urlExpiresAt`. A card holds this as the field's value.
     pub image: CardBlobRef,

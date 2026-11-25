@@ -41,20 +41,24 @@ pub struct ContextPolicy {
     ///Whether material in this context may leave it through an export. Defaults to true; set it to false for a context whose contents must not be extractable.
     #[serde(rename = "exportAllowed", default = "defaults::default_bool::<true>")]
     pub export_allowed: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Credential types that may be presented from this context. Absent: any type. Present-but-empty: none.
     #[serde(
         rename = "presentableTypes",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub presentable_types: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Resource limits for the context. Shape is maintainer-defined.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub quotas:
@@ -63,7 +67,7 @@ pub struct ContextPolicy {
     #[serde(
         rename = "signableKeys",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub signable_keys: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -71,7 +75,7 @@ pub struct ContextPolicy {
     #[serde(
         rename = "trustedVerifiers",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub trusted_verifiers: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
@@ -106,19 +110,35 @@ pub struct ContextRecord {
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///Free-form description.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<ContextRecordDescription>,
     ///DID this context acts as, when one has been assigned. Absent means the context has no identity of its own yet — not that it has been denied one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub did: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Context id. For a nested context this is the full path (`parent/leaf`), not the leaf alone — an ACL scope naming this context must use this value verbatim.
     pub id: ContextRecordId,
     ///Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name.
     pub name: ContextRecordName,
     ///Id of the context this one nests under. Absent for a top-level context. Authority granted at a parent reaches its children, so this member is load-bearing for anyone reasoning about scope.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub parent: ::std::option::Option<::std::string::String>,
     ///RFC 3339.
     #[serde(rename = "updatedAt")]
@@ -403,21 +423,38 @@ pub struct Payload {
     #[serde(
         rename = "contextPolicy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub context_policy: ::std::option::Option<ContextPolicy>,
     ///New description.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<PayloadDescription>,
     ///DID this context acts as. Prefer vta/contexts/update-did, which is the task named and audited for this change; setting it here is permitted for a maintainer that treats the two as one write.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub did: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Context to update. Not itself changeable: an id is what ACL scopes name, so renaming one would silently unhook every grant that referenced it.
     pub id: PayloadId,
     ///New human-readable name.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub name: ::std::option::Option<PayloadName>,
 }
 impl Payload {
@@ -1094,18 +1131,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

@@ -127,7 +127,11 @@ pub struct Payload {
     ///The VTA context whose memory items to recall.
     #[serde(rename = "contextId")]
     pub context_id: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -142,7 +146,11 @@ impl Payload {
 #[non_exhaustive]
 #[deprecated(note = "superseded by vta/memory/list/0.3")]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Every memory item in the context.
     pub items: ::std::vec::Vec<ResponseItemsItem>,

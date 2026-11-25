@@ -196,7 +196,11 @@ pub struct LogoRef {
     ///The length of the stored bytes.
     pub size: ::std::num::NonZeroU64,
     ///The absolute `https` URL at which the community serves exactly these bytes, with this media type, to anyone and without a credential. Present whenever the community serves the stored logo over HTTP; absent when it serves it no other way than vtc/community/logo/show with `includeData`. A client draws the logo from here and compares `sha256`, not the URL, to tell whether it changed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub url: ::std::option::Option<::std::string::String>,
     ///The stored image's width in pixels.
     pub width: ::std::num::NonZeroU64,
@@ -273,12 +277,17 @@ impl<'de> ::serde::Deserialize<'de> for LogoRefSha256 {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Return the stored bytes in `data` as well as the reference. Absent or `false` returns the reference only, which is all a caller that can fetch `logo.url` needs.
     #[serde(
         rename = "includeData",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub include_data: ::std::option::Option<bool>,
@@ -303,9 +312,17 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     ///The stored bytes, base64url without padding (RFC 4648 §5); their SHA-256 is `logo.sha256`. Present exactly when the request set `includeData: true` and the community holds a logo.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub data: ::std::option::Option<ResponseData>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The logo the community holds, or `null` when it holds none.
     pub logo: ::std::option::Option<LogoRef>,
@@ -313,6 +330,7 @@ pub struct Response {
     #[serde(
         rename = "updatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

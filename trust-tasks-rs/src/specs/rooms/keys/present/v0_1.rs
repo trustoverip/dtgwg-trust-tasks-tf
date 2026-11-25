@@ -127,13 +127,25 @@ pub struct Payload {
     ///The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.
     pub action: PayloadAction,
     ///The party the presentation is for, so it cannot be replayed elsewhere. A host's identifier, normally.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub audience: ::std::option::Option<::std::string::String>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub nonce: ::std::option::Option<PayloadNonce>,
     ///The room to present for.
     #[serde(rename = "roomId")]
@@ -283,10 +295,15 @@ pub struct Response {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.
     pub presentation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,

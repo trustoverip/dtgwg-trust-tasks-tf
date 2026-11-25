@@ -43,7 +43,7 @@ pub struct CredentialDescriptor {
     pub id: ::std::string::String,
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub transports: ::std::option::Option<::std::vec::Vec<CredentialDescriptorTransportsItem>>,
@@ -137,7 +137,7 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "allowCredentials",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub allow_credentials: ::std::option::Option<::std::vec::Vec<CredentialDescriptor>>,
@@ -151,7 +151,7 @@ pub struct CredentialRequestOptions {
     Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.*/
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub extensions:
@@ -159,14 +159,20 @@ pub struct CredentialRequestOptions {
     #[serde(
         rename = "rpId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub rp_id: ::std::option::Option<CredentialRequestOptionsRpId>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub timeout: ::std::option::Option<::std::num::NonZeroU64>,
     #[serde(
         rename = "userVerification",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_verification: ::std::option::Option<CredentialRequestOptionsUserVerification>,
@@ -392,13 +398,25 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by auth/passkey/login/start/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub purpose: ::std::option::Option<PayloadPurpose>,
     ///The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub subject: ::std::option::Option<PayloadSubject>,
 }
 impl ::std::default::Default for Payload {
@@ -546,7 +564,11 @@ pub struct Response {
     #[serde(rename = "authId")]
     pub auth_id: ResponseAuthId,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///PublicKeyCredentialRequestOptions for navigator.credentials.get.
     pub options: CredentialRequestOptions,
@@ -1032,18 +1054,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

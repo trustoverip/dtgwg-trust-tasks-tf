@@ -123,13 +123,25 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct Payload {
     ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub domain: ::std::option::Option<PayloadDomain>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub mnemonic: PayloadMnemonic,
     ///When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub raw: ::std::option::Option<bool>,
 }
 impl Payload {
@@ -269,12 +281,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 pub struct Response {
     ///The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.
     pub entries: ::std::vec::Vec<ResponseEntriesItem>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.
     #[serde(
         rename = "logContent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub log_content: ::std::option::Option<::std::string::String>,
@@ -285,6 +302,7 @@ pub struct Response {
     #[serde(
         rename = "witnessContent",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub witness_content: ::std::option::Option<::std::string::String>,
@@ -303,7 +321,7 @@ pub struct ResponseEntriesItem {
     ///The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub parameters:
@@ -314,6 +332,7 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "versionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version_id: ::std::option::Option<::std::string::String>,
@@ -321,6 +340,7 @@ pub struct ResponseEntriesItem {
     #[serde(
         rename = "versionTime",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub version_time: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -750,18 +770,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

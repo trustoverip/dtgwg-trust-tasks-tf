@@ -202,7 +202,11 @@ impl ::std::convert::TryFrom<::std::string::String> for MessageState {
 #[deprecated(note = "superseded by messaging/message/status/0.2")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The messages the requester sent and wants the status of, by the mediator's message identifier.
     #[serde(rename = "msgIds")]
@@ -283,7 +287,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMsgIdsItem {
 #[deprecated(note = "superseded by messaging/message/status/0.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///One entry per requested msgId, in request order.
     pub statuses: ::std::vec::Vec<ResponseStatusesItem>,
@@ -300,7 +308,11 @@ impl Response {
 #[non_exhaustive]
 pub struct ResponseStatusesItem {
     ///When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(rename = "msgId")]
     pub msg_id: ResponseStatusesItemMsgId,

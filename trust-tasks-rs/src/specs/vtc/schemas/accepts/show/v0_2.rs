@@ -49,23 +49,37 @@ pub struct AcceptsCriterion {
     #[serde(
         rename = "credentialIssuers",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub credential_issuers: ::std::option::Option<CredentialIssuers>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub description: ::std::option::Option<CriterionDescription>,
     pub id: AcceptsCriterionId,
     ///True: a submission meets the criterion only when it carries a valid, unconsumed invitation credential this community issued to the applicant. Absent or false: an invitation plays no part in meeting this criterion (another criterion may still require one).
     #[serde(
         rename = "invitationRequired",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub invitation_required: ::std::option::Option<bool>,
     ///The credentials an applicant must present, as a DCQL query. Absent: the criterion requires no credential.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub query: ::std::option::Option<DcqlQuery>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub vetting: ::std::option::Option<VettingRequirements>,
 }
 impl AcceptsCriterion {
@@ -737,7 +751,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub id: AcceptsCriterionId,
 }
@@ -753,7 +771,11 @@ impl Payload {
 #[non_exhaustive]
 pub struct Response {
     pub criterion: AcceptsCriterion,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {
@@ -975,6 +997,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "acceptedDocumentClasses",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepted_document_classes: ::std::option::Option<Vec<VettingDocumentation>>,
@@ -984,16 +1007,22 @@ pub struct VettingRequirements {
     #[serde(
         rename = "decisionSla",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub decision_sla: ::std::option::Option<Duration>,
     #[serde(rename = "eligibleVetters")]
     pub eligible_vetters: VettingRequirementsEligibleVetters,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(
         rename = "extCritical",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub ext_critical: ::std::option::Option<ExtCritical>,
@@ -1001,17 +1030,27 @@ pub struct VettingRequirements {
     #[serde(
         rename = "governanceFrameworkUrl",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub governance_framework_url: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub independence: ::std::option::Option<VettingRequirementsIndependence>,
     ///Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub invitation: ::std::option::Option<VettingRequirementsInvitation>,
     #[serde(
         rename = "maxStatementAge",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_statement_age: ::std::option::Option<Duration>,
@@ -1019,7 +1058,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "minByMethod",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub min_by_method: ::std::option::Option<::std::collections::HashMap<VettingMethod, u64>>,
@@ -1030,6 +1069,7 @@ pub struct VettingRequirements {
     #[serde(
         rename = "optionalClaims",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub optional_claims: ::std::option::Option<Vec<ClaimType>>,
@@ -1037,12 +1077,14 @@ pub struct VettingRequirements {
     #[serde(
         rename = "requiredClaims",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub required_claims: ::std::option::Option<Vec<ClaimType>>,
     #[serde(
         rename = "requirementsGrace",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub requirements_grace: ::std::option::Option<Duration>,
@@ -1150,7 +1192,7 @@ pub struct VettingRequirementsIndependence {
     #[serde(
         rename = "maxByDeclaredRelationship",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub max_by_declared_relationship:
@@ -1159,6 +1201,7 @@ pub struct VettingRequirementsIndependence {
     #[serde(
         rename = "requireConsistentIdentityCommitment",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub require_consistent_identity_commitment: ::std::option::Option<bool>,
@@ -2029,18 +2072,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

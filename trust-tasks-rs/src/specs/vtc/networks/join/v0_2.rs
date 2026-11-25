@@ -125,7 +125,7 @@ pub struct NetworkMembership {
     ///The community's acknowledgement (VMC carrying the grant's digest).
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub acknowledgement:
@@ -133,7 +133,7 @@ pub struct NetworkMembership {
     ///The network's membership grant (VMC), once the community acknowledged.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub grant: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
@@ -141,20 +141,25 @@ pub struct NetworkMembership {
     #[serde(
         rename = "joinedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub joined_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///The network's listing credential naming the community, as the community verified it.
     pub listing: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///The network's name, as its profile gives it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub name: ::std::option::Option<NetworkMembershipName>,
     ///The network's DID.
     pub network: NetworkMembershipNetwork,
     ///The community's repudiation (VSC) of the listing, or — on departure — of the grant.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub repudiation:
@@ -365,12 +370,16 @@ impl ::std::convert::TryFrom<::std::string::String> for NetworkMembershipState {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The community's groups to serve the network's roles. Every role the network requires must be assigned.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub groups: ::std::option::Option<::std::vec::Vec<RoleAssignment>>,
@@ -669,7 +678,11 @@ impl<'de> ::serde::Deserialize<'de> for RegisteredGroupRole {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     pub membership: NetworkMembership,
 }
@@ -1455,18 +1468,4 @@ pub mod error_codes {
         retryable: true,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

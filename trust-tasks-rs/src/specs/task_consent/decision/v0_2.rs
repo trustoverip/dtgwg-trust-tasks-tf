@@ -41,13 +41,14 @@ pub struct AssertionResponse {
     #[serde(
         rename = "authenticatorAttachment",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authenticator_attachment: ::std::option::Option<AssertionResponseAuthenticatorAttachment>,
     #[serde(
         rename = "clientExtensionResults",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_extension_results:
@@ -139,7 +140,7 @@ pub struct AssertionResponseResponse {
     #[serde(
         rename = "userHandle",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub user_handle: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -398,21 +399,34 @@ pub struct Payload {
     #[serde(
         rename = "actionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_id: ::std::option::Option<PayloadActionId>,
     ///Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.
     pub challenge: PayloadChallenge,
     pub decision: Decision,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub evidence: ::std::option::Option<Evidence>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Echoes the challenge-salted digest of the task being authorized, in the encoding the pending request carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.
     #[serde(rename = "payloadDigest")]
     pub payload_digest: DigestMultibase,
     ///OPTIONAL human-facing note, most useful on a `deny`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<PayloadReason>,
 }
 impl Payload {
@@ -610,16 +624,29 @@ pub struct Response {
     #[serde(
         rename = "actionId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub action_id: ::std::option::Option<ResponseActionId>,
     ///Distinct approvals recorded so far.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub approvals: ::std::option::Option<u64>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Distinct approvals required. Present when status is `pending`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub needed: ::std::option::Option<::std::num::NonZeroU64>,
     ///The digest this decision concerned, in the encoding the pending request carried it.
     #[serde(rename = "payloadDigest")]
@@ -1331,18 +1358,4 @@ pub mod error_codes {
             "{\"additionalProperties\":false,\"properties\":{\"acceptedKinds\":{\"items\":{\"enum\":[\"webauthn\",\"approverSigned\"],\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
         ),
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

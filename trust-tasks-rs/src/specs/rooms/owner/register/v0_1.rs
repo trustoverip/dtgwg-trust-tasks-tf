@@ -125,7 +125,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[deprecated(note = "superseded by rooms/owner/register/0.3")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The host to register with, as a DID. Named by the caller because a room has no host until this call succeeds, and because a room may be registered with more than one (a mirror serves reads while its primary takes writes).
     pub host: ::std::string::String,
@@ -133,6 +137,7 @@ pub struct Payload {
     #[serde(
         rename = "ownerDid",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub owner_did: ::std::option::Option<::std::string::String>,
@@ -140,6 +145,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionDays",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
@@ -147,6 +153,7 @@ pub struct Payload {
     #[serde(
         rename = "retentionPolicy",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_policy: ::std::option::Option<RetentionPolicy>,
@@ -170,7 +177,11 @@ impl Payload {
 pub struct Response {
     ///The epoch the room now stands at, as the host reports it. `1` for a room registered for the first time.
     pub epoch: ::std::num::NonZeroU64,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The host that accepted it, echoed so a caller recording where its room lives records what the recipient actually reached rather than what it asked for.
     pub host: ::std::string::String,

@@ -125,7 +125,11 @@ pub struct Payload {
     ///The delivery id the sender stamped on the message — the TSP binding envelope's `deliveryId`, or the DIDComm binding's `delivery_id` header — echoed exactly.
     pub confirms: PayloadConfirms,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {

@@ -542,7 +542,11 @@ pub struct Payload {
     ///The context the engine belongs to. Its key is derived from this context's base.
     #[serde(rename = "contextId")]
     pub context_id: PayloadContextId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.
     #[serde(rename = "joinDid")]
@@ -1143,7 +1147,11 @@ impl<'de> ::serde::Deserialize<'de> for PublishedEventEventId {
 #[non_exhaustive]
 pub struct Response {
     pub application: ApplicationSummary,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Response {

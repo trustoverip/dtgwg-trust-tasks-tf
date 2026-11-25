@@ -187,7 +187,7 @@ pub struct Payload {
     ///A complete, signed auth/signing-key/authorize/0.1 Trust Task document by which `identityDid` itself authorizes this enrolment: its payload is this payload with `authorization` removed. When present and valid it is the authority evidence of control over `identityDid`, in place of an operation-bound step-up. The consumer verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over the members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub authorization:
@@ -195,6 +195,7 @@ pub struct Payload {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
@@ -202,16 +203,25 @@ pub struct Payload {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The identity the key will act for — the DID whose standing a document signed by the key is authorized by. Naming it is not claiming it: the consumer establishes that the enrolling party controls this identity from separate authority evidence (Authorization).
     #[serde(rename = "identityDid")]
     pub identity_did: PayloadIdentityDid,
     ///An active delegation of the same identity to revoke in the same step as this enrolment. For a holder at the consumer's cap on active keys, whose other keys live on devices it no longer has: one authorized enrolment swaps a key out rather than needing a working key to revoke one first. Covered by the authority evidence like every other member, so evidence for adding a key cannot be reused to remove one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub replaces: ::std::option::Option<SigningKeyDid>,
     pub scope: SigningKeyScope,
     #[serde(rename = "signingKeyDid")]
@@ -295,7 +305,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadIdentityDid {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "signingKey")]
     pub signing_key: SigningKey,
@@ -319,6 +333,7 @@ pub struct SigningKey {
     #[serde(
         rename = "deviceLabel",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
@@ -332,6 +347,7 @@ pub struct SigningKey {
     #[serde(
         rename = "lastUsedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub last_used_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -339,6 +355,7 @@ pub struct SigningKey {
     #[serde(
         rename = "revokedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1055,18 +1072,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

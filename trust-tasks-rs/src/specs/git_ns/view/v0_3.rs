@@ -134,13 +134,25 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 #[non_exhaustive]
 pub struct DriftItem {
     ///Whose role differs, for the three role types.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub account: ::std::option::Option<ForgeAccount>,
     ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub expected: ::std::option::Option<DriftItemExpected>,
     ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub observed: ::std::option::Option<DriftItemObserved>,
     pub resource: RepoResource,
     ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
@@ -655,7 +667,11 @@ pub struct GitNamespace {
     pub forge: ForgeHost,
     pub id: NamespaceId,
     ///Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub kind: ::std::option::Option<GitNamespaceKind>,
     ///`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
     pub mode: GitNamespaceMode,
@@ -938,10 +954,18 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 #[non_exhaustive]
 #[deprecated(note = "superseded by git-ns/view/0.6")]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Narrow the answer to this resource and everything inside it. Absent: everything the caller may see.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub resource: ::std::option::Option<Resource>,
 }
 impl ::std::default::Default for Payload {
@@ -1041,6 +1065,7 @@ pub struct RepoSummary {
     #[serde(
         rename = "forgeId",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub forge_id: ::std::option::Option<ForgeId>,
@@ -1277,7 +1302,11 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 pub struct Response {
     ///The forge accounts linked to the caller's own DID — never another member's — at most one per forge. With `resource`, only the account on that resource's forge. Empty when the caller has linked none.
     pub accounts: ::std::vec::Vec<LinkedAccount>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Namespaces bound to this VTC that contain, or are contained by, `resource`.
     pub namespaces: ::std::vec::Vec<GitNamespace>,
@@ -1374,6 +1403,7 @@ pub struct RightRecord {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1383,7 +1413,11 @@ pub struct RightRecord {
     #[serde(rename = "grantedBy")]
     pub granted_by: Did,
     ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub reason: ::std::option::Option<RightRecordReason>,
     pub resource: Resource,
     pub right: Right,
@@ -1533,6 +1567,7 @@ pub struct Sync {
     #[serde(
         rename = "checkedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub checked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,

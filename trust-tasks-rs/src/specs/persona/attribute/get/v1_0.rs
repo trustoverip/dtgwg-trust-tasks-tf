@@ -43,37 +43,59 @@ pub struct Attribute {
     #[serde(
         rename = "createdAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub endorsements: ::std::option::Option<Vec<AttributeEndorsementsItem>>,
     ///The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub label: ::std::option::Option<AttributeLabel>,
     pub provenance: Provenance,
     ///Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub release: ::std::option::Option<ReleaseRequirement>,
     ///Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.
     #[serde(
         rename = "retainedVersions",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retained_versions: ::std::option::Option<::std::vec::Vec<AttributeRetainedVersionsItem>>,
     ///Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub sensitivity: ::std::option::Option<Sensitivity>,
     ///Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub stale: ::std::option::Option<bool>,
     ///Why re-derivation failed. Present only alongside `stale`.
     #[serde(
         rename = "staleReason",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub stale_reason: ::std::option::Option<AttributeStaleReason>,
@@ -87,7 +109,7 @@ pub struct Attribute {
     OPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.*/
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
@@ -231,6 +253,7 @@ pub struct AttributeRetainedVersionsItem {
     #[serde(
         rename = "updatedAt",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -483,7 +506,11 @@ pub struct Payload {
     ///The attribute to read. One identifier, never a list: a maintainer that accepted several would recreate the enumeration this task exists to avoid.
     #[serde(rename = "attributeId")]
     pub attribute_id: Ulid,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     /**
     When false (the default), a request that asked for the value still does not receive it for an attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for that too.
@@ -498,7 +525,11 @@ pub struct Payload {
     Read a retained earlier version instead of the current one. Absent means current.
 
     This is what makes "what did I show them in March" answerable: a disclosure record and a pinned profile entry both name a version, and without this a caller holding one has no way to read what it said. A version the holder has purged is `persona/attribute/get:versionPurged` — never a silent fall back to the current value, which would answer a question about the past with a fact about the present.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub version: ::std::option::Option<Version>,
 }
 impl Payload {
@@ -609,12 +640,17 @@ pub enum Provenance {
         #[serde(
             rename = "issuerDid",
             default,
+            deserialize_with = "crate::specs::presence::not_null",
             skip_serializing_if = "::std::option::Option::is_none"
         )]
         issuer_did: ::std::option::Option<ProvenanceVariant1IssuerDid>,
         kind: ::serde_json::Value,
         ///The disclosure rung this claim was, or will be, presented at.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::specs::presence::not_null",
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
         proof: ::std::option::Option<ProofRung>,
     },
     Variant2 {
@@ -1020,7 +1056,11 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 pub struct Response {
     ///The attribute as at `version`, or as it stands when none was asked for. Its `value` is present only if the request asked for it and the attribute's sensitivity permitted it.
     pub attribute: Attribute,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     /**
     The versions of this attribute the maintainer still holds, newest first, including the current one. Names versions and never their values.
@@ -1029,7 +1069,7 @@ pub struct Response {
     #[serde(
         rename = "retainedVersions",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retained_versions: ::std::option::Option<::std::vec::Vec<Version>>,
@@ -1037,6 +1077,7 @@ pub struct Response {
     #[serde(
         rename = "valueWithheld",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub value_withheld: ::std::option::Option<bool>,
@@ -1876,18 +1917,4 @@ pub mod error_codes {
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
-}
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
 }

@@ -125,7 +125,11 @@ pub struct Payload {
     ///The Accepts criterion whose hidden-vetting parameters are withdrawn.
     #[serde(rename = "criterionId")]
     pub criterion_id: PayloadCriterionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl Payload {
@@ -201,7 +205,11 @@ pub struct Response {
     ///The criterion that no longer accepts a hidden proof.
     #[serde(rename = "criterionId")]
     pub criterion_id: ResponseCriterionId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The criterion's requirementsDigest after the change. It moves when withdrawn is true, because the digest covers the published parameters; it is unchanged when withdrawn is false. Null only when the criterion's manifest entry carries none.
     #[serde(rename = "requirementsDigest")]

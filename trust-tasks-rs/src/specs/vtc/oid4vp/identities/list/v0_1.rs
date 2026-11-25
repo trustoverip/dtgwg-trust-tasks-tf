@@ -42,7 +42,7 @@ pub struct Attestation {
     #[serde(
         rename = "expiresAt",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expires_at:
@@ -136,14 +136,22 @@ pub struct Certificate {
     #[serde(rename = "chainLength")]
     pub chain_length: ::std::num::NonZeroU64,
     ///The leaf's issuer distinguished name, as RFC 4514 renders it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub issuer: ::std::option::Option<CertificateIssuer>,
     #[serde(rename = "notAfter")]
     pub not_after: ::chrono::DateTime<::chrono::offset::Utc>,
     #[serde(rename = "notBefore")]
     pub not_before: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The leaf's subject distinguished name, as RFC 4514 renders it.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub subject: ::std::option::Option<CertificateSubject>,
 }
 impl Certificate {
@@ -362,13 +370,17 @@ pub struct Identity {
     ///What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.
     pub attestations: ::std::vec::Vec<Attestation>,
     ///The access certificate, for an `eudi` identity that has one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub certificate: ::std::option::Option<Certificate>,
     ///The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.
     #[serde(
         rename = "clientId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub client_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -377,7 +389,7 @@ pub struct Identity {
     ///The identity's DID, for a `swiyu` identity.
     #[serde(
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub did: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -392,7 +404,7 @@ pub struct Identity {
     #[serde(
         rename = "keyId",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub key_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
@@ -602,7 +614,11 @@ impl ::std::convert::TryFrom<::std::string::String> for IdentityKind {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
 }
 impl ::std::default::Default for Payload {
@@ -626,7 +642,11 @@ pub struct Problem {
     ///What is wrong, as tabled in the specification.
     pub code: ProblemCode,
     ///Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub detail: ::std::option::Option<ProblemDetail>,
     ///`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.
     pub severity: ProblemSeverity,
@@ -867,11 +887,15 @@ pub struct Response {
     #[serde(
         rename = "defaultIdentity",
         default,
-        deserialize_with = "presence::present",
+        deserialize_with = "crate::specs::presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub default_identity: ::std::option::Option<::std::option::Option<::std::string::String>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Every verifier identity the community holds, by `id`. Empty when it holds none.
     pub identities: ::std::vec::Vec<Identity>,
@@ -1477,17 +1501,3 @@ pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-/// Reads a member that is present — `null` included — as `Some`, so
-/// an absent member (`None`, via `#[serde(default)]`) stays distinct.
-#[doc(hidden)]
-mod presence {
-    pub(super) fn present<'de, D, T>(
-        deserializer: D,
-    ) -> ::std::result::Result<::std::option::Option<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: serde::Deserialize<'de>,
-    {
-        <T as serde::Deserialize<'de>>::deserialize(deserializer).map(::std::option::Option::Some)
-    }
-}

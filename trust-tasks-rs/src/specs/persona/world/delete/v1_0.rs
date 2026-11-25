@@ -170,10 +170,15 @@ pub struct Payload {
     #[serde(
         rename = "expectedVersion",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub expected_version: ::std::option::Option<ExpectedVersion>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     #[serde(rename = "worldId")]
     pub world_id: Ulid,
@@ -191,12 +196,17 @@ impl Payload {
 pub struct Response {
     ///False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.
     pub existed: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///How many profiles no longer belong to any world as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.
     #[serde(
         rename = "releasedFaces",
         default,
+        deserialize_with = "crate::specs::presence::not_null",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub released_faces: ::std::option::Option<u64>,
