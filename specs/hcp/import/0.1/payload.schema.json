@@ -59,7 +59,7 @@
       "type": "object",
       "additionalProperties": true,
       "required": ["@context", "type", "schema", "subject", "exportedBy", "exportedAt", "entries", "rules"],
-      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in one respect only: `options`, and each member of it, is OPTIONAL here, as in HCP's own shape, where the shared `Export` requires them (question 42). Where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
+      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
       "properties": {
         "@context": {
           "type": ["array", "string"],
@@ -129,8 +129,8 @@
         "audit": {
           "type": "array",
           "maxItems": 1000000,
-          "items": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditEvent" },
-          "description": "The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."
+          "items": { "$ref": "#/$defs/ImportedAuditEvent" },
+          "description": "The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."
         }
       }
     },
@@ -142,6 +142,66 @@
         "excludeDeleted": { "type": "boolean", "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown." },
         "includeVersions": { "type": "boolean", "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown." },
         "includeAudit": { "type": "boolean", "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown." }
+      }
+    },
+    "ImportedAuditEvent": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["eventId", "eventType", "timestamp", "participants"],
+      "description": "One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
+      "properties": {
+        "eventId": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn", "description": "The event's identifier (HCP 8.2)." },
+        "eventType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements."
+        },
+        "timestamp": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant", "description": "When the event occurred. HCP's member name (HCP 8.2), carried verbatim." },
+        "participants": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditParticipants", "description": "Who took part (HCP 8.2, 3.9)." },
+        "entryId": {
+          "type": ["string", "null"],
+          "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
+        },
+        "relatedEntryId": {
+          "type": ["string", "null"],
+          "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
+        },
+        "categories": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Category" },
+          "description": "The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement."
+        },
+        "purpose": {
+          "type": ["string", "null"],
+          "maxLength": 2048,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
+        },
+        "purposeDescription": {
+          "type": ["string", "null"],
+          "maxLength": 4096,
+          "description": "The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
+        },
+        "grantId": {
+          "type": ["string", "null"],
+          "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown."
+        },
+        "disclosed": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditDisclosed" },
+          "description": "Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2)."
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."
+        }
       }
     },
     "HcpCarriageImportExtension": {

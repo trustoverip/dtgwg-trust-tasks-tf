@@ -115,6 +115,43 @@
     }
   },
   {
+    "note": "An imported audit event whose `entryId` is not a `urn:uuid` — `entryId` may be absent, as HCP's own audit-event shape leaves it, but one that is present is an entry `id` or null (HCP 8.2).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": [],
+        "audit": [
+          {
+            "eventId": "urn:uuid:5d0b7c3e-8f21-4a6b-9c4d-2e7f1a3b6c58",
+            "eventType": "rule.set",
+            "timestamp": "2026-09-14T18:20:00Z",
+            "participants": {
+              "initiator": {
+                "role": "management-client",
+                "id": "wallet-app"
+              },
+              "provider": {
+                "id": "https://context.provider.example"
+              }
+            },
+            "entryId": "entry-1"
+          }
+        ]
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
     "variant": "response",
     "note": "An outcome HCP does not define — the outcomes are imported, converted, skipped and rejected (HCP 5.4.3).",
     "payload": {

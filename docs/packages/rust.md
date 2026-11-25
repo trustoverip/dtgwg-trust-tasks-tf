@@ -103,7 +103,9 @@ for every family. In the `hcp` family, the schemas carry presence in these membe
 own shapes leave optional (each *pending HCP confirmation*, question 42):
 
 - `AuditEvent.entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and
-  `grantId` are required and nullable;
+  `grantId` are required and nullable. `hcp/import`'s `ImportedAuditEvent`,
+  HCP's own audit-event shape, leaves them optional: absent there means
+  unknown, never null;
 - the export `hcp/export` returns requires `options`, with `includeVersions`
   and `includeAudit`, which say whether `versions` and `audit` were asked for.
   Read those, not whether the arrays are present. `hcp/import` accepts an

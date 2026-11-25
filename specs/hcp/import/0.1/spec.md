@@ -133,7 +133,7 @@ As for [`hcp/entries/query`](../../entries/query/0.1/spec.md#parties), a provide
 
 The Management Client sends the export to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-- `export` (REQUIRED) is the HCP export to load, unchanged from the exporting provider. An export written to HCP's export schema alone is accepted: `options`, which [`hcp/export`](../../export/0.1/spec.md#response) always writes, is OPTIONAL here, as in HCP's own shape, and so is each of its members (HCP 5.4.1). Where `options` is absent, or `includeVersions` or `includeAudit` within it is, it is unknown whether superseded versions or the audit log were requested, and the provider **MUST NOT** infer either, from the presence or absence of `versions` or `audit` or otherwise, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). Each `AuditEvent` in `audit` is still the shared [`AuditEvent`](../../_shared/0.1/audit-event.schema.json), which requires `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each a value or null, as [`hcp/export`](../../export/0.1/spec.md#response) writes them; HCP's own shape leaves those optional, so an export whose audit log omits one is refused with `malformedRequest`, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). A standing rule in `rules` carries `operators`, `requires`, or both (HCP 6.3), as HCP's own standing-rule schema requires; an export holding one with neither is refused with `malformedRequest`. The shared [`StandingRule`](../../_shared/0.1/standing-rule.schema.json) does not check that rule, so the provider does.
+- `export` (REQUIRED) is the HCP export to load, unchanged from the exporting provider. An export written to HCP's export schema alone is accepted: `options`, which [`hcp/export`](../../export/0.1/spec.md#response) always writes, is OPTIONAL here, as in HCP's own shape, and so is each of its members (HCP 5.4.1). Where `options` is absent, or `includeVersions` or `includeAudit` within it is, it is unknown whether superseded versions or the audit log were requested, and the provider **MUST NOT** infer either, from the presence or absence of `versions` or `audit` or otherwise, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). Each event in `audit` is likewise HCP's own audit-event shape, `ImportedAuditEvent`: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, which the shared [`AuditEvent`](../../_shared/0.1/audit-event.schema.json) requires, each a value or null, as [`hcp/export`](../../export/0.1/spec.md#response) writes them, are OPTIONAL here, as HCP's own shape leaves them (HCP 8.2). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider **MUST NOT** read the absence as null, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). A standing rule in `rules` carries `operators`, `requires`, or both (HCP 6.3), as HCP's own standing-rule schema requires; an export holding one with neither is refused with `malformedRequest`. The shared [`StandingRule`](../../_shared/0.1/standing-rule.schema.json) does not check that rule, so the provider does.
 - `dryRun` (OPTIONAL), where true, asks for the outcome for each entry and changes nothing. A Management Client **SHOULD** make a dry run first and show the person its outcomes, in particular every `rejected` one and every category the export uses that the provider does not hold, before it imports.
 - `categoryMap` (OPTIONAL) names, for each category the export uses that the provider does not hold, the category the provider holds that replaces it. Its keys are the categories being replaced, its values their replacements. Absent means no category is replaced, and an entry with a category the provider does not hold is rejected (HCP 5.4.3).
 - `accessToken` (REQUIRED) is the Management Client's token.
@@ -249,7 +249,7 @@ The Management Client sends the export to the provider. The payload is the top-l
 
 ### An export written to HCP's schema alone
 
-This export, from a provider that does not write `options`, says nothing of whether versions or the audit log were requested. It is accepted; the provider loads its entry and its standing rule, and does not infer from the absent `versions` and `audit` that either was, or was not, requested.
+This export, from a provider that does not write `options`, says nothing of whether versions or the audit log were requested, and its one audit event, as HCP's own audit-event shape permits, carries none of `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`. It is accepted; the provider loads its entry and its standing rule, does not infer from the absent `versions` that superseded versions were, or were not, requested, and does not read the event's absent members as null.
 
 ```json
 {
@@ -307,6 +307,18 @@ This export, from a provider that does not write `options`, says nothing of whet
           "operators": ["ads.example"],
           "setBy": "context-subject",
           "createdAt": "2026-09-14T18:20:00Z"
+        }
+      ],
+      "audit": [
+        {
+          "eventId": "urn:uuid:5d0b7c3e-8f21-4a6b-9c4d-2e7f1a3b6c58",
+          "eventType": "rule.set",
+          "timestamp": "2026-09-14T18:20:00Z",
+          "participants": {
+            "initiator": { "role": "management-client", "id": "wallet-app" },
+            "provider": { "id": "https://other-context.provider.example" }
+          },
+          "data": { "ruleId": "urn:uuid:712a4602-9af5-401f-b0bf-8f631dd82a5b" }
         }
       ]
     },
@@ -440,7 +452,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 34 — entries that cannot be imported, and `skipped`.** An entry whose content credential fails verification, an entry in a schema the provider does not accept, and, under a delegation, an entry outside the delegation's scope, are each a `rejected` outcome, and the rest of the import proceeds; the scope is checked first, after `categoryMap`, and an out-of-scope entry gets the one fixed `reason` whether or not its `id` is held. A deleted entry is `skipped` where the provider chooses to omit it (see [Outcomes](#outcomes)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's import applies only the standing rules the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md), recorded as set by the delegate, and lists the others in `rulesNotApplied`, which this family carries under its own `ext` namespace `vnd.trusttasks.hcp-carriage`, not in HCP's result (see [Response](#response)).
-- **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each `AuditEvent` in its `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null; an export whose audit log omits one is refused with `malformedRequest`, though HCP's own shape leaves them optional (HCP 5.4.1, 5.4.3, 8.2).
+- **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each event in its `audit` is likewise HCP's own audit-event shape, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, which [`hcp/export`](../../export/0.1/spec.md) always writes, each a value or null, may be absent; where one is, it is unknown what the exporting provider recorded for it, which the provider never reads as null (HCP 5.4.1, 5.4.3, 8.2).
 
 ## What HCP requires that a document cannot express
 
