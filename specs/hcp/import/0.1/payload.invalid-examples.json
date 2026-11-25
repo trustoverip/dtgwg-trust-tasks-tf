@@ -1,0 +1,123 @@
+[
+  {
+    "note": "Missing `export` — HCP 5.4.3 makes the export REQUIRED.",
+    "payload": {
+      "dryRun": true,
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": []
+      }
+    }
+  },
+  {
+    "note": "A `categoryMap` value that is not a category — each replacement is an HCP category (HCP 4.5, 5.4.3).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": []
+      },
+      "categoryMap": {
+        "https://categories.example/fitness": "General Preferences"
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "An export with the wrong `type` — an HCP export is a `ContextExport` (HCP 5.4.1).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextBackup",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": []
+      },
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "`dryRun` as a string — HCP's `dryRun` is a boolean (HCP 5.4.3).",
+    "payload": {
+      "export": {
+        "@context": [
+          "https://hcp.example/contexts/v2"
+        ],
+        "type": "ContextExport",
+        "schema": "https://hcp.example/spec/export/2.0",
+        "subject": {
+          "id": "did:web:person.example"
+        },
+        "exportedBy": "https://context.provider.example",
+        "exportedAt": "2026-11-25T09:00:02Z",
+        "entries": [],
+        "rules": []
+      },
+      "dryRun": "yes",
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An outcome HCP does not define — the outcomes are imported, converted, skipped and rejected (HCP 5.4.3).",
+    "payload": {
+      "outcomes": [
+        {
+          "id": "urn:uuid:13462b18-de39-4fcc-b94d-56b776184381",
+          "outcome": "overwritten"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An outcome without `id` — each outcome names the entry it is for (HCP 9.4.11).",
+    "payload": {
+      "outcomes": [
+        {
+          "outcome": "imported"
+        }
+      ],
+      "dryRun": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `outcomes` — the result has one outcome for each entry in the export (HCP 5.4.3).",
+    "payload": {
+      "dryRun": true
+    }
+  }
+]

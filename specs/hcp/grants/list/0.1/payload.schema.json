@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/grants/list/0.1",
+  "title": "HCP — List Grants — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 List grants operation (HCP 5.4, 6.1.5; `GET /v2/grants` with a Management Client's token in HCP 9.4.6): a Management Client, acting for the Authorizing Principal, enumerates the grants for the instance, filtered by status. HCP defines no request schema for this operation; the members come from HCP 9.4.6 (`status`) and 9.5 (`cursor`, `limit`). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accessToken"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["active", "revoked", "expired"],
+      "description": "HCP's `status` query parameter (HCP 9.4.6): list only grants with this status (HCP 6.1.5). Absent means `active`, HCP's default; HCP offers no value for every status. HCP's own values, carried verbatim."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "HCP's `cursor` query parameter (HCP 9.5): the opaque continuation token from a prior response's `nextCursor`. Absent means the first page. The maxLength is a framework bound, not an HCP requirement."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "HCP's `limit` query parameter (HCP 9.5): the most grants in this page. Absent means the provider's own page size. The maximum of 1000 is a framework bound, not an HCP requirement."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is refused (HCP 6.1.9); a Context Client reads its own grant with another task (HCP 5.2.6). The maxLength is a framework bound, not an HCP requirement."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — List Grants — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grants"],
+      "description": "A page of grant objects (HCP 6.1.5, 9.4.6), with the cursor for the next page where there is one (HCP 9.5). Failures use trust-task-error, not this shape.",
+      "properties": {
+        "grants": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "../../../_shared/0.1/grant.schema.json#/$defs/Grant"
+          },
+          "description": "The grants with the status asked for, `active` by default (HCP 9.4.6), each a grant object (HCP 6.1.5). Empty where there are none. The maxItems, the carriage's cap on `limit`, is a framework bound, not an HCP requirement."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP binding sends null. The maxLength is a framework bound, not an HCP requirement."
+        }
+      }
+    }
+  }
+}

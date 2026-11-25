@@ -1,0 +1,169 @@
+[
+  {
+    "note": "A `status` HCP does not define — HCP offers active, revoked and expired, and no value for every status (HCP 6.1.5, 9.4.6).",
+    "payload": {
+      "status": "all",
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "`limit` above the carriage's cap of 1000 (a framework bound).",
+    "payload": {
+      "limit": 5000,
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "`limit` of zero — a page holds at least one grant (HCP 9.5).",
+    "payload": {
+      "limit": 0,
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
+    "payload": {
+      "status": "revoked"
+    }
+  },
+  {
+    "note": "Unknown top-level request member — the list is filtered only by status (HCP 9.4.6).",
+    "payload": {
+      "client": "booking-agent",
+      "accessToken": "hcp_mt_x"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`nextCursor: null` — this carriage omits `nextCursor` when the set is exhausted instead of sending null.",
+    "payload": {
+      "grants": [
+        {
+          "grantId": "urn:uuid:6f3157c9-8481-423e-a0b7-ea9c4ecad060",
+          "subject": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "authorizingPrincipal": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "client": {
+            "id": "booking-agent",
+            "name": "TableFinder booking assistant",
+            "operator": {
+              "id": "booking.example",
+              "name": "TableFinder Ltd"
+            }
+          },
+          "access": [
+            {
+              "type": "https://hcp.example/spec/authorization/context-access",
+              "actions": [
+                "read"
+              ],
+              "categories": [
+                "general_preferences"
+              ],
+              "purposes": [
+                {
+                  "code": "https://hcp.example/purposes/reservation",
+                  "description": "Book restaurant tables that can serve your diet."
+                }
+              ]
+            }
+          ],
+          "grantType": "temporary",
+          "issuedAt": "2026-11-24T09:30:00Z",
+          "expiresAt": "2026-11-25T13:30:00Z",
+          "status": "active"
+        }
+      ],
+      "nextCursor": null
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A grant whose client has no `name` — `client.name` MUST be a name the person can recognize (HCP 6.1.5).",
+    "payload": {
+      "grants": [
+        {
+          "grantId": "urn:uuid:6f3157c9-8481-423e-a0b7-ea9c4ecad060",
+          "subject": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "authorizingPrincipal": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "client": {
+            "id": "booking-agent",
+            "operator": {
+              "id": "booking.example",
+              "name": "TableFinder Ltd"
+            }
+          },
+          "access": [
+            {
+              "type": "https://hcp.example/spec/authorization/context-access",
+              "actions": [
+                "read"
+              ],
+              "categories": [
+                "general_preferences"
+              ],
+              "purposes": [
+                {
+                  "code": "https://hcp.example/purposes/reservation",
+                  "description": "Book restaurant tables that can serve your diet."
+                }
+              ]
+            }
+          ],
+          "grantType": "temporary",
+          "issuedAt": "2026-11-24T09:30:00Z",
+          "expiresAt": "2026-11-25T13:30:00Z",
+          "status": "active"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An authorization detail with no approved purposes — `purposes` is never empty (HCP 6.1.5.2).",
+    "payload": {
+      "grants": [
+        {
+          "grantId": "urn:uuid:6f3157c9-8481-423e-a0b7-ea9c4ecad060",
+          "subject": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "authorizingPrincipal": {
+            "id": "hcp-sub-4f2a91c7"
+          },
+          "client": {
+            "id": "booking-agent",
+            "name": "TableFinder booking assistant",
+            "operator": {
+              "id": "booking.example",
+              "name": "TableFinder Ltd"
+            }
+          },
+          "access": [
+            {
+              "type": "https://hcp.example/spec/authorization/context-access",
+              "actions": [
+                "read"
+              ],
+              "categories": [
+                "general_preferences"
+              ],
+              "purposes": []
+            }
+          ],
+          "grantType": "temporary",
+          "issuedAt": "2026-11-24T09:30:00Z",
+          "expiresAt": "2026-11-25T13:30:00Z",
+          "status": "active"
+        }
+      ]
+    }
+  }
+]

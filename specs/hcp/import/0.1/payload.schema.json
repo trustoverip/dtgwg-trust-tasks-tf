@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/import/0.1",
+  "title": "HCP — Import — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["export", "accessToken"],
+  "properties": {
+    "export": {
+      "$ref": "../../_shared/0.1/export.schema.json#/$defs/Export",
+      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19)."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out."
+    },
+    "categoryMap": {
+      "type": "object",
+      "maxProperties": 256,
+      "additionalProperties": {
+        "$ref": "../../_shared/0.1/common.schema.json#/$defs/Category"
+      },
+      "description": "HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcomes"],
+      "description": "The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.",
+      "properties": {
+        "outcomes": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": { "$ref": "#/$defs/Outcome" },
+          "description": "HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11)."
+        }
+      }
+    },
+    "Outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "outcome"],
+      "description": "The outcome for one entry of the export (HCP 5.4.3, 9.4.11). A `rejected` outcome carries `reason`: HCP 5.4.3 says \"rejected, with the reason\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The entry's `id`, as the export carries it (HCP 5.4.3, 9.4.11)."
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["imported", "converted", "skipped", "rejected"],
+          "description": "`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \"id held with different content\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement."
+        }
+      }
+    }
+  }
+}
