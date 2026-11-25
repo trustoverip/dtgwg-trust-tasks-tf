@@ -24,7 +24,7 @@
       "items": {
         "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Category"
       },
-      "description": "HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). Never empty: HCP gives an empty list no meaning, and a library that drops an empty list would turn it into a query of every category, so the carriage refuses it, pending HCP confirmation (question 42). A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement."
+      "description": "HCP `categories`: the categories to query; an entry matches where any of its categories is among them. Absent means every category the grant can read for the purpose named (HCP 5.2.1). Never empty: HCP gives an empty list no meaning, and an empty list and an absent member would mean different queries, so the schema carries presence explicitly and refuses an empty list (`minItems: 1`), pending HCP confirmation (question 42). That is the carriage's rule, not a library limitation: a separate Rust generator fix restores absent, empty and null fidelity in generated types for every family, and neither depends on the other. A category outside the grant fails with HCP not authorized (`scope-denied`), carried as `permissionDenied` (HCP 5.2.1, 5.5). The bound of 256 is a framework bound, not an HCP requirement."
     },
     "purpose": {
       "$ref": "../../../_shared/0.1/common.schema.json#/$defs/PurposeCode",

@@ -139,7 +139,7 @@ HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery 
 The Context Client sends the query to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `query` (REQUIRED) is what the client wants context about.
-- `categories` (OPTIONAL) narrows the search. Absent means every category the grant covers. It is never empty: HCP gives an empty list no meaning, and a generated library that drops an empty list would turn it into a query of every category, so the schema refuses one (`minItems: 1`), *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)).
+- `categories` (OPTIONAL) narrows the search. Absent means every category the grant covers. It is never empty: HCP gives an empty list no meaning, and an empty list and an absent member would mean different queries, so the schema carries presence explicitly and refuses an empty list (`minItems: 1`), *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). That is the carriage's rule, not a library limitation; a separate Rust generator fix restores absent, empty and null fidelity in generated types for every family, and neither depends on the other.
 - `purpose` (REQUIRED) is the purpose code the context is for; `purposeDescription` (OPTIONAL) says it in words.
 - `maxEntries` (OPTIONAL) is the most entries the client wants. HCP's default is 5 and its ceiling is 20 (HCP 7.2); those are HCP's values, restated.
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
