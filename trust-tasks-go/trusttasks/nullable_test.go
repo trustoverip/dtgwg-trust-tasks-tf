@@ -233,3 +233,79 @@ func TestNullableComparable(t *testing.T) {
 		t.Error("Nullable is not usable as a map key")
 	}
 }
+
+// Only Null writes null. A nil slice or map written as a value is empty, so a
+// set member cannot widen into null: on acl/* allowedKeys null (like absent)
+// means every key and [] means none, and Value(filtered) with nothing left in
+// filtered must grant none.
+func TestNullableNilSliceAndMapWriteEmpty(t *testing.T) {
+	type probe struct {
+		Keys trusttasks.Nullable[[]string]          `json:"keys,omitzero"`
+		Meta trusttasks.Nullable[map[string]string] `json:"meta,omitzero"`
+	}
+	var filtered []string
+	for _, c := range []struct {
+		name string
+		p    probe
+		want string
+	}{
+		{"absent", probe{}, `{}`},
+		{"null slice", probe{Keys: trusttasks.Null[[]string]()}, `{"keys":null}`},
+		{"nil slice", probe{Keys: trusttasks.Value(filtered)}, `{"keys":[]}`},
+		{"empty slice", probe{Keys: trusttasks.Value([]string{})}, `{"keys":[]}`},
+		{"slice", probe{Keys: trusttasks.Value([]string{"k1"})}, `{"keys":["k1"]}`},
+		{"null map", probe{Meta: trusttasks.Null[map[string]string]()}, `{"meta":null}`},
+		{"nil map", probe{Meta: trusttasks.Value(map[string]string(nil))}, `{"meta":{}}`},
+		{"empty map", probe{Meta: trusttasks.Value(map[string]string{})}, `{"meta":{}}`},
+		{"map", probe{Meta: trusttasks.Value(map[string]string{"a": "b"})}, `{"meta":{"a":"b"}}`},
+	} {
+		got, err := json.Marshal(c.p)
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if string(got) != c.want {
+			t.Errorf("%s: marshalled %s, want %s", c.name, got, c.want)
+		}
+		// What was written reads back with the same meaning: null as null,
+		// and a nil slice or map as a value, never as null.
+		var back probe
+		if err := json.Unmarshal(got, &back); err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if back.Keys.IsNull() != c.p.Keys.IsNull() || back.Keys.IsSet() != c.p.Keys.IsSet() ||
+			back.Meta.IsNull() != c.p.Meta.IsNull() || back.Meta.IsSet() != c.p.Meta.IsSet() {
+			t.Errorf("%s: %s read back in another state", c.name, got)
+		}
+	}
+	if b, err := trusttasks.Value([]string(nil)).MarshalJSON(); err != nil || string(b) != "[]" {
+		t.Errorf("Value(nil slice).MarshalJSON() = %s, %v", b, err)
+	}
+	if b, err := trusttasks.Value(map[string]int(nil)).MarshalJSON(); err != nil || string(b) != "{}" {
+		t.Errorf("Value(nil map).MarshalJSON() = %s, %v", b, err)
+	}
+}
+
+// The uses the type doc warns against, pinned so the warning stays true: each
+// one loses a state without an error, or fails the whole encode.
+func TestNullableUnsupportedUses(t *testing.T) {
+	// Behind a pointer, null decodes as a nil pointer: the same as absent.
+	var boxed struct {
+		L *trusttasks.Nullable[string] `json:"l,omitempty"`
+	}
+	if err := json.Unmarshal([]byte(`{"l":null}`), &boxed); err != nil {
+		t.Fatal(err)
+	}
+	if boxed.L != nil {
+		t.Error("a *Nullable decoded null as non-nil; update the type doc")
+	}
+	// Nested, a null value and null write the same bytes.
+	a, _ := json.Marshal(trusttasks.Value(trusttasks.Null[string]()))
+	b, _ := json.Marshal(trusttasks.Null[trusttasks.Nullable[string]]())
+	if string(a) != "null" || string(b) != "null" {
+		t.Errorf("nested Nullable wrote %s and %s; update the type doc", a, b)
+	}
+	// As a map value, omitzero does not apply, so an absent entry fails.
+	if _, err := json.Marshal(map[string]trusttasks.Nullable[string]{"k": {}}); err == nil {
+		t.Error("a map holding an absent Nullable marshalled; update the type doc")
+	}
+}
