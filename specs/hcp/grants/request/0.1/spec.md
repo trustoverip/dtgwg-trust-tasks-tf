@@ -171,10 +171,11 @@ The client sends the request to the provider. The payload is the top-level schem
 The person's decision is an act that has not yet occurred, so a request awaiting it is **held**, and a hold is a next step ([SPEC §8.6](/SPEC.md#86-reserved-response-type-slugs)). The act belongs to a third party, the person, and the provider offers no task by which the client could learn the outcome, so:
 
 1. Where the transport carries a reply, the provider **MUST** answer a held request with a `trust-task-next-step` whose `expects` names this specification's request Type URI, with `continuation: resubmit`, and **MUST NOT** answer it with an error response.
-2. The client resubmits on the same thread: a new document with a fresh `id`, the same `threadId` and the same payload. The provider answers a resubmission with the outcome once the person has decided, or with a further next step while they have not.
-3. The provider **MUST NOT** put a second request to the person for a thread it already holds. A resubmission whose payload differs from the held request is refused with `malformedRequest`; the held request is unaffected.
-4. The provider **SHOULD** say in `hint.retryAfter`, in seconds, how long the client should wait before resubmitting, and the client **SHOULD NOT** resubmit sooner.
-5. A hold lasts as long as the provider is willing to wait; how long is provider policy. A hold the provider abandons leaves nothing pending, and a later resubmission is a new request, put to the person again.
+2. The client resubmits on the same thread: a new document with a fresh `id`, the same `threadId`, the same `issuer` and the same payload. The provider answers a resubmission with the outcome once the person has decided, or with a further next step while they have not.
+3. A resubmission is matched to the held request by its `threadId` **and** its `issuer`, whose REQUIRED `proof` the provider verifies ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)), *pending HCP confirmation* ([question 39](#pending-hcp-confirmation)). Knowing a `threadId` is not enough: the provider **MUST** refuse a document on a held thread whose `issuer` is not the held request's `issuer` with `permissionDenied`, with the same fixed `message` as every other refusal, and **MUST NOT** answer it with a next step or with the response; the held request is unaffected. Every next step and the response are sent with the held request's `issuer` as their `recipient`, whichever document they answer.
+4. The provider **MUST NOT** put a second request to the person for a thread it already holds. A resubmission whose payload differs from the held request is refused with `malformedRequest`; the held request is unaffected.
+5. The provider **SHOULD** say in `hint.retryAfter`, in seconds, how long the client should wait before resubmitting, and the client **SHOULD NOT** resubmit sooner.
+6. A hold lasts as long as the provider is willing to wait; how long is provider policy. A hold the provider abandons leaves nothing pending, and a later resubmission is a new request, put to the person again.
 
 A next step is not a decision and confers no authority ([SPEC §8.6](/SPEC.md#86-reserved-response-type-slugs)). The person's decision never travels through the client.
 
@@ -215,7 +216,7 @@ A next step is not a decision and confers no authority ([SPEC §8.6](/SPEC.md#86
 
 ## Response
 
-Once the person approves, the provider answers the latest resubmission on the thread with this task's response. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json):
+Once the person approves, the provider answers the next resubmission on the thread from the held request's `issuer` with this task's response, sent to that `issuer` as `recipient` (see [Holding while the person decides](#holding-while-the-person-decides)); what a later resubmission gets is in [Repeated requests](#repeated-requests). The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json):
 
 - `accessToken` and `tokenExpiresAt`: the grant evidence. The client presents the token unchanged as `accessToken` in [`hcp/entries/query`](../../../entries/query/0.1/spec.md) and every other `hcp/*` task it sends under the grant. Its lifetime follows HCP 13.4 and never outlasts the grant.
 - `grant`: the grant as the person approved it, as HCP's grant object (HCP 6.1.5), exactly as [`hcp/grants/read-own`](../../read-own/0.1/spec.md) would return it: its `access` may be narrower than asked, its `status` is `active`, and its `expiresAt` is the absolute expiry of a temporary grant and `null` for a persistent one (HCP 6.1.4). Its `client` is the client's registration, its `subject` the per-client pseudonym by which the client knows the person (HCP 3.4), and `authorizingPrincipal.delegation` is withheld, as from any Context Client reading its own grant (HCP 17.4). `tokenExpiresAt` is never after `grant.expiresAt`.
@@ -283,6 +284,7 @@ In this example the person approved `travel_preferences` and not `general_prefer
 |---|---|
 | The payload fails the schema; an unsupported `narrowedTo` key; an `onwardSharing` request HCP 6.1.5 does not allow; a resubmission whose payload differs from the held request | `malformedRequest` |
 | The `issuer` is not a registered client | `permissionDenied` |
+| A document on a held or approved thread from an `issuer` other than the held request's; a resubmission after the post-approval window (see [Repeated requests](#repeated-requests)) | `permissionDenied` |
 | The person declined (HCP 6.1.7) | `permissionDenied` |
 | The provider cannot find or reach the person named by `subjectHint` | `permissionDenied`, after a hold (see [Finding the person](#finding-the-person)) |
 | The person's instance is unavailable (HCP 5.5 `subject-unavailable`) | `unavailable` |
@@ -302,6 +304,15 @@ A request is a way to probe whether a person holds an account at a provider. To 
 
 A re-delivered document with the same `id` and content is absorbed by [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements): it is not executed twice, it does not put the request to the person again, and it is answered with what the first delivery was answered with. A resubmission is not a re-delivery: it has a fresh `id` and is answered as [Holding while the person decides](#holding-while-the-person-decides) says. A request on a new thread is a new request, even with the same payload.
 
+### After approval
+
+A response can be lost: over TSP without a return path a reply is best-effort ([TSP binding 0.2 §6](../../../../../bindings/tsp/0.2/spec.md)), so a client may resubmit after the person has approved. A re-sent copy of the same document is answered from the duplicate-execution record, as above. A resubmission with a fresh `id` is answered as follows, *pending HCP confirmation* ([question 39](#pending-hcp-confirmation)):
+
+- **Within 1 hour of the response.** For 1 hour after the provider first sends the response, a resubmission on the thread from the held request's `issuer`, with the held payload, is answered with a response for the **same grant**: the same `grant`, as it stands then, with the same `grantId`. The provider **MAY** repeat the access token it sent or issue a new one under the same grant, never outlasting it (HCP 13.4); every token issued under the grant ends with it (HCP 6.2.2). The provider **MUST NOT** issue a second grant, append a second `grant.issued` audit event, or put the request to the person again. Where the grant is no longer active, because it was revoked, relinquished or has expired, the resubmission is refused with `permissionDenied`, and no token is issued.
+- **After that hour.** A resubmission on the thread is refused with `permissionDenied`, with the same fixed `message`. A client that still needs a grant sends a new request on a new thread, which is put to the person again.
+
+The 1-hour window is a carriage bound, not an HCP requirement. It is the span over which HCP 9.9 has a provider keep retrying a notice that may not have arrived, the family's measure of how long a best-effort delivery is worth retrying; a client that has heard nothing within it treats the request as failed. The provider keeps its record of the thread, the held request's `issuer` and the grant it issued for at least that hour.
+
 ## Pending HCP confirmation
 
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
@@ -312,6 +323,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 23 — naming the person.** `subjectHint` names the person, like OpenID Connect `login_hint`. An unknown or unreachable person is held and then refused exactly as a decline, so a request cannot probe for accounts.
 - **Question 24 — asking for persistence.** `grantType: persistent` lets the provider offer persistence as HCP 6.1.4's separate act; it never pre-selects it, and the outcome is temporary unless the person elects it.
 - **Question 25 — the token in a Trust Task response.** The response carries the access token and the grant as approved, as HCP's OAuth token response does (HCP 13.3), with no refresh token in this version. A token obtained this way is accepted by the `hcp/*` tasks as any HCP access token is.
+- **Question 39 — who may collect the grant, and after approval.** A resubmission is matched to the held request by (`threadId`, `issuer`); one from another `issuer` is refused with `permissionDenied`, and every next step and the response go to the held request's `issuer`. For 1 hour after the response is first sent, a resubmission from that `issuer` gets a response for the same grant, never a new grant; after that hour it gets `permissionDenied`.
 
 ## What HCP requires that a document cannot express
 
