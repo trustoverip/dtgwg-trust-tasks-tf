@@ -29,6 +29,45 @@ construction path). The consequence worth knowing:
   a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
   both type parameters — constraining it is an open follow-up.
 
+## Generated payload types keep absent, empty and `null` apart
+
+A schema can give an optional member three meanings: absent, present and empty
+(`[]`, `{}`), and present as `null`. `acl/update` 0.3 reads `"label": null` as
+"clear the label" and an absent `label` as "leave it unchanged". typify's own
+output folds these together (an empty `Vec` is skipped on the way out, and a
+`null` is read as `None`), so `trust-tasks-build` rewrites the affected fields
+after typify runs (`trust-tasks-build/src/presence.rs`):
+
+| Optional member's schema | Field type | absent | `null` | a value |
+|---|---|---|---|---|
+| array or map | `Option<Vec<T>>` / `Option<Map>` | `None` | refused | `Some(v)`, `[]` included |
+| admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
+| `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
+
+Each rewritten field reads through a private `presence::present` helper that
+the module emits for itself, and is skipped on the way out only when it is
+`None`, so a decoded document re-encodes with the same members. Required
+members are not touched, and nor are members with a JSON Schema `default`
+(an absent one still reads as its default, which is what the schema says it
+means).
+
+The builder setters take the field's type through `TryInto`, so:
+
+- `.redacted_fields(vec)` still compiles and always sends the array, `[]`
+  included. Leave the setter out to omit the member.
+- On a nullable member, `.label(Some(x))` sends the value
+  (`Option<T>` converts into `Option<Option<T>>`), and
+  **`.label(None::<T>)` sends an explicit `null`**. The turbofish is needed:
+  a bare `None` no longer infers. Leave the setter out (or pass
+  `None::<Option<T>>`) to omit the member. A bare `T` no longer compiles; wrap
+  it in `Some`.
+- Reading: `p.label.flatten()` gives the value when you don't care why there
+  isn't one; match `Some(None)` to see an explicit `null`.
+
+These are public type changes, so the change that introduced them was a
+breaking release of `trust-tasks-rs`, and an application generating its own
+types through `trust-tasks-build` sees the same shapes.
+
 ## The per-module Rust generator lives in `trust-tasks-build`
 
 `trust-tasks-codegen` writes the tree, the indexes and the conformance tests,
