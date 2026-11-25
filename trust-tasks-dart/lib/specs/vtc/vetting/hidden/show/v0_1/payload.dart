@@ -367,8 +367,7 @@ class Response {
         if (enrolledVetters != null) 'enrolledVetters': enrolledVetters!,
         if (eventStatus != null)
           'eventStatus': eventStatus!.map((e) => e.toJson()).toList(),
-        if (requirementsDigest != null)
-          'requirementsDigest': requirementsDigest!,
+        'requirementsDigest': requirementsDigest,
         if (ext != null) 'ext': ext!,
       };
 }

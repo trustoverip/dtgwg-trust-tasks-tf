@@ -46,8 +46,7 @@ class Response {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'criterionId': criterionId,
         'withdrawn': withdrawn,
-        if (requirementsDigest != null)
-          'requirementsDigest': requirementsDigest!,
+        'requirementsDigest': requirementsDigest,
         if (ext != null) 'ext': ext!,
       };
 }

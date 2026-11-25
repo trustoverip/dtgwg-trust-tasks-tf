@@ -352,8 +352,7 @@ class Response {
         'criterionId': criterionId,
         'stored': stored.toJson(),
         'published': published.toJson(),
-        if (requirementsDigest != null)
-          'requirementsDigest': requirementsDigest!,
+        'requirementsDigest': requirementsDigest,
         if (ext != null) 'ext': ext!,
       };
 }

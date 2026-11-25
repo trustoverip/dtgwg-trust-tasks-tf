@@ -118,7 +118,7 @@ class Payload {
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
-        if (did != null) 'did': did!,
+        'did': did,
         if (ext != null) 'ext': ext!,
       };
 }
