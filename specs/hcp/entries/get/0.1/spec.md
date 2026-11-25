@@ -129,7 +129,7 @@ The client names the entry and the purpose. The payload is the top-level schema 
 
 - `ref` (a Context Client) or `entryId` (a Management Client) names the entry. Exactly one is present; a request with both or neither is refused with `malformedRequest`, *pending HCP confirmation* ([question 6](#pending-hcp-confirmation)). The schema does not check this.
 - `purpose` (REQUIRED) is the purpose code; `purposeDescription` (OPTIONAL) says it in words.
-- `version` (OPTIONAL) asks for that version instead of the current one.
+- `version` (OPTIONAL) asks for that version instead of the current one. A version the entry does not have is refused as not authorized (see [Errors](#errors)).
 - `accessToken` (REQUIRED) is the HCP access token for the grant.
 
 ### A Context Client reads an entry it was disclosed
@@ -223,7 +223,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
 | not authorized | `scope-denied`: an entry that does not exist, is outside the caller's scopes, whose `ref` belongs to another grant, that is not `active`, or for which `purpose` is not approved (HCP 5.2.2) | `permissionDenied`, with one fixed `message` whatever the reason, so that entry existence is not disclosed (HCP 5.2.2, 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict` | Does not arise: a read carries no idempotency key (HCP 9.6). |
-| version conflict | `version-conflict` | Does not arise: a `version` that does not exist is an entry that does not exist, refused as not authorized (HCP 5.2.2). |
+| version conflict | `version-conflict` | Does not arise. HCP's version conflict is for a write that names a version other than the current one (HCP 5.2.4, 5.4, 5.5), and Get may name any version the entry has. A `version` the entry does not have is refused as not authorized, with the same fixed `message`: this specification reads HCP's existence hiding, under which a request for an entry that does not exist fails as not authorized and the response does not disclose which condition applied (HCP 5.2.2, 5.5), as covering a version that does not exist, so that neither the entry's existence nor its version history is disclosed. |
 | credential invalid | `credential-invalid` | Does not arise: a read verifies no newly written credential (HCP 14.6). |
 | subject unavailable | `subject-unavailable` | `unavailable`. The client may retry later (HCP 5.5). |
 | rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
