@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/directives/remove/0.1",
+  "title": "HCP — Remove Directive — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Remove directive operation (HCP 6.4, 5.4; `DELETE /v2/directives/{directiveId}` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, removes a directive. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.15. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["directiveId", "accessToken"],
+  "properties": {
+    "directiveId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "HCP `directiveId` (the `{directiveId}` path parameter of HCP 9.2): the directive to remove."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Remove Directive — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The directive is removed. Carries HCP's `204 No Content`, which has no body, so the payload is the empty object. Failures use trust-task-error, not this shape.",
+      "properties": {}
+    }
+  }
+}

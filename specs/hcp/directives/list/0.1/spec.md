@@ -1,0 +1,241 @@
+---
+slug: hcp/directives/list
+version: "0.1"
+title: "HCP — List Directives"
+summary: A Management Client, acting for the person or a delegate, reads the Human Context Protocol directives a provider holds; carries the HCP 2.0-draft-3 List directives operation.
+status: draft
+targetFrameworkVersion: "0.6.0"
+carries:
+  protocol: HCP
+  version: "2.0-draft-3"
+  reference: https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md
+  operation: List directives
+category: access-control
+keywords: [hcp, human-context-protocol, directive, governance]
+parties:
+  - role: Management Client (HCP), acting for the Context Subject or a delegate
+    requirement: REQUIRED
+    member: issuer
+  - role: HCP Provider
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  request: REQUIRED
+  response: RECOMMENDED
+  rationale: >-
+    Reading the directives is a governance operation that exercises the person's own authority (HCP 5.4, 6.1.9), so
+    the request is signed: the provider can show which Management Client read the directives, independently of the
+    transport. The response proof is RECOMMENDED so the Management Client can show which directives the provider said
+    it held, and when.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    The task acts for the person, so it is consequential; a stale or re-delivered request must be placeable in the
+    provider's acceptance window.
+sideEffects:
+  level: none
+  rationale: >-
+    A read. The provider changes nothing, and HCP requires no audit event for it (HCP 8.1).
+exposure:
+  discloses: metadata
+  actsAsSubject: true
+  ingests: secret
+  rationale: >-
+    The Management Client exercises the Context Subject's (or a delegate's) authority over their own directives. The
+    request carries the Management Client's access token, a bearer secret. The response lists the directives, in the
+    person's own words, which carry no context.
+retention:
+  class: transient
+  rationale: >-
+    HCP requires no audit event for reading the directives (HCP 8.1 lists none), and the provider keeps nothing
+    because of this task. The directives themselves are kept because they were set, not because they were read.
+maxDocumentBytes:
+  response: 4194304
+  rationale: >-
+    The list is not paginated (HCP 9.4.15), and HCP bounds neither the number of directives nor their size. A
+    directive's `text` is bounded at 4096 characters by the carriage, and a typical directive is well under 1 KiB, so
+    4 MiB holds thousands of directives with envelope and proof. This is a framework bound, not an HCP requirement.
+errorCodes:
+  - code: hcp:invalidToken
+    meaning: >-
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
+      Client's access token.
+    retryable: false
+related:
+  - hcp/directives/set
+  - hcp/directives/remove
+  - hcp/rules/list
+---
+
+## Abstract
+
+The **HCP — List Directives** Trust Task carries the List directives operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 6.4 and 5.4; `GET /v2/directives` in HCP 9.2 and 9.4.15). A *Management Client*, acting for the *Context Subject*, or for a delegate under the Delegated Authorization Profile, asks an *HCP Provider* for the directives it holds, and the provider answers with them. A directive is set with [`hcp/directives/set`](../../set/0.1/spec.md) and removed with [`hcp/directives/remove`](../../remove/0.1/spec.md).
+
+It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorsed this carriage ([SPEC §9.4](/SPEC.md#94-carried-protocols), [SPEC §6.5](/SPEC.md#65-private-and-unpublished-trust-task-specifications)). This family is a proposal to them. HCP's text is © its authors under CC BY 4.0; this specification was written from that text, with attribution, and where it differs from the HCP text, the HCP text governs.
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on directives; the ones that bear on the document are restated below, unchanged. Conformance to HCP is HCP's ([SPEC §9.4](/SPEC.md#94-carried-protocols)): a provider **MUST NOT** list a conformance identifier for this carriage in its HCP `conformsTo`, and advertises the task through `trust-task-discovery`, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+
+## Authorization
+
+The authority is **the Context Subject's own authority over their directives**, which a Management Client exercises for them (HCP 6.4, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Listing directives is a governance operation: any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9, 9.2, 9.4.15), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9); a Context Client receives the directives that apply to it with its results and its own grant instead (HCP 6.4).
+
+Under the Delegated Authorization Profile, HCP lets a delegate call this operation as for standing rules, "within the delegation's scope" (HCP 9.4.15, 9.4.14), and a delegate's governance operations reach only categories within scope (HCP 17.4), but HCP does not say which directives a delegate sees. This specification takes the narrowest reading, *pending HCP confirmation* ([question 26](#pending-hcp-confirmation)): a delegate's list carries each directive whose `categories` are absent, or are all within the delegation's scope; a directive that names any category outside the scope is left out whole, never trimmed, so the list never discloses an out-of-scope category. The Context Subject's list carries every directive.
+
+The REQUIRED `proof` establishes which Management Client VID sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). It is not the authorization: the token is. A provider that knows which VID it registered the Management Client under **SHOULD** check that the `issuer` is that client.
+
+## Definitions
+
+- **Management Client**, **Context Client**, **HCP Provider**, **Context Subject**, **Authorizing Principal**, **delegate** and **directive** have their HCP 2.0-draft-3 meanings.
+- HCP defines no request or result schema for this operation. The request has no member but the token (HCP 9.4.15); each directive in the result is the directive of HCP 6.4, the shared [`Directive`](../../../_shared/0.1/directive.schema.json).
+
+### HCP field mapping
+
+| HCP field | Member | Notes |
+|---|---|---|
+| `GET /v2/directives` (HCP 9.2, 9.4.15) | the Type URI | No query parameters in HCP, so no request member beyond the token. |
+| `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
+| `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
+| result `200`: a `directives` array (HCP 9.4.15) | `directives` in the `#response` payload | Unchanged. Not paginated: HCP gives this operation no cursor ([question 14](#pending-hcp-confirmation)). |
+
+### Parties
+
+| HCP role | Trust Task member |
+|---|---|
+| Management Client | `issuer` of the request, `recipient` of the response |
+| HCP Provider | `recipient` of the request, `issuer` of the response |
+
+As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (its discovery document, HCP 19.1), and a Management Client **MUST** check that binding before it sends a token to a VID.
+
+## Request
+
+The Management Client asks for the directives. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `accessToken`, the Management Client's token, REQUIRED and the only member.
+
+### Reading the person's directives
+
+```json
+{
+  "id": "urn:uuid:a1c3e5f7-9b2d-4f4a-8c6e-0d2b4f6a8c13",
+  "type": "https://trusttasks.org/spec/hcp/directives/list/0.1#request",
+  "issuer": "did:web:wallet.person.example",
+  "recipient": "did:web:context.provider.example",
+  "issuedAt": "2026-11-25T13:00:00Z",
+  "threadId": "urn:uuid:5e7a9c1b-3d2f-4a6e-9b8c-2f4d6a8e0c57",
+  "payload": {
+    "accessToken": "hcp_mt_8f3a1c9e7b2d4f60"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-25T13:00:00Z",
+    "verificationMethod": "did:web:wallet.person.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z6Rt3mV9qNcX2wB8hL4kP1sY7dF5gJ0aQe2uK3oZnC8iT4pD7wH1yM9vE6bS5rA2jU8lG3fO7xN0tZ4zW1cK6mY8"
+  }
+}
+```
+
+## Response
+
+The provider answers with the directives. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json): `directives`, an array of directives, empty when there is none. HCP sets no order. Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
+
+### Two directives
+
+```json
+{
+  "id": "urn:uuid:8b0d2f4a-6c1e-4b3a-a5d7-9e1c3b5d7f62",
+  "type": "https://trusttasks.org/spec/hcp/directives/list/0.1#response",
+  "issuer": "did:web:context.provider.example",
+  "recipient": "did:web:wallet.person.example",
+  "issuedAt": "2026-11-25T13:00:01Z",
+  "threadId": "urn:uuid:5e7a9c1b-3d2f-4a6e-9b8c-2f4d6a8e0c57",
+  "payload": {
+    "directives": [
+      {
+        "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19",
+        "action": "share",
+        "effect": "deny",
+        "text": "Never pass my health context to another agent.",
+        "categories": ["health_context"],
+        "setBy": "context-subject",
+        "createdAt": "2026-11-25T12:00:01Z"
+      },
+      {
+        "directiveId": "urn:uuid:e6a8c0d2-4f3b-4e7a-9c1d-3b5f7a9c1e28",
+        "action": "sign",
+        "effect": "ask-first",
+        "text": "Ask me before you sign anything.",
+        "setBy": "context-subject",
+        "createdAt": "2026-11-18T08:15:00Z"
+      }
+    ]
+  }
+}
+```
+
+## Errors
+
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows.
+
+| HCP error (5.5) | Code | Trust Task error |
+|---|---|---|
+| invalid request | `malformed-request` | `malformedRequest` |
+| unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
+| not authorized | `scope-denied`: the caller is not a Management Client acting for the Context Subject or a delegate (HCP 6.1.9, 9.4.15) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
+| conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and a read carries none. |
+| version conflict | `version-conflict` | Does not arise: a directive has no version (HCP 6.4). |
+| credential invalid | `credential-invalid` | Does not arise: it concerns a credential written as an entry's content (HCP 14.6). |
+| subject unavailable | `subject-unavailable` | `unavailable` |
+| rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
+| unsupported version | `unsupported-version` | `unsupportedVersion` |
+
+## Rules carried from HCP
+
+- **What a directive is.** Each listed directive tells clients what they may do with context they received, or on the person's behalf, with the `directiveId`, `setBy` and `createdAt` the provider set (HCP 6.4). Directives only narrow, and where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).
+- **No audit event.** HCP 8.1 lists no event for reading the directives, and this task adds none.
+- **Not paginated.** HCP 9.4.15 answers with the whole `directives` array; this task does the same ([question 14](#pending-hcp-confirmation)).
+- **Removed directives.** A removed directive is no longer held, so it is not listed; its `directive.removed` audit event stays readable through the audit log (HCP 8.1, 8.3).
+
+## Repeated requests
+
+Reading has no effect, so a re-delivered document changes nothing. A consumer still applies [SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements) to a re-delivered document with the same `id` and content, and answers it with the original response; a Management Client that wants the current directives sends a new document.
+
+## Pending HCP confirmation
+
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+
+- **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
+- **Question 14 — pagination.** The directives list is not paginated, as in HCP 9.4.15.
+- **Question 26 — what a delegate's list carries.** Each directive whose `categories` are absent or all within the delegation's scope; a directive naming any other category is left out whole (see [Authorization](#authorization)).
+
+## What HCP requires that a document cannot express
+
+- The provider-held directives, and their delivery with every result they apply to (HCP 6.4).
+- Which directives a delegate may see, which turns on the delegation the provider holds (HCP 17.4).
+
+## Security & Privacy
+
+### Data carried
+
+The request carries only the Management Client's access token, a bearer secret that **MUST** travel only to the provider. The response carries the directives, in the person's own words. They carry no context, but a directive's `text` and categories can say something about the person. A producer **MUST NOT** put the token or any context in `ext`.
+
+### Correlation
+
+The provider learns that a Management Client read the directives, and when; HCP does not require it to record that. A `setBy` that is a `delegationId` tells the reader which delegate set a directive; the reader is the Context Subject or a delegate of the same person, so this discloses nothing outside the person's own governance. `threadId` **SHOULD** be fresh per request.
+
+### Retention
+
+The provider keeps nothing because of this task. A Management Client **SHOULD NOT** keep the list longer than it needs to show it to the person, because a kept copy goes stale as soon as a directive is set or removed.
+
+### Consent/purpose
+
+The directives are the person's own settings, read for them so they can see and change them. Through this task only the person's own Management Clients, or their delegates', receive the whole list; a Context Client receives only the directives that apply to it, with its results (HCP 6.4).

@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level request member — HCP's `GET /v2/rules` takes no parameters (HCP 9.4.14), so there is no filter.",
+    "payload": { "accessToken": "hcp_mt_x", "categories": ["health_context"] }
+  },
+  {
+    "note": "Empty `accessToken` — a token has at least one character.",
+    "payload": { "accessToken": "" }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `rules` — HCP answers 200 with a `rules` array, empty when there is none (HCP 9.4.14).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A cursor in the response — the rules list is not paginated (HCP 9.4.14).",
+    "payload": { "rules": [], "nextCursor": "c2" }
+  },
+  {
+    "variant": "response",
+    "note": "A rule without `ruleId` — the provider sets one on every rule (HCP 6.3).",
+    "payload": { "rules": [ { "effect": "deny", "operators": ["ads.example"], "setBy": "context-subject", "createdAt": "2026-11-25T10:00:01Z" } ] }
+  }
+]

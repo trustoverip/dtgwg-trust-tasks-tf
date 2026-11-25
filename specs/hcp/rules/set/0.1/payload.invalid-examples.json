@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": { "operators": ["ads.example"], "categories": ["health_context"] }
+  },
+  {
+    "note": "`ruleId` in the request — the provider sets the rule's identifier (HCP 6.3, 9.4.14); it is never taken from the request.",
+    "payload": { "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b", "operators": ["ads.example"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "`effect` in the request — the provider sets it to `deny` (HCP 9.4.14).",
+    "payload": { "effect": "deny", "operators": ["ads.example"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Empty `operators` — absent means every operator; an empty array names none (minItems 1).",
+    "payload": { "operators": [], "requires": ["https://hcp.example/spec/clients/directives/2.0"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "A `requires` claim that is not an absolute URI — client conformance claims are URIs (HCP 18.1).",
+    "payload": { "operators": ["ads.example"], "requires": ["follows directives"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "A category that is neither a registry slug nor an absolute URI (HCP 4.5).",
+    "payload": { "operators": ["ads.example"], "categories": ["Health Context"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `rule` — HCP answers 201 with the rule (HCP 9.4.14).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A rule whose `effect` is not `deny` — the only effect in HCP 2.0-draft-3 (HCP 6.3).",
+    "payload": { "rule": { "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b", "effect": "permit", "operators": ["ads.example"], "setBy": "context-subject", "createdAt": "2026-11-25T10:00:01Z" } }
+  }
+]

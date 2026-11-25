@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Missing `text` — HCP requires the directive in the Context Subject's words (HCP 6.4).",
+    "payload": { "action": "share", "effect": "deny", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Out-of-enum `effect` — HCP's effects are `deny`, `ask-first` and `permit` (HCP 6.4).",
+    "payload": { "action": "share", "effect": "allow", "text": "You may share my preferences.", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "An `action` that is neither `share`, `sign` nor `transact` nor an absolute URI (HCP 6.4, A.3).",
+    "payload": { "action": "book", "effect": "permit", "text": "You may book appointments for me.", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "`directiveId` in the request — the provider sets the directive's identifier (HCP 9.4.15); it is never taken from the request.",
+    "payload": { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19", "action": "sign", "effect": "ask-first", "text": "Ask me before you sign anything.", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": { "action": "sign", "effect": "ask-first", "text": "Ask me before you sign anything." }
+  },
+  {
+    "note": "Empty `categories` — absent means every category; an empty array names none (minItems 1).",
+    "payload": { "action": "share", "effect": "deny", "text": "Never pass my health context to another agent.", "categories": [], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `directive` — HCP answers 201 with the directive (HCP 9.4.15).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A directive without `directiveId` — the provider sets one on every directive (HCP 6.4, 9.4.15).",
+    "payload": { "directive": { "action": "share", "effect": "deny", "text": "Never pass my health context to another agent.", "setBy": "context-subject", "createdAt": "2026-11-25T12:00:01Z" } }
+  }
+]

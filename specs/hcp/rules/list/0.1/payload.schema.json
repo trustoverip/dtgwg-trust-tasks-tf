@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/rules/list/0.1",
+  "title": "HCP — List Standing Rules — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 List standing rules operation (HCP 6.3, 5.4; `GET /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, reads the standing rules. HCP defines no request schema and no parameters for this operation; the only member is the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accessToken"],
+  "properties": {
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — List Standing Rules — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rules"],
+      "description": "The standing rules the caller may see. Carries HCP's `200` result, a `rules` array (HCP 9.4.14). Not paginated: HCP gives this operation no cursor. Failures use trust-task-error, not this shape.",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/standing-rule.schema.json#/$defs/StandingRule" },
+          "description": "HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 23 in the spec). Empty when there is none. HCP sets no order."
+        }
+      }
+    }
+  }
+}

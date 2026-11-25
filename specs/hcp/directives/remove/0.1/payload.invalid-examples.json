@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Non-urn `directiveId` — HCP directive identifiers are urn:uuid (HCP 6.4).",
+    "payload": { "directiveId": "directive-7", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19" }
+  },
+  {
+    "note": "Missing `directiveId` — a removal names the directive it removes.",
+    "payload": { "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Unknown top-level request member — HCP's remove takes no reason or other member (HCP 9.4.15).",
+    "payload": { "directiveId": "urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19", "accessToken": "hcp_mt_x", "reason": "no longer needed" }
+  },
+  {
+    "variant": "response",
+    "note": "A member in the response — HCP answers 204 No Content, so the payload is the empty object.",
+    "payload": { "removed": true }
+  }
+]
