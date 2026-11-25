@@ -25,8 +25,8 @@
     "auth/refresh/0.2": {
       "array-max-items /properties/scope": "Baseline: no maxItems when the lint landed; the next version declares one."
     },
-    "auth/step-up/approve-request/0.5": {
-      "array-max-items /properties/accepts": "Baseline: no maxItems when the lint landed; the next version declares one."
+    "auth/step-up/approve-request/0.6": {
+      "array-max-items /properties/accepts": "Carried from 0.5: 0.6 declares extends 0.5, which cannot narrow a bound. uniqueItems over a three-value enum already caps it at 3; the next version that does not extend 0.5 declares maxItems."
     },
     "auth/step-up/approver/invite/0.2": {
       "url-scheme /$defs/Response/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."

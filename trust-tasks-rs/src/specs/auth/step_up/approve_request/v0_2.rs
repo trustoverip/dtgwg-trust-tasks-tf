@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by auth/step-up/approve-request/0.5");
+pub const DEPRECATION: Option<&str> = Some("superseded by auth/step-up/approve-request/0.6");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -379,7 +379,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/step-up/approve-request/0.5")]
+#[deprecated(note = "superseded by auth/step-up/approve-request/0.6")]
 pub struct Payload {
     ///Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.
     #[serde(
@@ -723,7 +723,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/step-up/approve-request/0.5")]
+#[deprecated(note = "superseded by auth/step-up/approve-request/0.6")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,

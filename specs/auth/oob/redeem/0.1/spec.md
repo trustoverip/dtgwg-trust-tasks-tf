@@ -3,7 +3,8 @@ slug: auth/oob/redeem
 version: "0.1"
 title: "Auth — OOB Redeem"
 summary: "The starter long-polls an out-of-band request with its own key and, once the member has approved, turns it into a session bound to that key; before approval it learns the request's state and, once claimed, the number to show."
-status: draft
+status: retired
+supersededBy: auth/oob/redeem/0.2
 targetFrameworkVersion: "0.6.0"
 category: authentication
 keywords: [auth, oob, out-of-band, sign-in, login, session, session-key, long-poll]
