@@ -4246,6 +4246,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "trust-tasks-example-hcp-demo"
+version = "0.0.0"
+dependencies = [
+ "affinidi-secrets-resolver",
+ "affinidi-tsp",
+ "chrono",
+ "serde",
+ "serde_json",
+ "tokio",
+ "trust-tasks",
+ "trust-tasks-build",
+]
+
+[[package]]
 name = "trust-tasks-https"
 version = "0.41.5"
 dependencies = [
