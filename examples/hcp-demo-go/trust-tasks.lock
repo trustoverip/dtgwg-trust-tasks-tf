@@ -1,0 +1,39 @@
+# Written by `trust-tasks`. Do not edit by hand.
+version = 1
+registry = "https://trusttasks.org"
+
+[[task]]
+slug = "hcp/entries/query"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/hcp/entries/query/0.1"
+digest = "sha256:586367270ca7056c543f05f6900db9741523614f2398ea0d3fb4b8ec61c4de52"
+
+[[task]]
+slug = "hcp/grants/request"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/hcp/grants/request/0.1"
+digest = "sha256:f0ca9754b8caf3a3757d748aa8d593be7db02ea1b03b40e0b1f4d81c66c84734"
+
+[[task]]
+slug = "hcp/grants/revoke"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/hcp/grants/revoke/0.1"
+digest = "sha256:dc7fcf6a5a853745caede3f9144efa48f14c8696941229a0b7dccec512e9e435"
+
+[[task]]
+slug = "hcp/grants/revoked"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/hcp/grants/revoked/0.1"
+digest = "sha256:3446ab9c17d8b57af717134804bc3acc10dd024114d18d14e0627d7eb473cd0b"
+
+[[task]]
+slug = "trust-task-discovery"
+version = "0.4"
+type_uri = "https://trusttasks.org/spec/trust-task-discovery/0.4"
+digest = "sha256:77698b66128bd0c424d76ae970b47455d133c4eaeafdb52a951e3845464773b6"
+
+[[task]]
+slug = "trust-task-next-step"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/trust-task-next-step/0.1"
+digest = "sha256:ac1ca19b28381d551876e21ce316f07929b19c2c5932b76442d069d16361a055"
