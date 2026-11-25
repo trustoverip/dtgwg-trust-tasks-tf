@@ -43,12 +43,14 @@ extension type const PayloadReason(String value) {
 
 /// The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3,
 /// 9.9): a provider tells a Context Client that a grant it held has been revoked.
-/// Carries the members of the `https://hcp.example/spec/events/grant-revoked` event;
-/// the Security Event Token claims map to the framework envelope (see the spec). The
-/// outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof)
-/// are owned by the framework — SPEC §6.3.
+/// Carries the Security Event Token's `jti` as `noticeId` and the members of the
+/// `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token
+/// claims map to the framework envelope (see the spec). The outer document members
+/// (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
+/// framework — SPEC §6.3.
 class Payload {
   const Payload({
+    required this.noticeId,
     required this.grantId,
     required this.revokedAt,
     this.reason,
@@ -56,12 +58,21 @@ class Payload {
 
   /// Read this payload from a decoded JSON object.
   factory Payload.fromJson(Map<String, dynamic> json) => Payload(
+        noticeId: json['noticeId'] as String,
         grantId: json['grantId'] as String,
         revokedAt: json['revokedAt'] as String,
         reason: json['reason'] == null
             ? null
             : PayloadReason(json['reason'] as String),
       );
+
+  /// The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider
+  /// mints it fresh for each notice and keeps it the same on every delivery attempt of
+  /// that notice, while each attempt is a new document with its own `id`, `issuedAt` and
+  /// `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already
+  /// processed is acknowledged and not acted on again. Carrying `jti` in the payload
+  /// rather than as the document `id` is pending HCP confirmation.
+  final Urn noticeId;
 
   /// The grant-revoked event's `grantId`: the grant that was revoked or ended.
   final Urn grantId;
@@ -82,6 +93,7 @@ class Payload {
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
+        'noticeId': noticeId,
         'grantId': grantId,
         'revokedAt': revokedAt,
         if (reason != null) 'reason': reason!.value,
@@ -121,7 +133,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoked/0.1","title":"HCP — Revocation Notice — payload","description":"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["grantId","revokedAt"],"properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"The grant-revoked event\'s `grantId`: the grant that was revoked or ended."},"revokedAt":{"\$ref":"#/\$defs/Instant","description":"The grant-revoked event\'s `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6)."},"reason":{"type":"string","enum":["revoked","delegation-ended"],"description":"How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP\'s `grant.expired` audit event records (HCP 8.2). Never the delegation\'s own reason for ending. HCP\'s grant-revoked event has no such member: this carriage adds it, pending HCP confirmation."}},"\$defs":{"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoked/0.1","title":"HCP — Revocation Notice — payload","description":"The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the Security Event Token\'s `jti` as `noticeId` and the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["noticeId","grantId","revokedAt"],"properties":{"noticeId":{"\$ref":"#/\$defs/Urn","description":"The Security Event Token\'s `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation."},"grantId":{"\$ref":"#/\$defs/Urn","description":"The grant-revoked event\'s `grantId`: the grant that was revoked or ended."},"revokedAt":{"\$ref":"#/\$defs/Instant","description":"The grant-revoked event\'s `revokedAt`: when the provider revoked the grant. The revocation took effect then, whether or not this notice is delivered (HCP 6.2.3). For a grant that ended with its delegation (`reason` `delegation-ended`), the instant the delegation ended (HCP 17.6)."},"reason":{"type":"string","enum":["revoked","delegation-ended"],"description":"How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP\'s `grant.expired` audit event records (HCP 8.2). Never the delegation\'s own reason for ending. HCP\'s grant-revoked event has no such member: this carriage adds it, pending HCP confirmation."}},"\$defs":{"Instant":{"type":"string","format":"date-time","description":"An RFC 3339 instant."},"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

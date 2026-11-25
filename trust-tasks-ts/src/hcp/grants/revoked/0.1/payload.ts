@@ -7,9 +7,13 @@ import type { Instant, Urn } from "../../../../_shared/components.js";
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the Security Event Token's `jti` as `noticeId` and the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface HCPRevocationNoticePayload {
+  /**
+   * The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation.
+   */
+  noticeId: Urn;
   /**
    * The grant-revoked event's `grantId`: the grant that was revoked or ended.
    */
@@ -77,14 +81,19 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/grants/revoked/0.1",
   "title": "HCP — Revocation Notice — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 revocation notification (HCP 6.2.3, 9.9): a provider tells a Context Client that a grant it held has been revoked. Carries the Security Event Token's `jti` as `noticeId` and the members of the `https://hcp.example/spec/events/grant-revoked` event; the Security Event Token claims map to the framework envelope (see the spec). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "noticeId",
     "grantId",
     "revokedAt"
   ],
   "properties": {
+    "noticeId": {
+      "$ref": "#/$defs/Urn",
+      "description": "The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation."
+    },
     "grantId": {
       "$ref": "#/$defs/Urn",
       "description": "The grant-revoked event's `grantId`: the grant that was revoked or ended."
