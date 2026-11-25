@@ -224,7 +224,8 @@ class Basis {
         rationale: json['rationale'] as String?,
       );
 
-  /// The sources the assertion was drawn from.
+  /// The sources the assertion was drawn from. The bound of 256 is a framework bound,
+  /// not an HCP requirement.
   final List<String>? drawnFrom;
 
   /// The task during which the assertion was made.
@@ -314,7 +315,7 @@ class Assertion {
   final Basis? basis;
 
   /// The purposes the asserter permits the entry to be used for; absent means no limit
-  /// (HCP 4.2.6).
+  /// (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.
   final List<PurposeCode>? permittedPurposes;
 
   /// Serialize to a JSON-encodable map, omitting absent members.

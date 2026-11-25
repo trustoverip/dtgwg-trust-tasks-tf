@@ -1916,10 +1916,130 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/governance/capability/list/0.1#response" => <crate::specs::governance::capability::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/audit/read/0.1" => <crate::specs::hcp::audit::read::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/audit/read/0.1#response" => <crate::specs::hcp::audit::read::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/end/0.1" => <crate::specs::hcp::delegations::end::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/end/0.1#response" => <crate::specs::hcp::delegations::end::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/list/0.1" => <crate::specs::hcp::delegations::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/list/0.1#response" => <crate::specs::hcp::delegations::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/list/0.1" => <crate::specs::hcp::directives::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/list/0.1#response" => <crate::specs::hcp::directives::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/remove/0.1" => <crate::specs::hcp::directives::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/remove/0.1#response" => <crate::specs::hcp::directives::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/set/0.1" => <crate::specs::hcp::directives::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/set/0.1#response" => <crate::specs::hcp::directives::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/disclosures/summary/0.1" => <crate::specs::hcp::disclosures::summary::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/disclosures/summary/0.1#response" => <crate::specs::hcp::disclosures::summary::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/confirm/0.1" => <crate::specs::hcp::entries::confirm::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/confirm/0.1#response" => <crate::specs::hcp::entries::confirm::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1" => <crate::specs::hcp::entries::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1#response" => <crate::specs::hcp::entries::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/get/0.1" => <crate::specs::hcp::entries::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/get/0.1#response" => <crate::specs::hcp::entries::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/hard-delete/0.1" => <crate::specs::hcp::entries::hard_delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/hard-delete/0.1#response" => <crate::specs::hcp::entries::hard_delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/entries/query/0.1" => <crate::specs::hcp::entries::query::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/entries/query/0.1#response" => <crate::specs::hcp::entries::query::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1" => <crate::specs::hcp::entries::restrict_purposes::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1#response" => <crate::specs::hcp::entries::restrict_purposes::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1" => <crate::specs::hcp::entries::revise::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1#response" => <crate::specs::hcp::entries::revise::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/set-categories/0.1" => <crate::specs::hcp::entries::set_categories::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/set-categories/0.1#response" => <crate::specs::hcp::entries::set_categories::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/withdraw/0.1" => <crate::specs::hcp::entries::withdraw::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/withdraw/0.1#response" => <crate::specs::hcp::entries::withdraw::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/export/0.1" => <crate::specs::hcp::export::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/export/0.1#response" => <crate::specs::hcp::export::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/list/0.1" => <crate::specs::hcp::grants::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/list/0.1#response" => <crate::specs::hcp::grants::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/read-own/0.1" => <crate::specs::hcp::grants::read_own::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/read-own/0.1#response" => <crate::specs::hcp::grants::read_own::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/relinquish/0.1" => <crate::specs::hcp::grants::relinquish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/relinquish/0.1#response" => <crate::specs::hcp::grants::relinquish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/request/0.1" => <crate::specs::hcp::grants::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/request/0.1#response" => <crate::specs::hcp::grants::request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/grants/revoke/0.1" => <crate::specs::hcp::grants::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1932,6 +2052,36 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/grants/revoked/0.1#response" => <crate::specs::hcp::grants::revoked::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/import/0.1" => <crate::specs::hcp::import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/import/0.1#response" => <crate::specs::hcp::import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/list/0.1" => <crate::specs::hcp::rules::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/list/0.1#response" => <crate::specs::hcp::rules::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/remove/0.1" => <crate::specs::hcp::rules::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/remove/0.1#response" => <crate::specs::hcp::rules::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/set/0.1" => <crate::specs::hcp::rules::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/set/0.1#response" => <crate::specs::hcp::rules::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/shares/report/0.1" => <crate::specs::hcp::shares::report::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/shares/report/0.1#response" => <crate::specs::hcp::shares::report::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/create/0.1" => <crate::specs::keys::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -10298,8 +10448,112 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/audit/read/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::audit::read::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/end/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::delegations::end::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::delegations::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::directives::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/remove/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::directives::remove::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/set/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::directives::set::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/disclosures/summary/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::disclosures::summary::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/confirm/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::confirm::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/hard-delete/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::hard_delete::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/entries/query/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::hcp::entries::query::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::hcp::entries::restrict_purposes::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::revise::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/set-categories/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::hcp::entries::set_categories::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/withdraw/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::entries::withdraw::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/export/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::export::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::grants::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/read-own/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::grants::read_own::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/relinquish/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::grants::relinquish::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::grants::request::v0_1::Payload,
         >()),
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
@@ -10310,6 +10564,31 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/grants/revoked/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::hcp::grants::revoked::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/import/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::import::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::rules::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/remove/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::rules::remove::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/set/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::rules::set::v0_1::Payload,
+        >()),
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/shares/report/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::hcp::shares::report::v0_1::Payload,
         >()),
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
@@ -18157,8 +18436,108 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/audit/read/0.1" => {
+            Some(crate::specs::hcp::audit::read::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/end/0.1" => {
+            Some(crate::specs::hcp::delegations::end::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/list/0.1" => {
+            Some(crate::specs::hcp::delegations::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/list/0.1" => {
+            Some(crate::specs::hcp::directives::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/remove/0.1" => {
+            Some(crate::specs::hcp::directives::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/set/0.1" => {
+            Some(crate::specs::hcp::directives::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/disclosures/summary/0.1" => {
+            Some(crate::specs::hcp::disclosures::summary::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/confirm/0.1" => {
+            Some(crate::specs::hcp::entries::confirm::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1" => {
+            Some(crate::specs::hcp::entries::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/get/0.1" => {
+            Some(crate::specs::hcp::entries::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/hard-delete/0.1" => {
+            Some(crate::specs::hcp::entries::hard_delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/entries/query/0.1" => {
             Some(crate::specs::hcp::entries::query::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1" => {
+            Some(crate::specs::hcp::entries::restrict_purposes::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1" => {
+            Some(crate::specs::hcp::entries::revise::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/set-categories/0.1" => {
+            Some(crate::specs::hcp::entries::set_categories::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/withdraw/0.1" => {
+            Some(crate::specs::hcp::entries::withdraw::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/export/0.1" => {
+            Some(crate::specs::hcp::export::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/list/0.1" => {
+            Some(crate::specs::hcp::grants::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/read-own/0.1" => {
+            Some(crate::specs::hcp::grants::read_own::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/relinquish/0.1" => {
+            Some(crate::specs::hcp::grants::relinquish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/grants/request/0.1" => {
+            Some(crate::specs::hcp::grants::request::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
@@ -18169,6 +18548,31 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/grants/revoked/0.1" => {
             Some(crate::specs::hcp::grants::revoked::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/import/0.1" => {
+            Some(crate::specs::hcp::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/list/0.1" => {
+            Some(crate::specs::hcp::rules::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/remove/0.1" => {
+            Some(crate::specs::hcp::rules::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/set/0.1" => {
+            Some(crate::specs::hcp::rules::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/shares/report/0.1" => {
+            Some(crate::specs::hcp::shares::report::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
@@ -23646,7 +24050,52 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         "https://trusttasks.org/spec/external/credentials/issue/0.3#response" => <crate::specs::external::credentials::issue::v0_3::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "hcp")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/audit/read/0.1#response" => <crate::specs::hcp::audit::read::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/delegations/list/0.1#response" => <crate::specs::hcp::delegations::list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/directives/list/0.1#response" => <crate::specs::hcp::directives::list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/disclosures/summary/0.1#response" => <crate::specs::hcp::disclosures::summary::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/confirm/0.1#response" => <crate::specs::hcp::entries::confirm::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1" => <crate::specs::hcp::entries::create::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/create/0.1#response" => <crate::specs::hcp::entries::create::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/get/0.1#response" => <crate::specs::hcp::entries::get::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/hcp/entries/query/0.1#response" => <crate::specs::hcp::entries::query::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1#response" => <crate::specs::hcp::entries::restrict_purposes::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1" => <crate::specs::hcp::entries::revise::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/revise/0.1#response" => <crate::specs::hcp::entries::revise::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/entries/set-categories/0.1#response" => <crate::specs::hcp::entries::set_categories::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/export/0.1#response" => <crate::specs::hcp::export::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/import/0.1" => <crate::specs::hcp::import::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "hcp")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/hcp/rules/list/0.1#response" => <crate::specs::hcp::rules::list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-document/0.1" => <crate::specs::keys::sign_document::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,

@@ -96,12 +96,13 @@ class Directive {
   final String text;
 
   /// The categories whose context the directive governs; absent means every category,
-  /// held now or later (HCP 6.4).
+  /// held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP
+  /// requirement.
   final List<Category>? categories;
 
   /// The Client Operators the directive applies to, each a DNS domain or an operator
   /// identifier, matched as for standing rules; absent means every operator (HCP 6.4,
-  /// 6.3).
+  /// 6.3). The maxItems is a framework bound, not an HCP requirement.
   final List<String>? operators;
 
   /// Set by the provider: `context-subject`, or the `delegationId` of the delegate who

@@ -3045,6 +3045,44 @@ export interface AcceptsCriterion_VtcV0_2 {
   createdByDid: string;
 }
 /**
+ * An authorization detail (HCP 6.1.5); under HCP's OAuth Interop Profile, an RFC 9396 authorization detail (HCP 13.3). `onwardSharing` appears only in a detail that includes `read` and all of whose categories have a default sensitivity of Low (HCP 6.1.5); not checked by the schema.
+ */
+export interface AccessDetail {
+  /**
+   * The HCP authorization detail type (HCP 6.1.5).
+   */
+  type: "https://hcp.example/spec/authorization/context-access";
+  /**
+   * What the detail allows. `provenance` is an action only alongside `read` (HCP 6.1.5, 7.4.1); not checked by the schema.
+   *
+   * @minItems 1
+   */
+  actions: ["read" | "write" | "provenance", ...("read" | "write" | "provenance")[]];
+  /**
+   * The categories the detail covers (HCP 4.5).
+   *
+   * @minItems 1
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * The purposes the person approved for these categories; never empty (HCP 6.1.5.2).
+   *
+   * @minItems 1
+   */
+  purposes: [Purpose_HcpV0_1, ...Purpose_HcpV0_1[]];
+  /**
+   * An implementation-defined narrowing below category grain, which only narrows (HCP 6.1.5.1). To a Context Client, entries it names are named by `ref`, never by `id` (HCP 5.2.6).
+   */
+  narrowedTo?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The onward sharing the person elected for the detail (HCP 3.12, 6.1.5).
+   */
+  onwardSharing?: OnwardSharing;
+  [k: string]: unknown | undefined;
+}
+/**
  * Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.
  */
 export interface AccountBinding {
@@ -6077,6 +6115,16 @@ export interface ApproverBinding {
   routeHint?: string;
 }
 /**
+ * HCP `record.provenance.assertedBy`, as a request supplies it: the Context Asserter's identifier only. The provider assigns `assurance` (HCP 3.5, 5.2.3).
+ */
+export interface AssertedBy {
+  /**
+   * The Context Asserter (HCP 3.2.6).
+   */
+  id: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * What the submitting client states about the assertion (HCP 4.2). `confidence` is REQUIRED and non-null when `declarationType` is `model-inferred`, and null or absent otherwise (HCP 4.2, 4.4). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
  */
 export interface Assertion {
@@ -6097,7 +6145,9 @@ export interface Assertion {
    */
   basis?: Basis;
   /**
-   * The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6).
+   * The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
    */
   permittedPurposes?: PurposeCode[];
   [k: string]: unknown | undefined;
@@ -6299,6 +6349,1835 @@ export interface Attribute {
   updatedAt: string;
 }
 /**
+ * One entry a retrieval disclosed (HCP 8.2).
+ */
+export interface AuditDisclosed {
+  /**
+   * The entry's stable `id`.
+   */
+  entryId: Urn;
+  /**
+   * The version disclosed.
+   */
+  version: number;
+  /**
+   * The use-until time the disclosure was given (HCP 7.6).
+   */
+  useUntil: Instant;
+  /**
+   * True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
+   */
+  provenance?: boolean;
+  /**
+   * Present only where a credential was disclosed in derived form (HCP 8.2, 14.9).
+   *
+   * @maxItems 16
+   */
+  revealed?:
+    | []
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ]
+    | [
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        },
+        {
+          /**
+           * The evidence item's index.
+           */
+          evidence: number;
+          /**
+           * The claims revealed, each a JSON Pointer.
+           *
+           * @maxItems 256
+           */
+          claims: string[];
+          [k: string]: unknown | undefined;
+        }
+      ];
+  [k: string]: unknown | undefined;
+}
+/**
  * One record in the mediator's privileged-change audit log: one change, by one actor, at one time.
  */
 export interface AuditEntry {
@@ -6402,6 +8281,336 @@ export interface AuditEvent {
   reason?: string;
 }
 /**
+ * One audit event (HCP 8.2). The log names entries by their stable `id`, never by the `ref` a client received, because the log is the Context Subject's (HCP 8.2, 8.3). The query text is never recorded (HCP 8.2).
+ */
+export interface AuditEvent_HcpV0_1 {
+  /**
+   * The event's identifier (HCP 8.2).
+   */
+  eventId: Urn;
+  /**
+   * The event type, one of those HCP 8.1 lists (such as `context.read`, `grant.revoked`, `rule.set`). Left open, as HCP's own shape leaves it, so that the event types of a later draft are not refused.
+   */
+  eventType: string;
+  /**
+   * When the event occurred. HCP's member name (HCP 8.2), carried verbatim so the event is the one an export carries (HCP 5.4.1).
+   */
+  timestamp: Instant;
+  /**
+   * Who took part (HCP 8.2, 3.9).
+   */
+  participants: AuditParticipants;
+  /**
+   * The entry concerned, by its `id`, or null (HCP 8.2). For conflict events, the conflicted entry (HCP 8.2).
+   */
+  entryId?: string | null;
+  /**
+   * For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2).
+   */
+  relatedEntryId?: string | null;
+  /**
+   * The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  categories?: Category[];
+  /**
+   * The purpose code stated, or null (HCP 8.2, 6.1.5.2).
+   */
+  purpose?: string | null;
+  /**
+   * The stated task, or null (HCP 8.2). The maxLength is a framework bound, not an HCP requirement.
+   */
+  purposeDescription?: string | null;
+  /**
+   * The grant concerned, or null (HCP 8.2).
+   */
+  grantId?: string | null;
+  /**
+   * Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
+   *
+   * @maxItems 20
+   */
+  disclosed?:
+    | []
+    | [AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed, AuditDisclosed]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ]
+    | [
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed,
+        AuditDisclosed
+      ];
+  /**
+   * The members HCP 8.2 fixes for the event type, such as `options` for `context.exported` or `ruleId` for `rule.set`. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
+   */
+  data?: {
+    [k: string]: unknown | undefined;
+  };
+  [k: string]: unknown | undefined;
+}
+/**
+ * The participants in an audit event (HCP 8.2, 3.9). No event names "system" (HCP 8.2).
+ */
+export interface AuditParticipants {
+  /**
+   * Who initiated the event.
+   */
+  initiator: {
+    /**
+     * Their role (HCP 8.2). HCP's own values, carried verbatim.
+     */
+    role: "management-client" | "context-client" | "authorization-service" | "hcp-provider";
+    /**
+     * Their identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The Client Operator, where a client took part (HCP 3.9).
+   */
+  clientOperator?: AuditParty;
+  /**
+   * The Requesting Party, where there is one (HCP 3.9).
+   */
+  requestingParty?: AuditParty;
+  /**
+   * The Authorizing Principal (HCP 3.9).
+   */
+  authorizingPrincipal?: AuditParty;
+  /**
+   * The HCP Provider (HCP 8.2).
+   */
+  provider: AuditParty;
+  /**
+   * The retrieval, on a read (HCP 8.2).
+   */
+  retrievalId?: Urn;
+  /**
+   * The model, where one took part (HCP 3.9).
+   */
+  model?: AuditParty;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A participant named by its identifier (HCP 8.2).
+ */
+export interface AuditParty {
+  /**
+   * The participant's identifier.
+   */
+  id: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
  */
 export interface AuthenticatorAssertionResponseLogin {
@@ -6499,6 +8708,20 @@ export interface AuthorityScopeContexts {
  */
 export interface AuthorityScopeNone {
   scope: "none";
+}
+/**
+ * The Authorizing Principal (HCP 3.4). In Core it is the Context Subject and carries the same pseudonym as `subject`; under the Delegated Authorization Profile it is the delegate (HCP 17.4).
+ */
+export interface AuthorizingPrincipal {
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * The delegation under which a delegate authorized the grant; present only then (HCP 6.1.5, 17.4).
+   */
+  delegation?: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * The effective configuration — defaults filled in — and the last sweep.
@@ -6727,7 +8950,9 @@ export interface Ballot {
  */
 export interface Basis {
   /**
-   * The sources the assertion was drawn from.
+   * The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
    */
   drawnFrom?: string[];
   /**
@@ -8173,6 +10398,40 @@ export interface ContextRecord {
   ext?: Ext;
 }
 /**
+ * HCP `record.provenance`, as a create supplies it (HCP 5.2.3): `source` is REQUIRED, and `assertedBy.id` is REQUIRED unless the declaration type is `person-declared` or the content is a credential (HCP 5.2.3); that rule depends on the content and is not checked by the schema.
+ */
+export interface CreateProvenance {
+  /**
+   * The Context Asserter.
+   */
+  assertedBy?: AssertedBy;
+  /**
+   * When the assertion was made. Omitted means the provider records `recordedAt` (HCP 5.2.3).
+   */
+  assertedAt?: Instant;
+  /**
+   * The origin of the entry: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3).
+   */
+  source: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record`, as a create supplies it: provenance and relationships only. The provider assigns `status`, `version` and the rest (HCP 5.2.3).
+ */
+export interface CreateRecord {
+  /**
+   * The provenance the client supplies (HCP 5.2.3).
+   */
+  provenance: CreateProvenance;
+  /**
+   * Relationships to assert (HCP 4.2.3). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  relationships?: WriteRelationship[];
+  [k: string]: unknown | undefined;
+}
+/**
  * A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers.
  */
 export interface Credential {}
@@ -8386,6 +10645,276 @@ export interface DeferredPresentation {
    * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
    */
   expiresAt: string;
+}
+/**
+ * One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).
+ */
+export interface Delegation {
+  /**
+   * Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).
+   */
+  delegationId: Urn;
+  /**
+   * The Context Subject (HCP 17.2).
+   */
+  subject: {
+    /**
+     * The Context Subject's identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).
+   */
+  delegate: {
+    /**
+     * The delegate's identifier.
+     */
+    id: string;
+    /**
+     * A name the Context Subject can recognize.
+     */
+    name: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
+   */
+  relationship: string;
+  /**
+   * What the authority rests on, and how the Authorization Service established it (HCP 17.3).
+   */
+  basis: DelegationBasis;
+  /**
+   * The categories and actions the delegate may authorize (HCP 17.4).
+   */
+  scope: DelegationScope;
+  /**
+   * When the delegation ends (HCP 17.2).
+   */
+  term: DelegationTerm;
+  /**
+   * True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).
+   */
+  mayDelegate?: boolean;
+  /**
+   * Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).
+   */
+  ended?: DelegationEnded;
+  [k: string]: unknown | undefined;
+}
+/**
+ * What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.
+ */
+export interface DelegationBasis {
+  /**
+   * How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
+   */
+  method: "appointed" | "attested" | "evidence" | "delegated" | "unspecified";
+  /**
+   * What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
+   */
+  description: string;
+  /**
+   * For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).
+   */
+  parent?: Urn;
+  /**
+   * The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  evidence?:
+    | []
+    | [EvidenceItem]
+    | [EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem, EvidenceItem]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ]
+    | [
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem,
+        EvidenceItem
+      ];
+  /**
+   * The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @maxItems 256
+   */
+  covers?: Category[];
+  /**
+   * The Authorization Service that established the delegation (HCP 17.2).
+   */
+  establishedBy: string;
+  /**
+   * When the delegation was established (HCP 17.2).
+   */
+  establishedAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
+ * How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.
+ */
+export interface DelegationEnded {
+  /**
+   * When the delegation ended (HCP 17.2, 17.6).
+   */
+  at: Instant;
+  /**
+   * Why it ended (HCP 17.6). HCP's own values, carried verbatim.
+   */
+  reason:
+    "majority" | "expiry" | "basis-ended" | "relinquished" | "ended-by-subject" | "parent-ended" | "ended-by-delegate";
+  [k: string]: unknown | undefined;
+}
+/**
+ * The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).
+ */
+export interface DelegationScope {
+  /**
+   * The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * The actions in scope (HCP 17.2, 6.1.5).
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  actions: ["read" | "write"] | ["read" | "write", "read" | "write"];
+  [k: string]: unknown | undefined;
+}
+/**
+ * When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).
+ */
+export interface DelegationTerm {
+  /**
+   * When the delegation ends; null where no end is known (HCP 17.2).
+   */
+  endsAt: string | null;
+  /**
+   * True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).
+   */
+  atMajority: boolean;
+  [k: string]: unknown | undefined;
 }
 /**
  * A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.
@@ -9217,15 +11746,17 @@ export interface Directive {
    */
   text: string;
   /**
-   * The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4).
+   * The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
    *
    * @minItems 1
+   * @maxItems 256
    */
   categories?: [Category, ...Category[]];
   /**
-   * The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3).
+   * The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
    *
    * @minItems 1
+   * @maxItems 256
    */
   operators?: [string, ...string[]];
   /**
@@ -10531,6 +13062,186 @@ export interface EvidenceItem {
   [k: string]: unknown | undefined;
 }
 /**
+ * An HCP export: a JSON-LD document holding the Context Subject's entries and their standing rules, directives and delegations, and optionally superseded versions and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.
+ */
+export interface Export {
+  /**
+   * The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
+   *
+   * @maxItems 16
+   */
+  "@context":
+    | []
+    | [unknown]
+    | [unknown, unknown]
+    | [unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | [
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown,
+        unknown
+      ]
+    | string;
+  /**
+   * `ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.
+   */
+  type: "ContextExport";
+  /**
+   * The export structure version, compared as an exact string (HCP 5.4.1, 1.7).
+   */
+  schema: "https://hcp.example/spec/export/2.0";
+  /**
+   * The Context Subject (HCP 5.4.1).
+   */
+  subject: {
+    /**
+     * The Context Subject's identifier.
+     */
+    id: string;
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The exporting HCP Provider (HCP 5.4.1).
+   */
+  exportedBy: string;
+  /**
+   * When the export was made (HCP 5.4.1).
+   */
+  exportedAt: Instant;
+  /**
+   * The options requested (HCP 5.4.1).
+   */
+  options?: ExportOptions;
+  /**
+   * The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
+   *
+   * @maxItems 100000
+   */
+  entries: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1).
+   *
+   * @maxItems 1000000
+   */
+  versions?: {
+    [k: string]: unknown | undefined;
+  }[];
+  /**
+   * The Context Subject's standing rules (HCP 5.4.1, 6.3).
+   *
+   * @maxItems 1024
+   */
+  rules: StandingRule[];
+  /**
+   * The Context Subject's directives (HCP 5.4.1, 6.4).
+   *
+   * @maxItems 1024
+   */
+  directives?: Directive[];
+  /**
+   * The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
+   *
+   * @maxItems 256
+   */
+  delegations?: Delegation[];
+  /**
+   * The audit log, as events in the structure of HCP 8.2. Present only where requested (HCP 5.4.1).
+   *
+   * @maxItems 1000000
+   */
+  audit?: AuditEvent_HcpV0_1[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * The export options (HCP 5.4.1). Absent or false means the default.
+ */
+export interface ExportOptions {
+  /**
+   * Omit entries whose `record.status` is `deleted` (HCP 5.4.1).
+   */
+  excludeDeleted?: boolean;
+  /**
+   * Also return superseded versions of each entry returned (HCP 5.4.1).
+   */
+  includeVersions?: boolean;
+  /**
+   * Also return the Context Subject's audit log (HCP 5.4.1, 8.3).
+   */
+  includeAudit?: boolean;
+  [k: string]: unknown | undefined;
+}
+/**
  * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
  */
 export interface Exposure {
@@ -10981,6 +13692,94 @@ export interface GitNamespace_GitNsV0_6 {
    * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
    */
   state: "pending" | "bound";
+}
+/**
+ * A grant (HCP 6.1.5). `expiresAt` is an instant for a `temporary` grant and null for a `persistent` one (HCP 6.1.4, 6.1.5). That rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so it is not checked by the schema. An HCP Provider never discloses a grant issued to one HCP Client to any other (HCP 6.1.5).
+ */
+export interface Grant {
+  /**
+   * Stable for the life of the grant; the `grantId` recorded in audit events (HCP 6.1.5, 8.2).
+   */
+  grantId: Urn;
+  /**
+   * The Context Subject, by a pseudonym specific to the client (HCP 3.4).
+   */
+  subject: GrantParty;
+  /**
+   * Who authorized the grant (HCP 3.4, 6.1.5).
+   */
+  authorizingPrincipal: AuthorizingPrincipal;
+  /**
+   * The HCP Client the grant was issued to (HCP 6.1.5).
+   */
+  client: GrantClient;
+  /**
+   * The party on whose behalf the client requested access, where there is one (HCP 3.2.7, 3.4).
+   */
+  requestingParty?: RequestingParty;
+  /**
+   * What the grant authorizes: one or more authorization details (HCP 6.1.5).
+   *
+   * @minItems 1
+   */
+  access: [AccessDetail, ...AccessDetail[]];
+  /**
+   * Scope strings derived from `access`, in the form `hcp:{category}:{action}` (HCP 6.1.1), for display. They never grant anything `access` does not (HCP 6.1.5).
+   */
+  scopes?: string[];
+  /**
+   * Temporary or persistent (HCP 6.1.4). HCP's own values, carried verbatim.
+   */
+  grantType: "temporary" | "persistent";
+  /**
+   * When the grant was issued.
+   */
+  issuedAt: Instant;
+  /**
+   * For a temporary grant, its absolute expiry, never null; for a persistent grant, null (HCP 6.1.4, 6.1.5).
+   */
+  expiresAt: string | null;
+  /**
+   * `expired` on lapse of `expiresAt`, `revoked` on revocation (HCP 6.1.5, 6.2.1). HCP's own values, carried verbatim.
+   */
+  status: "active" | "revoked" | "expired";
+  [k: string]: unknown | undefined;
+}
+/**
+ * The client a grant was issued to (HCP 6.1.5).
+ */
+export interface GrantClient {
+  /**
+   * Its client identifier.
+   */
+  id: string;
+  /**
+   * A name the person can recognize (HCP 6.1.5).
+   */
+  name: string;
+  /**
+   * The Client Operator (HCP 3.2.8).
+   */
+  operator: Named;
+  /**
+   * Present only where the client declared a legal obligation to keep what it receives (HCP 6.2.5).
+   */
+  legalRetention?: LegalRetention;
+  /**
+   * The client conformance claims it declared at registration (HCP 18.1); absent where it declared none.
+   */
+  claims?: Uri[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * An actor a grant binds, named by identifier (HCP 3.4).
+ */
+export interface GrantParty {
+  /**
+   * Its identifier; for the Context Subject, a pseudonym specific to the client (HCP 3.4).
+   */
+  id: string;
+  [k: string]: unknown | undefined;
 }
 /**
  * Identifies one stored grant and the two parties to it.
@@ -12173,6 +14972,24 @@ export interface KudosMakers {
   groups?: GroupId[];
 }
 /**
+ * A record the client declared at registration that the law requires it to keep of what it receives (HCP 6.2.5).
+ */
+export interface LegalRetention {
+  /**
+   * The record kept.
+   */
+  record: string;
+  /**
+   * The law or rule that requires it.
+   */
+  obligation: string;
+  /**
+   * How long it is kept.
+   */
+  period: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.
  */
 export interface LimitTarget {
@@ -13009,6 +15826,20 @@ export interface MyBadge {
   credentialId?: GroupCredentialId;
   credentialValidUntil?: string;
 }
+/**
+ * An organization, by identifier and a name a person can recognize.
+ */
+export interface Named {
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * Its name.
+   */
+  name: string;
+  [k: string]: unknown | undefined;
+}
 export interface NetworkMembership {
   /**
    * The network's DID.
@@ -13240,6 +16071,20 @@ export interface OfferV2 {
    */
   state: "open" | "accepted";
   credentials: OfferCredentials;
+}
+/**
+ * Present only where the Authorizing Principal elected onward sharing for the detail (HCP 3.12, 6.1.5).
+ */
+export interface OnwardSharing {
+  /**
+   * Where present, the DNS domains of the organizations the client may share with (HCP 6.1.5).
+   */
+  domains?: string[];
+  /**
+   * Set by the provider: each DNS domain or operator a standing rule denies any of the detail's categories (HCP 6.1.5, 6.3).
+   */
+  notTo?: string[];
+  [k: string]: unknown | undefined;
 }
 /**
  * A delivery waiting to be retried.
@@ -13739,6 +16584,31 @@ export interface Profile {
   updatedAt: string;
 }
 /**
+ * A proposal for resolving a conflict the client asserts, carried on a `contradicts` relationship (HCP 4.7.4). It changes nothing until the Context Subject acts. `proposedBy` and `proposedAt` are set by the provider, never taken from a request (HCP 4.7.4).
+ */
+export interface Proposal {
+  /**
+   * The act proposed (HCP 4.7.3).
+   */
+  act: "reject" | "accept" | "supersede";
+  /**
+   * The entry the act applies to: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).
+   */
+  entry: string;
+  /**
+   * Why, in words the Context Subject can read (HCP 4.7.4).
+   */
+  rationale: string;
+  /**
+   * What the proposal considered: an open set, of which HCP defines `basis`, `declarationType`, `standing`, `permittedPurposes`, `recency` and `confidence` (HCP 4.7.4).
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  weighed: [string, ...string[]];
+  [k: string]: unknown | undefined;
+}
+/**
  * Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.
  */
 export interface ProtocolCounts {
@@ -14027,6 +16897,20 @@ export interface PurposeScopeListed {
    * @maxItems 32
    */
   purposes: [Purpose_AclV0_3, ...Purpose_AclV0_3[]];
+}
+/**
+ * A purpose with a description the person can read (HCP 6.1.5.2).
+ */
+export interface Purpose_HcpV0_1 {
+  /**
+   * The purpose code.
+   */
+  code: PurposeCode;
+  /**
+   * The description shown to the person before approval (HCP 6.1.5.2, 6.1.6).
+   */
+  description: string;
+  [k: string]: unknown | undefined;
 }
 export interface Apns {
   platform: "apns";
@@ -15128,6 +18012,24 @@ export interface Requester {
   sameNetwork: SameNetwork;
 }
 /**
+ * The Requesting Party (HCP 3.2.7).
+ */
+export interface RequestingParty {
+  /**
+   * A person or an organization. HCP's own values, carried verbatim.
+   */
+  type: "person" | "organization";
+  /**
+   * Its identifier.
+   */
+  id: string;
+  /**
+   * Its name.
+   */
+  name?: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.
  *
  * Distinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.
@@ -15172,6 +18074,34 @@ export interface ResolvedClaim {
    * When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.
    */
   updatedAt?: string;
+}
+/**
+ * The assertion members a revision may supply (HCP 5.2.4). `declarationType` omitted means unchanged. `confidence` is REQUIRED and non-null when the revised declaration type is `model-inferred`, and null or absent otherwise (HCP 4.2, 5.2.3); not checked by the schema, since the registry's Rust generator does not support `if`/`then`/`else`.
+ */
+export interface RevisionAssertion {
+  /**
+   * The declaration type of the revised assertion (HCP 4.4). HCP's own values, carried verbatim.
+   */
+  declarationType?: "person-declared" | "model-inferred" | "issuer-attested";
+  /**
+   * As for create (HCP 5.2.3).
+   */
+  confidence?: "high" | "medium" | "low" | null;
+  /**
+   * As for create: when the content stops holding (HCP 4.2).
+   */
+  validUntil?: string | null;
+  /**
+   * As for create: what the assertion was drawn from (HCP 4.2.5).
+   */
+  basis?: Basis;
+  /**
+   * As for create: the purposes the asserter permits the entry to be used for (HCP 4.2.6). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  permittedPurposes?: PurposeCode[];
+  [k: string]: unknown | undefined;
 }
 /**
  * Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.
@@ -16859,6 +19789,49 @@ export interface Standing {
   [k: string]: unknown | undefined;
 }
 /**
+ * A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). That rule is not checked by the schema: the registry's Rust generator does not support the conditional keywords it needs, so a validator does not check it.
+ */
+export interface StandingRule {
+  /**
+   * Stable for the life of the rule (HCP 6.3).
+   */
+  ruleId: Urn;
+  /**
+   * `deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
+   */
+  effect: "deny";
+  /**
+   * The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  operators?: [string, ...string[]];
+  /**
+   * Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  requires?: [Uri, ...Uri[]];
+  /**
+   * The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories?: [Category, ...Category[]];
+  /**
+   * Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
+   */
+  setBy: string;
+  /**
+   * Set by the provider: when the rule was set (HCP 6.3).
+   */
+  createdAt: Instant;
+  [k: string]: unknown | undefined;
+}
+/**
  * One transition in an entry's lifecycle.
  */
 export interface StateChange {
@@ -18467,6 +21440,75 @@ export interface WitnessKey {
   proofsSigned: number;
 }
 /**
+ * The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation; not checked by the schema.
+ */
+export interface WriteClassification {
+  /**
+   * HCP `classification.categories`: one or more categories, each one the grant authorizes the caller to write (HCP 4.5, 5.2.3). The bound of 256 is a framework bound, not an HCP requirement.
+   *
+   * @minItems 1
+   * @maxItems 256
+   */
+  categories: [Category, ...Category[]];
+  /**
+   * HCP `classification.dimension`: the dimension within the entry's categories (HCP 4.2).
+   */
+  dimension?: string | null;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record.provenance`, as a revision supplies it (HCP 5.2.4): the members are as for create, for the revised assertion, and the provider assigns every other provenance member (HCP 3.5). The create rules for `source` and `assertedBy.id` apply to the revised assertion (HCP 5.2.3, 5.2.4); they depend on the content and are not checked by the schema.
+ */
+export interface WriteProvenance {
+  /**
+   * The Context Asserter.
+   */
+  assertedBy?: AssertedBy;
+  /**
+   * When the assertion was made. Omitted means the provider records `recordedAt` (HCP 5.2.3).
+   */
+  assertedAt?: Instant;
+  /**
+   * The origin of the entry: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3).
+   */
+  source?: string;
+  [k: string]: unknown | undefined;
+}
+/**
+ * HCP `record`, as a revision supplies it: provenance and relationships only (HCP 5.2.4). The provider assigns `status`, `version` and the rest.
+ */
+export interface WriteRecord {
+  /**
+   * The provenance the client supplies (HCP 5.2.3).
+   */
+  provenance?: WriteProvenance;
+  /**
+   * Relationships to assert (HCP 4.2.3). The bound of 256 is a framework bound.
+   *
+   * @maxItems 256
+   */
+  relationships?: WriteRelationship[];
+  [k: string]: unknown | undefined;
+}
+/**
+ * A relationship to assert (HCP 4.2.3, 5.2.3). Only a `contradicts` relationship may carry a `proposal` (HCP 4.7.4); not checked by the schema. The provider assigns `assertedBy` and `recordedAt` (HCP 5.2.3).
+ */
+export interface WriteRelationship {
+  /**
+   * The kind of relationship.
+   */
+  type: RelationshipType;
+  /**
+   * The related entry: its `ref` for a Context Client, its `id` for a Management Client (HCP 5.2.3).
+   */
+  target: string;
+  /**
+   * A proposal for resolving the conflict, on a `contradicts` relationship only (HCP 4.7.4).
+   */
+  proposal?: Proposal;
+  [k: string]: unknown | undefined;
+}
+/**
  * The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.
  */
 export interface WriteResult_VtaV0_1 {
@@ -18545,4 +21587,14 @@ export interface WriteResult_VtaV0_7 {
    * On `tooLarge`: the size of the rejected value in bytes.
    */
   actualBytes?: number;
+}
+/**
+ * HCP `subject`, as a create supplies it (HCP 5.2.3): `subject.id` only. HCP reserves `subject.relationship` (HCP 4.2, 11.3); a request that carries it is passed through unchanged.
+ */
+export interface WriteSubject {
+  /**
+   * HCP `subject.id`: a URI identifying the Context Subject, which for a Context Client is the per-client pseudonym from its grant (HCP 3.4, 4.2).
+   */
+  id: string;
+  [k: string]: unknown | undefined;
 }

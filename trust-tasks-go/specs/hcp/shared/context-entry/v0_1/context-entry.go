@@ -121,14 +121,15 @@ type Assertion struct {
 	Basis *Basis `json:"basis,omitempty"`
 
 	// The purposes the asserter permits the entry to be used for; absent means no limit (HCP
-	// 4.2.6).
+	// 4.2.6). The bound of 256 is a framework bound, not an HCP requirement.
 	PermittedPurposes *[]PurposeCode `json:"permittedPurposes,omitempty"`
 }
 
 // Basis What an assertion was drawn from (HCP 4.2.5). It identifies no party but the
 // Context Subject.
 type Basis struct {
-	// The sources the assertion was drawn from.
+	// The sources the assertion was drawn from. The bound of 256 is a framework bound, not an
+	// HCP requirement.
 	DrawnFrom *[]string `json:"drawnFrom,omitempty"`
 
 	// The task during which the assertion was made.

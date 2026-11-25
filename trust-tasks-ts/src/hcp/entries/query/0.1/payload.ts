@@ -521,20 +521,22 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "categories": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 256,
           "items": {
             "$ref": "#/$defs/Category"
           },
-          "description": "The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4)."
+          "description": "The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement."
         },
         "operators": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 256,
           "items": {
             "type": "string",
             "minLength": 1,
             "maxLength": 2048
           },
-          "description": "The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3)."
+          "description": "The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement."
         },
         "setBy": {
           "type": "string",
@@ -1129,11 +1131,12 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         },
         "permittedPurposes": {
           "type": "array",
+          "maxItems": 256,
           "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/PurposeCode"
           },
-          "description": "The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6)."
+          "description": "The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -1144,11 +1147,12 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "properties": {
         "drawnFrom": {
           "type": "array",
+          "maxItems": 256,
           "items": {
             "type": "string",
             "maxLength": 2048
           },
-          "description": "The sources the assertion was drawn from."
+          "description": "The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement."
         },
         "task": {
           "type": "string",
