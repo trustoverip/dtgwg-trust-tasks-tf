@@ -39,7 +39,7 @@
       "description": "An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation."
     },
     "requestingParty": {
-      "$ref": "#/$defs/RequestingParty",
+      "$ref": "#/$defs/ProposedRequestingParty",
       "description": "HCP `requestingParty` (HCP 3.4, 6.1.5): the person or organization on whose behalf the client asks, where it differs from the Context Subject. Shown to the person before they act (HCP 6.1.6)."
     }
   },
@@ -145,7 +145,7 @@
         }
       }
     },
-    "RequestingParty": {
+    "ProposedRequestingParty": {
       "type": "object",
       "additionalProperties": false,
       "required": [
