@@ -31,6 +31,7 @@ var smokePackages = []string{
 	"acl/grant/v0_2",
 	"auth/authenticate/v0_3",
 	"vta/contexts/update/v1_0",
+	"vta/contexts/update-did/v1_2",
 }
 
 func TestGeneratedPackagesDriveTheRuntime(t *testing.T) {
