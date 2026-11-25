@@ -86,6 +86,9 @@ uncheckedRules:
   - member: "/$defs/Response/properties/export/properties/delegations/items/properties/basis/properties/evidence/items/properties/credential"
     rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
     source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/export/properties/rules/items"
+    rule: "A standing rule carries `operators`, `requires`, or both."
+    source: "HCP 6.3, 5.4.1"
 related:
   - hcp/import
   - hcp/audit/read

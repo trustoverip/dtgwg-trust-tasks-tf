@@ -82,6 +82,12 @@ uncheckedRules:
   - member: "/$defs/Response/properties/outcomes/items/properties/reason"
     rule: "A `rejected` outcome carries `reason`."
     source: "HCP 5.4.3"
+  - member: "/properties/export/properties/rules/items"
+    rule: "A standing rule carries `operators`, `requires`, or both. An export holding one with neither is refused with `malformedRequest`."
+    source: "HCP 6.3, 5.4.3"
+  - member: "/$defs/Response/properties/ext"
+    rule: "Where present, `ext[\"vnd.trusttasks.hcp-carriage\"]` validates against the `HcpCarriageImportExtension` definition in this schema (pending HCP confirmation, question 40)."
+    source: "This specification (Response); SPEC.md §4.5.1"
 related:
   - hcp/export
   - hcp/entries/set-categories
