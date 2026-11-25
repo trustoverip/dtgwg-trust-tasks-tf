@@ -433,7 +433,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/policy/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"expectedVersion\":{\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Policy Delete — payload\",\"type\":\"object\"}\n",
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/policy/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"expectedVersion\":{\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Policy Delete — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -442,7 +442,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"deletedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"type\":\"string\"}},\"required\":[\"id\",\"deletedAt\"],\"title\":\"Policy Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"deletedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"type\":\"string\"}},\"required\":[\"id\",\"deletedAt\"],\"title\":\"Policy Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

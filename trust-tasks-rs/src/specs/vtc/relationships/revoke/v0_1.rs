@@ -381,7 +381,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The relationship to revoke.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — payload\",\"type\":\"object\"}\n",
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), "},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The relationship to revoke.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -391,7 +391,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), ",", crate::specs::shared_defs::d_Response_86f4d919!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

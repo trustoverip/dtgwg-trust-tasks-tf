@@ -42,6 +42,37 @@ emits must be reachable both as `crate::…` (here) and as `::trust_tasks_rs::�
 door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 `examples/consumer-app` (the `consumer-app` job) is what catches a missing one.
 
+## The prebuilt tree spells each shared `$defs` entry once
+
+A shared schema (a family's `_shared/` key-roles or device-binding schema, the
+framework's `Ext`, …) is inlined into every version that references it, so the
+same `$defs` entry used to sit verbatim in hundreds of `PAYLOAD_SCHEMA`
+literals — about 9.7 MB of the tree's 12 MB of schema text, 2.2 MB of it
+distinct — and it is what took the `.crate` to within 0.1 MiB of crates.io's
+10 MiB upload limit (the `package` job in `rust.yml`). After generating every
+module, `trust-tasks-codegen` (`src/shared_defs.rs`) writes each entry that at
+least two literals carry, and that is long enough to be worth it, once into
+`src/specs/shared_defs.rs` as a `macro_rules!` expanding to its string
+literal, and rewrites each literal into a `concat!` of the pieces naming it.
+`concat!` expands the macros at compile time, so **every `PAYLOAD_SCHEMA` is
+the same `&'static str`, byte for byte**; the rewrite reassembles each one and
+compares it with the original before replacing it, and leaves alone anything
+that does not reassemble. It saved 1.07 MiB of the `.crate`.
+
+- It is the prebuilt tree only. `trust_tasks_build::generate_module` is
+  unchanged — an application's `build.rs` output is one module with nothing to
+  share with — so a module here is still what `generate_module` emits, except
+  for the spelling of its schema constants.
+- It is not one of the "change one, change all" rules: no schema changes, only
+  how one Rust constant is spelled. The TypeScript, Go and Dart generators are
+  not mirrored; their packages have no upload limit near their size.
+- `check-bindings` reads the Rust schema constants from source, so it resolves
+  the `concat!` and the `shared_defs` macros the way rustc does. A generated
+  module that names a macro the file does not define fails it, and the build.
+- Macro names are the definition's name and a hash of its text, so a changed
+  definition gets a new macro and an unchanged one keeps its name across
+  regenerations.
+
 ## `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with
