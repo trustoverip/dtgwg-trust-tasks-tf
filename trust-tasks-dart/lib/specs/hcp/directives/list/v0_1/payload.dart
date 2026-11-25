@@ -229,7 +229,7 @@ const String responsePayloadSchemaJson =
 const SpecPolicy spec = SpecPolicy(
   typeUri: typeUri,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: payloadSchemaJson,

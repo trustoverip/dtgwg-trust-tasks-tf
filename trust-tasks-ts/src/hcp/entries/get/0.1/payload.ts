@@ -1297,7 +1297,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,

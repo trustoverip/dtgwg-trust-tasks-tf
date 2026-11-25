@@ -7617,6 +7617,7 @@ pub mod builder {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/hcp/entries/get/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(

@@ -1146,9 +1146,10 @@ class ExportSubject {
 /// the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP
 /// 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets
 /// none. Those on `rules`, `directives` and `delegations` are set so that the
-/// document's 16 MiB `maxDocumentBytes` is reached first (each item serializes to more
-/// than 100 bytes), as HCP 5.4.1 lists every rule, directive and delegation and the
-/// list operations bound none: an export too large for one document is refused with
+/// document's `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an
+/// hcp/import request) is reached first (each item serializes to more than 100 bytes),
+/// as HCP 5.4.1 lists every rule, directive and delegation and the list operations
+/// bound none: an export too large for one document is refused with
 /// `hcp:exportTooLarge` (hcp/export), never cut short by an item count.
 class Export {
   const Export({
