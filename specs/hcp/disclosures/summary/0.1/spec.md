@@ -129,7 +129,7 @@ The Management Client asks for the summary. The payload is the top-level schema 
 
 - `accessToken` (REQUIRED) is the Management Client's token.
 - `client`, `category`, `from` and `to` (each OPTIONAL) narrow the summary to one client, one category, and a date range (HCP 8.6, 9.4.12). Each summary is then computed only from the disclosures that match: `from` and `to` bound when each disclosure took place, both inclusive, *pending HCP confirmation* ([question 30](#pending-hcp-confirmation)).
-- `cursor` and `limit` (OPTIONAL) page the result, which HCP lets a provider paginate (HCP 9.4.12, 9.5), *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). `limit` is the most client summaries to return, at most 1000; absent leaves the page size to the provider. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from, and a provider **MUST NOT** accept a cursor it did not issue. A provider that does not paginate ignores `limit` and returns every summary, within its `maxDocumentBytes`.
+- `cursor` and `limit` (OPTIONAL) page the result, which HCP lets a provider paginate (HCP 9.4.12, 9.5), *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)). `limit` is the most client summaries to return, at most 1000; absent leaves the page size to the provider. Either way, a provider **MUST** paginate where the summaries within the filters would take the response past its `maxDocumentBytes`: it returns fewer, and `nextCursor` for the rest. A Management Client that sends a cursor **MUST** send the same filters it sent for the page that cursor came from, and a provider **MUST NOT** accept a cursor it did not issue.
 
 ### What has been disclosed in health context
 
@@ -170,7 +170,7 @@ The provider answers with one summary per client. The payload is the sub-schema 
   - `usableUntil`: the latest `useUntil` among the copies disclosed (HCP 7.6) or, where a revocation notice was delivered, the time of delivery (HCP 6.2.4). It is REQUIRED and admits null, as in the result shape HCP publishes; HCP's text does not say when it is null, and a provider **SHOULD** send a date-time whenever the log records one;
   - `notification`: `delivered`, `abandoned` or `none`, for the most recent revocation notice (HCP 6.2.4);
   - `legalRetention`, only where the client declared at registration that the law requires it to keep what it receives: the `record`, `obligation` and `period`, as in the grant (HCP 6.1.5, 6.2.5).
-- `nextCursor` is an opaque token for the next page, present only when more summaries remain; it is **absent**, never null, on the last page or where the provider does not paginate, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
+- `nextCursor` is an opaque token for the next page, present only when more summaries remain; it is **absent**, never null, on the last page, and where every summary fits in one response, *pending HCP confirmation* ([question 3](#pending-hcp-confirmation)).
 
 An empty `clients` is a successful answer: no client received context within the filters. Failures use `trust-task-error`, not a `#response` document (see [Errors](#errors)).
 
