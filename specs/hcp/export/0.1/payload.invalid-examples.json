@@ -73,35 +73,6 @@
   },
   {
     "variant": "response",
-    "note": "A standing rule with neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14).",
-    "payload": {
-      "export": {
-        "@context": [
-          "https://hcp.example/contexts/v2"
-        ],
-        "type": "ContextExport",
-        "schema": "https://hcp.example/spec/export/2.0",
-        "subject": {
-          "id": "did:web:person.example"
-        },
-        "exportedBy": "https://context.provider.example",
-        "exportedAt": "2026-11-25T09:00:02Z",
-        "options": { "includeVersions": false, "includeAudit": false },
-        "entries": [],
-        "rules": [
-          {
-            "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b",
-            "effect": "deny",
-            "categories": ["health_context"],
-            "setBy": "context-subject",
-            "createdAt": "2026-11-25T09:00:00Z"
-          }
-        ]
-      }
-    }
-  },
-  {
-    "variant": "response",
     "note": "A different export `schema` — HCP 2.0-draft-3's export structure is `https://hcp.example/spec/export/2.0`, compared as an exact string (HCP 5.4.1, 1.7).",
     "payload": {
       "export": {

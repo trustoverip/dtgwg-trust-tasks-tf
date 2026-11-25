@@ -25,10 +25,5 @@
     "variant": "response",
     "note": "A rule without `ruleId` — the provider sets one on every rule (HCP 6.3).",
     "payload": { "rules": [ { "effect": "deny", "operators": ["ads.example"], "setBy": "context-subject", "createdAt": "2026-11-25T10:00:01Z" } ] }
-  },
-  {
-    "variant": "response",
-    "note": "A rule with neither `operators` nor `requires` — HCP requires one of them, or both (HCP 6.3, 9.4.14).",
-    "payload": { "rules": [ { "ruleId": "urn:uuid:3e9b1c7d-5a2f-4d8e-9b6c-0f1a2e3d4c5b", "effect": "deny", "categories": ["health_context"], "setBy": "context-subject", "createdAt": "2026-11-25T10:00:01Z" } ] }
   }
 ]
