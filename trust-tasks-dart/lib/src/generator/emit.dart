@@ -683,6 +683,21 @@ _Desc _declareExtensionType(
   return _Desc(name, (e) => '$name($e as String)', (e) => '$e.value');
 }
 
+/// The `toJson` value of a required nullable member [field], whose non-null
+/// conversion (applied to `field!`) is [to]. Written whatever its value.
+///
+/// `field?.toJson()`, not `field == null ? null : field!.toJson()`, which the
+/// prefer_null_aware_operators lint refuses; null-shorting covers a chain such
+/// as `field?.map(...).toList()`. A conversion that does not start with
+/// `field!.` gets the null-guarded ternary: no schema produces one today, so
+/// test/generator_test.dart calls this directly to pin it.
+String keptNullValue(String field, String to) {
+  final bang = '$field!';
+  if (to == bang) return field;
+  if (to.startsWith('$bang.')) return '$field?${to.substring(bang.length)}';
+  return '$field == null ? null : $to';
+}
+
 String _nullable(String type, bool isRequired) =>
     isRequired || type.endsWith('?') ? type : '$type?';
 
@@ -786,16 +801,7 @@ _Desc _declareClass(
       lines
           .add('        ${dartString(f.wireName)}: ${f.desc.to(f.fieldName)},');
     } else if (f.keepsNull) {
-      // `f?.toJson()`, not `f == null ? null : f!.toJson()`, which the
-      // prefer_null_aware_operators lint refuses; null-shorting covers a chain
-      // such as `f?.map(...).toList()`.
-      final bang = '${f.fieldName}!';
-      final to = f.desc.to(bang);
-      final value = to == bang
-          ? f.fieldName
-          : to.startsWith('$bang.')
-              ? '${f.fieldName}?${to.substring(bang.length)}'
-              : '${f.fieldName} == null ? null : $to';
+      final value = keptNullValue(f.fieldName, f.desc.to('${f.fieldName}!'));
       lines.add('        ${dartString(f.wireName)}: $value,');
     } else {
       final value = f.desc.to('${f.fieldName}!');

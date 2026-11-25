@@ -408,7 +408,7 @@ void main() {
             },
           },
           'type': 'object',
-          'required': ['id', 'did', 'grant'],
+          'required': ['id', 'did', 'grant', 'tags', 'kind', 'byName'],
           'properties': {
             'id': {'type': 'string'},
             'did': {
@@ -419,6 +419,18 @@ void main() {
               'properties': {
                 'a': {'type': 'string'},
               },
+            },
+            'tags': {
+              'type': ['array', 'null'],
+              'items': {r'$ref': '#/\$defs/Grant'},
+            },
+            'kind': {
+              'type': ['string', 'null'],
+              'enum': ['a', 'b'],
+            },
+            'byName': {
+              'type': ['object', 'null'],
+              'additionalProperties': {r'$ref': '#/\$defs/Grant'},
             },
             'label': {
               'type': ['string', 'null'],
@@ -448,6 +460,36 @@ void main() {
       expect(lib, contains('    required this.id,'));
       expect(lib, contains('    this.label,'));
       expect(lib, isNot(contains('required this.label')));
+    });
+
+    test('a list, extension type or map is written through a ?. chain', () {
+      final lib = library();
+      expect(lib, contains('final List<Grant>? tags;'));
+      expect(lib,
+          contains("        'tags': tags?.map((e) => e.toJson()).toList(),"));
+      expect(lib, contains("        'kind': kind?.value,"));
+      expect(
+          lib,
+          contains(
+              "        'byName': byName?.map((k, v) => MapEntry(k, v.toJson())),"));
+      for (final f in ['tags', 'kind', 'byName']) {
+        expect(lib, contains('    required this.$f,'), reason: f);
+        expect(lib, isNot(contains("if ($f != null)")), reason: f);
+        expect(lib, isNot(contains('$f == null ? null')), reason: f);
+      }
+    });
+
+    test('keptNullValue picks identity, a ?. chain, or the ternary', () {
+      expect(keptNullValue('did', 'did!'), 'did');
+      expect(keptNullValue('grant', 'grant!.toJson()'), 'grant?.toJson()');
+      expect(keptNullValue('tags', 'tags!.map((e) => e.toJson()).toList()'),
+          'tags?.map((e) => e.toJson()).toList()');
+      // No descriptor produces a conversion that wraps `x!` today; one that
+      // did must still be null-guarded, not dereferenced.
+      expect(keptNullValue('tags', 'List.of(tags!)'),
+          'tags == null ? null : List.of(tags!)');
+      // A field whose name prefixes another's is not mistaken for it.
+      expect(keptNullValue('a', 'ab!.x'), 'a == null ? null : ab!.x');
     });
 
     test('a required plain and an optional nullable member are unchanged', () {
