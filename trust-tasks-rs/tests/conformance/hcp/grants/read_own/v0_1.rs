@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::hcp::grants::read_own::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:0a6d3f92-4b1e-4c8a-9f7d-2e5b8c1a6d03\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/read-own/0.1#request\",\n  \"issuer\": \"did:web:booking-agent.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T08:00:00Z\",\n  \"threadId\": \"urn:uuid:7b1e5c84-2d9f-4a3b-8c6e-0f4a7d2b9e14\",\n  \"payload\": {\n    \"accessToken\": \"hcp_at_2b7f0c6e9d1a4e8b\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:0a6d3f92-4b1e-4c8a-9f7d-2e5b8c1a6d03\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/read-own/0.1#request\",\n  \"issuer\": \"did:web:booking-agent.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T08:00:00Z\",\n  \"threadId\": \"urn:uuid:7b1e5c84-2d9f-4a3b-8c6e-0f4a7d2b9e14\",\n  \"payload\": {\n    \"accessToken\": \"hcp_at_2b7f0c6e9d1a4e8b\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T08:00:00Z\",\n    \"verificationMethod\": \"did:web:booking-agent.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"zNxikNAa867TFAdkjbHVBrv8JrfTEaTyHm1ZyPxsvTTaGviQjLaEcwGFdx74HMXhycZJZZPkgjhARgMRPGQDJP8\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");

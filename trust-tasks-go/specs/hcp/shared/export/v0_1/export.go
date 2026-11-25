@@ -18,11 +18,12 @@ type ExportSubject struct {
 // their standing rules, directives and delegations, and optionally superseded versions
 // and the audit log (HCP 5.4.1). Entries removed by hard deletion are never in it (HCP
 // 5.4.1). The maxItems bounds are framework bounds, not HCP requirements: HCP sets none.
-// Those on `rules`, `directives` and `delegations` are set so that the document's 16 MiB
-// `maxDocumentBytes` is reached first (each item serializes to more than 100 bytes), as
-// HCP 5.4.1 lists every rule, directive and delegation and the list operations bound
-// none: an export too large for one document is refused with `hcp:exportTooLarge`
-// (hcp/export), never cut short by an item count.
+// Those on `rules`, `directives` and `delegations` are set so that the document's
+// `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an hcp/import
+// request) is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1
+// lists every rule, directive and delegation and the list operations bound none: an
+// export too large for one document is refused with `hcp:exportTooLarge` (hcp/export),
+// never cut short by an item count.
 type Export struct {
 	// The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP
 	// 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.

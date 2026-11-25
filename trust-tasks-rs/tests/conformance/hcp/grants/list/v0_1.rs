@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::hcp::grants::list::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:c17da410-d108-4db8-8956-6db1215eb41d\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/list/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T11:00:00Z\",\n  \"threadId\": \"urn:uuid:49076a5c-39db-4fdb-af72-97577bf18f8b\",\n  \"payload\": {\n    \"status\": \"active\",\n    \"limit\": 50,\n    \"accessToken\": \"hcp_mt_8f3a1c9e7b2d4f60\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:c17da410-d108-4db8-8956-6db1215eb41d\",\n  \"type\": \"https://trusttasks.org/spec/hcp/grants/list/0.1#request\",\n  \"issuer\": \"did:web:wallet.person.example\",\n  \"recipient\": \"did:web:context.provider.example\",\n  \"issuedAt\": \"2026-11-25T11:00:00Z\",\n  \"threadId\": \"urn:uuid:49076a5c-39db-4fdb-af72-97577bf18f8b\",\n  \"payload\": {\n    \"status\": \"active\",\n    \"limit\": 50,\n    \"accessToken\": \"hcp_mt_8f3a1c9e7b2d4f60\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-11-25T11:00:00Z\",\n    \"verificationMethod\": \"did:web:wallet.person.example#key-1\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"zMV4MVy1VnEV9srVQSbGxVHgwoZ3kEw1H4S2SyqRRKenkStDsYUnmMYAPCyWTWXgKgvBT7ANqdG2JMuxtWCwsPD\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
