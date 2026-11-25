@@ -20,13 +20,14 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  request: RECOMMENDED
+  request: REQUIRED
   response: REQUIRED
   rationale: >-
     The response discloses a person's context, so it carries the provider's signature: the client can show which
     provider released which context, when, and with which use limits, which is what the person's audit trail and
-    any later dispute turn on. A request proof is RECOMMENDED, not REQUIRED, because the grant is evidenced by the
-    access token, which the provider checks on every request whatever the binding.
+    any later dispute turn on. The request proof is REQUIRED too. The grant is evidenced by the access token, not
+    the proof, but the proof is what lets the provider refuse a token sent from a VID other than the client's, so
+    that a token lifted from a stored or forwarded query cannot be replayed in an unsigned one (a carriage rule pending HCP confirmation, question 53).
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
@@ -98,7 +99,7 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 The authority is **the grant** the person gave the client: a category-scoped, purpose-bound and revocable HCP grant (HCP 6.1), held by the provider and evidenced by the access token in `accessToken`. The provider **MUST** check the grant on every request (HCP 6.2.2), exactly as it does over HCP's HTTP binding: the token must be valid, and the requested `categories` and `purpose` must be within the grant (HCP 5.2.1).
 
-Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. Where the request carries a proof, a token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)); where it carries none, a provider that knows which VID it registered the client under **SHOULD** still check that the `issuer` is that client.
+Possession of a valid token is the evidence; neither the document's `proof` nor the `issuer` VID is. Verifying the proof or the VID establishes who sent the document and that it is unaltered ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it does not establish the grant. The request always carries a proof, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), so a token issued to a client other than the one the `issuer` VID identifies is always refused with `permissionDenied` (see [The access token](#the-access-token)).
 
 Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). This specification is written for a Context Client: its result carries each entry as a `Disclosure` and always carries `directives` (HCP 6.4, 7.4). HCP's result also foresees a requester that is not a Context Client, which receives entries whole (HCP 5.2.1, 7.4); a provider that serves such a requester returns `Entry` objects as HCP allows it, and `directives` null. This specification reads HCP as letting a Management Client query and receive whole `Entry` objects with no directives, *pending HCP confirmation* ([question 5](#pending-hcp-confirmation)).
 
@@ -161,6 +162,14 @@ The Context Client sends the query to the provider. The payload is the top-level
     "purposeDescription": "Book a table that can serve the guest's diet.",
     "maxEntries": 3,
     "accessToken": "hcp_at_2b7f0c6e9d1a4e8b"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-24T10:00:00Z",
+    "verificationMethod": "did:web:booking-agent.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "zR7FjY6BFx2GpqpM3AbnuVz15bVdYyYHy1hswAuaQS1JFK4ZonnmHLommsePUWev2gMnBT96kmcf8T64trLapb1"
   }
 }
 ```
@@ -294,8 +303,9 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`: HCP 5.5 defines `invalid-token` as invalid authorization evidence, and HCP 6.2.2 names no error (see [Errors](#errors)).
 - **Question 4 — a re-delivered query.** It causes no second `context.read` audit event (HCP 8.1, 9.6; see [Repeated requests](#repeated-requests)).
 - **Question 5 — a Management Client as requester.** A Management Client may query and receive whole `Entry` objects, with `directives` null (HCP 5.1, 5.2.1, 7.4; see [Authorization](#authorization)).
-- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; where the request carries a proof, a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 42 — presence signals the carriage adds.** The result's `directives` is required: a list, empty when none applies, for a Context Client, and null for any other requester; and a request's `categories`, where present, is never empty. HCP's own shapes leave `directives` optional and accept an empty `categories` (HCP 5.2.1, 6.4).
+- **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
 
 ## What HCP requires that a document cannot express
 
@@ -318,9 +328,9 @@ Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specific
 
 `accessToken` is a bearer secret: whoever presents it exercises the authority it evidences. It **MUST** travel only to the provider. A recipient **MUST NOT** log `accessToken` or retain it beyond the exchange.
 
-**Token binding, a carriage rule of this family.** Where the request carries a `proof`, the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
+**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 
-**Retained copies.** The provider verifies the `proof`, where the request carries one, over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
+**Retained copies.** The provider verifies the request's `proof` over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
 
 ### Correlation
 

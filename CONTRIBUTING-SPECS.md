@@ -528,7 +528,7 @@ and meet the seven rules of §9.4:
 Give the operations of one kind in a family one front-matter profile, so that a reader can tell a deliberate difference from drift. `hcp/*` declares one for every Management Client read (List grants, the audit log, the disclosure summary, export, and the delegation, standing-rule and directive lists):
 
 - `actsAsSubject: false`: a read produces no attributable effect in the person's name ([SPEC §7.3](SPEC.md#73-specification-requirements) item 14), even though it is a governance operation.
-- A request `proof` **REQUIRED** where the response is `discloses: secret` (export, the audit log, the disclosure summary, the delegation list), so that the provider can refuse an access token sent from a VID other than the client's, and **RECOMMENDED** where it is `metadata` (grants, standing rules, directives).
+- A request `proof` **REQUIRED**, so that the provider can refuse an access token sent from a VID other than the client's. This holds beyond the Management Client reads, on every `hcp/*` request that carries `accessToken`, whether the response is `discloses: secret` (export, the audit log, the disclosure summary, the delegation list, and the context reads Query and Get) or `metadata` (grants, read own grant, standing rules, directives). It is a carriage rule, stricter than HCP's bearer model, and pending HCP confirmation like the family's other assumptions.
 - `retention.class: transient`, unless HCP requires an audit event for the read, as it does for export (`durable`). Read own grant, the Context Client's counterpart of List grants, is `transient` too.
 
 ## Task-specific error codes (optional)
