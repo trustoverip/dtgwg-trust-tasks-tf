@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/delegations/list/0.1",
+  "title": "HCP — List Delegations — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 List delegations operation (Delegated Authorization Profile, HCP 17.2; `GET /v2/delegations` in HCP 9.2, 9.4.13): a Management Client, acting for the Context Subject or a delegate, lists the delegations it may see. HCP defines no request schema for this operation; the `status` parameter comes from HCP 9.4.13, and the result follows the delegations-result shape HCP publishes for the same draft. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["accessToken"],
+  "properties": {
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ended"],
+      "description": "HCP query parameter `status` (HCP 9.4.13), whose one defined value is `ended`. Absent returns only the delegations that hold; `ended` returns the delegations that have ended as well as those that hold (\"with ended ones where `status=ended` is asked\", HCP 9.4.13), pending HCP confirmation (question 22)."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — List Delegations — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delegations"],
+      "description": "The delegations the caller may see (HCP 9.4.13, 17.2). Not paginated (HCP 9.4.13). Failures use trust-task-error, not this shape.",
+      "properties": {
+        "delegations": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/delegation.schema.json#/$defs/Delegation" },
+          "description": "HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; only the delegations naming the delegate, for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none."
+        }
+      }
+    }
+  }
+}

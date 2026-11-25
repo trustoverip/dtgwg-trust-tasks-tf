@@ -1,0 +1,32 @@
+[
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9, 9.3).",
+    "payload": { "eventType": "context.read" }
+  },
+  {
+    "note": "`limit` above the carriage's ceiling of 1000 — a framework bound (question 14).",
+    "payload": { "accessToken": "hcp_mt_x", "limit": 5000 }
+  },
+  {
+    "note": "`limit` of zero — a page holds at least one event.",
+    "payload": { "accessToken": "hcp_mt_x", "limit": 0 }
+  },
+  {
+    "note": "`from` is not an RFC 3339 instant.",
+    "payload": { "accessToken": "hcp_mt_x", "from": "last week" }
+  },
+  {
+    "note": "Unknown top-level request member — HCP 9.5 defines `cursor` and `limit`, not an offset, which would disclose the size of the log.",
+    "payload": { "accessToken": "hcp_mt_x", "offset": 200 }
+  },
+  {
+    "variant": "response",
+    "note": "`nextCursor` null on the last page — the carriage leaves it out instead (question 14).",
+    "payload": { "events": [], "nextCursor": null }
+  },
+  {
+    "variant": "response",
+    "note": "Missing `events` — every page carries the array, empty when nothing matches.",
+    "payload": { "nextCursor": "c2Vzcy1hNzE" }
+  }
+]
