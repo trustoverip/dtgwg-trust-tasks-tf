@@ -6,7 +6,7 @@ registry = "https://trusttasks.org"
 slug = "hcp/entries/query"
 version = "0.1"
 type_uri = "https://trusttasks.org/spec/hcp/entries/query/0.1"
-digest = "sha256:b70c4435ca77199bc4778b313022fb9c895d8b64902476a2d2077425e880c81d"
+digest = "sha256:9b4195a3184fac6a2a7c9ab58d3ff8dbaf349367b0be429b34f138db024df277"
 
 [[task]]
 slug = "hcp/grants/request"
