@@ -36,7 +36,11 @@ the same reason). TypeScript hoists because structural typing makes it free.
    `"did": null`; with `omitempty` it dropped the key and the document failed
    its own schema's `required`. `specs/smoke/required_nullable_test.go` pins
    the prebuilt package, `TestRequiredNullableMembersKeepTheirKey` in
-   `cmd/trust-tasks-gen` the per-module generator.
+   `cmd/trust-tasks-gen` the per-module generator. So a nil on a required
+   nullable member is now a deliberate `null`, not a default: `update-did`'s
+   `DID` left unset sends `"did": null`, which clears the context's DID (it
+   used to drop the key, and the document was rejected). Set such a field
+   explicitly.
 
    An *optional* nullable member is still `*T` with `omitempty`, so Go cannot
    tell `null` from absent: both decode to nil, and nil writes neither.
@@ -45,7 +49,9 @@ the same reason). TypeScript hoists because structural typing makes it free.
    Saying both needs a different field type (a public API change), so it is
    an open decision ([runtime-parity.md](../runtime-parity.md)). A member the
    generator renders as `json.RawMessage` (a `oneOf` with `null`, for example)
-   is not affected: an explicit `null` survives in it.
+   is not affected: an explicit `null` survives in it. The same smoke file pins
+   the optional side on the prebuilt package: a nil `acl/update` 0.3 `label`
+   writes no key.
 
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
