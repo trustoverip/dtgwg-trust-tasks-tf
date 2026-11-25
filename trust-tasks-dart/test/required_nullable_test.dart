@@ -8,6 +8,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:test/test.dart';
 import 'package:trust_tasks/specs/acl/update/v0_3/payload.dart' as acl_update;
@@ -34,9 +35,13 @@ void main() {
   // The constructor makes the caller say `did: null`: leaving it out clears
   // the DID on the wire, so it must not be the default. A compile-time rule,
   // so it is checked in the generated source.
-  test('a required nullable member is a required constructor parameter', () {
-    final src = File('lib/specs/vta/contexts/update_did/v1_2/payload.dart')
-        .readAsStringSync();
+  test('a required nullable member is a required constructor parameter',
+      () async {
+    // Resolved through the package config, so the test does not depend on
+    // the directory `dart test` runs from.
+    final uri = await Isolate.resolvePackageUri(Uri.parse(
+        'package:trust_tasks/specs/vta/contexts/update_did/v1_2/payload.dart'));
+    final src = File.fromUri(uri!).readAsStringSync();
     expect(src, contains('    required this.id,\n    required this.did,\n'));
   });
 
