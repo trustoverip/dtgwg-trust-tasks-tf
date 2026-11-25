@@ -67,6 +67,37 @@ errorCodes:
       succeeds, but does not name the error (HCP 6.2.2), and this specification reads that evidence as invalid,
       pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation" section). Such a failure is itself a notice of revocation to the client (HCP 6.2.2).
     retryable: false
+uncheckedRules:
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/type"
+    rule: "An entry's `type` array includes `ContextEntry`."
+    source: "HCP 4.2"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/content"
+    rule: "Under the General Context profile, `content` carries `value`."
+    source: "HCP 4.2, 11.2"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/content"
+    rule: "Under the VC Evidence profile, `content` carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 14"
+  - member: "/$defs/Response/properties/entries/items/anyOf/0/properties/content"
+    rule: "Under the General Context profile, a disclosure's `content` carries `value`; under the VC Evidence profile it carries `evidence` and no `value`."
+    source: "HCP 4.2.2, 11.2, 14"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entries/items/anyOf/0/properties/assertion/properties/confidence"
+    rule: "`confidence` is non-null when `declarationType` is `model-inferred`, and null or absent otherwise."
+    source: "HCP 4.2, 4.4"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/record/properties/relationships/items/properties/proposal"
+    rule: "Only a `contradicts` relationship carries a `proposal`."
+    source: "HCP 4.7.4"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/evidence/items/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/evidence"
+    rule: "At most one evidence item has `role` `content`."
+    source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entries/items/anyOf/0/properties/evidence"
+    rule: "At most one disclosed evidence item has `role` `content`."
+    source: "HCP 4.2.2, 7.4"
 related:
   - hcp/grants/revoke
   - hcp/grants/revoked
