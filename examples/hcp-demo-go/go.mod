@@ -5,7 +5,7 @@ go 1.27
 require (
 	github.com/affinidi/affinidi-tsp-go v0.0.0-20260916130837-d32ca7cdde20
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
-	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.0
+	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.13.3
 	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/proof v0.0.0-00010101000000-000000000000
 	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs v0.0.0-00010101000000-000000000000
 	github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/tsp v0.0.0-00010101000000-000000000000
