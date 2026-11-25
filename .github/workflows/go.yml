@@ -628,3 +628,34 @@ jobs:
           go run .
       - name: "Getting started: GETTING-STARTED.md §3a matches the example"
         run: node scripts/check-getting-started-snippets.mjs examples/getting-started-go/main.go
+      # examples/hcp-demo-go: the HCP-over-Trust-Tasks demo (discover, grant
+      # request held with a next step, query, revoke, revocation notice), sealed
+      # over TSP. Same generate / drift / vet / run, plus gofmt and its tests,
+      # which hold the run to the golden transcript every language's port shares
+      # (examples/hcp-demo-ts/transcript.golden.txt). Stable only: it requires
+      # trust-tasks-go/tsp, whose floor is go 1.27, above this matrix's 1.22.
+      - name: "HCP demo: go generate"
+        if: matrix.go == 'stable'
+        working-directory: examples/hcp-demo-go
+        run: go generate ./...
+      - name: "HCP demo: check the committed generated tree"
+        if: matrix.go == 'stable'
+        run: |
+          if [ -n "$(git status --porcelain examples/hcp-demo-go)" ]; then
+            echo "::error::examples/hcp-demo-go/internal/tasks is stale. Run \`go generate ./...\` there and commit the result."
+            git status --porcelain examples/hcp-demo-go
+            git diff examples/hcp-demo-go | head -100
+            exit 1
+          fi
+      - name: "HCP demo: gofmt, vet, run and test"
+        if: matrix.go == 'stable'
+        working-directory: examples/hcp-demo-go
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt would reformat: $unformatted"
+            exit 1
+          fi
+          go vet ./...
+          go run .
+          go test -count=1 ./...

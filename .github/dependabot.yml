@@ -124,6 +124,7 @@ updates:
       - /trust-tasks-go/tsp
       - /examples/consumer-app-go
       - /examples/getting-started-go
+      - /examples/hcp-demo-go
     schedule:
       interval: weekly
     groups:
