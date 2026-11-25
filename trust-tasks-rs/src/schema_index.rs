@@ -461,6 +461,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/step-up/approve-request/0.5#response" => <crate::specs::auth::step_up::approve_request::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.6" => <crate::specs::auth::step_up::approve_request::v0_6::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.6#response" => <crate::specs::auth::step_up::approve_request::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => <crate::specs::auth::step_up::approve_response::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
@@ -8749,6 +8755,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.6" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::step_up::approve_request::v0_6::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::step_up::approve_response::v0_1::Payload,
@@ -16775,6 +16788,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/step-up/approve-request/0.5" => {
             Some(crate::specs::auth::step_up::approve_request::v0_5::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.6" => {
+            Some(crate::specs::auth::step_up::approve_request::v0_6::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
