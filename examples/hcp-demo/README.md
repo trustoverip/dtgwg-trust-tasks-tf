@@ -55,7 +55,7 @@ cargo run -p trust-tasks-example-hcp-demo     # the demo
 cargo test -p trust-tasks-example-hcp-demo    # the tests
 ```
 
-The tests are the 13 listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the
+The tests are the 14 listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the
 golden transcript, the query after revoke, a tampered document, a schema-invalid document, the
 client's handling of the notice, the provider's token and grant-request rules, and the reply check.
 The golden file is shared with the other ports and lives beside the

@@ -307,3 +307,27 @@ func Test13AReplyIsUsedOnlyFromThePartyAskedOnTheThreadAndSigned(t *testing.T) {
 		}
 	}
 }
+
+func Test14AnotherRegisteredClientOnAHeldThreadIsPermissionDenied(t *testing.T) {
+	w := NewWorld()
+	C, M, P := w.ContextClient, w.Management, w.Provider
+	// A second registered client, so the check on the hold's issuer is reached
+	// (rule 1 passes).
+	w.registeredClients[M.VID] = registration{name: "Alex's wallet", operator: grantrequest.Named{ID: "wallet.example", Name: "Wallet Example Ltd"}}
+	first := Request(w, C, P, grantRequestType, Ask(), "")
+	if held := replyOf[json.RawMessage](w.Exchange(C, P, first)); held.Type != "https://trusttasks.org/spec/trust-task-next-step/0.1" {
+		t.Fatalf("got %q, want a next step", held.Type)
+	}
+	threadID := *replyOf[json.RawMessage](first).ThreadID
+	w.PersonApproves(threadID)
+	if got := code(t, w.Exchange(M, P, Request(w, M, P, grantRequestType, Ask(), threadID))); got != "permissionDenied" {
+		t.Errorf("got %q, want permissionDenied", got)
+	}
+	h := w.held[threadID]
+	if h == nil || h.issuer != C.VID || h.state != approved {
+		t.Errorf("hold %+v, want the Context Client's, approved", h)
+	}
+	if len(w.grants) != 0 {
+		t.Errorf("%d grants, want 0", len(w.grants))
+	}
+}

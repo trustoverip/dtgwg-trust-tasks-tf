@@ -54,7 +54,8 @@ Each key is 32 bytes, every byte the same value. Never use such keys for anythin
   new time. Instants are whole seconds, written `YYYY-MM-DDTHH:MM:SSZ`, through one `iso()`
   helper over the injected clock; never format the system time (no `toISOString()`,
   `Utc::now()`, `time.Now()`, `DateTime.now()`). Tests may move the clock on without issuing a
-  document (`advance(seconds)`); the main run never does.
+  document (`advance(seconds)`); the main run does so once, in step 2, when the Context Client
+  waits out the next step's `retryAfter` before it resubmits.
 - **Instants inside a payload that mean "now"** (`grant.issuedAt`, `respondedAt`) are the clock
   **before** the reply ticks, which is the `issuedAt` of the document being answered. Instants
   relative to now (`tokenExpiresAt`, `grant.expiresAt`, `useUntil`) add to that same instant.
@@ -190,13 +191,13 @@ values not listed here are in the golden transcript. The ids are the counter val
 | # | From → To | Document `type` | id | Payload (summary) | Expected reply |
 |---|---|---|---|---|---|
 | 1 | Context Client → Provider | `…/trust-task-discovery/0.4` (bare) | #1, 10:00:01 | `{"patterns": ["hcp/*"]}` | `#response` #2: `supportedTypes` = the four `hcp/*` Type URIs, bare, in the order request, query, revoke, revoked |
-| 2a | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #3, 10:00:03 | `access`: one detail, `type https://hcp.example/spec/authorization/context-access`, `actions ["read"]`, `categories ["travel_preferences"]`, purposes `[{code https://purposes.example/travel-booking, description "Book trips that match how you like to travel"}]`; `expiresIn 14400`; `subjectHint "acct:alex@provider.example"` | `trust-task-next-step/0.1` #4: `expects [{typeUri <request Type URI>#request, reason "The request is with the person, who has not decided yet.", hint {"retryAfter": 5}}]`; `continuation "resubmit"`; `inResponseTo {typeUri …#request, id #3}` |
-| — | the person | — | — | prints `[person] approves the grant request on thread <#3> in the provider's app`; the hold becomes `approved` | — |
-| 2b | Context Client → Provider | same, **resubmission** | #5, thread #3, 10:00:05 | identical payload | `#response` #7: `accessToken hcp_at_demo_0001`, `tokenExpiresAt` 11:00:05, `grant` = `{grantId #6, subject {id hcp-sub-demo-alex}, authorizingPrincipal {id hcp-sub-demo-alex}, client {id <Context Client VID>, name, operator}, access <as asked>, grantType temporary, issuedAt 10:00:05, expiresAt 14:00:05, status active}`. The client puts the token in its wallet under #6 |
-| 3 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #8, 10:00:07 | `query "How does Alex like to fly?"`, `categories ["travel_preferences"]`, `purpose` the purpose code, `maxEntries 5`, `accessToken` from the wallet | `#response` #10: the two travel entries (`useUntil` 11:00:07), `retrievalId` #9, `minimization {"method": "lexical"}`, `categoriesSearched ["travel_preferences"]`, `directives []`, `respondedAt` 10:00:07. The client records refs `hcp-ref-0001`, `hcp-ref-0002` |
-| 4 | Management Client → Provider | `…/hcp/grants/revoke/0.1#request` | #11, 10:00:09 | `grantId` #6, `accessToken hcp_mt_demo_management` | `#response` #12: `{}`; the grant is `revoked`, `revokedAt` 10:00:09 |
-| 5 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #13, 10:00:11 | the same payload as step 3 (the token still in the wallet: no notice has arrived) | `trust-task-error/0.6` #14: `code "hcp:invalidToken"`, `message "The access token is not valid."`, `retryable false`, `inResponseTo` #13. The client forgets grant #6 |
-| 6 | Provider → Context Client (`byVid(grant.client)`) | `…/hcp/grants/revoked/0.1#request` | #16, 10:00:13 | `grantId` #6, `noticeId` #15 (HCP's `jti`, the same on every delivery attempt), `revokedAt` 10:00:09 | `#response` #17 from the Context Client: `{}`. The client records #15 → #6 |
+| 2a | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #3, 10:00:03 | `access`: one detail, `type https://hcp.example/spec/authorization/context-access`, `actions ["read"]`, `categories ["travel_preferences"]`, purposes `[{code https://purposes.example/travel-booking, description "Book trips that match how you like to travel"}]`; `expiresIn 14400`; `subjectHint "acct:alex@provider.example"` | `trust-task-next-step/0.1` #4: `expects [{typeUri <request Type URI>#request, reason "The request is with the person, who has not decided yet.", hint {"retryAfter": 1}}]`; `continuation "resubmit"`; `inResponseTo {typeUri …#request, id #3}` |
+| — | the person | — | — | prints `[person] approves the grant request on thread <#3> in the provider's app`; the hold becomes `approved`. The client then waits the next step's `retryAfter` (read from #4's `expects[0].hint`, here 1 s) before it resubmits: the clock moves on without a document (hcp/grants/request: the client SHOULD NOT resubmit sooner) | — |
+| 2b | Context Client → Provider | same, **resubmission** | #5, thread #3, 10:00:06 | identical payload | `#response` #7: `accessToken hcp_at_demo_0001`, `tokenExpiresAt` 11:00:06, `grant` = `{grantId #6, subject {id hcp-sub-demo-alex}, authorizingPrincipal {id hcp-sub-demo-alex}, client {id <Context Client VID>, name, operator}, access <as asked>, grantType temporary, issuedAt 10:00:06, expiresAt 14:00:06, status active}`. The client puts the token in its wallet under #6 |
+| 3 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #8, 10:00:08 | `query "How does Alex like to fly?"`, `categories ["travel_preferences"]`, `purpose` the purpose code, `maxEntries 5`, `accessToken` from the wallet | `#response` #10: the two travel entries (`useUntil` 11:00:08), `retrievalId` #9, `minimization {"method": "lexical"}`, `categoriesSearched ["travel_preferences"]`, `directives []`, `respondedAt` 10:00:08. The client records refs `hcp-ref-0001`, `hcp-ref-0002` |
+| 4 | Management Client → Provider | `…/hcp/grants/revoke/0.1#request` | #11, 10:00:10 | `grantId` #6, `accessToken hcp_mt_demo_management` | `#response` #12: `{}`; the grant is `revoked`, `revokedAt` 10:00:10 |
+| 5 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #13, 10:00:12 | the same payload as step 3 (the token still in the wallet: no notice has arrived) | `trust-task-error/0.6` #14: `code "hcp:invalidToken"`, `message "The access token is not valid."`, `retryable false`, `inResponseTo` #13. The client forgets grant #6 |
+| 6 | Provider → Context Client (`byVid(grant.client)`) | `…/hcp/grants/revoked/0.1#request` | #16, 10:00:14 | `grantId` #6, `noticeId` #15 (HCP's `jti`, the same on every delivery attempt), `revokedAt` 10:00:10 | `#response` #17 from the Context Client: `{}`. The client records #15 → #6 |
 
 ## Transcript format
 
@@ -265,6 +266,12 @@ code.
     the thread is accepted; a signed `permissionDenied` is accepted; an unsigned
     `permissionDenied` is refused; a reply whose `issuer` is not the party asked is refused; a
     reply on another `threadId` is refused.
+14. On a fresh world with the Management Client's VID registered as a second client (name
+    `Alex's wallet`, operator `{"id": "wallet.example", "name": "Wallet Example Ltd"}`): the
+    Context Client sends step 2's grant request and gets the next step, the person approves, then
+    the Management Client resubmits on that thread with the same payload → `permissionDenied`
+    (rule 3); the hold's `issuer` is still the Context Client's VID, its state is still
+    `approved`, and no grant was issued.
 
 ## Documented differences
 

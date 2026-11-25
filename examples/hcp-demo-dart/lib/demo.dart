@@ -73,7 +73,8 @@ class Clock {
     return iso();
   }
 
-  /// Let time pass without issuing a document (tests only).
+  /// Let time pass without issuing a document (a client waiting out
+  /// `retryAfter`, or a test).
   void advance(int seconds) => _t = _t.add(Duration(seconds: seconds));
 }
 
@@ -624,7 +625,7 @@ final class World {
               typeUri: '${grant_request.typeUri}#request',
               reason:
                   'The request is with the person, who has not decided yet.',
-              hint: {'retryAfter': 5},
+              hint: {'retryAfter': 1},
             ),
           ],
           continuation: 'resubmit',
@@ -866,6 +867,13 @@ Future<({String threadId, String grantId})> stepGrantRequest(World w) async {
   }
   final threadId = first['threadId'] as String;
   w.personApproves(threadId);
+  // The client SHOULD NOT resubmit sooner than the next step's retryAfter
+  // (hcp/grants/request "Holding").
+  final expects = (held['payload'] as Json)['expects'] as List<dynamic>;
+  final hint = (expects.first as Json)['hint'] as Json?;
+  final retryAfter = hint?['retryAfter'];
+  if (retryAfter is! int) throw StateError('expected a retryAfter hint');
+  w.clock.advance(retryAfter);
   // Resubmission: a new document, fresh id, same threadId and payload.
   final granted = await w.exchange(
     c,

@@ -245,3 +245,34 @@ fn t13_a_reply_is_used_only_from_the_party_asked_on_the_thread_and_signed_unless
         "{other_thread}"
     );
 }
+
+#[tokio::test]
+async fn t14_another_registered_client_on_a_held_thread_is_refused_and_the_hold_is_unchanged() {
+    let world = World::new();
+    let (p, c, m) = world.parties();
+    // A second registered client, so the check on the hold's issuer is
+    // reached (rule 1 passes).
+    world.register_client(
+        &m.vid,
+        json!({
+            "name": "Alex's wallet",
+            "operator": { "id": "wallet.example", "name": "Wallet Example Ltd" },
+        }),
+    );
+    let first = world.request(c, p, &grant_uri(), ask(), None).await;
+    let held = world.exchange(c, p, &first).await.expect("a reply");
+    assert_eq!(
+        held["type"],
+        "https://trusttasks.org/spec/trust-task-next-step/0.1"
+    );
+    let thread_id = first.thread_id.clone().expect("threadId");
+    world.person_approves(&thread_id);
+    let resubmission = world
+        .request(m, p, &grant_uri(), ask(), Some(&thread_id))
+        .await;
+    let reply = world.exchange(m, p, &resubmission).await.expect("a reply");
+    assert_eq!(reply["type"], ERROR_TYPE_URI);
+    assert_eq!(reply["payload"]["code"], "permissionDenied");
+    assert_eq!(world.hold(&thread_id), Some((c.vid.clone(), "approved")));
+    assert_eq!(world.grant_count(), 0);
+}

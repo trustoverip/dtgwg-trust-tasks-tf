@@ -65,7 +65,7 @@ export class Clock {
     this.ms += 1000;
     return this.iso();
   };
-  /** Let time pass without issuing a document (tests only). */
+  /** Let time pass without issuing a document (a client waiting out `retryAfter`, or a test). */
   advance = (seconds: number): void => {
     this.ms += seconds * 1000;
   };
@@ -404,7 +404,7 @@ export class World {
       issuedAt: this.clock.tick(),
       threadId: doc.threadId!,
       payload: {
-        expects: [{ typeUri: `${grantRequest.TYPE_URI}#request`, reason: "The request is with the person, who has not decided yet.", hint: { retryAfter: 5 } }],
+        expects: [{ typeUri: `${grantRequest.TYPE_URI}#request`, reason: "The request is with the person, who has not decided yet.", hint: { retryAfter: 1 } }],
         continuation: "resubmit",
         inResponseTo: { typeUri: doc.type, id: doc.id },
       },
@@ -555,6 +555,11 @@ export async function stepGrantRequest(world: World): Promise<{ threadId: string
   const held = await world.exchange(C, P, first);
   if (held.type !== nextStep.TYPE_URI) throw new Error("expected a next step");
   world.personApproves(first.threadId!);
+  // The client SHOULD NOT resubmit sooner than the next step's retryAfter (hcp/grants/request "Holding").
+  const hint = (held.payload as nextStep.Payload).expects[0]?.hint as { retryAfter?: unknown } | undefined;
+  const retryAfter = hint?.retryAfter;
+  if (typeof retryAfter !== "number") throw new Error("expected a retryAfter hint");
+  world.clock.advance(retryAfter);
   // Resubmission: a new document, fresh id, same threadId and payload.
   const granted = await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId));
   if (granted.type !== grantRequest.RESPONSE_TYPE_URI) throw new Error("expected the grant");

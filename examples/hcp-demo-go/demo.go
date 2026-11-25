@@ -76,7 +76,8 @@ func (c *Clock) Tick() string {
 	return c.ISO()
 }
 
-// Advance lets time pass without issuing a document (tests only).
+// Advance lets time pass without issuing a document (a client waiting out
+// retryAfter, or a test).
 func (c *Clock) Advance(seconds int64) { c.t = c.t.Add(time.Duration(seconds) * time.Second) }
 
 // IDs hands out sequential urn:uuid identifiers: …-000000000001, …-000000000002, …
@@ -573,7 +574,7 @@ func (w *World) nextStep(me *Party, doc *tt.Document[withJCS[grantrequest.Payloa
 	id := w.IDs.Next()
 	issuedAt := w.Clock.Tick()
 	reason := "The request is with the person, who has not decided yet."
-	hint := map[string]json.RawMessage{"retryAfter": json.RawMessage("5")}
+	hint := map[string]json.RawMessage{"retryAfter": json.RawMessage("1")}
 	return asSigned(w.sign(me, tt.Document[nextstep.Payload]{
 		ID: id, Type: nextstep.TypeURI, Issuer: &me.VID, Recipient: doc.Issuer,
 		IssuedAt: &issuedAt, ThreadID: doc.ThreadID,
@@ -900,6 +901,19 @@ func StepDiscover(w *World) {
 	}
 }
 
+// retryAfter is the seconds a next step's first expectation asks the client to
+// wait before it resubmits.
+func retryAfter(p nextstep.Payload) int64 {
+	if len(p.Expects) == 0 || p.Expects[0].Hint == nil {
+		panic("expected a retryAfter hint")
+	}
+	var seconds int64
+	if err := json.Unmarshal((*p.Expects[0].Hint)["retryAfter"], &seconds); err != nil {
+		panic("expected a retryAfter hint: " + err.Error())
+	}
+	return seconds
+}
+
 // StepGrantRequest is step 2, Grant request: held with a next step while the
 // person decides, then resubmitted on the same thread (HCP 6.1.6, 6.1.7; SPEC
 // §8.6). The client keeps the token in its wallet. It returns the thread and
@@ -908,11 +922,15 @@ func StepGrantRequest(w *World) (threadID, grantID string) {
 	P, C := w.Provider, w.ContextClient
 	w.step("2. Grant request (hcp/grants/request 0.1), held with trust-task-next-step")
 	first := Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), "")
-	if held := replyOf[json.RawMessage](w.Exchange(C, P, first)); held.Type != nextstep.TypeURI {
+	held := replyOf[nextstep.Payload](w.Exchange(C, P, first))
+	if held.Type != nextstep.TypeURI {
 		panic("expected a next step")
 	}
 	threadID = *replyOf[json.RawMessage](first).ThreadID
 	w.PersonApproves(threadID)
+	// The client SHOULD NOT resubmit sooner than the next step's retryAfter
+	// (hcp/grants/request "Holding").
+	w.Clock.Advance(retryAfter(held.Payload))
 	// Resubmission: a new document, fresh id, same threadId and payload.
 	granted := replyOf[grantrequest.Response](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID)))
 	if granted.Type != grantrequest.ResponseTypeURI {

@@ -149,3 +149,21 @@ test("13. a reply is used only if it comes from the party asked, on the same thr
   assert.throws(() => checkReply({ ...base, payload: { code: "proofInvalid" } }, C, "t"), /issuer/);
   assert.throws(() => checkReply({ ...base, payload: { code: "proofInvalid" } }, P, "other"), /threadId/);
 });
+
+test("14. another registered client resubmitting on a held thread is refused with permissionDenied, and the hold is unchanged", async () => {
+  const world = new World();
+  const { contextClient: C, management: M, provider: P } = world;
+  // A second registered client, so the check on the hold's issuer is reached (rule 1 passes).
+  world.registeredClients.set(M.vid, { name: "Alex's wallet", operator: { id: "wallet.example", name: "Wallet Example Ltd" } });
+  const first = world.request(C, P, REQUEST, ASK);
+  const held = await world.exchange(C, P, first);
+  assert.equal(held.type, "https://trusttasks.org/spec/trust-task-next-step/0.1");
+  world.personApproves(first.threadId!);
+  const reply = await world.exchange(M, P, world.request(M, P, REQUEST, ASK, first.threadId));
+  assert.equal(reply.type, ERROR);
+  assert.equal(reply.payload.code, "permissionDenied");
+  const hold = world.held.get(first.threadId!)!;
+  assert.equal(hold.issuer, C.vid);
+  assert.equal(hold.state, "approved");
+  assert.equal(world.grants.length, 0);
+});

@@ -97,7 +97,7 @@
     "expects": [
       {
         "hint": {
-          "retryAfter": 5
+          "retryAfter": 1
         },
         "reason": "The request is with the person, who has not decided yet.",
         "typeUri": "https://trusttasks.org/spec/hcp/grants/request/0.1#request"
@@ -112,7 +112,7 @@
     "created": "2026-11-25T10:00:04Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z4F9QXsMFqGk4G3VUzENEPgyVpD3M2k4BuXwdc6nLp7VDb1iUnUTtj1LQbEqmKeLtnpTk1aTS8Ai6TfEjKFroB1RG",
+    "proofValue": "z4GZe2dKC2n8CcgcfU6mWpbDAANL3PpcuBf9DL7PbUnLdFsHs5Vifw8gjx8fHooFaa4GtwGVfFhjiHKc8qFFPM9F2",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -124,7 +124,7 @@
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000005",
-  "issuedAt": "2026-11-25T10:00:05Z",
+  "issuedAt": "2026-11-25T10:00:06Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {
     "access": [
@@ -148,10 +148,10 @@
     "subjectHint": "acct:alex@provider.example"
   },
   "proof": {
-    "created": "2026-11-25T10:00:05Z",
+    "created": "2026-11-25T10:00:06Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z4kMoj19tzwt1DLSzyYvMagovhnNN87mv5D6yh37doakfnoaQwD9k84ja323h1Q2XLccixXMUuuFUBhYm2uWHtaWs",
+    "proofValue": "z4CPsQYNqHkNT8gHihUxEPhonWky8uA5Wkb9rvMgDEurgcNaFGo5HpyxuXeBMmTD75ZFAUL9rkkVnWhvafguRrjSL",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },
@@ -162,7 +162,7 @@
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/grants/request/0.1#response
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000007",
-  "issuedAt": "2026-11-25T10:00:06Z",
+  "issuedAt": "2026-11-25T10:00:07Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "accessToken": "hcp_at…",
@@ -195,22 +195,22 @@
           "name": "Wayfare Travel Ltd"
         }
       },
-      "expiresAt": "2026-11-25T14:00:05Z",
+      "expiresAt": "2026-11-25T14:00:06Z",
       "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006",
       "grantType": "temporary",
-      "issuedAt": "2026-11-25T10:00:05Z",
+      "issuedAt": "2026-11-25T10:00:06Z",
       "status": "active",
       "subject": {
         "id": "hcp-sub-demo-alex"
       }
     },
-    "tokenExpiresAt": "2026-11-25T11:00:05Z"
+    "tokenExpiresAt": "2026-11-25T11:00:06Z"
   },
   "proof": {
-    "created": "2026-11-25T10:00:06Z",
+    "created": "2026-11-25T10:00:07Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z2P4sk8cWb76fhbh116MJU8ZsH47F7VyqgRucXWpHcqX9mE2xovaJ3kkU9nbry5D3ckm9rw7fXL6TKFPEHCUhsvor",
+    "proofValue": "z24NAgDo68pejyLGDbWmKzSbDWzKZJkZ2qwmZ2pv7WZsZcTmk1UXG4S9qniy6msrRBictj6o2rpbxSZP52vPA7kzJ",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -223,7 +223,7 @@
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000008",
-  "issuedAt": "2026-11-25T10:00:07Z",
+  "issuedAt": "2026-11-25T10:00:08Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {
     "accessToken": "hcp_at…",
@@ -235,10 +235,10 @@
     "query": "How does Alex like to fly?"
   },
   "proof": {
-    "created": "2026-11-25T10:00:07Z",
+    "created": "2026-11-25T10:00:08Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z62YyRHfFHfD7GwCCXS6vpSHu7m9hRgTdtV1ry2Q4TyVpaJtiKUYrh5KgSbKah2exWb2kPi6xn1Ry1cBrZQxVkMf5",
+    "proofValue": "z2bKbLPWv2p7T7cmNVtJHm8BQhmNvtV3YKetk79tJeysmLKtk9EX4Ff6sjKzHdpe6YyxkhdiraqNKukrfJsHhfCqj",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },
@@ -249,7 +249,7 @@
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#response
 {
   "id": "urn:uuid:00000000-0000-4000-8000-00000000000a",
-  "issuedAt": "2026-11-25T10:00:08Z",
+  "issuedAt": "2026-11-25T10:00:09Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "categoriesSearched": [
@@ -276,7 +276,7 @@
           "assurance": "authenticated",
           "confirmed": true
         },
-        "useUntil": "2026-11-25T11:00:07Z",
+        "useUntil": "2026-11-25T11:00:08Z",
         "version": 1
       },
       {
@@ -298,21 +298,21 @@
           "assurance": "authenticated",
           "confirmed": true
         },
-        "useUntil": "2026-11-25T11:00:07Z",
+        "useUntil": "2026-11-25T11:00:08Z",
         "version": 1
       }
     ],
     "minimization": {
       "method": "lexical"
     },
-    "respondedAt": "2026-11-25T10:00:07Z",
+    "respondedAt": "2026-11-25T10:00:08Z",
     "retrievalId": "urn:uuid:00000000-0000-4000-8000-000000000009"
   },
   "proof": {
-    "created": "2026-11-25T10:00:08Z",
+    "created": "2026-11-25T10:00:09Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z453fE5ZXyTotibCaPjoV3Ez33jmrK2YBhfwNB7BWc7si5jHunnAHqFXpp57dhYLaERtq2Y5b8iNgfxq15mn3jXJn",
+    "proofValue": "z4VKGf8ev44e6WdXnk1tXNbzMjgLG8bhcTG468DJVgzrMtoyWVHzrhMi5oE1Ub49f8K2Sg4MjPVw95VAgJ5c119Vn",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -325,17 +325,17 @@
 --> Management Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/revoke/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-00000000000b",
-  "issuedAt": "2026-11-25T10:00:09Z",
+  "issuedAt": "2026-11-25T10:00:10Z",
   "issuer": "did:key:z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja",
   "payload": {
     "accessToken": "hcp_mt…",
     "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006"
   },
   "proof": {
-    "created": "2026-11-25T10:00:09Z",
+    "created": "2026-11-25T10:00:10Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z4fM5RfZyXd3BPPiukgzvgWfocyq35sWW8fonXRoggJrBEAdiAiB9mRURiwKw8P2YGknXyN9nKah7U6Adap9PPane",
+    "proofValue": "z2Q3HYiNtXPbSn3kPPYD2WUd2s9GmmgXpDRwG1fD7cYdUe7ft8LHePqKhSfSXjqD5NwZmAwmibDF4fp7Eb8m8MrQa",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja#z6MkjJRuJtMxfTErK55eWeV7FQLLxpsvzSUQ3AC6DmdNPFja"
   },
@@ -346,14 +346,14 @@
 --> Provider -> Management Client (TSP) https://trusttasks.org/spec/hcp/grants/revoke/0.1#response
 {
   "id": "urn:uuid:00000000-0000-4000-8000-00000000000c",
-  "issuedAt": "2026-11-25T10:00:10Z",
+  "issuedAt": "2026-11-25T10:00:11Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {},
   "proof": {
-    "created": "2026-11-25T10:00:10Z",
+    "created": "2026-11-25T10:00:11Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z3eZHnNAknVerJLSpUE4czsZemH2zc4DGCMr5qKsk6jnGvbt4wABayz8enygRqQ3YXRWmPefKnVZSqdLN6XwXdu31",
+    "proofValue": "z55bMjMnPoz4QqWRNsdZX323dni8EVvnYz11vQwEp91vwEmFdC3W44uDVu8dYFqgHcB4WWqQr6RPcK1Chr2Uo5Q3v",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -366,7 +366,7 @@
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/entries/query/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-00000000000d",
-  "issuedAt": "2026-11-25T10:00:11Z",
+  "issuedAt": "2026-11-25T10:00:12Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {
     "accessToken": "hcp_at…",
@@ -378,10 +378,10 @@
     "query": "How does Alex like to fly?"
   },
   "proof": {
-    "created": "2026-11-25T10:00:11Z",
+    "created": "2026-11-25T10:00:12Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z2cRqnVxQEzfPXyFykAFYw1qAiYoCeMRFJiMUdbCojQB847BJTE5LppLQRftHtFrGymrvK632r71nHZGbPqgH2MWc",
+    "proofValue": "z5E5FjcYVSrNVFm38vrjg9mVDV66bM5oVgGXgUWb2pDe6keMyoSmtSPGgwAQKUp92SpZC3N9eTPCCF78PCKtb6x7o",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },
@@ -392,7 +392,7 @@
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/trust-task-error/0.6
 {
   "id": "urn:uuid:00000000-0000-4000-8000-00000000000e",
-  "issuedAt": "2026-11-25T10:00:12Z",
+  "issuedAt": "2026-11-25T10:00:13Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "code": "hcp:invalidToken",
@@ -404,10 +404,10 @@
     "retryable": false
   },
   "proof": {
-    "created": "2026-11-25T10:00:12Z",
+    "created": "2026-11-25T10:00:13Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "zm785ZTH6mmZ2TPUPzicKqXWEbRMUKjsDFKkEtZE97i3C4h5vaFbqGM5WYR4v1BoSDzyiit73cweaTg3emZfXLDF",
+    "proofValue": "z2K99NV4bLHTeHF6MBuidCC4Acrz3kFfUtSrukLCDWEazjVjwv294k2tgdQFeqQeuhwGdPcJwdeKvTrcFi1nNXK4w",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -420,18 +420,18 @@
 --> Provider -> Context Client (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#request
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000010",
-  "issuedAt": "2026-11-25T10:00:13Z",
+  "issuedAt": "2026-11-25T10:00:14Z",
   "issuer": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S",
   "payload": {
     "grantId": "urn:uuid:00000000-0000-4000-8000-000000000006",
     "noticeId": "urn:uuid:00000000-0000-4000-8000-00000000000f",
-    "revokedAt": "2026-11-25T10:00:09Z"
+    "revokedAt": "2026-11-25T10:00:10Z"
   },
   "proof": {
-    "created": "2026-11-25T10:00:13Z",
+    "created": "2026-11-25T10:00:14Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z3YRy2TopFQ1dSZCYFAGz7ZZJQA4gCg3DLeeAvy9QwTZpb3wdr61TqPTFbYvcEmK6mKPUQENg9fC1D1CbkhMsjvNW",
+    "proofValue": "z5pdiLoNRWgsSCUNf9U4cWA3nmvEHXwEpN9m46rJitQNzmj2vn5WSvi2XWckHogtGVARvpEfmvX8Pwed4d7WERH81",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S#z6MktULudTtAsAhRegYPiZ6631RV3viv12qd4GQF8z1xB22S"
   },
@@ -442,14 +442,14 @@
 --> Context Client -> Provider (TSP) https://trusttasks.org/spec/hcp/grants/revoked/0.1#response
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000011",
-  "issuedAt": "2026-11-25T10:00:14Z",
+  "issuedAt": "2026-11-25T10:00:15Z",
   "issuer": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2",
   "payload": {},
   "proof": {
-    "created": "2026-11-25T10:00:14Z",
+    "created": "2026-11-25T10:00:15Z",
     "cryptosuite": "eddsa-jcs-2022",
     "proofPurpose": "authentication",
-    "proofValue": "z3Bu27ubLY4ciYQR4eV5M9GX5kfPaXYEoRCVEK6BuC6URC7mD9tinDXspGqST1Yj5NDCL1a2dSThmEbo7v9VJkp8B",
+    "proofValue": "z63dFr3m5qWTfPR4u9UaA49VwmH8wGVxq862KEqo6kRm3evjDY3mTZ39wafMGTzEqvMun2deyPWDfBcvLPCG1xoX7",
     "type": "DataIntegrityProof",
     "verificationMethod": "did:key:z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2#z6MkodJHzY8Bn6PycRu3pon7V3vzfk12nbndWcBz2mxMAsa2"
   },

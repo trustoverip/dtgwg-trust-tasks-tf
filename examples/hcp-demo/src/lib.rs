@@ -107,7 +107,8 @@ impl Clock {
         self.now()
     }
 
-    /// Let time pass without issuing a document (tests only).
+    /// Let time pass without issuing a document (a client waiting out
+    /// `retryAfter`, or a test).
     pub fn advance(&self, seconds: i64) {
         self.0.fetch_add(seconds, Ordering::SeqCst);
     }
@@ -391,6 +392,29 @@ impl World {
     /// How many grant requests the provider holds (by threadId).
     pub fn hold_count(&self) -> usize {
         self.shared.state.lock().expect("state").held.len()
+    }
+
+    /// The hold on `thread_id`, if any: its issuer and its state
+    /// (`"pending"`, `"approved"` or `"granted"`).
+    pub fn hold(&self, thread_id: &str) -> Option<(String, &'static str)> {
+        let state = self.shared.state.lock().expect("state");
+        state.held.get(thread_id).map(|hold| {
+            let name = match hold.state {
+                HoldState::Pending => "pending",
+                HoldState::Approved => "approved",
+                HoldState::Granted { .. } => "granted",
+            };
+            (hold.issuer.clone(), name)
+        })
+    }
+
+    /// Register another client with the provider (tests only): `registration`
+    /// is what the person is shown (`name`, `operator`).
+    pub fn register_client(&self, vid: &str, registration: Value) {
+        let mut state = self.shared.state.lock().expect("state");
+        state
+            .registered_clients
+            .insert(vid.to_string(), registration);
     }
 
     pub fn by_vid(&self, vid: &str) -> Result<&Party, Error> {
@@ -806,7 +830,7 @@ impl Shared {
             "expects": [{
                 "typeUri": format!("{}#request", grant_request::Payload::TYPE_URI),
                 "reason": "The request is with the person, who has not decided yet.",
-                "hint": { "retryAfter": 5 },
+                "hint": { "retryAfter": 1 },
             }],
             "continuation": "resubmit",
             "inResponseTo": { "typeUri": doc.type_uri.to_string(), "id": doc.id },
@@ -1122,6 +1146,12 @@ pub async fn step_grant_request(world: &World) -> Result<Granted, Error> {
     }
     let thread_id = first.thread_id.clone().expect("threadId");
     world.person_approves(&thread_id);
+    // The client SHOULD NOT resubmit sooner than the next step's retryAfter
+    // (hcp/grants/request "Holding").
+    let Some(retry_after) = held["payload"]["expects"][0]["hint"]["retryAfter"].as_i64() else {
+        return Err("expected a retryAfter hint".into());
+    };
+    world.clock().advance(retry_after);
     // Resubmission: a new document, fresh id, same threadId and payload.
     let resubmission = world
         .request(c, p, &grant_uri, ask(), Some(&thread_id))

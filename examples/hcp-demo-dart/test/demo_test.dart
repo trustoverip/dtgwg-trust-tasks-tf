@@ -250,4 +250,38 @@ void main() {
       throwsA(predicate((e) => '$e'.contains('threadId'))),
     );
   });
+
+  test('14. another registered client resubmitting on a held thread is '
+      'refused with permissionDenied, and the hold is unchanged', () async {
+    final world = await World.create();
+    final (c, m, p) = (world.contextClient, world.management, world.provider);
+    // A second registered client, so the check on the hold's issuer is
+    // reached (rule 1 passes).
+    world.registeredClients[m.vid] = (
+      name: "Alex's wallet",
+      operator: const grant_request.Named(
+        id: 'wallet.example',
+        name: 'Wallet Example Ltd',
+      ),
+    );
+    final first = await world.request(c, p, requestType, ask);
+    final held = await world.exchange(c, p, first);
+    expect(
+      held['type'],
+      'https://trusttasks.org/spec/trust-task-next-step/0.1',
+    );
+    final threadId = first['threadId'] as String;
+    world.personApproves(threadId);
+    final reply = await world.exchange(
+      m,
+      p,
+      await world.request(m, p, requestType, ask, threadId: threadId),
+    );
+    expect(reply['type'], errorType);
+    expect(codeOf(reply), 'permissionDenied');
+    final hold = world.held[threadId]!;
+    expect(hold.issuer, c.vid);
+    expect(hold.state, 'approved');
+    expect(world.grants, isEmpty);
+  });
 }

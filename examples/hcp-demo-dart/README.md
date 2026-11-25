@@ -54,7 +54,7 @@ dart run bin/main.dart
 ```
 
 `dart test` runs the tests listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has),
-the same 13 in every port: the golden transcript, the query after revoke, a tampered document, a
+the same 14 in every port: the golden transcript, the query after revoke, a tampered document, a
 schema-invalid document, the notice and its deduplication, the token from another VID, the
 grant-request rules and the reply checks. The transcript is compared with the shared
 [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt), so this port and
