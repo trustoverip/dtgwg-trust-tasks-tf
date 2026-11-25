@@ -1,0 +1,28 @@
+{
+  "name": "trust-tasks-example-hcp-demo-ts",
+  "private": true,
+  "description": "A demonstration of the Human Context Protocol (HCP) carried as Trust Tasks: discovery, grant request held with a next step, query, revoke and revocation notice between a toy in-memory HCP provider, a Context Client and a Management Client, sealed over TSP and signed with Data Integrity proofs. Not a reference provider.",
+  "type": "module",
+  "scripts": {
+    "generate": "trust-tasks-gen-ts --lock trust-tasks.lock --out src/trust-tasks",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/main.js",
+    "test": "node --test dist/test/*.test.js",
+    "all": "npm run generate && npm run build && npm start && npm test",
+    "update-golden": "node -e \"import('./dist/src/demo.js').then(async (m) => require('node:fs').writeFileSync('transcript.golden.txt', (await m.runDemo()).transcript))\""
+  },
+  "dependencies": {
+    "@noble/curves": "^2.0.0",
+    "@openvtc/trust-tasks": "file:../../trust-tasks-ts",
+    "@openvtc/trust-tasks-proof": "file:../../trust-tasks-ts-proof",
+    "@openvtc/trust-tasks-tsp": "file:../../trust-tasks-ts-tsp",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@openvtc/trust-tasks-gen": "file:../../trust-tasks-ts-gen",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

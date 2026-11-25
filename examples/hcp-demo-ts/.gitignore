@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# Written by `npm run generate` (trust-tasks-gen-ts) from trust-tasks.lock.
+src/trust-tasks/
