@@ -77,7 +77,7 @@ type Response struct {
 	Published []PublishedRow `json:"published"`
 
 	// Continuation token for the next page of `published`, or `null` when this is the last.
-	NextCursor *string `json:"nextCursor,omitempty"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
 
 	// How many records the next reconciliation pass will add, remove or replace to bring the
 	// registry into line with the VTC's current rights — across the whole VTC, regardless of

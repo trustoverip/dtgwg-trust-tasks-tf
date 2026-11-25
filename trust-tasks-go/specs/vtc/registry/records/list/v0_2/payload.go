@@ -41,12 +41,12 @@ type Record struct {
 
 	// Present on recognition records: whether the action+resource is recognised. Absent on
 	// other record types — absent is not `false`.
-	Recognized *bool `json:"recognized,omitempty"`
+	Recognized trusttasks.Nullable[bool] `json:"recognized,omitzero"`
 
 	// Present on authorization records: whether the action+resource authorization is
 	// confirmed. Absent on other record types — absent is not `false`.
-	Authorized *bool `json:"authorized,omitempty"`
-	Ext        *Ext  `json:"ext,omitempty"`
+	Authorized trusttasks.Nullable[bool] `json:"authorized,omitzero"`
+	Ext        *Ext                      `json:"ext,omitempty"`
 }
 
 // Response VTC Registry Records List — response payload

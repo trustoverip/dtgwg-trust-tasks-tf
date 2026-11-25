@@ -6,7 +6,10 @@
 // Deprecated: The prebuilt specification packages will be removed: pin the tasks you use with the trust-tasks CLI and generate them with go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen (GETTING-STARTED.md).
 package aclsharedaclentryv0_1
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
 
 // ACLEntryStepUpRequire Minimum step-up mode this subject MUST satisfy for gated
 // operations, raising the system floor. `self` = the subject re-authenticates its own
@@ -89,7 +92,7 @@ type ACLEntry struct {
 	// preserve and enforce the absent-vs-empty distinction end to end; collapsing the two
 	// (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of
 	// privilege-escalation defect this family's conventions exist to prevent.
-	AllowedKeys *[]string `json:"allowedKeys,omitempty"`
+	AllowedKeys trusttasks.Nullable[[]string] `json:"allowedKeys,omitzero"`
 
 	// Optional human-readable label.
 	Label     *string `json:"label,omitempty"`

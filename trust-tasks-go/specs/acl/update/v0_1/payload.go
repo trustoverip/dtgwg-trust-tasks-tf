@@ -105,7 +105,7 @@ type ACLEntry struct {
 	// preserve and enforce the absent-vs-empty distinction end to end; collapsing the two
 	// (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of
 	// privilege-escalation defect this family's conventions exist to prevent.
-	AllowedKeys *[]string `json:"allowedKeys,omitempty"`
+	AllowedKeys trusttasks.Nullable[[]string] `json:"allowedKeys,omitzero"`
 
 	// Optional human-readable label.
 	Label     *string `json:"label,omitempty"`
@@ -152,10 +152,10 @@ type ACLEntry struct {
 // system floor but MUST NOT lower it.
 type PayloadStepUp struct {
 	// VID that ratifies step-up for this subject. `null` clears it.
-	Approver *string `json:"approver,omitempty"`
+	Approver trusttasks.Nullable[string] `json:"approver,omitzero"`
 
 	// Minimum step-up mode. `null` clears the per-entry override.
-	Require *string `json:"require,omitempty"`
+	Require trusttasks.Nullable[string] `json:"require,omitzero"`
 }
 
 // PayloadApprove Replacement approve-authority — what the subject may CONFER on others,
@@ -183,7 +183,7 @@ type Payload struct {
 
 	// Replacement human-readable label. Explicit `null` clears it. Omitted leaves it
 	// unchanged.
-	Label *string `json:"label,omitempty"`
+	Label trusttasks.Nullable[string] `json:"label,omitzero"`
 
 	// Replacement scope set, applied wholesale rather than merged — a caller that means to
 	// add one sends the full intended set. NARROWING THE SET IS A REVOCATION and a consumer
@@ -201,11 +201,11 @@ type Payload struct {
 	// acl/revoke/0.1 cannot express a per-key reduction — but the consumer MUST audit it as a
 	// reduction and apply it to the subject's live sessions rather than letting the wider set
 	// survive until a credential expires.
-	AllowedKeys *[]string `json:"allowedKeys,omitempty"`
+	AllowedKeys trusttasks.Nullable[[]string] `json:"allowedKeys,omitzero"`
 
 	// Replacement expiry. Explicit `null` makes the entry permanent — a privilege increase,
 	// which a consumer SHOULD gate at least as strictly as the original grant.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt trusttasks.Nullable[string] `json:"expiresAt,omitzero"`
 
 	// Replacement per-entry step-up configuration. Same additive-only rule as on the entry
 	// itself: it MAY raise the assurance required of this subject above the system floor but

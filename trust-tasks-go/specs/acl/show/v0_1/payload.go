@@ -112,7 +112,7 @@ type ACLEntry struct {
 	// preserve and enforce the absent-vs-empty distinction end to end; collapsing the two
 	// (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of
 	// privilege-escalation defect this family's conventions exist to prevent.
-	AllowedKeys *[]string `json:"allowedKeys,omitempty"`
+	AllowedKeys trusttasks.Nullable[[]string] `json:"allowedKeys,omitzero"`
 
 	// Optional human-readable label.
 	Label     *string `json:"label,omitempty"`

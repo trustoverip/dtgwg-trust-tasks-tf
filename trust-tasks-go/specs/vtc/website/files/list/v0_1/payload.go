@@ -32,9 +32,9 @@ type ResponseItemsItem struct {
 // Deprecated: superseded by vtc/website/files/list/0.3
 type Response struct {
 	// Files under the site root, excluding hidden files and blocklisted extensions.
-	Items      []ResponseItemsItem `json:"items"`
-	NextCursor *string             `json:"nextCursor,omitempty"`
-	Ext        *Ext                `json:"ext,omitempty"`
+	Items      []ResponseItemsItem         `json:"items"`
+	NextCursor trusttasks.Nullable[string] `json:"nextCursor,omitzero"`
+	Ext        *Ext                        `json:"ext,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

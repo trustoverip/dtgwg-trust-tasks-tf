@@ -373,10 +373,10 @@ type AuthorityScopeAll struct {
 // system floor but MUST NOT lower it.
 type PayloadStepUp struct {
 	// VID that ratifies step-up for this subject. `null` clears it.
-	Approver *string `json:"approver,omitempty"`
+	Approver trusttasks.Nullable[string] `json:"approver,omitzero"`
 
 	// Minimum step-up mode. `null` clears the per-entry override.
-	Require *string `json:"require,omitempty"`
+	Require trusttasks.Nullable[string] `json:"require,omitzero"`
 }
 
 // Payload Amend the non-role attributes of an existing AclEntry 0.3: its act scope
@@ -443,12 +443,12 @@ type Payload struct {
 
 	// Replacement human-readable label. Explicit `null` clears it. Omitted leaves it
 	// unchanged.
-	Label *string `json:"label,omitempty"`
+	Label trusttasks.Nullable[string] `json:"label,omitzero"`
 
 	// Replacement expiry. Explicit `null` makes the entry permanent — a privilege increase,
 	// which a consumer SHOULD gate at least as strictly as the original grant, and which is
 	// refused where the granter's own entry expires.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	ExpiresAt trusttasks.Nullable[string] `json:"expiresAt,omitzero"`
 
 	// Replacement per-entry step-up configuration. Same additive-only rule as on the entry
 	// itself: it MAY raise the assurance required of this subject above the system floor but
