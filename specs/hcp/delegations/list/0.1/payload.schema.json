@@ -31,7 +31,7 @@
         "delegations": {
           "type": "array",
           "items": { "$ref": "../../../_shared/0.1/delegation.schema.json#/$defs/Delegation" },
-          "description": "HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; only the delegations naming the delegate, for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none."
+          "description": "HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none."
         }
       }
     }
