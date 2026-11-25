@@ -1,0 +1,33 @@
+[
+  {
+    "note": "Non-urn `entryId` — a Management Client names an entry by its stable `id`, a urn:uuid (HCP 4.2, 9.4.5).",
+    "payload": { "entryId": "entry-42", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `entryId` — a hard deletion names the entry it removes.",
+    "payload": { "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293" }
+  },
+  {
+    "note": "A `hardDelete` flag in the payload — HCP's query parameter is carried by the Type URI, not a member; a withdraw is a different task.",
+    "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "accessToken": "hcp_mt_x", "hardDelete": true }
+  },
+  {
+    "variant": "response",
+    "note": "`hardDeleted` false — that is a withdraw's result (HCP 9.4.5), never this task's.",
+    "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "hardDeleted": false, "respondedAt": "2026-11-25T09:00:01Z" }
+  },
+  {
+    "variant": "response",
+    "note": "A `status` member — a hard-deleted entry is no longer held, so it has no status (question 16).",
+    "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "hardDeleted": true, "status": "deleted", "respondedAt": "2026-11-25T09:00:01Z" }
+  },
+  {
+    "variant": "response",
+    "note": "HCP's `timestamp` instead of `respondedAt` — the carriage renames it.",
+    "payload": { "entryId": "urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293", "hardDeleted": true, "timestamp": "2026-11-25T09:00:01Z" }
+  }
+]

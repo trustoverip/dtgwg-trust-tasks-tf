@@ -1,0 +1,85 @@
+[
+  {
+    "note": "A `disposition` outside HCP's two values — HCP 3.8 defines only `confirmed` and `rejected`.",
+    "payload": { "entryId": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561", "disposition": "accepted", "expectedVersion": 2, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `expectedVersion` — HCP 5.4 requires every confirmation or rejection to carry it.",
+    "payload": { "entryId": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561", "disposition": "confirmed", "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "`expectedVersion` of 0 — `record.version` starts at 1 (HCP 4.2).",
+    "payload": { "entryId": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561", "disposition": "confirmed", "expectedVersion": 0, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Non-urn `entryId` — a Management Client names an entry by its stable `id`, a urn:uuid (HCP 4.2, 9.4.5).",
+    "payload": { "entryId": "hcp-ref-a91c4f", "disposition": "confirmed", "expectedVersion": 2, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
+    "payload": { "entryId": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561", "disposition": "rejected", "expectedVersion": 2 }
+  },
+  {
+    "variant": "response",
+    "note": "No `entry` — HCP answers with the entry (HCP 9.4.9), not an empty acknowledgement.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An entry without `record` — a Management Client receives the whole entry, record included (HCP 4.2, 7.4).",
+    "payload": {
+      "entry": {
+        "schema": "https://hcp.example/spec/entry/2.0",
+        "id": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561",
+        "type": ["ContextEntry"],
+        "subject": { "id": "https://context.provider.example/subjects/p-7f3a9c" },
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Prefers an aisle seat on flights longer than three hours.",
+          "language": "en"
+        },
+        "assertion": { "declarationType": "model-inferred", "confidence": "medium" },
+        "classification": { "categories": ["general_preferences"] }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A confirmation record with a `disposition` outside HCP's two values (HCP 3.8).",
+    "payload": {
+      "entry": {
+        "schema": "https://hcp.example/spec/entry/2.0",
+        "id": "urn:uuid:5affd201-734e-4217-a7b6-dc4dd177f561",
+        "type": ["ContextEntry"],
+        "subject": { "id": "https://context.provider.example/subjects/p-7f3a9c" },
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Prefers an aisle seat on flights longer than three hours.",
+          "language": "en"
+        },
+        "assertion": { "declarationType": "model-inferred", "confidence": "medium" },
+        "classification": { "categories": ["general_preferences"] },
+        "record": {
+          "status": "active",
+          "version": 2,
+          "provenance": {
+            "assertedBy": { "id": "https://travel-assistant.example/clients/planner", "assurance": "authenticated" },
+            "assertedAt": "2026-11-20T14:02:00Z",
+            "source": "integration",
+            "submittedByClient": {
+              "id": "https://travel-assistant.example/clients/planner",
+              "name": "Trip Planner",
+              "operator": { "id": "https://travel-assistant.example", "name": "Travel Assistant Ltd" }
+            },
+            "authorizedUnder": "urn:uuid:eb54c220-b64f-40ad-a794-37a48095ce0b",
+            "recordedByProvider": "https://context.provider.example",
+            "recordedAt": "2026-11-20T14:02:01Z",
+            "confirmations": [
+              { "disposition": "accepted", "confirmedBy": { "id": "https://context.provider.example/subjects/p-7f3a9c" }, "confirmedAt": "2026-11-25T09:00:01Z" }
+            ]
+          }
+        }
+      }
+    }
+  }
+]

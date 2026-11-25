@@ -1,0 +1,63 @@
+[
+  {
+    "note": "Empty `permittedPurposes` — it would permit no purpose, which HCP does not define; null removes the narrowing instead (HCP 9.4.10). A framework bound.",
+    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "permittedPurposes": [], "expectedVersion": 3, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `permittedPurposes` — the request states the new list, or null to remove the narrowing (HCP 9.4.10).",
+    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "expectedVersion": 3, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "A purpose that is not an absolute URI — a purpose code is an absolute URI (HCP 6.1.5.2).",
+    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "permittedPurposes": ["care-coordination"], "expectedVersion": 3, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "A duplicated purpose — HCP's purpose lists hold each code once (HCP 4.2.6).",
+    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "permittedPurposes": ["https://purposes.example/care-coordination", "https://purposes.example/care-coordination"], "expectedVersion": 3, "accessToken": "hcp_mt_x" }
+  },
+  {
+    "note": "Missing `expectedVersion` — HCP 5.4 requires every restriction of purposes to carry it.",
+    "payload": { "entryId": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae", "permittedPurposes": ["https://purposes.example/care-coordination"], "accessToken": "hcp_mt_x" }
+  },
+  {
+    "variant": "response",
+    "note": "No `entry` — HCP answers with the entry (HCP 9.4.10).",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An entry with a `classification.permittedPurposes` value that is not an absolute URI (HCP 4.2.6, 6.1.5.2).",
+    "payload": {
+      "entry": {
+        "schema": "https://hcp.example/spec/entry/2.0",
+        "id": "urn:uuid:16bc10cb-304a-4d25-802a-254d621e3cae",
+        "type": ["ContextEntry"],
+        "subject": { "id": "https://context.provider.example/subjects/p-7f3a9c" },
+        "content": {
+          "profile": "https://hcp.example/spec/profiles/general-context/2.0",
+          "value": "Takes 10 mg of lisinopril each morning.",
+          "language": "en"
+        },
+        "assertion": { "declarationType": "person-declared" },
+        "classification": { "categories": ["health_context"], "permittedPurposes": ["care-coordination"] },
+        "record": {
+          "status": "active",
+          "version": 3,
+          "provenance": {
+            "assertedBy": { "id": "https://context.provider.example/subjects/p-7f3a9c", "assurance": "authenticated" },
+            "assertedAt": "2026-10-03T07:45:00Z",
+            "source": "person-input",
+            "submittedByClient": {
+              "id": "https://wallet.person.example/clients/app",
+              "name": "Person Wallet",
+              "operator": { "id": "https://wallet.person.example", "name": "Person Wallet Co" }
+            },
+            "authorizedUnder": "urn:uuid:6d0e0734-8161-42bb-89a9-056debd5ed4e",
+            "recordedByProvider": "https://context.provider.example",
+            "recordedAt": "2026-10-03T07:45:01Z"
+          }
+        }
+      }
+    }
+  }
+]

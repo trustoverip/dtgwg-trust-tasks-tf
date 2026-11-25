@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/entries/hard-delete/0.1",
+  "title": "HCP — Hard Delete Entry — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Hard delete operation (HCP 5.4.2, 5.4; `DELETE /v2/entries/{entryId}?hardDelete=true` in HCP 9.2, 9.4.5): a Management Client, acting for the Authorizing Principal, permanently removes an entry. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId", "accessToken"],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.5): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Hard Delete Entry — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entryId", "hardDeleted", "respondedAt"],
+      "description": "The entry is permanently removed (HCP 5.4.2). The shape of HCP 9.4.5's withdraw result with `hardDeleted` true and no `status`, pending HCP confirmation (question 16 in the spec's \"Pending HCP confirmation\" section). Failures use trust-task-error, not this shape.",
+      "properties": {
+        "entryId": {
+          "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "HCP `entryId`: the entry, named as the caller named it (HCP 9.4.5, 5.2.5)."
+        },
+        "hardDeleted": {
+          "type": "boolean",
+          "const": true,
+          "description": "HCP `hardDeleted`: always true here, since the entry was removed, not withdrawn (HCP 9.4.5, 5.4.2)."
+        },
+        "respondedAt": {
+          "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "HCP `timestamp`, renamed: the date-time of the response (HCP 9.4.5)."
+        }
+      }
+    }
+  }
+}

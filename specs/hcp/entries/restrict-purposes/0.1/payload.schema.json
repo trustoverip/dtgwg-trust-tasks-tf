@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1",
+  "title": "HCP — Restrict Entry Purposes — payload",
+  "description": "The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId", "permittedPurposes", "expectedVersion", "accessToken"],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/common.schema.json#/$defs/Urn",
+      "description": "HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5)."
+    },
+    "permittedPurposes": {
+      "type": ["array", "null"],
+      "minItems": 1,
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/common.schema.json#/$defs/PurposeCode"
+      },
+      "description": "HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. The maxItems of 256 and the minItems of 1 are framework bounds, not HCP requirements: an empty list would permit no purpose, which HCP does not define."
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Authorizing Principal. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+    },
+    "accessToken": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192,
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "HCP — Restrict Entry Purposes — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "description": "The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.",
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/context-entry.schema.json#/$defs/Entry",
+          "description": "The HCP result (HCP 9.4.10): the whole entry, as a Management Client receives it (HCP 7.4). Its `record.version` is unchanged: a change of `classification` creates no version (HCP 4.2.1)."
+        }
+      }
+    }
+  }
+}
