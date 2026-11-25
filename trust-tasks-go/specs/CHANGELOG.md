@@ -4,6 +4,35 @@ All notable changes to `trust-tasks-go/specs` (the generated specification
 packages) are documented here. Entries are generated from conventional commits
 by the release automation (see RELEASING.md).
 
+## 0.1.9 — 2026-11-25
+
+
+### Specifications
+
+- **vtc/rooms/community**: An administrator sets a community room's record members (#1373)
+
+A community-owned room's profile is written by the community with its label
+  and description only, so a room meant as a conversation started with no record
+  members, and turning replies and reactions on took a member holding `curate`,
+  which most of a community room's members do not hold. The community holds
+  `admin` in every room it owns but had no task to set them.
+
+  - create/0.6: optional `recordMembers`, written into the room's profile with
+    its label and description; absent is none, as in 0.5. The response carries
+    what was recorded.
+  - update/0.5: optional `recordMembers` (the whole set) or
+    `removeRecordMembers: true`, mutually exclusive; either re-writes the
+    profile. Absent, the profile's record members are carried over as before.
+  - get/0.6: optional `recordMembers`, as the community last wrote or read back
+    the profile.
+  - vtc/_shared/0.5: `RoomRecordMembers`, the constraints of
+    `RoomProfile.recordMembers`.
+
+  An administrator's surface may offer them as one choice (replies and
+  reactions: kind, inReplyTo, writtenAt) and may start it on for a new room;
+  the request it sends is still the administrator's explicit choice. Other
+  draft specs now point at the new versions. All four libraries regenerated.
+
 ## 0.1.8 — 2026-11-25
 
 
