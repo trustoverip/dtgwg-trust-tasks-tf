@@ -18,6 +18,15 @@
     },
     "hcp/entries/query": {
       "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
+    },
+    "hcp/entries/get": {
+      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
+    },
+    "hcp/entries/create": {
+      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
+    },
+    "hcp/entries/revise": {
+      "timestamp-name at": "Human Context Protocol (HCP) 2.0-draft-3 evidence `verification.at` (4.2.2), the instant the provider last verified the evidence, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
     }
   }
 }

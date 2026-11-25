@@ -127,9 +127,10 @@
         },
         "permittedPurposes": {
           "type": "array",
+          "maxItems": 256,
           "uniqueItems": true,
           "items": { "$ref": "common.schema.json#/$defs/PurposeCode" },
-          "description": "The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6)."
+          "description": "The purposes the asserter permits the entry to be used for; absent means no limit (HCP 4.2.6). The bound of 256 is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -140,8 +141,9 @@
       "properties": {
         "drawnFrom": {
           "type": "array",
+          "maxItems": 256,
           "items": { "type": "string", "maxLength": 2048 },
-          "description": "The sources the assertion was drawn from."
+          "description": "The sources the assertion was drawn from. The bound of 256 is a framework bound, not an HCP requirement."
         },
         "task": {
           "type": "string",

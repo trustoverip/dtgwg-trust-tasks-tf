@@ -1,0 +1,250 @@
+---
+slug: hcp/grants/read-own
+version: "0.1"
+title: "HCP — Read Own Grant"
+summary: An HCP Client reads the Human Context Protocol grant under which it acts, with the directives that apply to it; carries the HCP 2.0-draft-3 Read own grant operation.
+status: draft
+targetFrameworkVersion: "0.6.0"
+carries:
+  protocol: HCP
+  version: "2.0-draft-3"
+  reference: https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md
+  operation: Read own grant
+category: access-control
+keywords: [hcp, human-context-protocol, grant, purposes, directives]
+parties:
+  - role: HCP Client (the client the grant was issued to)
+    requirement: REQUIRED
+    member: issuer
+  - role: HCP Provider
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  request: RECOMMENDED
+  response: RECOMMENDED
+  rationale: >-
+    The grant is evidenced by the access token, which the provider checks on every request. A response proof lets the
+    client show which categories and purposes the provider said it was granted, which is what the client relies on
+    when it states a purpose; it is RECOMMENDED because the read discloses nothing the client was not already told at
+    authorization time (HCP 5.2.6).
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    The answer reflects the grant's current state, including its status, so a request is placed in time and a stale
+    one refused.
+sideEffects:
+  level: none
+  rationale: >-
+    A read. HCP requires no audit event for it (HCP 5.2.6, 6.1.5).
+exposure:
+  discloses: metadata
+  actsAsSubject: false
+  ingests: secret
+  rationale: >-
+    The response discloses the grant record: the person's per-client pseudonym, the categories and purposes approved,
+    and any narrowing and onward-sharing election. It carries no context. The request carries the HCP access token, a
+    bearer secret.
+retention:
+  class: exchange
+  rationale: >-
+    Nothing is recorded by the read (HCP 5.2.6). The client may keep the grant record for the life of the grant.
+errorCodes:
+  - code: hcp:invalidToken
+    meaning: >-
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
+      revoked grant also fails here, pending HCP confirmation (question 1 in the spec's "Pending HCP confirmation"
+      section).
+    retryable: false
+related:
+  - hcp/grants/relinquish
+  - hcp/grants/revoked
+  - hcp/entries/query
+---
+
+## Abstract
+
+The **HCP — Read Own Grant** Trust Task carries the Read own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.6; `GET /v2/grants` with a Context Client's token in HCP 9.2). An *HCP Client* asks an *HCP Provider* for the grant under which it acts, and receives that grant only (HCP 6.1.5), with the directives that apply to it (HCP 6.4). This is how a client learns which purposes the person approved (HCP 6.1.5.2).
+
+It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+HCP 2.0-draft-3 is itself a draft, and its editors have not published or endorsed this carriage ([SPEC §9.4](/SPEC.md#94-carried-protocols), [SPEC §6.5](/SPEC.md#65-private-and-unpublished-trust-task-specifications)). This family is a proposal to them. HCP's text is © its authors under CC BY 4.0; this specification and the shared [`grant.schema.json`](../../../_shared/0.1/grant.schema.json) were written from that text, with attribution, and do not copy HCP's own schema files. Where they differ from the HCP text, the HCP text governs.
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here. A provider that serves this task **MUST** also meet every requirement HCP 2.0-draft-3 places on reading a grant (HCP 5.2.6, 6.1.5). A provider **MUST NOT** claim this carriage in its HCP `conformsTo`, and advertises the task through [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead, *pending HCP confirmation* ([question 7](#pending-hcp-confirmation)).
+
+## Authorization
+
+The authority is **the grant itself**, evidenced by the access token in `accessToken`: a client may read the grant under which it acts, and no other (HCP 5.2.6). The token names the grant, so the request names none. An HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client, on every binding (HCP 6.1.5).
+
+A Management Client's token does not stand for a grant it acts under; over HCP's HTTP binding the same `GET /v2/grants` with such a token is List grants, a governance operation (HCP 9.2, 9.4.6), which is not this task. A provider refuses a Management Client's token here with `permissionDenied`.
+
+## Definitions
+
+- **HCP Client**, **Context Client**, **Management Client**, **HCP Provider**, **grant**, **authorization detail**, **purpose** and **directive** have their HCP 2.0-draft-3 meanings.
+- The grant shape is [`Grant`](../../../_shared/0.1/grant.schema.json) in `hcp/_shared/0.1`; the directive shape is [`Directive`](../../../_shared/0.1/directive.schema.json). Both are open, as HCP's own schemas are.
+
+### HCP field mapping
+
+| HCP field | Member | Notes |
+|---|---|---|
+| `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
+| `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
+| result: the grant (HCP 5.2.6, 6.1.5) | `grant` | **Wrapped**: HCP's published result schema is the grant object itself. |
+| "with the directives that apply to it" (HCP 5.2.6) | `directives` | HCP's text gives the result directives but names no member for them, and its published result schema has none; see [question C6](#pending-hcp-confirmation). |
+
+### Parties
+
+| HCP role | Trust Task member |
+|---|---|
+| HCP Client | `issuer` of the request, `recipient` of the response |
+| HCP Provider | `recipient` of the request, `issuer` of the response |
+
+As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (HCP 19.1), and a client **MUST** check that binding before it sends a token to a VID.
+
+## Request
+
+The payload is the top-level schema in [`payload.schema.json`](payload.schema.json): `accessToken` (REQUIRED) only.
+
+### The booking agent checks what it was granted
+
+```json
+{
+  "id": "urn:uuid:0a6d3f92-4b1e-4c8a-9f7d-2e5b8c1a6d03",
+  "type": "https://trusttasks.org/spec/hcp/grants/read-own/0.1#request",
+  "issuer": "did:web:booking-agent.example",
+  "recipient": "did:web:context.provider.example",
+  "issuedAt": "2026-11-25T08:00:00Z",
+  "threadId": "urn:uuid:7b1e5c84-2d9f-4a3b-8c6e-0f4a7d2b9e14",
+  "payload": {
+    "accessToken": "hcp_at_2b7f0c6e9d1a4e8b"
+  }
+}
+```
+
+## Response
+
+The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json):
+
+- `grant` is the client's own grant (HCP 6.1.5). Where a detail is narrowed to particular entries, a Context Client receives their `ref`s in `narrowedTo`, never their `id`s (HCP 5.2.6). `expiresAt` is an instant for a temporary grant and null for a persistent one (HCP 6.1.4), which the schema does not check.
+- `directives` are the directives that apply to the grant, empty when none applies (HCP 5.2.6, 6.4). A client that claims to follow directives **MUST** follow every one delivered to it (HCP 6.4).
+
+Failures use `trust-task-error` (see [Errors](#errors)).
+
+### The grant
+
+```json
+{
+  "id": "urn:uuid:6e2c9a15-8f4b-4d1e-a7c3-5b0d2f8e4a25",
+  "type": "https://trusttasks.org/spec/hcp/grants/read-own/0.1#response",
+  "issuer": "did:web:context.provider.example",
+  "recipient": "did:web:booking-agent.example",
+  "issuedAt": "2026-11-25T08:00:01Z",
+  "threadId": "urn:uuid:7b1e5c84-2d9f-4a3b-8c6e-0f4a7d2b9e14",
+  "payload": {
+    "grant": {
+      "grantId": "urn:uuid:c4d2e1f0-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+      "subject": { "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35" },
+      "authorizingPrincipal": { "id": "urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35" },
+      "client": {
+        "id": "booking-agent",
+        "name": "Example Booking Agent",
+        "operator": { "id": "https://booking-agent.example", "name": "Example Booking Ltd" }
+      },
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read", "write"],
+          "categories": ["general_preferences"],
+          "purposes": [
+            { "code": "https://hcp.example/purposes/reservation", "description": "Booking restaurants for you" }
+          ],
+          "onwardSharing": { "domains": ["restaurants.example"] }
+        },
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": ["read"],
+          "categories": ["health_context"],
+          "purposes": [
+            { "code": "https://hcp.example/purposes/reservation", "description": "Booking restaurants for you" }
+          ]
+        }
+      ],
+      "scopes": ["hcp:general_preferences:read", "hcp:general_preferences:write", "hcp:health_context:read"],
+      "grantType": "persistent",
+      "issuedAt": "2026-10-01T09:00:00Z",
+      "expiresAt": null,
+      "status": "active"
+    },
+    "directives": [
+      {
+        "directiveId": "urn:uuid:5b8c2e17-4a9d-4f3b-8e6a-1c0d9f7e2b44",
+        "action": "share",
+        "effect": "deny",
+        "text": "Never pass my health information to another agent.",
+        "categories": ["health_context"],
+        "setBy": "context-subject",
+        "createdAt": "2026-10-02T08:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+## Errors
+
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows.
+
+| HCP error (5.5) | Code | Trust Task error |
+|---|---|---|
+| invalid request | `malformed-request` | `malformedRequest` |
+| unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
+| not authorized | `scope-denied`: a token that stands for no grant the caller acts under, such as a Management Client's (see [Authorization](#authorization)) | `permissionDenied`, with one fixed `message` |
+| conflict | `idempotency-conflict` | Does not arise: a read carries no idempotency key (HCP 9.6). |
+| version conflict | `version-conflict` | Does not arise. |
+| credential invalid | `credential-invalid` | Does not arise. |
+| subject unavailable | `subject-unavailable` | `unavailable` |
+| rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
+| unsupported version | `unsupported-version` | `unsupportedVersion` |
+
+A grant that is `revoked` or `expired` is not returned: a token issued under it is no longer valid evidence (HCP 6.2.2), and the request fails with `hcp:invalidToken`, *pending HCP confirmation* ([question 1](#pending-hcp-confirmation)).
+
+## Pending HCP confirmation
+
+HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of the list of questions put to the editors.
+
+- **Question 1 — a request under a revoked grant.** Refused with `hcp:invalidToken` (see [Errors](#errors)).
+- **Question 7 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
+- **Question C6 — where the directives go.** The result is `{ "grant", "directives" }`, `directives` REQUIRED and empty when none applies; HCP's text gives the result directives, and its published result schema is the bare grant (see [HCP field mapping](#hcp-field-mapping)).
+
+## What HCP requires that a document cannot express
+
+- **Grant isolation** (HCP 6.1.5): the provider returns the caller's own grant and never another client's.
+- **`ref`s, not `id`s, in a narrowing** (HCP 5.2.6): the provider rewrites the narrowing for a Context Client.
+- **Rule 3 of HCP 6.1.5.1**: a narrowed detail always carries its `narrowedTo`, so the record never overstates the grant.
+
+## Security & Privacy
+
+### Data carried
+
+The request carries only the access token, a bearer secret. The response carries the grant record: the per-client pseudonym of the person, the client's own registration details, what the person approved, and the directives. It carries no entry content. A producer **MUST NOT** put the token in `ext` or any `message`.
+
+### Correlation
+
+The grant's `subject` and `authorizingPrincipal` identifiers are pseudonyms specific to this client (HCP 3.4), so they do not join the person across clients. The `grantId` joins this read to the client's other requests and to any revocation notice, by design. `threadId` **SHOULD** be fresh per read.
+
+### Retention
+
+The provider records nothing for the read (HCP 5.2.6). The client may keep the grant record while the grant lasts, and discards it when the grant ends.
+
+### Consent/purpose
+
+The grant record is what the person approved; the client reads it to stay within it. Whether a client must read its grant before acting is not a requirement of this specification ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
+
+The acceptance window for `issuedAt` is consumer policy.
