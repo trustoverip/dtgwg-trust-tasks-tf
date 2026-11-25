@@ -13,7 +13,7 @@ carries:
 category: data-exchange
 keywords: [hcp, human-context-protocol, personal-context, memory, query, disclosure]
 parties:
-  - role: Context Client (HCP)
+  - role: HCP Client (a Context Client, or a Management Client)
     requirement: REQUIRED
     member: issuer
   - role: HCP Provider
@@ -127,7 +127,7 @@ Query is a context operation, for HCP Clients acting under a grant (HCP 5.1). Th
 
 | HCP role | Trust Task member |
 |---|---|
-| Context Client | `issuer` of the request, `recipient` of the response |
+| Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
 HCP identifies a provider by the `provider` URL and `jwks_uri` in its discovery document (`/.well-known/hcp-configuration`, HCP 19.1), and a client by its registration. Neither is a VID. A provider serving this task **MUST** make its VID verifiably bound to its HCP identity: its DID document lists the discovery document as a service, or its discovery document names the VID, or both. A client **MUST** check that binding before it sends a token to a VID.
