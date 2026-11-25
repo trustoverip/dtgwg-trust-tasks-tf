@@ -28,7 +28,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is refused (HCP 6.1.9); a Context Client reads its own grant with another task (HCP 5.2.6). The maxLength is a framework bound, not an HCP requirement."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement."
     }
   },
   "$defs": {

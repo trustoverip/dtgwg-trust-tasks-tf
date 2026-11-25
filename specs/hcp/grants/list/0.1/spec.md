@@ -44,7 +44,7 @@ exposure:
     The response enumerates authorization records: which clients and operators the person has granted access to,
     for which categories and purposes, under which per-client pseudonyms. That is sensitive descriptive data about
     the person's relationships, but it holds no context and no credential that grants access to anything, and it is
-    returned only to the person's own Management Client, so it is metadata, not secret. The request carries the
+    returned only to the person's own Management Client (or, to a Context Client, only its own grant), so it is metadata, not secret. The request carries the
     Management Client's access token, a bearer secret.
 retention:
   class: transient
@@ -83,9 +83,9 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 ## Authorization
 
-The authority is **the Authorizing Principal's own authority over their grants**, which a Management Client exercises for them (HCP 5.4, 6.1.5, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Listing grants is a governance operation: any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9).
+The authority is **the Authorizing Principal's own authority over their grants**, which a Management Client exercises for them (HCP 5.4, 6.1.5, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. Listing grants is a governance operation: a grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9), and any caller that is neither a Management Client acting for the Context Subject or a delegate, nor a Context Client presenting its own token, receives not authorized, carried as `permissionDenied`.
 
-Over HCP's HTTP binding, `GET /v2/grants` called with a Context Client's token returns the one grant under which that token was issued (HCP 9.4.6). That is a different operation, a context operation, Read own grant (HCP 5.2.6), carried by its own task (`hcp/grants/read-own`). This task refuses a Context Client's token with `permissionDenied`, and never returns a grant issued to one HCP Client to any other: an HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client (HCP 6.1.5).
+Over HCP's HTTP binding, `GET /v2/grants` called with a Context Client's token returns the one grant under which that token was issued (HCP 9.4.6). This task does the same, *pending HCP confirmation* ([question 27](#pending-hcp-confirmation)): a request whose `accessToken` is a Context Client's token is answered with a `grants` list holding only that grant, where it has the `status` asked for, and otherwise an empty list; `nextCursor` is never present. The grant is returned as Read own grant returns it (HCP 5.2.6), with `authorizingPrincipal.delegation` withheld (HCP 17.4); a Context Client that also wants the directives that apply to its grant uses [`hcp/grants/read-own`](../../read-own/0.1/spec.md). The provider never returns a grant issued to one HCP Client to any other: an HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client (HCP 6.1.5).
 
 Under the Delegated Authorization Profile, the Context Subject's Management Client is listed every grant made for them, whoever authorized it (HCP 6.1.5, 17.5). A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope, which includes every grant the delegate authorized under it, *pending HCP confirmation* ([question 24](#pending-hcp-confirmation)); HCP 9.4.6 says "all grants", and HCP 17.4 limits a delegate's governance operations to the delegation's scope.
 
@@ -113,7 +113,7 @@ The `proof`, where present, establishes which Management Client VID sent the doc
 
 | HCP role | Trust Task member |
 |---|---|
-| Management Client | `issuer` of the request, `recipient` of the response |
+| Management Client (or a Context Client, listed only its own grant; see [Authorization](#authorization)) | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
 As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a provider **MUST** make its VID verifiably bound to its HCP identity (its discovery document, HCP 19.1), and a Management Client **MUST** check that binding before it sends a token to a VID.
@@ -207,7 +207,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 |---|---|---|
 | invalid request | `malformed-request`: the request fails schema validation, or `cursor` is not one the provider issued, has expired, or was issued for another `status` | `malformedRequest` |
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
-| not authorized | `scope-denied`: the caller is not a Management Client acting for the Context Subject or a delegate, including any Context Client (HCP 6.1.9) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
+| not authorized | `scope-denied`: the caller is neither a Management Client acting for the Context Subject or a delegate (HCP 6.1.9), nor a Context Client presenting its own token, which is answered with its own grant (see [Authorization](#authorization)) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict` | Does not arise: HCP defines it for a retried request with an idempotency key (HCP 9.6), and this operation carries none. A re-delivered document is answered under [Repeated requests](#repeated-requests). |
 | version conflict | `version-conflict` | Does not arise: a grant has no version (HCP 6.1.5). |
 | credential invalid | `credential-invalid` | Does not arise: it concerns a credential written as an entry's content (HCP 14.6). |
@@ -221,7 +221,7 @@ A Management Client that does not know `hcp:invalidToken` reads it as `taskFaile
 
 - **A recognizable name.** Each grant's `client.name` **MUST** be a name the person can recognize; a grant list presenting only opaque client identifiers does not satisfy HCP 18 (HCP 6.1.5).
 - **Everything the person approved is shown.** Each grant carries the `purposes` the person approved for each authorization detail (HCP 6.1.5.2), any narrowing below category grain in `narrowedTo` (HCP 6.1.5.1), and any `onwardSharing`, with the `notTo` operators standing rules deny, kept current as rules change (HCP 6.1.5, 6.3). A Management Client presenting the list **MUST** show narrowing and onward sharing (HCP 6.1.5, 18).
-- **Delegations are shown to the person.** A grant a delegate authorized carries `authorizingPrincipal.delegation` (HCP 6.1.5, 17.4). It is withheld only from a Context Client reading its own grant (HCP 17.4), never from this list.
+- **Delegations are shown to the person.** A grant a delegate authorized carries `authorizingPrincipal.delegation` (HCP 6.1.5, 17.4). It is withheld only from a Context Client reading its own grant (HCP 17.4), including through this task (see [Authorization](#authorization)), and never from a Management Client's list.
 - **No cross-client disclosure.** An HCP Provider **MUST NOT** disclose a grant issued to one HCP Client to any other HCP Client (HCP 6.1.5).
 - **No audit event.** No audit event is required for reading a grant list: a person reading their own grant list is not an access to entry content (HCP 6.1.5).
 - **`expiresAt`.** A temporary grant carries its absolute expiry; a persistent grant carries `expiresAt: null`, as HCP writes it (HCP 6.1.4, 6.1.5). The `null` is HCP's own value inside the grant object, carried unchanged.
@@ -237,6 +237,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 7 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../../trust-task-discovery/0.4/spec.md) instead.
 - **Question 14 — pagination.** The request takes `cursor` and `limit`, `limit` capped at 1000 by the carriage, and the response's `nextCursor` is absent, not null, when the set is exhausted; the cursor stays opaque and valid for at least 300 seconds (HCP 9.5).
 - **Question 24 — a delegate's grant list.** A delegate's Management Client is listed only the grants every one of whose `access` details' categories lies within the delegation's scope (see [Authorization](#authorization)).
+- **Question 27 — a Context Client's token.** A Context Client presenting its own token is listed only the grant under which that token was issued, as `GET /v2/grants` answers it over HCP's HTTP binding (HCP 9.4.6), rather than refused as a caller of a governance operation (HCP 6.1.9) (see [Authorization](#authorization)).
 
 ## What HCP requires that a document cannot express
 
