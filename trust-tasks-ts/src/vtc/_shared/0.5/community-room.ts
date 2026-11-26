@@ -14,4 +14,4 @@ export interface VTCSharedCommunityOwnedRoomDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { ArchiveAccess, CommunityRoomV3, MemberAction, MemberActions, MemberStateV2, PendingChange, PurgeProgress, RoomDescription, RoomLabel, RoomMembershipV2, RoomMemberV2, RoomState, RoomStatus, RoomTag, RoomTags } from "../../../_shared/components.js";
+export type { ArchiveAccess, CommunityRoomV3, MemberAction, MemberActions, MemberStateV2, PendingChange, PurgeProgress, RoomDescription, RoomLabel, RoomMembershipV2, RoomMemberV2, RoomRecordMembers, RoomState, RoomStatus, RoomTag, RoomTags } from "../../../_shared/components.js";

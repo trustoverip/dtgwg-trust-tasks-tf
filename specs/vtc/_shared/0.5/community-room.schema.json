@@ -883,6 +883,20 @@
           "description": "What stopped the last attempt, for an administrator. Plain text; it names no member and carries no credential."
         }
       }
+    },
+    "RoomRecordMembers": {
+      "title": "RoomRecordMembers",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-z][A-Za-z0-9]*$"
+      },
+      "description": "The record members a community-owned room's profile lists: the optional `SealedRecordBody` members its writers may use beyond the base set, as a set (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`, `inReplyTo` and `writtenAt` are what a room used as a conversation needs for replies, reactions and the order of its messages. The community writes them into the room's profile through its VTA, as the room's owner; a value a writer does not know grants it nothing."
     }
   }
 }

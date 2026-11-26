@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/create/0.6",
+  "title": "VTC Rooms Community Create — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "label",
+    "visibility",
+    "reason"
+  ],
+  "properties": {
+    "label": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomLabel"
+    },
+    "description": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomDescription",
+      "description": "What the room is for, shown beside its label. Absent: the room has none until an administrator gives it one with vtc/rooms/community/update."
+    },
+    "tags": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomTags",
+      "description": "Tags to file the room under, for administrators' filtering. Absent: none."
+    },
+    "visibility": {
+      "$ref": "../../../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility",
+      "description": "The tier, fixed for the life of the room. The community's rooms policy decides which it may create."
+    },
+    "retentionPolicy": {
+      "$ref": "../../../../../rooms/_shared/0.1/room.schema.json#/$defs/RetentionPolicy",
+      "description": "Whether the room keeps its history readable across a membership change. Immutable; absent means `chained`."
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 36500,
+      "description": "How long the room is kept after it lapses. Absent: the community's default."
+    },
+    "storageConfig": {
+      "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId",
+      "description": "The storage config to receive the room's uploads. Absent: what the community's rooms policy decides, else its default config."
+    },
+    "signalDelay": {
+      "$ref": "../../../../../rooms/_shared/0.2/room.schema.json#/$defs/SignalDelay",
+      "description": "Whether the community, as the room's host, waits a randomised interval before sending a `rooms/changed` signal for the room. Absent: `randomised`. `none` is for a room members use as a conversation; what it gives up is in `SignalDelay`."
+    },
+    "recordMembers": {
+      "$ref": "../../../../../vtc/_shared/0.5/community-room.schema.json#/$defs/RoomRecordMembers",
+      "description": "The record members to list in the room's profile, written into it with its label and description. Absent: none, as in 0.5 — a room's profile never lists them by default."
+    },
+    "reason": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Create — response payload",
+      "description": "Success response to vtc/rooms/community/create. Type https://trusttasks.org/spec/vtc/rooms/community/create/0.6#response. The room as created, owned by the community, the signal delay it was created with, and the record members its profile is to list.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room",
+        "roomProfile",
+        "signalDelay"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../../vtc/_shared/0.3/community-room.schema.json#/$defs/CommunityRoomV2"
+        },
+        "roomProfile": {
+          "type": "string",
+          "enum": [
+            "written",
+            "pending"
+          ],
+          "description": "Whether the room's own profile — its label and description, sealed inside the room for its members — has been written. `written`: the room's members can read it. `pending`: the room exists and the community has not yet written its profile — its VTA or the room's host did not answer, or refused — and will keep trying. The room is created either way."
+        },
+        "signalDelay": {
+          "$ref": "../../../../../rooms/_shared/0.2/room.schema.json#/$defs/SignalDelay",
+          "description": "The room's signal delay as the community recorded it: the one requested, or `randomised` when none was. Always present."
+        },
+        "recordMembers": {
+          "$ref": "../../../../../vtc/_shared/0.5/community-room.schema.json#/$defs/RoomRecordMembers",
+          "description": "The record members the community recorded for the room's profile: those requested. Absent when none were. Whether the profile carrying them has been written is `roomProfile`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
