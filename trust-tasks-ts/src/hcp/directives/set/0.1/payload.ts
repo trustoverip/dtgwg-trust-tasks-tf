@@ -7,7 +7,7 @@ import type { Category, Directive, Instant, Urn } from "../../../../_shared/comp
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPSetDirectivePayload {
   /**
@@ -100,7 +100,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/directives/set/0.1",
   "title": "HCP — Set Directive — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Set directive operation (HCP 6.4, 5.4; `POST /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, sets a directive telling clients what they may do with context they receive, or on the person's behalf. HCP defines no request schema for this operation; the members come from HCP 9.4.15 and the directive of HCP 6.4. The provider sets `directiveId`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -7,7 +7,7 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPRestrictEntryPurposesPayload {
   /**
@@ -88,7 +88,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1",
   "title": "HCP — Restrict Entry Purposes — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [
