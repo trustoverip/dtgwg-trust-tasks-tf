@@ -316,7 +316,7 @@ func TestGeneratedPackagesCompile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod := "module example.com/app\n\ngo 1.22\n\n" +
+	mod := "module example.com/app\n\ngo 1.24\n\n" +
 		"require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.0.0-00010101000000-000000000000\n\n" +
 		"replace github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go => " + filepath.ToSlash(core) + "\n"
 	if err := os.WriteFile(filepath.Join(app, "go.mod"), []byte(mod), 0o644); err != nil {
