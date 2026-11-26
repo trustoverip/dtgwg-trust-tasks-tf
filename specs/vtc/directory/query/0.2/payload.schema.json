@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/query/0.2",
+  "title": "VTC Directory Query — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "DID of the member whose directory projection is requested."
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Comma-separated narrowing hint. A hint only — never an authorisation."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory Query — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "entryId",
+        "fields"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The projected member's DID."
+        },
+        "entryId": {
+          "$ref": "../../_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The member's directory entry: the identifier every other directory read and the member's card are addressed by (vtc/directory/entries/show, images/get). Present on every answer. It is not derived from, and does not reveal, any DID of the member; the caller already named the DID it was answered for."
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The permitted projection. A withheld field is ABSENT, never present-and-null."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "description": "Success response to vtc/directory/query. Type https://trusttasks.org/spec/vtc/directory/query/0.2#response. The member's projection for this caller, and their entry identifier."
+    }
+  },
+  "description": "Read one member's directory projection, addressed by their DID: the fields the member, the community's ceiling and its directory policy all let this caller see, and the member's entry identifier. The outer document members are owned by the framework — SPEC §6.3."
+}
