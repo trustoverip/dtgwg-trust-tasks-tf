@@ -19,9 +19,9 @@ no dependencies — its selling point — and this one pulls in `affinidi-tsp-go
 its cryptography. Keeping them apart means a consumer who only wants the types
 and the §7.2 pipeline still gets a dependency-free core.
 
-`affinidi-tsp-go` is not tagged yet, so `go.mod` requires it at a pseudo-version
-from its public repository; the Go proxy resolves it. Bump to a real tag when one
-is published.
+It requires the tagged `affinidi-tsp-go` v0.2.0, which speaks TSP 1.0 (see
+[TSP version](#tsp-version)). The module itself has no release tag yet, so
+`go get` resolves a pseudo-version of this repository.
 
 ## Sending
 
@@ -66,10 +66,11 @@ or §7.1 says to stay silent.
 Before the pipeline, with no reply possible — TSP has no anonymous sender, so
 these leave nothing authenticated to answer (§4). They come back as an
 `*EnvelopeError` whose `Failure` is one of `FailNotForThisReceiver` (bad framing,
-wrong receiver, failed signature or HPKE authentication), `FailNotSealed` (a
+wrong receiver, a failed signature or a payload that does not open), `FailNotSealed` (a
 signed-only message; §2 requires sealing), `FailNotFinalRecipient` (a
-routed/nested layer this VID only relays, §5.2), `FailWrongEnvelopeType` or
-`FailInvalidBody`.
+routed/nested layer this VID only relays, §5.2), `FailWrongEnvelopeType`,
+`FailInvalidBody`, or `FailUnsupportedTSPVersion` (a peer on a TSP draft; see
+[TSP version](#tsp-version)).
 
 Inside the pipeline, answered with a `trust-task-error` sealed back to the
 authenticated sender: a body that does not deserialise is `malformedRequest`; an
@@ -100,13 +101,30 @@ This release carries **Direct** messages, the strongest case (§5.1). Routed and
 nested relaying is the mediator's job on the wire; a layer this VID only relays
 surfaces as `FailNotFinalRecipient`.
 
+## TSP version
+
+It speaks **TSP 1.0** (`YTSP-BAA`, the `TSPVersion` constant) through
+`affinidi-tsp-go` v0.2, as the Rust `trust-tasks-tsp` crate (on `affinidi-tsp`)
+and `@openvtc/trust-tasks-tsp` (on `@openvtc/vti-tsp-js`) do. TSP has no version
+negotiation: a message from a peer still on a draft — Rev 3 (`YTSP-AAC`), which
+this module spoke before, or Rev 2 (`YTSP-AAB`) — is refused
+`FailUnsupportedTSPVersion` from its version marker, before any key is used, and
+`AdvertisedSender` reads no sender from it. You need not resolve one to learn
+that: `Receive` and `UnpackTrustTask` refuse it before touching the sender
+identity, so pass nil when `AdvertisedSender` is empty and the operator still
+sees the version mismatch. Such a peer has to upgrade. MINOR
+never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this module does
+not know is opened like any other, and one that then fails to open is
+`FailNotForThisReceiver`.
+
 ## Interoperability
 
 The sealed envelope object is the same `{type, document}` shape the Rust
 `trust-tasks-tsp` crate and the Dart `trust_tasks_tsp` package seal, pinned by a
-test. Cross-implementation TSP wire interop rests on the shared TSP Rev 3
-conformance vectors that `affinidi-tsp-go`, `affinidi_tsp` (Dart) and the
-`affinidi-tsp` Rust crate each test against.
+test. `interop_test.go` opens a TSP 1.0 message packed by the Rust
+`affinidi-tsp` 0.5.0 (the fixture `trust-tasks-ts-tsp` tests against too), and
+refuses a Rev 3 message from the `affinidi-tsp-go` this module used before and a
+Rev 2 message from `@openvtc/vti-tsp-js` 0.2.
 
 ## License
 

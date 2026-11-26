@@ -8,12 +8,11 @@ counterpart of the Rust
 [`trust-tasks-tsp`](https://crates.io/crates/trust-tasks-tsp) crate: it seals
 the same envelope object, so a document sealed by either opens in the other.
 
-> **Not yet on pub.dev.** This package depends on `affinidi_tsp`, which has not
-> been published to pub.dev yet. Until it is, depend on this via a git
-> reference, and note that this package cannot itself be published (pub.dev
-> requires every dependency in the published closure to be on pub.dev).
+> **Not yet on pub.dev.** Its dependency `affinidi_tsp` is published, but this
+> package has not had its first release yet. Until it does, depend on it through
+> a git reference.
 
-Requires Dart 3.8 or later.
+Requires Dart 3.10 or later (the floor `affinidi_tsp` 0.2 sets).
 
 ## Sending
 
@@ -82,11 +81,12 @@ these leave nothing authenticated to answer (§4). They throw
 
 | `TspFailure` | Cause |
 |---|---|
-| `notForThisReceiver` | not a TSP message this VID can open — bad framing, wrong receiver, failed signature or HPKE authentication, or an unresolvable sender |
+| `notForThisReceiver` | not a TSP message this VID can open — bad framing, wrong receiver, a failed signature or a payload that does not open, or an unresolvable sender |
 | `senderNotAllowed` | not in `allowedSenders` — refused **before** the sender VID is resolved |
 | `notSealed` | a signed-only message; §2 requires the payload sealed as well as signed |
 | `notFinalRecipient` | a routed/nested message this VID only relays (§5.2) |
 | `wrongEnvelopeType`, `invalidBody` | not a Trust Task envelope object |
+| `unsupportedTspVersion` | a peer on a TSP draft (MAJOR other than 1) — refused from the version marker, **before** the allowlist and sender resolution; see [TSP version](#tsp-version) |
 
 Inside the pipeline, answered with a `trust-task-error` sealed back to the
 authenticated sender: a body that does not deserialise is `malformedRequest`
@@ -131,13 +131,27 @@ carriage (§5.2) is the mediator's job on the wire; a nested inner message this
 VID is the final recipient of opens through the same path, while a layer this VID
 only relays is surfaced as `notFinalRecipient` rather than executed.
 
+## TSP version
+
+It speaks **TSP 1.0** (`YTSP-BAA`, the `tspVersion` constant) through
+`affinidi_tsp` 0.2, as the Rust `trust-tasks-tsp` crate (on `affinidi-tsp`) and
+`@openvtc/trust-tasks-tsp` (on `@openvtc/vti-tsp-js`) do. TSP has no version
+negotiation: a message from a peer still on a draft — Rev 3 (`YTSP-AAC`), which
+this package spoke before, or Rev 2 (`YTSP-AAB`) — is refused
+`unsupportedTspVersion` from its version marker, before any key is used, and
+`advertisedSender` reads no sender from it. Such a peer has to upgrade. MINOR
+never gates a message (TSP 1.0 §3.1): a 1.x message with a MINOR this package does
+not know is opened like any other, and one that then fails to open is
+`notForThisReceiver`.
+
 ## Interoperability
 
 The sealed envelope object is byte-for-byte the shape the Rust `trust-tasks-tsp`
 crate seals (`{"type": …, "document": …}`, and nothing else), pinned by a test.
-Cross-implementation TSP wire interop rests on the shared TSP Rev 3 conformance
-vectors that `affinidi_tsp`, `affinidi-tsp-go` and the `affinidi-tsp` Rust crate
-each test against.
+`test/interop_test.dart` opens a TSP 1.0 message packed by the Rust
+`affinidi-tsp` 0.5.0 (the fixture `trust-tasks-ts-tsp` tests against too), and
+refuses a Rev 3 message from `affinidi-tsp-go` and a Rev 2 message from
+`@openvtc/vti-tsp-js` 0.2.
 
 ## License
 
