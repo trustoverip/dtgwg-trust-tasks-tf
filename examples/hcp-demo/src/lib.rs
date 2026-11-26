@@ -777,10 +777,7 @@ impl Shared {
             .map(|a| {
                 let purposes: Vec<Value> = purposes_of(a)
                     .iter()
-                    .map(|p| {
-                        let description = p.get("description").unwrap_or(&p["code"]);
-                        json!({ "code": p["code"], "description": description })
-                    })
+                    .map(|p| json!({ "code": p["code"], "description": p["description"] }))
                     .collect();
                 json!({
                     "type": a["type"],

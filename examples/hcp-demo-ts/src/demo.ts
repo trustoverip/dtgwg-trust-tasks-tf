@@ -370,7 +370,7 @@ export class World {
             type: a.type,
             actions: a.actions,
             categories: a.categories,
-            purposes: (a.purposes ?? []).map((p) => ({ code: p.code, description: p.description ?? p.code })),
+            purposes: (a.purposes ?? []).map((p) => ({ code: p.code, description: p.description })),
           })) as unknown as Grant["access"], // approved as asked
           categories: hold.payload.access.flatMap((a) => a.categories),
           purposes: hold.payload.access.flatMap((a) => (a.purposes ?? []).map((p) => p.code)),

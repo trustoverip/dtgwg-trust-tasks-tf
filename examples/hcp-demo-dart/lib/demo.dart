@@ -577,7 +577,7 @@ final class World {
                       in a.purposes ?? <grant_request.RequestedPurpose>[])
                     grant_request.Purpose(
                       code: p.code,
-                      description: p.description ?? p.code,
+                      description: p.description,
                     ),
                 ],
               ),

@@ -536,11 +536,7 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 			var purposes []grantrequest.Purpose
 			if a.Purposes != nil {
 				for _, p := range *a.Purposes {
-					description := p.Code
-					if p.Description != nil {
-						description = *p.Description
-					}
-					purposes = append(purposes, grantrequest.Purpose{Code: p.Code, Description: description})
+					purposes = append(purposes, grantrequest.Purpose{Code: p.Code, Description: p.Description})
 					g.purposes = append(g.purposes, p.Code)
 				}
 			}
@@ -876,7 +872,7 @@ func Ask() grantrequest.Payload {
 			Type:       "https://hcp.example/spec/authorization/context-access",
 			Actions:    []grantrequest.GrantAction{grantrequest.GrantActionRead},
 			Categories: []string{"travel_preferences"},
-			Purposes:   &[]grantrequest.RequestedPurpose{{Code: Purpose, Description: &description}},
+			Purposes:   &[]grantrequest.RequestedPurpose{{Code: Purpose, Description: description}},
 		}},
 		ExpiresIn:   &expiresIn,
 		SubjectHint: &subjectHint,
