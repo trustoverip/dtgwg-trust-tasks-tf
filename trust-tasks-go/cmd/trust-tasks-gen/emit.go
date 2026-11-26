@@ -16,6 +16,8 @@ package main
 //     `omitempty` on a bare slice collapses "present and empty" into "absent",
 //     which `acl`'s allowedKeys documents as a privilege-escalation defect.
 //     json.RawMessage is the one exception: an explicit null survives in it.
+//   - omitempty exactly on optional members. A required nullable member is a
+//     pointer without it, so a nil writes null instead of dropping the key.
 //   - A closed set of strings is a named string type with one constant per
 //     value; any other union is json.RawMessage, because Go has no sum type.
 //   - The types enforce no constraint; PayloadSchemaJSON carries them.
@@ -476,8 +478,12 @@ func (em *emitter) declareStruct(node, props *object, hint string, defNames map[
 		if (!isRequired || nullable) && goType != "json.RawMessage" {
 			goType = "*" + goType
 		}
+		// omitempty exactly where the member is optional. A required nullable
+		// member is a pointer so that nil can stand for null, and it must
+		// still be written: with omitempty a nil drops the key, and the
+		// document fails its own schema's `required`.
 		tag := wireName
-		if !isRequired || nullable {
+		if !isRequired {
 			tag += ",omitempty"
 		}
 		var doc any

@@ -471,7 +471,7 @@ jobs:
   # (trust-tasks-go/specs, #1112), so the core no longer ships ~34 MB of
   # generated code; the core `./...` jobs do not reach it. Its only requirement
   # is the published core, so this builds what an importer gets: every
-  # generated package against that core, and specs/smoke driving three of them
+  # generated package against that core, and specs/smoke driving five of them
   # through the real pipeline. (The core's `./smoke` drives the same test
   # against this checkout's runtime.) Released on its own
   # trust-tasks-go/specs/vX.Y.Z tag (publish.yml's publish-go matrix).
