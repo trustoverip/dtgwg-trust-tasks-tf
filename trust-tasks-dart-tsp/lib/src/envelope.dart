@@ -24,6 +24,13 @@ const String _bindingUri = 'https://trusttasks.org/binding/tsp/0.3';
 /// refusal (TSP 1.0 §3.1).
 const String tspVersion = '1.0';
 
+/// The one TSP version this binding seals and opens: TSP 1.0 (`YTSP-BAA`),
+/// through `affinidi_tsp` 0.2. A message in a MAJOR other than 1 — the drafts
+/// Rev 3 (`YTSP-AAC`) and Rev 2 (`YTSP-AAB`) — is refused
+/// [TspFailure.unsupportedTspVersion]; an unknown 1.x MINOR is not a version
+/// refusal (TSP 1.0 §3.1).
+const String tspVersion = '1.0';
+
 /// The `type` member of the envelope object a TSP message carries (§1, §2). A
 /// TSP VID is a framework VID, so — unlike DIDComm — no identifier is
 /// transformed on the way in or out.

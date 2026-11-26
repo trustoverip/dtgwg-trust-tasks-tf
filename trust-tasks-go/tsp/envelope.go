@@ -20,6 +20,12 @@ const BindingURI = "https://trusttasks.org/binding/tsp/0.3"
 // an unknown 1.x MINOR is not a version refusal (TSP 1.0 §3.1).
 const TSPVersion = "1.0"
 
+// TSPVersion is the one TSP version this binding seals and opens: TSP 1.0
+// (YTSP-BAA), through affinidi-tsp-go v0.2. A MAJOR other than 1 — the drafts
+// Rev 3 YTSP-AAC and Rev 2 YTSP-AAB — is refused [FailUnsupportedTSPVersion];
+// an unknown 1.x MINOR is not a version refusal (TSP 1.0 §3.1).
+const TSPVersion = "1.0"
+
 // EnvelopeType is the type member of the envelope object a TSP message carries
 // (§1, §2). A TSP VID is a framework VID, so — unlike DIDComm — no identifier is
 // transformed on the way in or out.
