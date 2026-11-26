@@ -96,6 +96,9 @@ uncheckedRules:
   - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/evidence/items/properties/credential"
     rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
     source: "HCP 4.2.2"
+  - member: "/$defs/Response/properties/entries/items/anyOf/0/properties/evidence/items/allOf/0/properties/credential"
+    rule: "An evidence item whose `type` is `verifiable-credential` carries `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`."
+    source: "HCP 4.2.2"
   - member: "/$defs/Response/properties/entries/items/anyOf/1/properties/evidence"
     rule: "At most one evidence item has `role` `content`."
     source: "HCP 4.2.2"
@@ -204,7 +207,7 @@ The Context Client sends the query to the provider. The payload is the top-level
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T10:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zR7FjY6BFx2GpqpM3AbnuVz15bVdYyYHy1hswAuaQS1JFK4ZonnmHLommsePUWev2gMnBT96kmcf8T64trLapb1"
   }
 }

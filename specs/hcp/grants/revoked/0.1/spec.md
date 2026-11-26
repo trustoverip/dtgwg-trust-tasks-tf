@@ -145,7 +145,7 @@ The provider sends the notice to the client. The payload is the top-level schema
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T11:00:02Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2pQf8bW4nLxY6vT1kR9sJ3dM7hA5cE2gZ8uN4oP6iB3yX1wV9tK7mL5qD2fS8jH4rC6eG1aU3zO9nT5bW7kM2xQ"
   }
 }
@@ -173,7 +173,7 @@ The provider had no acknowledgement for the first attempt, so it sends the notic
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T11:08:02Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5tW3nQ8kR1vY6pB4cX9mL2sD7hF5jG3aZ8uE1oP6iT4yK2wV9nM7bQ5xS3fC8rH1eA6gJ4dU2zO7lT9kN5wB3"
   }
 }
@@ -202,7 +202,7 @@ The delegation under which a delegate authorized the grant has ended, so the gra
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2027-03-01T00:00:05Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4kR8sN2pW6tY1vB9cX3mL7qD5hF2jG8aZ4uE6oP1iT3yK9wV7nM5bQ2xS8fC4rH6eA1gJ3dU9zO5lT7kN2wB4"
   }
 }

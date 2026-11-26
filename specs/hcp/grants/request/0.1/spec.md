@@ -178,7 +178,7 @@ The client sends the request to the provider. The payload is the top-level schem
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:00Z",
     "verificationMethod": "did:web:agent.booking.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4hT9mWqXc3HnRb7eLfYv2pDsA8uJgTzQ4oNiMxE6yCrUkVhB1aFw3SjP9LdGq7ZnT2vXe5YsRb8KuMhCf4AiWp6o"
   }
 }
@@ -226,7 +226,7 @@ A next step is not a decision and confers no authority ([SPEC §8.6](/SPEC.md#86
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Kt9mWqXc3HnRb7eLfYv2pDsA8uJgTzQ4oNiMxE6yCrUkVhB1aFw3SjP9LdGq7ZnT2vXe5YsRb8KuMhCf4AiWp6o"
   }
 }

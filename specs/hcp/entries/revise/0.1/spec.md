@@ -189,7 +189,7 @@ A token issued to a client other than the one the `issuer` VID identifies is ref
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result: the revised entry (`201`, HCP 9.4.4) | `entry` | **Wrapped**, as in `hcp/entries/create`. |
 
-**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
+The request payload's root is closed, as in `hcp/entries/create`: a top-level member that HCP does not define cannot be sent through this task, although HCP's revise request schema admits one (HCP A.2). The nested `content`, `assertion` and `record` stay open. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
 
 ### Parties
 
@@ -241,7 +241,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3KpS7wYr1XnM5vTc9LbG2qHj8dAf6uEz4oRiN3xW7tC1kV9mB5yP2gD8hJ6lO4aU1cF3nQ7sZ5eX9vR2bT8wK6m"
   }
 }

@@ -147,7 +147,7 @@ The Management Client sends the hard deletion to the provider. The payload is th
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Hn7wQ2pLcX9vB3kT6mR1sY8dF5gJ2aZe7uN4oVbC1iM9kD3tH6yP2xS8wE4rA7jU1fG5lO9pK3vX6zN8bT2cW5"
   }
 }

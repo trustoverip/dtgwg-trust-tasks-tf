@@ -147,7 +147,7 @@ The Management Client sends the rule to the provider. The payload is the top-lev
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T10:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Ht2nW8qLcV3xB7mK1pR4sY9dJ6fG0aTe5uN2oZvC8iQ3kD7wH1yE9rS4bX6jA2lU8gF3tO7pM0vZ4nK1cT6qY2"
   }
 }
