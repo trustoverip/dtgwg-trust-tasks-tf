@@ -137,3 +137,19 @@ Conflating "absent because unset" with "absent because withheld" is the whole pr
 Nothing the caller could not already reach. An entry identifier is not derived from, and does not reveal, any DID of the member ([`EntryId`](../../_shared/0.1/directory-card.schema.json)), and it addresses nothing the projection would not show the same caller: `entries/show` and `images/get` answer it through the same projection. It is answered only where the caller is already shown the member — by item 2, a caller the projection shows the member's DID to, the member, or an administrator — and so links the DID the caller named to an entry that caller could open by browsing. A caller to whom the member is hidden gets `notFound`, with no identifier.
 
 The identifier is stable for the life of the membership and survives a rotation of the member's DID. A caller who keeps it can follow the member across a rotation; that is the same property every other directory read gives a caller who found the entry by browsing.
+
+### Data carried
+
+A member's DID and an optional field hint in; that member's projection for the caller — only the fields the member's visibility, the field's ceiling and the community's policy all admit — and their entry identifier out. Nothing out for a member the caller may not see.
+
+### Correlation
+
+The community is addressed by its public DID, the identifier members already know it by. The answer names the member by the DID the caller sent and by the community-scoped entry identifier; neither links the member to another community, since an entry identifier is random per community (*What the entry identifier adds*).
+
+### Retention
+
+The community keeps nothing for this read beyond what its directory already holds; a request is recorded only as its framework replay protection and audit require.
+
+### Consent/purpose
+
+The member's own visibility choices decide what any caller sees, and the community's policy can only narrow them. The purpose is to name and introduce a member to someone the member already lets see them — for example, the author of a message in a room both share.
