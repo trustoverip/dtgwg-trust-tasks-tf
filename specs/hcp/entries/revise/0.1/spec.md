@@ -178,7 +178,7 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:booking-agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3KpS7wYr1XnM5vTc9LbG2qHj8dAf6uEz4oRiN3xW7tC1kV9mB5yP2gD8hJ6lO4aU1cF3nQ7sZ5eX9vR2bT8wK6m"
   }
 }

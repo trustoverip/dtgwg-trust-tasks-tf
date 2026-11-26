@@ -178,7 +178,7 @@ An absent option, or one set to `false`, takes HCP's default.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Kp8vR2mXcN6wB4hT9qL1sY7dF3gJ5aZe2uP8oVkC4iM6nD1tH9yW5xS3wE7rA2jU8fG4lO6pK1vX9zN5bR3cQ7"
   }
 }

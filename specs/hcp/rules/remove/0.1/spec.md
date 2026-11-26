@@ -133,7 +133,7 @@ The Management Client sends the removal to the provider. The payload is the top-
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Kq8vN2mXbT7cY4hR9pL1sW6dF5gJ0aZe2uQ3oVnB8iM4kC7tH1yD9xS6wE5rA2jU8fG3lO7pK0vX4zN1bT6cY9"
   }
 }

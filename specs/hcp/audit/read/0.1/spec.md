@@ -170,7 +170,7 @@ The Management Client asks for a page of the log. The payload is the top-level s
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:30:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Rt7wY2nKcP9vB3xL6mQ1sD8fG5hJ2aZk4uE7oVnC9iN3bT6yH1rW8xS5eA2dU7gF4lO9pK3vX6zM1cT8bY2q"
   }
 }

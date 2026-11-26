@@ -157,7 +157,7 @@ The Management Client asks the provider for the grants. The payload is the top-l
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zMV4MVy1VnEV9srVQSbGxVHgwoZ3kEw1H4S2SyqRRKenkStDsYUnmMYAPCyWTWXgKgvBT7ANqdG2JMuxtWCwsPD"
   }
 }
