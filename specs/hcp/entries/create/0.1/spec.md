@@ -118,6 +118,8 @@ The REQUIRED `proof` establishes which client VID sent the assertion and that it
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result: the created entry (`201`, HCP 9.4.3) | `entry` | **Wrapped**: HCP returns the entry or disclosure itself; this task puts it in `entry`, as HCP's own Get entry result does (HCP 5.2.2). |
 
+The request payload's root is closed: a top-level entry member that HCP does not define cannot be written through this task, although HCP's Create body is an entry whose undefined members a provider preserves (HCP 4.2, 9.4.3, A.2). The nested `subject`, `content`, `classification`, `assertion` and `record` stay open.
+
 ### Parties
 
 | HCP role | Trust Task member |
