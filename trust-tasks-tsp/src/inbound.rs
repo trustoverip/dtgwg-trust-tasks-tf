@@ -11,7 +11,7 @@
 //! switched on, and the failure mode of forgetting is silent: everything works
 //! until something re-delivers.
 //!
-//! **Re-delivery is the point.** `bindings/tsp/0.1` §7 records that
+//! **Re-delivery is the point.** `bindings/tsp/0.3` §7 records that
 //! relationship-forming carries nonces but "data messages do not inherently
 //! prevent replay", and §5.2's routed and nested carriage puts one or more
 //! intermediaries on the path — each of which may drop, delay, and re-deliver
@@ -134,7 +134,7 @@ impl TspConsumer {
     }
 
     /// [`GuardedConsumer::without_replay_record`] — **SECURITY: keep no
-    /// duplicate-execution record.** `bindings/tsp/0.1` §7 states that TSP
+    /// duplicate-execution record.** `bindings/tsp/0.3` §7 states that TSP
     /// data messages "do not inherently prevent replay", and under §5.2's
     /// routed or nested carriage an intermediary may re-send the sealed inner
     /// message with no attacker involved. Read the linked documentation first.
@@ -154,9 +154,10 @@ impl TspConsumer {
     /// Open a TSP-sealed message and run the guarded §7.2 pipeline over the
     /// document it carries.
     ///
-    /// Every rule of [`unpack_trust_task`](crate::unpack_trust_task) applies first — HPKE authenticated
-    /// decryption against `recipient`'s key, signature verification against
-    /// `sender`'s, the `Direct`-carriage check, the cleartext-sender
+    /// Every rule of [`unpack_trust_task`](crate::unpack_trust_task) applies first — the TSP
+    /// version check ([`TspError::UnsupportedTspVersion`] for a TSP draft, before
+    /// any key is used), HPKE-Base decryption against `recipient`'s key,
+    /// signature verification against `sender`'s, the `Direct`-carriage check, the cleartext-sender
     /// cross-check and the envelope `type` check. A refusal there comes back
     /// as `Err(TspError)`: there is no authenticated party to route a
     /// framework error response to.
