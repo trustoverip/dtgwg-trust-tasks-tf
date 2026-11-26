@@ -18,7 +18,8 @@
 //! refused by decoding: it reads as absent, as in Go and Dart (TypeScript
 //! keeps it). Refusing it is payload-schema validation's job, in every
 //! runtime (`docs/runtime-parity.md`). The `schema_validation` module below
-//! pins where the Rust runtime does that, and where it does not.
+//! pins where the Rust runtime does that: wherever the payload as received is
+//! in hand.
 #![cfg(feature = "acl")]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
@@ -350,11 +351,19 @@ mod schema_validation {
         verdict(&outcome)
     }
 
-    async fn typed(document: Value) -> String {
-        let doc: TrustTask<update::Payload> = serde_json::from_value(document).unwrap();
+    /// `consume_inbound::<P>`, with the proof policy bound to the document as
+    /// received (as every transport binding's consumer binds it) or not.
+    async fn typed_with(document: Value, bind_received: bool) -> String {
+        let doc: TrustTask<update::Payload> = serde_json::from_value(document.clone()).unwrap();
+        let policy = ProofPolicy::<NoVerifier>::AcceptUnverified;
+        let policy = if bind_received {
+            policy.with_received(&document)
+        } else {
+            policy
+        };
         let outcome = consume_inbound(
             &NoopHandler::new(),
-            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            policy,
             PayloadPolicy::Validate(&VALIDATOR),
             ConsumeChecks::not_consequential(),
             doc,
@@ -367,6 +376,10 @@ mod schema_validation {
         verdict(&outcome)
     }
 
+    async fn typed(document: Value) -> String {
+        typed_with(document, true).await
+    }
+
     #[tokio::test]
     async fn the_dispatched_path_refuses_a_forbidden_null() {
         // `consume_dispatched` holds the payload as received (a `Value`) and
@@ -377,16 +390,24 @@ mod schema_validation {
     }
 
     #[tokio::test]
-    async fn the_typed_path_does_not_see_a_forbidden_null() {
-        // `consume_inbound::<P>` takes a document already decoded into `P`
-        // and validates `P` re-encoded, from which the forbidden `null`, read
-        // as absent, is gone: both documents get the same verdict. A typed
-        // consumer that must refuse it validates the received payload itself
-        // (`ValidatedPayload::validate_value`) before decoding, or consumes
-        // through `consume_dispatched`.
+    async fn the_typed_path_refuses_a_forbidden_null() {
+        // `consume_inbound::<P>` takes a document already decoded into `P`, in
+        // which the forbidden `null` reads as absent. With the received
+        // document in hand (`ProofPolicy::with_received`) it validates the
+        // payload as received, not `P` re-encoded, so it refuses the `null`
+        // as `consume_dispatched` does.
         let [with, without] = with_and_without_the_null();
-        let verdict = typed(with).await;
+        assert_eq!(typed(with).await, malformed());
+        assert_ne!(typed(without).await, malformed());
+    }
+
+    #[tokio::test]
+    async fn without_the_received_document_the_typed_path_cannot_see_it() {
+        // With no received document there is only `P` re-encoded to validate,
+        // from which the `null` is gone: both documents get the same verdict.
+        let [with, without] = with_and_without_the_null();
+        let verdict = typed_with(with, false).await;
         assert_ne!(verdict, malformed());
-        assert_eq!(verdict, typed(without).await);
+        assert_eq!(verdict, typed_with(without, false).await);
     }
 }

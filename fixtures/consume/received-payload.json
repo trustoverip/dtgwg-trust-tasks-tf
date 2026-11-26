@@ -1,0 +1,66 @@
+{
+  "description": "SPEC §7.2 item 2 (payload schema) is checked over the payload AS RECEIVED, not over the payload decoded into the consumer's type and re-encoded. A typed decode reads a `null` on an optional member whose schema has no null form as absent, so a re-encoded payload would pass a check the received one fails. Each case consumes `document` (JSON text) with the typed consume function, the received document in hand, against `implements`, under a payload-validating policy, no proof, no replay record, as `consumer` at `now`. `verdict` is `accept` or the code it is refused with. `validated` is the payload the validator must be handed: the received payload for a document of the implemented version, and for a later version read forward along `extends` the received payload pruned to the members the implemented schema knows, as a routed (dispatched) consumer prunes it. A runtime whose tests bundle no JSON Schema engine may check `implements.payloadSchema` by hand: an object, `subject` present, every member named in `properties`, every member a string.",
+  "implements": {
+    "typeUri": "https://example.com/spec/vector/grant/0.1",
+    "payloadSchema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"properties\":{\"subject\":{\"type\":\"string\"},\"role\":{\"type\":\"string\"}},\"required\":[\"subject\"],\"additionalProperties\":false}"
+  },
+  "extends": {
+    "https://example.com/spec/vector/grant/0.2": "0.1"
+  },
+  "consumer": "did:example:bob",
+  "now": "2026-08-01T12:00:30Z",
+  "cases": [
+    {
+      "name": "an optional member with a value",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.1\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\"}}",
+      "verdict": "accept",
+      "validated": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      }
+    },
+    {
+      "name": "an optional member absent",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.1\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\"}}",
+      "verdict": "accept",
+      "validated": {
+        "subject": "did:example:carol"
+      }
+    },
+    {
+      "name": "a null on an optional member whose schema has no null form is refused, though decoding reads it as absent",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.1\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":null}}",
+      "verdict": "malformedRequest",
+      "validated": {
+        "subject": "did:example:carol",
+        "role": null
+      }
+    },
+    {
+      "name": "a later version read forward is validated pruned, so its added member does not refuse it",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.2\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":\"admin\",\"scope\":\"read\"}}",
+      "verdict": "accept",
+      "validated": {
+        "subject": "did:example:carol",
+        "role": "admin"
+      }
+    },
+    {
+      "name": "a later version's forbidden null on a member the implemented version knows is refused",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.2\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"role\":null,\"scope\":\"read\"}}",
+      "verdict": "malformedRequest",
+      "validated": {
+        "subject": "did:example:carol",
+        "role": null
+      }
+    },
+    {
+      "name": "a later version's null on a member only it declares is pruned before validation",
+      "document": "{\"id\":\"urn:uuid:7b0c2f1e-0000-4000-8000-0000000000a1\",\"type\":\"https://example.com/spec/vector/grant/0.2\",\"issuer\":\"did:example:alice\",\"recipient\":\"did:example:bob\",\"issuedAt\":\"2026-08-01T12:00:00Z\",\"payload\":{\"subject\":\"did:example:carol\",\"scope\":null}}",
+      "verdict": "accept",
+      "validated": {
+        "subject": "did:example:carol"
+      }
+    }
+  ]
+}
