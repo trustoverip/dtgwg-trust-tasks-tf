@@ -7,7 +7,7 @@ import type { Urn } from "../../../../_shared/components.js";
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPRelinquishOwnGrantPayload {
   /**
@@ -73,7 +73,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/grants/relinquish/0.1",
   "title": "HCP — Relinquish Own Grant — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [

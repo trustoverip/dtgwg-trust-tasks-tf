@@ -4,7 +4,7 @@
  */
 
 /**
- * The Context Subject's Human Context Protocol (HCP) 2.0-draft-3 export (HCP 5.4.1), as hcp/export returns it. hcp/import takes HCP's own export shape instead (its local `ImportedExport`), which differs from this one only in leaving `options` and its members optional. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are, so that an export passes through unchanged. Where this schema and the HCP text differ, the HCP text governs.
+ * The Context Subject's Human Context Protocol (HCP) 2.0-draft-3 export (HCP 5.4.1), as hcp/export returns it. hcp/import takes HCP's own export shape instead (its local `ImportedExport`), which differs from this one only in leaving `options` and its members optional. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are, so that an export passes through unchanged. Where this schema and the HCP text differ, the HCP text governs. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty, which an hcp/* party never writes empty. hcp/import applies neither to an export it takes.
  */
 export interface HCPExport {
   [k: string]: unknown | undefined;

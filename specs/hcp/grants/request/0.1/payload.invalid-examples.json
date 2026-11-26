@@ -61,6 +61,27 @@
     }
   },
   {
+    "note": "A requested purpose with no `description` — HCP's purpose carries the description shown to the person before they approve (HCP 6.1.5.2).",
+    "payload": {
+      "access": [
+        {
+          "type": "https://hcp.example/spec/authorization/context-access",
+          "actions": [
+            "read"
+          ],
+          "categories": [
+            "general_preferences"
+          ],
+          "purposes": [
+            {
+              "code": "https://purposes.example/travel-booking"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     "note": "`expiresIn` beyond HCP's 24-hour maximum for a temporary grant (HCP 6.1.3).",
     "payload": {
       "access": [

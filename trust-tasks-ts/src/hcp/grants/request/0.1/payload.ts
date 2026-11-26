@@ -12,7 +12,7 @@ import type { AccessDetail, AuthorizingPrincipal, Category, Grant, GrantClient, 
 export type GrantAction = "read" | "write" | "provenance";
 
 /**
- * A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPRequestGrantPayload {
   /**
@@ -210,9 +210,9 @@ export interface AccessRequest {
 export interface RequestedPurpose {
   code: PurposeCode;
   /**
-   * What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.
+   * What the purpose means, in words the person can read. REQUIRED: HCP's purpose carries the description shown to the person before they approve (HCP 6.1.5.2), so a requested purpose always has one. The provider shows its own description instead where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement.
    */
-  description?: string;
+  description: string;
 }
 /**
  * HCP `onwardSharing` (HCP 3.12, 6.1.4, 6.1.5): asks that the person be offered onward sharing for this detail, as a separate act after they confirm the grant. Only in a detail that includes `read` and whose categories are all of Low default sensitivity; otherwise malformedRequest (HCP 6.1.5).
@@ -239,7 +239,7 @@ export interface ProposedRequestingParty {
    */
   id: string;
   /**
-   * HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6).
+   * HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6). The maxLength, the same as the stored grant's `requestingParty.name`, is a framework bound, not an HCP requirement.
    */
   name?: string;
 }
@@ -310,7 +310,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/grants/request/0.1",
   "title": "HCP — Request Grant — payload",
-  "description": "A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "A Context Client asks an HCP Provider for a grant over a person's context, naming what it needs as HCP authorization details (HCP 6.1.5; RFC 9396 `authorization_details` of the HCP type, as HCP 13.3 names them). HCP Core defines no grant-request operation (HCP 6.1.7 leaves it to the profiles), so this task carries no HCP operation: it is a Trust-Task-native authenticated channel in the sense of HCP 6.1.6 and 12.2. The person decides out of band; while they do, the provider answers with trust-task-next-step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -419,7 +419,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "code"
+        "code",
+        "description"
       ],
       "description": "An HCP purpose (HCP 6.1.5.2): a code and a description the person can read.",
       "properties": {
@@ -430,7 +431,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 4096,
-          "description": "What the purpose means, in words the person can read. The provider shows its own description where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement."
+          "description": "What the purpose means, in words the person can read. REQUIRED: HCP's purpose carries the description shown to the person before they approve (HCP 6.1.5.2), so a requested purpose always has one. The provider shows its own description instead where it has one. The maxLength, the same as the shared grant's purpose description, is a framework bound, not an HCP requirement."
         }
       }
     },
@@ -479,8 +480,8 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "name": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 256,
-          "description": "HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6)."
+          "maxLength": 1024,
+          "description": "HCP `requestingParty.name`: a name the person can recognize, shown before they act (HCP 6.1.6). The maxLength, the same as the stored grant's `requestingParty.name`, is a framework bound, not an HCP requirement."
         }
       }
     },

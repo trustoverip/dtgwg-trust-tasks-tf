@@ -142,6 +142,13 @@
       "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
     },
     {
+      "object": "hcp/import:request",
+      "path": "export.rules[]",
+      "kind": "alternatives",
+      "reason": "HCP's standing-rule schema requires `operators`, `requires`, or both. `ImportedStandingRule`, HCP's own standing-rule shape as hcp/import takes it, leaves the `anyOf` out, as the shared StandingRule does, so that it stays fully typed in all four libraries; the provider refuses an export holding a rule with neither with `malformedRequest`.",
+      "ref": "specs/hcp/import/0.1/spec.md#request"
+    },
+    {
       "object": "hcp/import:response",
       "path": "ext",
       "kind": "ours-only",

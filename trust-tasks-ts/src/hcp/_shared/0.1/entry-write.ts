@@ -4,7 +4,7 @@
  */
 
 /**
- * The members an HCP Client supplies when it creates or revises an entry under the Human Context Protocol (HCP) 2.0-draft-3 (HCP 5.2.3, 5.2.4), shared by the hcp/* write tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are: a member the provider assigns is never taken from a request (HCP 5.2.3, 4.7.4). Where this schema and the HCP text differ, the HCP text governs.
+ * The members an HCP Client supplies when it creates or revises an entry under the Human Context Protocol (HCP) 2.0-draft-3 (HCP 5.2.3, 5.2.4), shared by the hcp/* write tasks. Written for this registry from the HCP 2.0-draft-3 specification text (CC BY 4.0, https://github.com/loyalagents/hcp-spec), with attribution, and checked against the shapes HCP publishes for the same draft; not copied from HCP's own schema files. Open, as HCP's own shapes are: a member the provider assigns is never taken from a request (HCP 5.2.3, 4.7.4). Where this schema and the HCP text differ, the HCP text governs. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty, which an hcp/* party never writes empty. hcp/import applies neither to an export it takes.
  */
 export interface HCPEntryWriteMembers {
   [k: string]: unknown | undefined;

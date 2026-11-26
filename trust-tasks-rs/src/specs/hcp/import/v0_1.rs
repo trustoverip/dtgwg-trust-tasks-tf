@@ -32,371 +32,6 @@ pub mod error {
         }
     }
 }
-///One entry a retrieval disclosed (HCP 8.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditDisclosed {
-    ///The entry's stable `id`.
-    #[serde(rename = "entryId")]
-    pub entry_id: Urn,
-    ///True where the disclosure carried provenance (HCP 7.4.1); omitted otherwise.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub provenance: ::std::option::Option<bool>,
-    ///Present only where a credential was disclosed in derived form (HCP 8.2, 14.9). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub revealed: ::std::vec::Vec<AuditDisclosedRevealedItem>,
-    ///The use-until time the disclosure was given (HCP 7.6).
-    #[serde(rename = "useUntil")]
-    pub use_until: Instant,
-    ///The version disclosed.
-    pub version: ::std::num::NonZeroU64,
-}
-impl AuditDisclosed {
-    pub fn builder() -> builder::AuditDisclosed {
-        Default::default()
-    }
-}
-///Where a credential was disclosed in derived form, the evidence item and the claims revealed (HCP 14.9).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditDisclosedRevealedItem {
-    ///The claims revealed, each a JSON Pointer. The maxItems and maxLength are framework bounds, not HCP requirements.
-    pub claims: ::std::vec::Vec<AuditDisclosedRevealedItemClaimsItem>,
-    ///The evidence item's index.
-    pub evidence: u64,
-}
-impl AuditDisclosedRevealedItem {
-    pub fn builder() -> builder::AuditDisclosedRevealedItem {
-        Default::default()
-    }
-}
-///`AuditDisclosedRevealedItemClaimsItem`
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditDisclosedRevealedItemClaimsItem(::std::string::String);
-impl ::std::ops::Deref for AuditDisclosedRevealedItemClaimsItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditDisclosedRevealedItemClaimsItem> for ::std::string::String {
-    fn from(value: AuditDisclosedRevealedItemClaimsItem) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditDisclosedRevealedItemClaimsItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditDisclosedRevealedItemClaimsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditDisclosedRevealedItemClaimsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditDisclosedRevealedItemClaimsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditDisclosedRevealedItemClaimsItem {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The participants in an audit event (HCP 8.2, 3.9). No event names "system" (HCP 8.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditParticipants {
-    ///The Authorizing Principal (HCP 3.9).
-    #[serde(
-        rename = "authorizingPrincipal",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub authorizing_principal: ::std::option::Option<AuditParty>,
-    ///The Client Operator, where a client took part (HCP 3.9).
-    #[serde(
-        rename = "clientOperator",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub client_operator: ::std::option::Option<AuditParty>,
-    pub initiator: AuditParticipantsInitiator,
-    ///The model, where one took part (HCP 3.9).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub model: ::std::option::Option<AuditParty>,
-    ///The HCP Provider (HCP 8.2).
-    pub provider: AuditParty,
-    ///The Requesting Party, where there is one (HCP 3.9).
-    #[serde(
-        rename = "requestingParty",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub requesting_party: ::std::option::Option<AuditParty>,
-    ///The retrieval, on a read (HCP 8.2).
-    #[serde(
-        rename = "retrievalId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub retrieval_id: ::std::option::Option<Urn>,
-}
-impl AuditParticipants {
-    pub fn builder() -> builder::AuditParticipants {
-        Default::default()
-    }
-}
-///Who initiated the event.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditParticipantsInitiator {
-    ///Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
-    pub id: AuditParticipantsInitiatorId,
-    ///Their role (HCP 8.2). HCP's own values, carried verbatim.
-    pub role: AuditParticipantsInitiatorRole,
-}
-impl AuditParticipantsInitiator {
-    pub fn builder() -> builder::AuditParticipantsInitiator {
-        Default::default()
-    }
-}
-///Their identifier. The minLength and maxLength are framework bounds, not HCP requirements.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditParticipantsInitiatorId(::std::string::String);
-impl ::std::ops::Deref for AuditParticipantsInitiatorId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditParticipantsInitiatorId> for ::std::string::String {
-    fn from(value: AuditParticipantsInitiatorId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditParticipantsInitiatorId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditParticipantsInitiatorId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditParticipantsInitiatorId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditParticipantsInitiatorId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditParticipantsInitiatorId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Their role (HCP 8.2). HCP's own values, carried verbatim.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum AuditParticipantsInitiatorRole {
-    #[serde(rename = "management-client")]
-    ManagementClient,
-    #[serde(rename = "context-client")]
-    ContextClient,
-    #[serde(rename = "authorization-service")]
-    AuthorizationService,
-    #[serde(rename = "hcp-provider")]
-    HcpProvider,
-}
-impl ::std::fmt::Display for AuditParticipantsInitiatorRole {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::ManagementClient => f.write_str("management-client"),
-            Self::ContextClient => f.write_str("context-client"),
-            Self::AuthorizationService => f.write_str("authorization-service"),
-            Self::HcpProvider => f.write_str("hcp-provider"),
-        }
-    }
-}
-impl ::std::str::FromStr for AuditParticipantsInitiatorRole {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "management-client" => Ok(Self::ManagementClient),
-            "context-client" => Ok(Self::ContextClient),
-            "authorization-service" => Ok(Self::AuthorizationService),
-            "hcp-provider" => Ok(Self::HcpProvider),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditParticipantsInitiatorRole {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditParticipantsInitiatorRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditParticipantsInitiatorRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///A participant named by its identifier (HCP 8.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct AuditParty {
-    ///The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
-    pub id: AuditPartyId,
-}
-impl AuditParty {
-    pub fn builder() -> builder::AuditParty {
-        Default::default()
-    }
-}
-///The participant's identifier. The minLength and maxLength are framework bounds, not HCP requirements.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditPartyId(::std::string::String);
-impl ::std::ops::Deref for AuditPartyId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditPartyId> for ::std::string::String {
-    fn from(value: AuditPartyId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditPartyId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditPartyId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditPartyId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditPartyId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditPartyId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -466,1386 +101,6 @@ impl<'de> ::serde::Deserialize<'de> for Category {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
-    }
-}
-///One natural person's authority to act as Authorizing Principal for the Context Subject (HCP 17.2). The Authorization Service establishes it and the provider holds its record; neither the Context Subject nor the delegate may change it, and a change is a new delegation (HCP 17.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct Delegation {
-    ///What the authority rests on, and how the Authorization Service established it (HCP 17.3).
-    pub basis: DelegationBasis,
-    pub delegate: DelegationDelegate,
-    ///Stable for the life of the delegation; named by every grant issued under it and by audit events (HCP 17.2).
-    #[serde(rename = "delegationId")]
-    pub delegation_id: Urn,
-    ///Absent while the delegation holds; set when it ends, with the reason (HCP 17.6).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ended: ::std::option::Option<DelegationEnded>,
-    ///True where the delegate may appoint a sub-delegate (HCP 17.10). Absent means false. Recorded by the Authorization Service (HCP 17.2).
-    #[serde(
-        rename = "mayDelegate",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub may_delegate: ::std::option::Option<bool>,
-    ///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
-    pub relationship: DelegationRelationship,
-    ///The categories and actions the delegate may authorize (HCP 17.4).
-    pub scope: DelegationScope,
-    pub subject: DelegationSubject,
-    ///When the delegation ends (HCP 17.2).
-    pub term: DelegationTerm,
-}
-impl Delegation {
-    pub fn builder() -> builder::Delegation {
-        Default::default()
-    }
-}
-///What a delegation's authority rests on (HCP 17.3). Where `method` is `evidence`, `evidence` is present with at least one item; `parent` is present exactly where `method` is `delegated` (HCP 17.3, 17.10). Those rules are not checked by the schema: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check them.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationBasis {
-    ///The High-sensitivity and custom categories the basis extends to; only these may be in `scope` (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub covers: ::std::vec::Vec<Category>,
-    ///What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
-    pub description: DelegationBasisDescription,
-    ///When the delegation was established (HCP 17.2).
-    #[serde(rename = "establishedAt")]
-    pub established_at: Instant,
-    ///The Authorization Service that established the delegation (HCP 17.2).
-    #[serde(rename = "establishedBy")]
-    pub established_by: DelegationBasisEstablishedBy,
-    ///The evidence presented, for `method` `evidence`: a credential of guardianship, a court order, a power of attorney. A Verifiable Credential is held whole, as an entry's evidence item is (HCP 17.3, 4.2.2). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub evidence: ::std::vec::Vec<EvidenceItem>,
-    ///How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
-    pub method: DelegationBasisMethod,
-    ///For a sub-delegation (`method` `delegated`), the delegation it came from (HCP 17.10).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub parent: ::std::option::Option<Urn>,
-}
-impl DelegationBasis {
-    pub fn builder() -> builder::DelegationBasis {
-        Default::default()
-    }
-}
-///What the authority rests on, shown to the Context Subject and the delegate (HCP 17.3). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationBasisDescription(::std::string::String);
-impl ::std::ops::Deref for DelegationBasisDescription {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationBasisDescription> for ::std::string::String {
-    fn from(value: DelegationBasisDescription) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationBasisDescription {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 4096usize {
-            return Err("longer than 4096 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationBasisDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationBasisDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationBasisDescription {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationBasisDescription {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The Authorization Service that established the delegation (HCP 17.2).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationBasisEstablishedBy(::std::string::String);
-impl ::std::ops::Deref for DelegationBasisEstablishedBy {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationBasisEstablishedBy> for ::std::string::String {
-    fn from(value: DelegationBasisEstablishedBy) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationBasisEstablishedBy {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationBasisEstablishedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationBasisEstablishedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationBasisEstablishedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationBasisEstablishedBy {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///How the authority was established (HCP 17.3). `unspecified` is used only for a delegation converted from HCP v1 and MUST NOT be presented to anyone as `attested` (HCP 17.3, 17.8).
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum DelegationBasisMethod {
-    #[serde(rename = "appointed")]
-    Appointed,
-    #[serde(rename = "attested")]
-    Attested,
-    #[serde(rename = "evidence")]
-    Evidence,
-    #[serde(rename = "delegated")]
-    Delegated,
-    #[serde(rename = "unspecified")]
-    Unspecified,
-}
-impl ::std::fmt::Display for DelegationBasisMethod {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Appointed => f.write_str("appointed"),
-            Self::Attested => f.write_str("attested"),
-            Self::Evidence => f.write_str("evidence"),
-            Self::Delegated => f.write_str("delegated"),
-            Self::Unspecified => f.write_str("unspecified"),
-        }
-    }
-}
-impl ::std::str::FromStr for DelegationBasisMethod {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "appointed" => Ok(Self::Appointed),
-            "attested" => Ok(Self::Attested),
-            "evidence" => Ok(Self::Evidence),
-            "delegated" => Ok(Self::Delegated),
-            "unspecified" => Ok(Self::Unspecified),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationBasisMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationBasisMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationBasisMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The delegate: a natural person, with a name the Context Subject can recognize (HCP 17.1, 17.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationDelegate {
-    ///The delegate's identifier.
-    pub id: DelegationDelegateId,
-    ///A name the Context Subject can recognize.
-    pub name: DelegationDelegateName,
-}
-impl DelegationDelegate {
-    pub fn builder() -> builder::DelegationDelegate {
-        Default::default()
-    }
-}
-///The delegate's identifier.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationDelegateId(::std::string::String);
-impl ::std::ops::Deref for DelegationDelegateId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationDelegateId> for ::std::string::String {
-    fn from(value: DelegationDelegateId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationDelegateId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationDelegateId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationDelegateId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationDelegateId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationDelegateId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///A name the Context Subject can recognize.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationDelegateName(::std::string::String);
-impl ::std::ops::Deref for DelegationDelegateName {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationDelegateName> for ::std::string::String {
-    fn from(value: DelegationDelegateName) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationDelegateName {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationDelegateName {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationDelegateName {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationDelegateName {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationDelegateName {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///How and when a delegation ended (HCP 17.6). The member name `at` is HCP's own, carried verbatim.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationEnded {
-    ///When the delegation ended (HCP 17.2, 17.6).
-    pub at: Instant,
-    ///Why it ended (HCP 17.6). HCP's own values, carried verbatim.
-    pub reason: DelegationEndedReason,
-}
-impl DelegationEnded {
-    pub fn builder() -> builder::DelegationEnded {
-        Default::default()
-    }
-}
-///Why it ended (HCP 17.6). HCP's own values, carried verbatim.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum DelegationEndedReason {
-    #[serde(rename = "majority")]
-    Majority,
-    #[serde(rename = "expiry")]
-    Expiry,
-    #[serde(rename = "basis-ended")]
-    BasisEnded,
-    #[serde(rename = "relinquished")]
-    Relinquished,
-    #[serde(rename = "ended-by-subject")]
-    EndedBySubject,
-    #[serde(rename = "parent-ended")]
-    ParentEnded,
-    #[serde(rename = "ended-by-delegate")]
-    EndedByDelegate,
-}
-impl ::std::fmt::Display for DelegationEndedReason {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Majority => f.write_str("majority"),
-            Self::Expiry => f.write_str("expiry"),
-            Self::BasisEnded => f.write_str("basis-ended"),
-            Self::Relinquished => f.write_str("relinquished"),
-            Self::EndedBySubject => f.write_str("ended-by-subject"),
-            Self::ParentEnded => f.write_str("parent-ended"),
-            Self::EndedByDelegate => f.write_str("ended-by-delegate"),
-        }
-    }
-}
-impl ::std::str::FromStr for DelegationEndedReason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "majority" => Ok(Self::Majority),
-            "expiry" => Ok(Self::Expiry),
-            "basis-ended" => Ok(Self::BasisEnded),
-            "relinquished" => Ok(Self::Relinquished),
-            "ended-by-subject" => Ok(Self::EndedBySubject),
-            "parent-ended" => Ok(Self::ParentEnded),
-            "ended-by-delegate" => Ok(Self::EndedByDelegate),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationEndedReason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationEndedReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationEndedReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationRelationship(::std::string::String);
-impl ::std::ops::Deref for DelegationRelationship {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationRelationship> for ::std::string::String {
-    fn from(value: DelegationRelationship) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationRelationship {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
-            || {
-                ::regress::Regex::new(
-                    "^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-                )
-                .unwrap()
-            },
-        );
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationRelationship {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationRelationship {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationRelationship {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationRelationship {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The categories and actions a delegate may authorize; every category is named, with no wildcard (HCP 17.4).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationScope {
-    ///The actions in scope (HCP 17.2, 6.1.5).
-    pub actions: Vec<DelegationScopeActionsItem>,
-    ///The categories in scope (HCP 17.4). The maxItems is a framework bound, not an HCP requirement.
-    pub categories: ::std::vec::Vec<Category>,
-}
-impl DelegationScope {
-    pub fn builder() -> builder::DelegationScope {
-        Default::default()
-    }
-}
-///`DelegationScopeActionsItem`
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum DelegationScopeActionsItem {
-    #[serde(rename = "read")]
-    Read,
-    #[serde(rename = "write")]
-    Write,
-}
-impl ::std::fmt::Display for DelegationScopeActionsItem {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Read => f.write_str("read"),
-            Self::Write => f.write_str("write"),
-        }
-    }
-}
-impl ::std::str::FromStr for DelegationScopeActionsItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "read" => Ok(Self::Read),
-            "write" => Ok(Self::Write),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationScopeActionsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationScopeActionsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationScopeActionsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The Context Subject (HCP 17.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationSubject {
-    ///The Context Subject's identifier.
-    pub id: DelegationSubjectId,
-}
-impl DelegationSubject {
-    pub fn builder() -> builder::DelegationSubject {
-        Default::default()
-    }
-}
-///The Context Subject's identifier.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DelegationSubjectId(::std::string::String);
-impl ::std::ops::Deref for DelegationSubjectId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DelegationSubjectId> for ::std::string::String {
-    fn from(value: DelegationSubjectId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DelegationSubjectId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DelegationSubjectId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DelegationSubjectId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DelegationSubjectId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DelegationSubjectId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///When a delegation ends: at `endsAt`, and at the Context Subject's age of majority where `atMajority` is true (HCP 17.2).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct DelegationTerm {
-    ///True where the delegation ends at the Context Subject's age of majority, which the Authorization Service determines under the law that applies (HCP 17.2).
-    #[serde(rename = "atMajority")]
-    pub at_majority: bool,
-    ///When the delegation ends; null where no end is known (HCP 17.2).
-    #[serde(rename = "endsAt")]
-    pub ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-}
-impl DelegationTerm {
-    pub fn builder() -> builder::DelegationTerm {
-        Default::default()
-    }
-}
-///What a client may do with context it received, or on the Context Subject's behalf (HCP 6.4). A directive only narrows: it never authorizes a disclosure the grant does not. Where two that apply disagree, `deny` prevails over `ask-first`, and `ask-first` over `permit` (HCP 6.4).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct Directive {
-    ///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
-    pub action: DirectiveAction,
-    ///The categories whose context the directive governs; absent means every category, held now or later (HCP 6.4). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
-    ///Set by the provider: when the directive was set (HCP 6.4).
-    #[serde(rename = "createdAt")]
-    pub created_at: Instant,
-    ///Stable for the life of the directive (HCP 6.4).
-    #[serde(rename = "directiveId")]
-    pub directive_id: Urn,
-    ///`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
-    pub effect: DirectiveEffect,
-    ///The Client Operators the directive applies to, each a DNS domain or an operator identifier, matched as for standing rules; absent means every operator (HCP 6.4, 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<DirectiveOperatorsItem>,
-    ///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
-    #[serde(rename = "setBy")]
-    pub set_by: DirectiveSetBy,
-    ///The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.
-    pub text: DirectiveText,
-}
-impl Directive {
-    pub fn builder() -> builder::Directive {
-        Default::default()
-    }
-}
-///What the directive governs: `share` (passing received context to another agent), `sign` (signing, agreeing to or committing to anything on the Context Subject's behalf), `transact` (spending, buying or entering a contract on their behalf), or an absolute URI naming another action (HCP 6.4, A.3). A client MUST NOT treat an action it does not recognize as a permission; it reads the directive from `text`.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DirectiveAction(::std::string::String);
-impl ::std::ops::Deref for DirectiveAction {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DirectiveAction> for ::std::string::String {
-    fn from(value: DirectiveAction) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DirectiveAction {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$")
-                    .unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DirectiveAction {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DirectiveAction {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DirectiveAction {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DirectiveAction {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`deny`: the client MUST NOT take the action. `ask-first`: the client MUST obtain the Context Subject's confirmation each time before taking it. `permit`: the client may take it without asking (HCP 6.4). HCP's own values, carried verbatim.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum DirectiveEffect {
-    #[serde(rename = "deny")]
-    Deny,
-    #[serde(rename = "ask-first")]
-    AskFirst,
-    #[serde(rename = "permit")]
-    Permit,
-}
-impl ::std::fmt::Display for DirectiveEffect {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Deny => f.write_str("deny"),
-            Self::AskFirst => f.write_str("ask-first"),
-            Self::Permit => f.write_str("permit"),
-        }
-    }
-}
-impl ::std::str::FromStr for DirectiveEffect {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "deny" => Ok(Self::Deny),
-            "ask-first" => Ok(Self::AskFirst),
-            "permit" => Ok(Self::Permit),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for DirectiveEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DirectiveEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DirectiveEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///`DirectiveOperatorsItem`
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DirectiveOperatorsItem(::std::string::String);
-impl ::std::ops::Deref for DirectiveOperatorsItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DirectiveOperatorsItem> for ::std::string::String {
-    fn from(value: DirectiveOperatorsItem) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DirectiveOperatorsItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DirectiveOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DirectiveOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DirectiveOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DirectiveOperatorsItem {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.4, 6.3).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DirectiveSetBy(::std::string::String);
-impl ::std::ops::Deref for DirectiveSetBy {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DirectiveSetBy> for ::std::string::String {
-    fn from(value: DirectiveSetBy) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DirectiveSetBy {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DirectiveSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DirectiveSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DirectiveSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DirectiveSetBy {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The directive in the Context Subject's words (HCP 6.4). A client presents it to a model as data, never as instructions (HCP 7.4). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DirectiveText(::std::string::String);
-impl ::std::ops::Deref for DirectiveText {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DirectiveText> for ::std::string::String {
-    fn from(value: DirectiveText) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DirectiveText {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 4096usize {
-            return Err("longer than 4096 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DirectiveText {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DirectiveText {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DirectiveText {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DirectiveText {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///One evidence item (HCP 4.2.2). An item of a type the provider does not recognize is preserved and never raises assurance (HCP A.3). An item whose type is `verifiable-credential` MUST carry `credential`, an object with `@context`, `type`, `issuer` and `credentialSubject`, held whole as its issuer secured it (HCP 4.2.2). This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct EvidenceItem {
-    ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub credential: ::std::option::Option<::serde_json::Value>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
-    pub role: EvidenceItemRole,
-    ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
-    #[serde(rename = "type")]
-    pub type_: EvidenceItemType,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub verification: ::std::option::Option<EvidenceItemVerification>,
-}
-impl EvidenceItem {
-    pub fn builder() -> builder::EvidenceItem {
-        Default::default()
-    }
-}
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum EvidenceItemRole {
-    #[serde(rename = "content")]
-    Content,
-    #[serde(rename = "supports")]
-    Supports,
-}
-impl ::std::fmt::Display for EvidenceItemRole {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Content => f.write_str("content"),
-            Self::Supports => f.write_str("supports"),
-        }
-    }
-}
-impl ::std::str::FromStr for EvidenceItemRole {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "content" => Ok(Self::Content),
-            "supports" => Ok(Self::Supports),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for EvidenceItemRole {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for EvidenceItemRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct EvidenceItemType(::std::string::String);
-impl ::std::ops::Deref for EvidenceItemType {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<EvidenceItemType> for ::std::string::String {
-    fn from(value: EvidenceItemType) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for EvidenceItemType {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for EvidenceItemType {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for EvidenceItemType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for EvidenceItemType {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The provider's record of its most recent verification of the credential (HCP 4.2.2). Set only by the provider.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct EvidenceItemVerification {
-    ///When the provider verified.
-    pub at: Instant,
-    ///Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub by: ::std::option::Option<EvidenceItemVerificationBy>,
-    ///The outcome.
-    pub result: EvidenceItemVerificationResult,
-}
-impl EvidenceItemVerification {
-    pub fn builder() -> builder::EvidenceItemVerification {
-        Default::default()
-    }
-}
-///Who verified: the provider, or the Context Subject's trust domain under end-to-end encrypted storage (HCP 4.8). HCP's own values, carried verbatim.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum EvidenceItemVerificationBy {
-    #[serde(rename = "provider")]
-    Provider,
-    #[serde(rename = "trust-domain")]
-    TrustDomain,
-}
-impl ::std::fmt::Display for EvidenceItemVerificationBy {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Provider => f.write_str("provider"),
-            Self::TrustDomain => f.write_str("trust-domain"),
-        }
-    }
-}
-impl ::std::str::FromStr for EvidenceItemVerificationBy {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "provider" => Ok(Self::Provider),
-            "trust-domain" => Ok(Self::TrustDomain),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for EvidenceItemVerificationBy {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for EvidenceItemVerificationBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemVerificationBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The outcome.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum EvidenceItemVerificationResult {
-    #[serde(rename = "verified")]
-    Verified,
-    #[serde(rename = "failed")]
-    Failed,
-}
-impl ::std::fmt::Display for EvidenceItemVerificationResult {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Verified => f.write_str("verified"),
-            Self::Failed => f.write_str("failed"),
-        }
-    }
-}
-impl ::std::str::FromStr for EvidenceItemVerificationResult {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "verified" => Ok(Self::Verified),
-            "failed" => Ok(Self::Failed),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for EvidenceItemVerificationResult {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for EvidenceItemVerificationResult {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for EvidenceItemVerificationResult {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
     }
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
@@ -1938,7 +193,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct HcpCarriageImportExtension {
-    ///The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
+    ///The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the import request's `rules` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement.
     #[serde(rename = "rulesNotApplied")]
     pub rules_not_applied: Vec<Urn>,
 }
@@ -1947,20 +202,60 @@ impl HcpCarriageImportExtension {
         Default::default()
     }
 }
-///One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.
+///One entry an imported `context.read` event disclosed (HCP 8.2): HCP's own shape, without the framework bounds of the shared `AuditDisclosed`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditDisclosed {
+    ///The entry disclosed (HCP 8.2).
+    #[serde(rename = "entryId")]
+    pub entry_id: Urn,
+    ///Whether provenance was disclosed (HCP 8.2).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub provenance: ::std::option::Option<bool>,
+    ///Selectively disclosed evidence (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub revealed: ::std::vec::Vec<ImportedAuditDisclosedRevealedItem>,
+    ///Until when the disclosed copy may be used (HCP 8.2, 7.6).
+    #[serde(rename = "useUntil")]
+    pub use_until: Instant,
+    ///Its version (HCP 8.2).
+    pub version: ::std::num::NonZeroU64,
+}
+impl ImportedAuditDisclosed {
+    pub fn builder() -> builder::ImportedAuditDisclosed {
+        Default::default()
+    }
+}
+///What was revealed of one evidence item (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditDisclosedRevealedItem {
+    ///The claims revealed (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    pub claims: ::std::vec::Vec<::std::string::String>,
+    ///The index of the evidence item (HCP 8.2).
+    pub evidence: u64,
+}
+impl ImportedAuditDisclosedRevealedItem {
+    pub fn builder() -> builder::ImportedAuditDisclosedRevealedItem {
+        Default::default()
+    }
+}
+///One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export valid under HCP's schemas is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in two respects. First, `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Second, it leaves out the framework size bounds and non-empty requirements the shared shape sets beyond HCP's. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ImportedAuditEvent {
-    ///The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.
+    ///The categories concerned (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
+    pub categories: ::std::vec::Vec<ImportedCategory>,
     ///The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub data: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).
+    ///Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). Its maxItems of 20 is HCP's own limit on a retrieval (HCP 7.2), not a framework bound.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub disclosed: ::std::vec::Vec<AuditDisclosed>,
+    pub disclosed: ::std::vec::Vec<ImportedAuditDisclosed>,
     ///The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
     #[serde(
         rename = "entryId",
@@ -1971,9 +266,9 @@ pub struct ImportedAuditEvent {
     ///The event's identifier (HCP 8.2).
     #[serde(rename = "eventId")]
     pub event_id: Urn,
-    ///The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.
+    ///The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it: a string.
     #[serde(rename = "eventType")]
-    pub event_type: ImportedAuditEventEventType,
+    pub event_type: ::std::string::String,
     ///The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
     #[serde(
         rename = "grantId",
@@ -1982,11 +277,11 @@ pub struct ImportedAuditEvent {
     )]
     pub grant_id: ::std::option::Option<ImportedAuditEventGrantId>,
     ///Who took part (HCP 8.2, 3.9).
-    pub participants: AuditParticipants,
-    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+    pub participants: ImportedAuditParticipants,
+    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub purpose: ::std::option::Option<ImportedAuditEventPurpose>,
-    ///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+    ///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
     #[serde(
         rename = "purposeDescription",
         default,
@@ -2078,68 +373,6 @@ impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventEntryId {
             })
     }
 }
-///The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct ImportedAuditEventEventType(::std::string::String);
-impl ::std::ops::Deref for ImportedAuditEventEventType {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<ImportedAuditEventEventType> for ::std::string::String {
-    fn from(value: ImportedAuditEventEventType) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for ImportedAuditEventEventType {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 256usize {
-            return Err("longer than 256 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for ImportedAuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditEventEventType {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventEventType {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -2210,7 +443,7 @@ impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventGrantId {
             })
     }
 }
-///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -2229,9 +462,6 @@ impl ::std::convert::From<ImportedAuditEventPurpose> for ::std::string::String {
 impl ::std::str::FromStr for ImportedAuditEventPurpose {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
         static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
             ::std::sync::LazyLock::new(|| {
                 ::regress::Regex::new("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$").unwrap()
@@ -2276,7 +506,7 @@ impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventPurpose {
             })
     }
 }
-///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.
+///The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -2295,8 +525,8 @@ impl ::std::convert::From<ImportedAuditEventPurposeDescription> for ::std::strin
 impl ::std::str::FromStr for ImportedAuditEventPurposeDescription {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 4096usize {
-            return Err("longer than 4096 characters".into());
+        if value.chars().count() > 16777216usize {
+            return Err("longer than 16777216 characters".into());
         }
         Ok(Self(value.to_string()))
     }
@@ -2405,43 +635,1342 @@ impl<'de> ::serde::Deserialize<'de> for ImportedAuditEventRelatedEntryId {
             })
     }
 }
-///An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.
+///Who took part in an imported audit event (HCP 8.2, 3.9): HCP's own shape, without the framework bounds and non-empty identifiers of the shared `AuditParticipants`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipants {
+    #[serde(
+        rename = "authorizingPrincipal",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub authorizing_principal: ::std::option::Option<ImportedAuditParticipantsAuthorizingPrincipal>,
+    #[serde(
+        rename = "clientOperator",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub client_operator: ::std::option::Option<ImportedAuditParticipantsClientOperator>,
+    pub initiator: ImportedAuditParticipantsInitiator,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub model: ::std::option::Option<ImportedAuditParticipantsModel>,
+    pub provider: ImportedAuditParticipantsProvider,
+    #[serde(
+        rename = "requestingParty",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub requesting_party: ::std::option::Option<ImportedAuditParticipantsRequestingParty>,
+    ///The retrieval the event belongs to (HCP 8.2).
+    #[serde(
+        rename = "retrievalId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub retrieval_id: ::std::option::Option<Urn>,
+}
+impl ImportedAuditParticipants {
+    pub fn builder() -> builder::ImportedAuditParticipants {
+        Default::default()
+    }
+}
+///The Authorizing Principal (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsAuthorizingPrincipal {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedAuditParticipantsAuthorizingPrincipal {
+    pub fn builder() -> builder::ImportedAuditParticipantsAuthorizingPrincipal {
+        Default::default()
+    }
+}
+///The Client Operator (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsClientOperator {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedAuditParticipantsClientOperator {
+    pub fn builder() -> builder::ImportedAuditParticipantsClientOperator {
+        Default::default()
+    }
+}
+///Who initiated the event (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsInitiator {
+    ///The initiator's identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+    ///HCP's own roles (HCP 3.9).
+    pub role: ImportedAuditParticipantsInitiatorRole,
+}
+impl ImportedAuditParticipantsInitiator {
+    pub fn builder() -> builder::ImportedAuditParticipantsInitiator {
+        Default::default()
+    }
+}
+///HCP's own roles (HCP 3.9).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedAuditParticipantsInitiatorRole {
+    #[serde(rename = "management-client")]
+    ManagementClient,
+    #[serde(rename = "context-client")]
+    ContextClient,
+    #[serde(rename = "authorization-service")]
+    AuthorizationService,
+    #[serde(rename = "hcp-provider")]
+    HcpProvider,
+}
+impl ::std::fmt::Display for ImportedAuditParticipantsInitiatorRole {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::ManagementClient => f.write_str("management-client"),
+            Self::ContextClient => f.write_str("context-client"),
+            Self::AuthorizationService => f.write_str("authorization-service"),
+            Self::HcpProvider => f.write_str("hcp-provider"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedAuditParticipantsInitiatorRole {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "management-client" => Ok(Self::ManagementClient),
+            "context-client" => Ok(Self::ContextClient),
+            "authorization-service" => Ok(Self::AuthorizationService),
+            "hcp-provider" => Ok(Self::HcpProvider),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedAuditParticipantsInitiatorRole {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedAuditParticipantsInitiatorRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedAuditParticipantsInitiatorRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The model, where one was involved (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsModel {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedAuditParticipantsModel {
+    pub fn builder() -> builder::ImportedAuditParticipantsModel {
+        Default::default()
+    }
+}
+///The HCP Provider (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsProvider {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedAuditParticipantsProvider {
+    pub fn builder() -> builder::ImportedAuditParticipantsProvider {
+        Default::default()
+    }
+}
+///The Requesting Party (HCP 8.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedAuditParticipantsRequestingParty {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedAuditParticipantsRequestingParty {
+    pub fn builder() -> builder::ImportedAuditParticipantsRequestingParty {
+        Default::default()
+    }
+}
+///A category in an imported export (HCP 4.5): the shared `Category` in hcp/_shared/0.1 without its framework maxLength. Its pattern is kept: a URI category needs at least one character after the scheme, as HCP's `uri` and `purposeCode` patterns require, where HCP's `category` pattern alone would accept a bare `scheme:` (question 54).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedCategory(::std::string::String);
+impl ::std::ops::Deref for ImportedCategory {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedCategory> for ::std::string::String {
+    fn from(value: ImportedCategory) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedCategory {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$\"".into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedCategory {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedCategory {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedCategory {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedCategory {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A delegation in an imported export, as a record (HCP 17.2, 5.4.1): HCP's own delegation shape. It differs from the shared `Delegation` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty requirements the shared shape sets beyond HCP's, such as a non-empty `basis.description`, `basis.establishedBy` and identifiers. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegation {
+    pub basis: ImportedDelegationBasis,
+    pub delegate: ImportedDelegationDelegate,
+    ///The delegation's identifier (HCP 17.2).
+    #[serde(rename = "delegationId")]
+    pub delegation_id: Urn,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ended: ::std::option::Option<ImportedDelegationEnded>,
+    ///Whether the delegate may appoint a sub-delegate (HCP 17.2).
+    #[serde(
+        rename = "mayDelegate",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub may_delegate: ::std::option::Option<bool>,
+    ///HCP's relationship values, or a URI (HCP 17.2).
+    pub relationship: ImportedDelegationRelationship,
+    pub scope: ImportedDelegationScope,
+    pub subject: ImportedDelegationSubject,
+    pub term: ImportedDelegationTerm,
+}
+impl ImportedDelegation {
+    pub fn builder() -> builder::ImportedDelegation {
+        Default::default()
+    }
+}
+///The basis of the delegation (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationBasis {
+    ///The categories the basis covers (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub covers: ::std::vec::Vec<ImportedCategory>,
+    ///The basis in words (HCP 17.2). A string, which HCP's own shape allows to be empty. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
+    pub description: ImportedDelegationBasisDescription,
+    ///When the basis was established (HCP 17.2).
+    #[serde(rename = "establishedAt")]
+    pub established_at: Instant,
+    ///Who established the basis (HCP 17.2). A string, which HCP's own shape allows to be empty.
+    #[serde(rename = "establishedBy")]
+    pub established_by: ::std::string::String,
+    ///The evidence for the basis (HCP 17.2, 4.2.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub evidence: ::std::vec::Vec<ImportedEvidenceItem>,
+    ///HCP's own values, carried verbatim (HCP 17.2). Where it is `evidence`, `evidence` holds at least one item, and `parent` is present exactly where it is `delegated`, as HCP's own schema requires; the provider checks these, since the schema does not.
+    pub method: ImportedDelegationBasisMethod,
+    ///For a sub-delegation, the parent delegation (HCP 17.2).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub parent: ::std::option::Option<Urn>,
+}
+impl ImportedDelegationBasis {
+    pub fn builder() -> builder::ImportedDelegationBasis {
+        Default::default()
+    }
+}
+///The basis in words (HCP 17.2). A string, which HCP's own shape allows to be empty. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDelegationBasisDescription(::std::string::String);
+impl ::std::ops::Deref for ImportedDelegationBasisDescription {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDelegationBasisDescription> for ::std::string::String {
+    fn from(value: ImportedDelegationBasisDescription) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationBasisDescription {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 16777216usize {
+            return Err("longer than 16777216 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationBasisDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationBasisDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationBasisDescription {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDelegationBasisDescription {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///HCP's own values, carried verbatim (HCP 17.2). Where it is `evidence`, `evidence` holds at least one item, and `parent` is present exactly where it is `delegated`, as HCP's own schema requires; the provider checks these, since the schema does not.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedDelegationBasisMethod {
+    #[serde(rename = "appointed")]
+    Appointed,
+    #[serde(rename = "attested")]
+    Attested,
+    #[serde(rename = "evidence")]
+    Evidence,
+    #[serde(rename = "delegated")]
+    Delegated,
+    #[serde(rename = "unspecified")]
+    Unspecified,
+}
+impl ::std::fmt::Display for ImportedDelegationBasisMethod {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Appointed => f.write_str("appointed"),
+            Self::Attested => f.write_str("attested"),
+            Self::Evidence => f.write_str("evidence"),
+            Self::Delegated => f.write_str("delegated"),
+            Self::Unspecified => f.write_str("unspecified"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationBasisMethod {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "appointed" => Ok(Self::Appointed),
+            "attested" => Ok(Self::Attested),
+            "evidence" => Ok(Self::Evidence),
+            "delegated" => Ok(Self::Delegated),
+            "unspecified" => Ok(Self::Unspecified),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationBasisMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationBasisMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationBasisMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The delegate (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationDelegate {
+    ///The delegate's identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+    ///The delegate's name. Non-empty, as HCP's own shape requires.
+    pub name: ImportedDelegationDelegateName,
+}
+impl ImportedDelegationDelegate {
+    pub fn builder() -> builder::ImportedDelegationDelegate {
+        Default::default()
+    }
+}
+///The delegate's name. Non-empty, as HCP's own shape requires.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDelegationDelegateName(::std::string::String);
+impl ::std::ops::Deref for ImportedDelegationDelegateName {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDelegationDelegateName> for ::std::string::String {
+    fn from(value: ImportedDelegationDelegateName) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationDelegateName {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationDelegateName {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationDelegateName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationDelegateName {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDelegationDelegateName {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Present where the delegation has ended (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationEnded {
+    ///When the delegation ended (HCP 17.2).
+    pub at: Instant,
+    ///HCP's own values, carried verbatim (HCP 17.2).
+    pub reason: ImportedDelegationEndedReason,
+}
+impl ImportedDelegationEnded {
+    pub fn builder() -> builder::ImportedDelegationEnded {
+        Default::default()
+    }
+}
+///HCP's own values, carried verbatim (HCP 17.2).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedDelegationEndedReason {
+    #[serde(rename = "majority")]
+    Majority,
+    #[serde(rename = "expiry")]
+    Expiry,
+    #[serde(rename = "basis-ended")]
+    BasisEnded,
+    #[serde(rename = "relinquished")]
+    Relinquished,
+    #[serde(rename = "ended-by-subject")]
+    EndedBySubject,
+    #[serde(rename = "parent-ended")]
+    ParentEnded,
+    #[serde(rename = "ended-by-delegate")]
+    EndedByDelegate,
+}
+impl ::std::fmt::Display for ImportedDelegationEndedReason {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Majority => f.write_str("majority"),
+            Self::Expiry => f.write_str("expiry"),
+            Self::BasisEnded => f.write_str("basis-ended"),
+            Self::Relinquished => f.write_str("relinquished"),
+            Self::EndedBySubject => f.write_str("ended-by-subject"),
+            Self::ParentEnded => f.write_str("parent-ended"),
+            Self::EndedByDelegate => f.write_str("ended-by-delegate"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationEndedReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "majority" => Ok(Self::Majority),
+            "expiry" => Ok(Self::Expiry),
+            "basis-ended" => Ok(Self::BasisEnded),
+            "relinquished" => Ok(Self::Relinquished),
+            "ended-by-subject" => Ok(Self::EndedBySubject),
+            "parent-ended" => Ok(Self::ParentEnded),
+            "ended-by-delegate" => Ok(Self::EndedByDelegate),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationEndedReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationEndedReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationEndedReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///HCP's relationship values, or a URI (HCP 17.2).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDelegationRelationship(::std::string::String);
+impl ::std::ops::Deref for ImportedDelegationRelationship {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDelegationRelationship> for ::std::string::String {
+    fn from(value: ImportedDelegationRelationship) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationRelationship {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
+            || {
+                ::regress::Regex::new(
+                    "^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+                )
+                .unwrap()
+            },
+        );
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationRelationship {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationRelationship {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationRelationship {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDelegationRelationship {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///What the delegation covers (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationScope {
+    ///The actions in scope (HCP 17.2, 6.1.5): `read`, `write`, or both.
+    pub actions: Vec<ImportedDelegationScopeActionsItem>,
+    ///The categories in scope (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    pub categories: ::std::vec::Vec<ImportedCategory>,
+}
+impl ImportedDelegationScope {
+    pub fn builder() -> builder::ImportedDelegationScope {
+        Default::default()
+    }
+}
+///`ImportedDelegationScopeActionsItem`
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedDelegationScopeActionsItem {
+    #[serde(rename = "read")]
+    Read,
+    #[serde(rename = "write")]
+    Write,
+}
+impl ::std::fmt::Display for ImportedDelegationScopeActionsItem {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Read => f.write_str("read"),
+            Self::Write => f.write_str("write"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedDelegationScopeActionsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "read" => Ok(Self::Read),
+            "write" => Ok(Self::Write),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDelegationScopeActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDelegationScopeActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDelegationScopeActionsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The Context Subject (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationSubject {
+    ///An identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
+}
+impl ImportedDelegationSubject {
+    pub fn builder() -> builder::ImportedDelegationSubject {
+        Default::default()
+    }
+}
+///The delegation's term (HCP 17.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDelegationTerm {
+    ///Whether it ends when the Context Subject reaches majority (HCP 17.2).
+    #[serde(rename = "atMajority")]
+    pub at_majority: bool,
+    ///When the delegation ends, or null (HCP 17.2).
+    #[serde(rename = "endsAt")]
+    pub ends_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+}
+impl ImportedDelegationTerm {
+    pub fn builder() -> builder::ImportedDelegationTerm {
+        Default::default()
+    }
+}
+///A directive in an imported export (HCP 6.4, 5.4.1): HCP's own directive shape. It differs from the shared `Directive` in hcp/_shared/0.1 only in leaving out the framework size bounds, such as its 4096-character `text`, and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedDirective {
+    ///`share`, `sign`, `transact`, or a URI (HCP 6.4).
+    pub action: ImportedDirectiveAction,
+    ///The categories the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub categories: ::std::vec::Vec<ImportedCategory>,
+    ///When the directive was set (HCP 6.4).
+    #[serde(rename = "createdAt")]
+    pub created_at: Instant,
+    ///The directive's identifier (HCP 6.4).
+    #[serde(rename = "directiveId")]
+    pub directive_id: Urn,
+    ///HCP's own values, carried verbatim (HCP 6.4).
+    pub effect: ImportedDirectiveEffect,
+    ///The Client Operators the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub operators: ::std::vec::Vec<ImportedDirectiveOperatorsItem>,
+    ///Who set the directive (HCP 6.4). A string, which HCP's own shape allows to be empty.
+    #[serde(rename = "setBy")]
+    pub set_by: ::std::string::String,
+    ///The directive in words (HCP 6.4). Non-empty, as HCP's own shape requires. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
+    pub text: ImportedDirectiveText,
+}
+impl ImportedDirective {
+    pub fn builder() -> builder::ImportedDirective {
+        Default::default()
+    }
+}
+///`share`, `sign`, `transact`, or a URI (HCP 6.4).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDirectiveAction(::std::string::String);
+impl ::std::ops::Deref for ImportedDirectiveAction {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDirectiveAction> for ::std::string::String {
+    fn from(value: ImportedDirectiveAction) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDirectiveAction {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$")
+                    .unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDirectiveAction {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDirectiveAction {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDirectiveAction {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDirectiveAction {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///HCP's own values, carried verbatim (HCP 6.4).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedDirectiveEffect {
+    #[serde(rename = "deny")]
+    Deny,
+    #[serde(rename = "ask-first")]
+    AskFirst,
+    #[serde(rename = "permit")]
+    Permit,
+}
+impl ::std::fmt::Display for ImportedDirectiveEffect {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Deny => f.write_str("deny"),
+            Self::AskFirst => f.write_str("ask-first"),
+            Self::Permit => f.write_str("permit"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedDirectiveEffect {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "deny" => Ok(Self::Deny),
+            "ask-first" => Ok(Self::AskFirst),
+            "permit" => Ok(Self::Permit),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDirectiveEffect {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDirectiveEffect {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDirectiveEffect {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///A Client Operator identifier.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDirectiveOperatorsItem(::std::string::String);
+impl ::std::ops::Deref for ImportedDirectiveOperatorsItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDirectiveOperatorsItem> for ::std::string::String {
+    fn from(value: ImportedDirectiveOperatorsItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDirectiveOperatorsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDirectiveOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDirectiveOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDirectiveOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDirectiveOperatorsItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The directive in words (HCP 6.4). Non-empty, as HCP's own shape requires. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedDirectiveText(::std::string::String);
+impl ::std::ops::Deref for ImportedDirectiveText {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedDirectiveText> for ::std::string::String {
+    fn from(value: ImportedDirectiveText) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedDirectiveText {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 16777216usize {
+            return Err("longer than 16777216 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedDirectiveText {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedDirectiveText {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedDirectiveText {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedDirectiveText {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///An evidence item in an imported delegation's basis (HCP 4.2.2, 17.2): HCP's own evidence-item shape, without the framework bounds of the shared `EvidenceItem` in hcp/_shared/0.1. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedEvidenceItem {
+    ///The credential, for `verifiable-credential`: a W3C Verifiable Credential, whose own data model governs its contents (HCP 4.2.2, 14.2).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub credential: ::std::option::Option<::serde_json::Value>,
+    ///HCP's own values, carried verbatim (HCP 4.2.2).
+    pub role: ImportedEvidenceItemRole,
+    ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
+    #[serde(rename = "type")]
+    pub type_: ::std::string::String,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub verification: ::std::option::Option<ImportedEvidenceItemVerification>,
+}
+impl ImportedEvidenceItem {
+    pub fn builder() -> builder::ImportedEvidenceItem {
+        Default::default()
+    }
+}
+///HCP's own values, carried verbatim (HCP 4.2.2).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedEvidenceItemRole {
+    #[serde(rename = "content")]
+    Content,
+    #[serde(rename = "supports")]
+    Supports,
+}
+impl ::std::fmt::Display for ImportedEvidenceItemRole {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Content => f.write_str("content"),
+            Self::Supports => f.write_str("supports"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedEvidenceItemRole {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "content" => Ok(Self::Content),
+            "supports" => Ok(Self::Supports),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedEvidenceItemRole {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedEvidenceItemRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedEvidenceItemRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The exporting provider's record of its most recent verification (HCP 4.2.2).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedEvidenceItemVerification {
+    ///When the provider verified.
+    pub at: Instant,
+    ///Who verified (HCP 4.2.2, 4.8).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub by: ::std::option::Option<ImportedEvidenceItemVerificationBy>,
+    ///The outcome.
+    pub result: ImportedEvidenceItemVerificationResult,
+}
+impl ImportedEvidenceItemVerification {
+    pub fn builder() -> builder::ImportedEvidenceItemVerification {
+        Default::default()
+    }
+}
+///Who verified (HCP 4.2.2, 4.8).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedEvidenceItemVerificationBy {
+    #[serde(rename = "provider")]
+    Provider,
+    #[serde(rename = "trust-domain")]
+    TrustDomain,
+}
+impl ::std::fmt::Display for ImportedEvidenceItemVerificationBy {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Provider => f.write_str("provider"),
+            Self::TrustDomain => f.write_str("trust-domain"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedEvidenceItemVerificationBy {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "provider" => Ok(Self::Provider),
+            "trust-domain" => Ok(Self::TrustDomain),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedEvidenceItemVerificationBy {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedEvidenceItemVerificationBy {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedEvidenceItemVerificationBy {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The outcome.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedEvidenceItemVerificationResult {
+    #[serde(rename = "verified")]
+    Verified,
+    #[serde(rename = "failed")]
+    Failed,
+}
+impl ::std::fmt::Display for ImportedEvidenceItemVerificationResult {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Verified => f.write_str("verified"),
+            Self::Failed => f.write_str("failed"),
+        }
+    }
+}
+impl ::std::str::FromStr for ImportedEvidenceItemVerificationResult {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "verified" => Ok(Self::Verified),
+            "failed" => Ok(Self::Failed),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedEvidenceItemVerificationResult {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedEvidenceItemVerificationResult {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedEvidenceItemVerificationResult {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export valid under HCP's export schema is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in three respects, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Third, the framework size bounds and the non-empty requirements beyond HCP's own schemas that the shared shapes set are not applied anywhere in the export: its standing rules, directives, delegations and audit events are `ImportedStandingRule`, `ImportedDirective`, `ImportedDelegation` and `ImportedAuditEvent`, which keep only the constraints HCP's own schemas set. The request as a whole stays bounded by its 16 MiB `maxDocumentBytes`. The one constraint kept beyond HCP's schemas is the category pattern (`ImportedCategory`, question 54). Open, as HCP's own shape is.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ImportedExport {
-    ///The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array.
+    ///The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub audit: ::std::vec::Vec<ImportedAuditEvent>,
-    ///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
+    ///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(rename = "@context")]
     pub context: ImportedExportContext,
-    ///The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).
+    ///The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2). Each is an `ImportedDelegation`, HCP's own delegation shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub delegations: ::std::vec::Vec<Delegation>,
-    ///The Context Subject's directives (HCP 5.4.1, 6.4).
+    pub delegations: ::std::vec::Vec<ImportedDelegation>,
+    ///The Context Subject's directives (HCP 5.4.1, 6.4), each an `ImportedDirective`, HCP's own directive shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub directives: ::std::vec::Vec<Directive>,
-    ///The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.
+    pub directives: ::std::vec::Vec<ImportedDirective>,
+    ///The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     pub entries: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the export was made (HCP 5.4.1).
     #[serde(rename = "exportedAt")]
     pub exported_at: Instant,
-    ///The exporting HCP Provider (HCP 5.4.1).
+    ///The exporting HCP Provider (HCP 5.4.1). A string, as in HCP's own shape.
     #[serde(rename = "exportedBy")]
-    pub exported_by: ImportedExportExportedBy,
+    pub exported_by: ::std::string::String,
     ///HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub options: ::std::option::Option<ImportedExportOptions>,
-    ///The Context Subject's standing rules (HCP 5.4.1, 6.3).
-    pub rules: ::std::vec::Vec<StandingRule>,
+    ///The Context Subject's standing rules (HCP 5.4.1, 6.3), each an `ImportedStandingRule`, HCP's own standing-rule shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    pub rules: ::std::vec::Vec<ImportedStandingRule>,
     ///The export structure version, compared as an exact string (HCP 5.4.1, 1.7).
     pub schema: ::std::string::String,
     pub subject: ImportedExportSubject,
     ///`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.
     #[serde(rename = "type")]
     pub type_: ::std::string::String,
-    ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array.
+    ///Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub versions: ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
 }
@@ -2450,7 +1979,7 @@ impl ImportedExport {
         Default::default()
     }
 }
-///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.
+///The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
@@ -2462,68 +1991,6 @@ pub enum ImportedExportContext {
 impl ::std::convert::From<::std::vec::Vec<::serde_json::Value>> for ImportedExportContext {
     fn from(value: ::std::vec::Vec<::serde_json::Value>) -> Self {
         Self::Array(value)
-    }
-}
-///The exporting HCP Provider (HCP 5.4.1).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct ImportedExportExportedBy(::std::string::String);
-impl ::std::ops::Deref for ImportedExportExportedBy {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<ImportedExportExportedBy> for ::std::string::String {
-    fn from(value: ImportedExportExportedBy) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for ImportedExportExportedBy {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for ImportedExportExportedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for ImportedExportExportedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for ImportedExportExportedBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for ImportedExportExportedBy {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
     }
 }
 ///HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.
@@ -2572,49 +2039,87 @@ impl ImportedExportOptions {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ImportedExportSubject {
-    ///The Context Subject's identifier.
-    pub id: ImportedExportSubjectId,
+    ///The Context Subject's identifier. A string, as in HCP's own shape.
+    pub id: ::std::string::String,
 }
 impl ImportedExportSubject {
     pub fn builder() -> builder::ImportedExportSubject {
         Default::default()
     }
 }
-///The Context Subject's identifier.
+///A standing rule in an imported export (HCP 6.3, 5.4.1): HCP's own standing-rule shape. It differs from the shared `StandingRule` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.
 ///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct ImportedExportSubjectId(::std::string::String);
-impl ::std::ops::Deref for ImportedExportSubjectId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ImportedStandingRule {
+    ///The categories the rule covers (HCP 6.3); absent means every category. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub categories: ::std::vec::Vec<ImportedCategory>,
+    ///When the rule was set (HCP 6.3).
+    #[serde(rename = "createdAt")]
+    pub created_at: Instant,
+    ///Always `deny` (HCP 6.3).
+    pub effect: ImportedStandingRuleEffect,
+    ///The Client Operators denied (HCP 6.3). A rule carries `operators`, `requires`, or both, as HCP's own schema requires; the provider checks that, since the schema does not. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub operators: ::std::vec::Vec<ImportedStandingRuleOperatorsItem>,
+    ///The commitments a client must have made (HCP 6.3). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub requires: ::std::vec::Vec<::std::string::String>,
+    ///The rule's identifier (HCP 6.3).
+    #[serde(rename = "ruleId")]
+    pub rule_id: Urn,
+    ///Who set the rule (HCP 6.3). A string, which HCP's own shape allows to be empty.
+    #[serde(rename = "setBy")]
+    pub set_by: ::std::string::String,
+}
+impl ImportedStandingRule {
+    pub fn builder() -> builder::ImportedStandingRule {
+        Default::default()
     }
 }
-impl ::std::convert::From<ImportedExportSubjectId> for ::std::string::String {
-    fn from(value: ImportedExportSubjectId) -> Self {
-        value.0
+///Always `deny` (HCP 6.3).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ImportedStandingRuleEffect {
+    #[serde(rename = "deny")]
+    Deny,
+}
+impl ::std::fmt::Display for ImportedStandingRuleEffect {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Deny => f.write_str("deny"),
+        }
     }
 }
-impl ::std::str::FromStr for ImportedExportSubjectId {
+impl ::std::str::FromStr for ImportedStandingRuleEffect {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
+        match value {
+            "deny" => Ok(Self::Deny),
+            _ => Err("invalid value".into()),
         }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for ImportedExportSubjectId {
+impl ::std::convert::TryFrom<&str> for ImportedStandingRuleEffect {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ImportedExportSubjectId {
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedStandingRuleEffect {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -2622,7 +2127,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for ImportedExportSubjectId
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for ImportedExportSubjectId {
+impl ::std::convert::TryFrom<::std::string::String> for ImportedStandingRuleEffect {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -2630,7 +2135,54 @@ impl ::std::convert::TryFrom<::std::string::String> for ImportedExportSubjectId 
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for ImportedExportSubjectId {
+///A Client Operator identifier.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ImportedStandingRuleOperatorsItem(::std::string::String);
+impl ::std::ops::Deref for ImportedStandingRuleOperatorsItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ImportedStandingRuleOperatorsItem> for ::std::string::String {
+    fn from(value: ImportedStandingRuleOperatorsItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ImportedStandingRuleOperatorsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ImportedStandingRuleOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ImportedStandingRuleOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ImportedStandingRuleOperatorsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ImportedStandingRuleOperatorsItem {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -2897,7 +2449,7 @@ impl<'de> ::serde::Deserialize<'de> for OutcomeReason {
             })
     }
 }
-///The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+///The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty. Neither is applied within `export` beyond the request's own 16 MiB document bound (see `ImportedExport`).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -2920,7 +2472,7 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub dry_run: ::std::option::Option<bool>,
-    ///HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted.
+    ///HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, without the framework size bounds and non-empty requirements of the shared `Export`, and with `options` OPTIONAL, so that an export valid under HCP's export schema is accepted, within the request's 16 MiB `maxDocumentBytes`.
     pub export: ImportedExport,
 }
 impl Payload {
@@ -3006,258 +2558,12 @@ pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.
+    ///HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the import request's `entries` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement.
     pub outcomes: ::std::vec::Vec<Outcome>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
-    }
-}
-///A deny rule the Context Subject sets across every grant, present and future (HCP 6.3). A standing rule never widens access. It carries `operators`, `requires`, or both: `operators` may be absent only where `requires` is present (HCP 6.3). HCP's own standing-rule schema checks that rule with an `anyOf` of the two `required` clauses; in this shared definition it is not checked by the schema, so that the type stays fully typed in every generated library. The hcp/rules/set request checks it at its payload root, where the rule is written; a provider never holds or returns a rule that breaks it, and hcp/import refuses an export holding one with `malformedRequest`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[non_exhaustive]
-pub struct StandingRule {
-    ///The categories the rule applies to. Absent means every category, held now or later (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub categories: ::std::vec::Vec<Category>,
-    ///Set by the provider: when the rule was set (HCP 6.3).
-    #[serde(rename = "createdAt")]
-    pub created_at: Instant,
-    ///`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
-    pub effect: StandingRuleEffect,
-    ///The Client Operators the rule applies to (HCP 3.2.8, 6.3). A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which is allowed only with `requires`. The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub operators: ::std::vec::Vec<StandingRuleOperatorsItem>,
-    ///Client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed (HCP 6.3). The maxItems is a framework bound, not an HCP requirement.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub requires: ::std::vec::Vec<Uri>,
-    ///Stable for the life of the rule (HCP 6.3).
-    #[serde(rename = "ruleId")]
-    pub rule_id: Urn,
-    ///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
-    #[serde(rename = "setBy")]
-    pub set_by: StandingRuleSetBy,
-}
-impl StandingRule {
-    pub fn builder() -> builder::StandingRule {
-        Default::default()
-    }
-}
-///`deny`, the only effect in HCP 2.0-draft-3 (HCP 6.3). Set by the provider.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum StandingRuleEffect {
-    #[serde(rename = "deny")]
-    Deny,
-}
-impl ::std::fmt::Display for StandingRuleEffect {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Deny => f.write_str("deny"),
-        }
-    }
-}
-impl ::std::str::FromStr for StandingRuleEffect {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "deny" => Ok(Self::Deny),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for StandingRuleEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for StandingRuleEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for StandingRuleEffect {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///`StandingRuleOperatorsItem`
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct StandingRuleOperatorsItem(::std::string::String);
-impl ::std::ops::Deref for StandingRuleOperatorsItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<StandingRuleOperatorsItem> for ::std::string::String {
-    fn from(value: StandingRuleOperatorsItem) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for StandingRuleOperatorsItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for StandingRuleOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for StandingRuleOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for StandingRuleOperatorsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for StandingRuleOperatorsItem {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Set by the provider: `context-subject`, or the `delegationId` of the delegate who set it (HCP 6.3, 17.2).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct StandingRuleSetBy(::std::string::String);
-impl ::std::ops::Deref for StandingRuleSetBy {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<StandingRuleSetBy> for ::std::string::String {
-    fn from(value: StandingRuleSetBy) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for StandingRuleSetBy {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for StandingRuleSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for StandingRuleSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for StandingRuleSetBy {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for StandingRuleSetBy {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///An absolute URI with no whitespace, as HCP writes every custom value at an extension point (HCP A.3).
-///
-#[derive(
-    ::serde::Deserialize, ::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd,
-)]
-#[serde(transparent)]
-pub struct Uri(pub ::std::string::String);
-impl ::std::ops::Deref for Uri {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<Uri> for ::std::string::String {
-    fn from(value: Uri) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<::std::string::String> for Uri {
-    fn from(value: ::std::string::String) -> Self {
-        Self(value)
-    }
-}
-impl ::std::str::FromStr for Uri {
-    type Err = ::std::convert::Infallible;
-    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::fmt::Display for Uri {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        self.0.fmt(f)
     }
 }
 ///An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.
@@ -3333,1223 +2639,6 @@ impl<'de> ::serde::Deserialize<'de> for Urn {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
-    pub struct AuditDisclosed {
-        entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        provenance: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        revealed: ::std::result::Result<
-            ::std::vec::Vec<super::AuditDisclosedRevealedItem>,
-            ::std::string::String,
-        >,
-        use_until: ::std::result::Result<super::Instant, ::std::string::String>,
-        version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditDisclosed {
-        fn default() -> Self {
-            Self {
-                entry_id: Err("no value supplied for entry_id".to_string()),
-                provenance: Ok(Default::default()),
-                revealed: Ok(Default::default()),
-                use_until: Err("no value supplied for use_until".to_string()),
-                version: Err("no value supplied for version".to_string()),
-            }
-        }
-    }
-    impl AuditDisclosed {
-        pub fn entry_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.entry_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
-            self
-        }
-        pub fn provenance<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.provenance = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for provenance: {e}"));
-            self
-        }
-        pub fn revealed<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosedRevealedItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.revealed = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for revealed: {e}"));
-            self
-        }
-        pub fn use_until<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.use_until = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for use_until: {e}"));
-            self
-        }
-        pub fn version<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.version = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for version: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditDisclosed> for super::AuditDisclosed {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditDisclosed,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                entry_id: value.entry_id?,
-                provenance: value.provenance?,
-                revealed: value.revealed?,
-                use_until: value.use_until?,
-                version: value.version?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AuditDisclosed> for AuditDisclosed {
-        fn from(value: super::AuditDisclosed) -> Self {
-            Self {
-                entry_id: Ok(value.entry_id),
-                provenance: Ok(value.provenance),
-                revealed: Ok(value.revealed),
-                use_until: Ok(value.use_until),
-                version: Ok(value.version),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AuditDisclosedRevealedItem {
-        claims: ::std::result::Result<
-            ::std::vec::Vec<super::AuditDisclosedRevealedItemClaimsItem>,
-            ::std::string::String,
-        >,
-        evidence: ::std::result::Result<u64, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditDisclosedRevealedItem {
-        fn default() -> Self {
-            Self {
-                claims: Err("no value supplied for claims".to_string()),
-                evidence: Err("no value supplied for evidence".to_string()),
-            }
-        }
-    }
-    impl AuditDisclosedRevealedItem {
-        pub fn claims<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::AuditDisclosedRevealedItemClaimsItem>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.claims = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for claims: {e}"));
-            self
-        }
-        pub fn evidence<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<u64>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.evidence = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for evidence: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditDisclosedRevealedItem> for super::AuditDisclosedRevealedItem {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditDisclosedRevealedItem,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                claims: value.claims?,
-                evidence: value.evidence?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AuditDisclosedRevealedItem> for AuditDisclosedRevealedItem {
-        fn from(value: super::AuditDisclosedRevealedItem) -> Self {
-            Self {
-                claims: Ok(value.claims),
-                evidence: Ok(value.evidence),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AuditParticipants {
-        authorizing_principal:
-            ::std::result::Result<::std::option::Option<super::AuditParty>, ::std::string::String>,
-        client_operator:
-            ::std::result::Result<::std::option::Option<super::AuditParty>, ::std::string::String>,
-        initiator: ::std::result::Result<super::AuditParticipantsInitiator, ::std::string::String>,
-        model:
-            ::std::result::Result<::std::option::Option<super::AuditParty>, ::std::string::String>,
-        provider: ::std::result::Result<super::AuditParty, ::std::string::String>,
-        requesting_party:
-            ::std::result::Result<::std::option::Option<super::AuditParty>, ::std::string::String>,
-        retrieval_id:
-            ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditParticipants {
-        fn default() -> Self {
-            Self {
-                authorizing_principal: Ok(Default::default()),
-                client_operator: Ok(Default::default()),
-                initiator: Err("no value supplied for initiator".to_string()),
-                model: Ok(Default::default()),
-                provider: Err("no value supplied for provider".to_string()),
-                requesting_party: Ok(Default::default()),
-                retrieval_id: Ok(Default::default()),
-            }
-        }
-    }
-    impl AuditParticipants {
-        pub fn authorizing_principal<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditParty>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.authorizing_principal = value.try_into().map_err(|e| {
-                format!("error converting supplied value for authorizing_principal: {e}")
-            });
-            self
-        }
-        pub fn client_operator<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditParty>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.client_operator = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for client_operator: {e}"));
-            self
-        }
-        pub fn initiator<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditParticipantsInitiator>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.initiator = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for initiator: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditParty>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn provider<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditParty>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.provider = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for provider: {e}"));
-            self
-        }
-        pub fn requesting_party<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditParty>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.requesting_party = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for requesting_party: {e}"));
-            self
-        }
-        pub fn retrieval_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Urn>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.retrieval_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for retrieval_id: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditParticipants> for super::AuditParticipants {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditParticipants,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                authorizing_principal: value.authorizing_principal?,
-                client_operator: value.client_operator?,
-                initiator: value.initiator?,
-                model: value.model?,
-                provider: value.provider?,
-                requesting_party: value.requesting_party?,
-                retrieval_id: value.retrieval_id?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AuditParticipants> for AuditParticipants {
-        fn from(value: super::AuditParticipants) -> Self {
-            Self {
-                authorizing_principal: Ok(value.authorizing_principal),
-                client_operator: Ok(value.client_operator),
-                initiator: Ok(value.initiator),
-                model: Ok(value.model),
-                provider: Ok(value.provider),
-                requesting_party: Ok(value.requesting_party),
-                retrieval_id: Ok(value.retrieval_id),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AuditParticipantsInitiator {
-        id: ::std::result::Result<super::AuditParticipantsInitiatorId, ::std::string::String>,
-        role: ::std::result::Result<super::AuditParticipantsInitiatorRole, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditParticipantsInitiator {
-        fn default() -> Self {
-            Self {
-                id: Err("no value supplied for id".to_string()),
-                role: Err("no value supplied for role".to_string()),
-            }
-        }
-    }
-    impl AuditParticipantsInitiator {
-        pub fn id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditParticipantsInitiatorId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for id: {e}"));
-            self
-        }
-        pub fn role<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditParticipantsInitiatorRole>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditParticipantsInitiator> for super::AuditParticipantsInitiator {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditParticipantsInitiator,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                id: value.id?,
-                role: value.role?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AuditParticipantsInitiator> for AuditParticipantsInitiator {
-        fn from(value: super::AuditParticipantsInitiator) -> Self {
-            Self {
-                id: Ok(value.id),
-                role: Ok(value.role),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AuditParty {
-        id: ::std::result::Result<super::AuditPartyId, ::std::string::String>,
-    }
-    impl ::std::default::Default for AuditParty {
-        fn default() -> Self {
-            Self {
-                id: Err("no value supplied for id".to_string()),
-            }
-        }
-    }
-    impl AuditParty {
-        pub fn id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AuditPartyId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for id: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AuditParty> for super::AuditParty {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AuditParty,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self { id: value.id? })
-        }
-    }
-    impl ::std::convert::From<super::AuditParty> for AuditParty {
-        fn from(value: super::AuditParty) -> Self {
-            Self { id: Ok(value.id) }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct Delegation {
-        basis: ::std::result::Result<super::DelegationBasis, ::std::string::String>,
-        delegate: ::std::result::Result<super::DelegationDelegate, ::std::string::String>,
-        delegation_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        ended: ::std::result::Result<
-            ::std::option::Option<super::DelegationEnded>,
-            ::std::string::String,
-        >,
-        may_delegate: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        relationship: ::std::result::Result<super::DelegationRelationship, ::std::string::String>,
-        scope: ::std::result::Result<super::DelegationScope, ::std::string::String>,
-        subject: ::std::result::Result<super::DelegationSubject, ::std::string::String>,
-        term: ::std::result::Result<super::DelegationTerm, ::std::string::String>,
-    }
-    impl ::std::default::Default for Delegation {
-        fn default() -> Self {
-            Self {
-                basis: Err("no value supplied for basis".to_string()),
-                delegate: Err("no value supplied for delegate".to_string()),
-                delegation_id: Err("no value supplied for delegation_id".to_string()),
-                ended: Ok(Default::default()),
-                may_delegate: Ok(Default::default()),
-                relationship: Err("no value supplied for relationship".to_string()),
-                scope: Err("no value supplied for scope".to_string()),
-                subject: Err("no value supplied for subject".to_string()),
-                term: Err("no value supplied for term".to_string()),
-            }
-        }
-    }
-    impl Delegation {
-        pub fn basis<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationBasis>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.basis = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for basis: {e}"));
-            self
-        }
-        pub fn delegate<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationDelegate>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.delegate = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for delegate: {e}"));
-            self
-        }
-        pub fn delegation_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.delegation_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for delegation_id: {e}"));
-            self
-        }
-        pub fn ended<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::DelegationEnded>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ended = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ended: {e}"));
-            self
-        }
-        pub fn may_delegate<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.may_delegate = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for may_delegate: {e}"));
-            self
-        }
-        pub fn relationship<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationRelationship>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.relationship = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for relationship: {e}"));
-            self
-        }
-        pub fn scope<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationScope>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.scope = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for scope: {e}"));
-            self
-        }
-        pub fn subject<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationSubject>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.subject = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for subject: {e}"));
-            self
-        }
-        pub fn term<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationTerm>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.term = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for term: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Delegation> for super::Delegation {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: Delegation,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                basis: value.basis?,
-                delegate: value.delegate?,
-                delegation_id: value.delegation_id?,
-                ended: value.ended?,
-                may_delegate: value.may_delegate?,
-                relationship: value.relationship?,
-                scope: value.scope?,
-                subject: value.subject?,
-                term: value.term?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Delegation> for Delegation {
-        fn from(value: super::Delegation) -> Self {
-            Self {
-                basis: Ok(value.basis),
-                delegate: Ok(value.delegate),
-                delegation_id: Ok(value.delegation_id),
-                ended: Ok(value.ended),
-                may_delegate: Ok(value.may_delegate),
-                relationship: Ok(value.relationship),
-                scope: Ok(value.scope),
-                subject: Ok(value.subject),
-                term: Ok(value.term),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationBasis {
-        covers: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        description:
-            ::std::result::Result<super::DelegationBasisDescription, ::std::string::String>,
-        established_at: ::std::result::Result<super::Instant, ::std::string::String>,
-        established_by:
-            ::std::result::Result<super::DelegationBasisEstablishedBy, ::std::string::String>,
-        evidence:
-            ::std::result::Result<::std::vec::Vec<super::EvidenceItem>, ::std::string::String>,
-        method: ::std::result::Result<super::DelegationBasisMethod, ::std::string::String>,
-        parent: ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
-    }
-    impl ::std::default::Default for DelegationBasis {
-        fn default() -> Self {
-            Self {
-                covers: Ok(Default::default()),
-                description: Err("no value supplied for description".to_string()),
-                established_at: Err("no value supplied for established_at".to_string()),
-                established_by: Err("no value supplied for established_by".to_string()),
-                evidence: Ok(Default::default()),
-                method: Err("no value supplied for method".to_string()),
-                parent: Ok(Default::default()),
-            }
-        }
-    }
-    impl DelegationBasis {
-        pub fn covers<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.covers = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for covers: {e}"));
-            self
-        }
-        pub fn description<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationBasisDescription>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.description = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for description: {e}"));
-            self
-        }
-        pub fn established_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.established_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for established_at: {e}"));
-            self
-        }
-        pub fn established_by<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationBasisEstablishedBy>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.established_by = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for established_by: {e}"));
-            self
-        }
-        pub fn evidence<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::EvidenceItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.evidence = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for evidence: {e}"));
-            self
-        }
-        pub fn method<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationBasisMethod>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.method = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for method: {e}"));
-            self
-        }
-        pub fn parent<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Urn>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.parent = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for parent: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationBasis> for super::DelegationBasis {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationBasis,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                covers: value.covers?,
-                description: value.description?,
-                established_at: value.established_at?,
-                established_by: value.established_by?,
-                evidence: value.evidence?,
-                method: value.method?,
-                parent: value.parent?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::DelegationBasis> for DelegationBasis {
-        fn from(value: super::DelegationBasis) -> Self {
-            Self {
-                covers: Ok(value.covers),
-                description: Ok(value.description),
-                established_at: Ok(value.established_at),
-                established_by: Ok(value.established_by),
-                evidence: Ok(value.evidence),
-                method: Ok(value.method),
-                parent: Ok(value.parent),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationDelegate {
-        id: ::std::result::Result<super::DelegationDelegateId, ::std::string::String>,
-        name: ::std::result::Result<super::DelegationDelegateName, ::std::string::String>,
-    }
-    impl ::std::default::Default for DelegationDelegate {
-        fn default() -> Self {
-            Self {
-                id: Err("no value supplied for id".to_string()),
-                name: Err("no value supplied for name".to_string()),
-            }
-        }
-    }
-    impl DelegationDelegate {
-        pub fn id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationDelegateId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for id: {e}"));
-            self
-        }
-        pub fn name<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationDelegateName>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.name = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for name: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationDelegate> for super::DelegationDelegate {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationDelegate,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                id: value.id?,
-                name: value.name?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::DelegationDelegate> for DelegationDelegate {
-        fn from(value: super::DelegationDelegate) -> Self {
-            Self {
-                id: Ok(value.id),
-                name: Ok(value.name),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationEnded {
-        at: ::std::result::Result<super::Instant, ::std::string::String>,
-        reason: ::std::result::Result<super::DelegationEndedReason, ::std::string::String>,
-    }
-    impl ::std::default::Default for DelegationEnded {
-        fn default() -> Self {
-            Self {
-                at: Err("no value supplied for at".to_string()),
-                reason: Err("no value supplied for reason".to_string()),
-            }
-        }
-    }
-    impl DelegationEnded {
-        pub fn at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for at: {e}"));
-            self
-        }
-        pub fn reason<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationEndedReason>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.reason = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for reason: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationEnded> for super::DelegationEnded {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationEnded,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                at: value.at?,
-                reason: value.reason?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::DelegationEnded> for DelegationEnded {
-        fn from(value: super::DelegationEnded) -> Self {
-            Self {
-                at: Ok(value.at),
-                reason: Ok(value.reason),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationScope {
-        actions:
-            ::std::result::Result<Vec<super::DelegationScopeActionsItem>, ::std::string::String>,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-    }
-    impl ::std::default::Default for DelegationScope {
-        fn default() -> Self {
-            Self {
-                actions: Err("no value supplied for actions".to_string()),
-                categories: Err("no value supplied for categories".to_string()),
-            }
-        }
-    }
-    impl DelegationScope {
-        pub fn actions<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<Vec<super::DelegationScopeActionsItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.actions = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for actions: {e}"));
-            self
-        }
-        pub fn categories<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.categories = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for categories: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationScope> for super::DelegationScope {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationScope,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                actions: value.actions?,
-                categories: value.categories?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::DelegationScope> for DelegationScope {
-        fn from(value: super::DelegationScope) -> Self {
-            Self {
-                actions: Ok(value.actions),
-                categories: Ok(value.categories),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationSubject {
-        id: ::std::result::Result<super::DelegationSubjectId, ::std::string::String>,
-    }
-    impl ::std::default::Default for DelegationSubject {
-        fn default() -> Self {
-            Self {
-                id: Err("no value supplied for id".to_string()),
-            }
-        }
-    }
-    impl DelegationSubject {
-        pub fn id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DelegationSubjectId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for id: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationSubject> for super::DelegationSubject {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationSubject,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self { id: value.id? })
-        }
-    }
-    impl ::std::convert::From<super::DelegationSubject> for DelegationSubject {
-        fn from(value: super::DelegationSubject) -> Self {
-            Self { id: Ok(value.id) }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct DelegationTerm {
-        at_majority: ::std::result::Result<bool, ::std::string::String>,
-        ends_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-    }
-    impl ::std::default::Default for DelegationTerm {
-        fn default() -> Self {
-            Self {
-                at_majority: Err("no value supplied for at_majority".to_string()),
-                ends_at: Err("no value supplied for ends_at".to_string()),
-            }
-        }
-    }
-    impl DelegationTerm {
-        pub fn at_majority<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<bool>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.at_majority = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for at_majority: {e}"));
-            self
-        }
-        pub fn ends_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ends_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ends_at: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<DelegationTerm> for super::DelegationTerm {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: DelegationTerm,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                at_majority: value.at_majority?,
-                ends_at: value.ends_at?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::DelegationTerm> for DelegationTerm {
-        fn from(value: super::DelegationTerm) -> Self {
-            Self {
-                at_majority: Ok(value.at_majority),
-                ends_at: Ok(value.ends_at),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct Directive {
-        action: ::std::result::Result<super::DirectiveAction, ::std::string::String>,
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        created_at: ::std::result::Result<super::Instant, ::std::string::String>,
-        directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        effect: ::std::result::Result<super::DirectiveEffect, ::std::string::String>,
-        operators: ::std::result::Result<
-            ::std::vec::Vec<super::DirectiveOperatorsItem>,
-            ::std::string::String,
-        >,
-        set_by: ::std::result::Result<super::DirectiveSetBy, ::std::string::String>,
-        text: ::std::result::Result<super::DirectiveText, ::std::string::String>,
-    }
-    impl ::std::default::Default for Directive {
-        fn default() -> Self {
-            Self {
-                action: Err("no value supplied for action".to_string()),
-                categories: Ok(Default::default()),
-                created_at: Err("no value supplied for created_at".to_string()),
-                directive_id: Err("no value supplied for directive_id".to_string()),
-                effect: Err("no value supplied for effect".to_string()),
-                operators: Ok(Default::default()),
-                set_by: Err("no value supplied for set_by".to_string()),
-                text: Err("no value supplied for text".to_string()),
-            }
-        }
-    }
-    impl Directive {
-        pub fn action<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DirectiveAction>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.action = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for action: {e}"));
-            self
-        }
-        pub fn categories<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.categories = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for categories: {e}"));
-            self
-        }
-        pub fn created_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.created_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
-            self
-        }
-        pub fn directive_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.directive_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for directive_id: {e}"));
-            self
-        }
-        pub fn effect<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DirectiveEffect>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.effect = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for effect: {e}"));
-            self
-        }
-        pub fn operators<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DirectiveOperatorsItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.operators = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for operators: {e}"));
-            self
-        }
-        pub fn set_by<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DirectiveSetBy>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.set_by = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for set_by: {e}"));
-            self
-        }
-        pub fn text<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DirectiveText>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.text = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for text: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Directive> for super::Directive {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: Directive,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                action: value.action?,
-                categories: value.categories?,
-                created_at: value.created_at?,
-                directive_id: value.directive_id?,
-                effect: value.effect?,
-                operators: value.operators?,
-                set_by: value.set_by?,
-                text: value.text?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Directive> for Directive {
-        fn from(value: super::Directive) -> Self {
-            Self {
-                action: Ok(value.action),
-                categories: Ok(value.categories),
-                created_at: Ok(value.created_at),
-                directive_id: Ok(value.directive_id),
-                effect: Ok(value.effect),
-                operators: Ok(value.operators),
-                set_by: Ok(value.set_by),
-                text: Ok(value.text),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct EvidenceItem {
-        credential: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
-            ::std::string::String,
-        >,
-        role: ::std::result::Result<super::EvidenceItemRole, ::std::string::String>,
-        type_: ::std::result::Result<super::EvidenceItemType, ::std::string::String>,
-        verification: ::std::result::Result<
-            ::std::option::Option<super::EvidenceItemVerification>,
-            ::std::string::String,
-        >,
-    }
-    impl ::std::default::Default for EvidenceItem {
-        fn default() -> Self {
-            Self {
-                credential: Ok(Default::default()),
-                role: Err("no value supplied for role".to_string()),
-                type_: Err("no value supplied for type_".to_string()),
-                verification: Ok(Default::default()),
-            }
-        }
-    }
-    impl EvidenceItem {
-        pub fn credential<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.credential = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for credential: {e}"));
-            self
-        }
-        pub fn role<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::EvidenceItemRole>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role: {e}"));
-            self
-        }
-        pub fn type_<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::EvidenceItemType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.type_ = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for type_: {e}"));
-            self
-        }
-        pub fn verification<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::EvidenceItemVerification>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.verification = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for verification: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<EvidenceItem> for super::EvidenceItem {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: EvidenceItem,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                credential: value.credential?,
-                role: value.role?,
-                type_: value.type_?,
-                verification: value.verification?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::EvidenceItem> for EvidenceItem {
-        fn from(value: super::EvidenceItem) -> Self {
-            Self {
-                credential: Ok(value.credential),
-                role: Ok(value.role),
-                type_: Ok(value.type_),
-                verification: Ok(value.verification),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct EvidenceItemVerification {
-        at: ::std::result::Result<super::Instant, ::std::string::String>,
-        by: ::std::result::Result<
-            ::std::option::Option<super::EvidenceItemVerificationBy>,
-            ::std::string::String,
-        >,
-        result: ::std::result::Result<super::EvidenceItemVerificationResult, ::std::string::String>,
-    }
-    impl ::std::default::Default for EvidenceItemVerification {
-        fn default() -> Self {
-            Self {
-                at: Err("no value supplied for at".to_string()),
-                by: Ok(Default::default()),
-                result: Err("no value supplied for result".to_string()),
-            }
-        }
-    }
-    impl EvidenceItemVerification {
-        pub fn at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for at: {e}"));
-            self
-        }
-        pub fn by<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::EvidenceItemVerificationBy>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.by = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for by: {e}"));
-            self
-        }
-        pub fn result<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::EvidenceItemVerificationResult>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.result = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for result: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<EvidenceItemVerification> for super::EvidenceItemVerification {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: EvidenceItemVerification,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                at: value.at?,
-                by: value.by?,
-                result: value.result?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::EvidenceItemVerification> for EvidenceItemVerification {
-        fn from(value: super::EvidenceItemVerification) -> Self {
-            Self {
-                at: Ok(value.at),
-                by: Ok(value.by),
-                result: Ok(value.result),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
     pub struct HcpCarriageImportExtension {
         rules_not_applied: ::std::result::Result<Vec<super::Urn>, ::std::string::String>,
     }
@@ -4590,26 +2679,187 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct ImportedAuditDisclosed {
+        entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        provenance: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        revealed: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>,
+            ::std::string::String,
+        >,
+        use_until: ::std::result::Result<super::Instant, ::std::string::String>,
+        version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditDisclosed {
+        fn default() -> Self {
+            Self {
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                provenance: Ok(Default::default()),
+                revealed: Ok(Default::default()),
+                use_until: Err("no value supplied for use_until".to_string()),
+                version: Err("no value supplied for version".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditDisclosed {
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn provenance<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.provenance = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for provenance: {e}"));
+            self
+        }
+        pub fn revealed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditDisclosedRevealedItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.revealed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for revealed: {e}"));
+            self
+        }
+        pub fn use_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.use_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for use_until: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditDisclosed> for super::ImportedAuditDisclosed {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditDisclosed,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entry_id: value.entry_id?,
+                provenance: value.provenance?,
+                revealed: value.revealed?,
+                use_until: value.use_until?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditDisclosed> for ImportedAuditDisclosed {
+        fn from(value: super::ImportedAuditDisclosed) -> Self {
+            Self {
+                entry_id: Ok(value.entry_id),
+                provenance: Ok(value.provenance),
+                revealed: Ok(value.revealed),
+                use_until: Ok(value.use_until),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditDisclosedRevealedItem {
+        claims:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        evidence: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditDisclosedRevealedItem {
+        fn default() -> Self {
+            Self {
+                claims: Err("no value supplied for claims".to_string()),
+                evidence: Err("no value supplied for evidence".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditDisclosedRevealedItem {
+        pub fn claims<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.claims = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for claims: {e}"));
+            self
+        }
+        pub fn evidence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.evidence = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for evidence: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditDisclosedRevealedItem>
+        for super::ImportedAuditDisclosedRevealedItem
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditDisclosedRevealedItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                claims: value.claims?,
+                evidence: value.evidence?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditDisclosedRevealedItem>
+        for ImportedAuditDisclosedRevealedItem
+    {
+        fn from(value: super::ImportedAuditDisclosedRevealedItem) -> Self {
+            Self {
+                claims: Ok(value.claims),
+                evidence: Ok(value.evidence),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct ImportedAuditEvent {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
+        categories:
+            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
         data: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
-        disclosed:
-            ::std::result::Result<::std::vec::Vec<super::AuditDisclosed>, ::std::string::String>,
+        disclosed: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedAuditDisclosed>,
+            ::std::string::String,
+        >,
         entry_id: ::std::result::Result<
             ::std::option::Option<super::ImportedAuditEventEntryId>,
             ::std::string::String,
         >,
         event_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        event_type:
-            ::std::result::Result<super::ImportedAuditEventEventType, ::std::string::String>,
+        event_type: ::std::result::Result<::std::string::String, ::std::string::String>,
         grant_id: ::std::result::Result<
             ::std::option::Option<super::ImportedAuditEventGrantId>,
             ::std::string::String,
         >,
-        participants: ::std::result::Result<super::AuditParticipants, ::std::string::String>,
+        participants:
+            ::std::result::Result<super::ImportedAuditParticipants, ::std::string::String>,
         purpose: ::std::result::Result<
             ::std::option::Option<super::ImportedAuditEventPurpose>,
             ::std::string::String,
@@ -4645,7 +2895,7 @@ pub mod builder {
     impl ImportedAuditEvent {
         pub fn categories<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
             T::Error: ::std::fmt::Display,
         {
             self.categories = value
@@ -4667,7 +2917,7 @@ pub mod builder {
         }
         pub fn disclosed<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::AuditDisclosed>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedAuditDisclosed>>,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed = value
@@ -4697,7 +2947,7 @@ pub mod builder {
         }
         pub fn event_type<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ImportedAuditEventEventType>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.event_type = value
@@ -4717,7 +2967,7 @@ pub mod builder {
         }
         pub fn participants<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::AuditParticipants>,
+            T: ::std::convert::TryInto<super::ImportedAuditParticipants>,
             T::Error: ::std::fmt::Display,
         {
             self.participants = value
@@ -4810,26 +3060,1298 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipants {
+        authorizing_principal: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditParticipantsAuthorizingPrincipal>,
+            ::std::string::String,
+        >,
+        client_operator: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditParticipantsClientOperator>,
+            ::std::string::String,
+        >,
+        initiator:
+            ::std::result::Result<super::ImportedAuditParticipantsInitiator, ::std::string::String>,
+        model: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditParticipantsModel>,
+            ::std::string::String,
+        >,
+        provider:
+            ::std::result::Result<super::ImportedAuditParticipantsProvider, ::std::string::String>,
+        requesting_party: ::std::result::Result<
+            ::std::option::Option<super::ImportedAuditParticipantsRequestingParty>,
+            ::std::string::String,
+        >,
+        retrieval_id:
+            ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipants {
+        fn default() -> Self {
+            Self {
+                authorizing_principal: Ok(Default::default()),
+                client_operator: Ok(Default::default()),
+                initiator: Err("no value supplied for initiator".to_string()),
+                model: Ok(Default::default()),
+                provider: Err("no value supplied for provider".to_string()),
+                requesting_party: Ok(Default::default()),
+                retrieval_id: Ok(Default::default()),
+            }
+        }
+    }
+    impl ImportedAuditParticipants {
+        pub fn authorizing_principal<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditParticipantsAuthorizingPrincipal>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authorizing_principal = value.try_into().map_err(|e| {
+                format!("error converting supplied value for authorizing_principal: {e}")
+            });
+            self
+        }
+        pub fn client_operator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditParticipantsClientOperator>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.client_operator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for client_operator: {e}"));
+            self
+        }
+        pub fn initiator<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedAuditParticipantsInitiator>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.initiator = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for initiator: {e}"));
+            self
+        }
+        pub fn model<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditParticipantsModel>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.model = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for model: {e}"));
+            self
+        }
+        pub fn provider<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedAuditParticipantsProvider>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.provider = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for provider: {e}"));
+            self
+        }
+        pub fn requesting_party<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedAuditParticipantsRequestingParty>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requesting_party = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requesting_party: {e}"));
+            self
+        }
+        pub fn retrieval_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Urn>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.retrieval_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for retrieval_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipants> for super::ImportedAuditParticipants {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipants,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authorizing_principal: value.authorizing_principal?,
+                client_operator: value.client_operator?,
+                initiator: value.initiator?,
+                model: value.model?,
+                provider: value.provider?,
+                requesting_party: value.requesting_party?,
+                retrieval_id: value.retrieval_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipants> for ImportedAuditParticipants {
+        fn from(value: super::ImportedAuditParticipants) -> Self {
+            Self {
+                authorizing_principal: Ok(value.authorizing_principal),
+                client_operator: Ok(value.client_operator),
+                initiator: Ok(value.initiator),
+                model: Ok(value.model),
+                provider: Ok(value.provider),
+                requesting_party: Ok(value.requesting_party),
+                retrieval_id: Ok(value.retrieval_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsAuthorizingPrincipal {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsAuthorizingPrincipal {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsAuthorizingPrincipal {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsAuthorizingPrincipal>
+        for super::ImportedAuditParticipantsAuthorizingPrincipal
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsAuthorizingPrincipal,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsAuthorizingPrincipal>
+        for ImportedAuditParticipantsAuthorizingPrincipal
+    {
+        fn from(value: super::ImportedAuditParticipantsAuthorizingPrincipal) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsClientOperator {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsClientOperator {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsClientOperator {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsClientOperator>
+        for super::ImportedAuditParticipantsClientOperator
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsClientOperator,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsClientOperator>
+        for ImportedAuditParticipantsClientOperator
+    {
+        fn from(value: super::ImportedAuditParticipantsClientOperator) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsInitiator {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        role: ::std::result::Result<
+            super::ImportedAuditParticipantsInitiatorRole,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsInitiator {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                role: Err("no value supplied for role".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsInitiator {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedAuditParticipantsInitiatorRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsInitiator>
+        for super::ImportedAuditParticipantsInitiator
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsInitiator,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsInitiator>
+        for ImportedAuditParticipantsInitiator
+    {
+        fn from(value: super::ImportedAuditParticipantsInitiator) -> Self {
+            Self {
+                id: Ok(value.id),
+                role: Ok(value.role),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsModel {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsModel {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsModel {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsModel>
+        for super::ImportedAuditParticipantsModel
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsModel,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsModel>
+        for ImportedAuditParticipantsModel
+    {
+        fn from(value: super::ImportedAuditParticipantsModel) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsProvider {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsProvider {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsProvider {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsProvider>
+        for super::ImportedAuditParticipantsProvider
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsProvider,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsProvider>
+        for ImportedAuditParticipantsProvider
+    {
+        fn from(value: super::ImportedAuditParticipantsProvider) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedAuditParticipantsRequestingParty {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedAuditParticipantsRequestingParty {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedAuditParticipantsRequestingParty {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedAuditParticipantsRequestingParty>
+        for super::ImportedAuditParticipantsRequestingParty
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedAuditParticipantsRequestingParty,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedAuditParticipantsRequestingParty>
+        for ImportedAuditParticipantsRequestingParty
+    {
+        fn from(value: super::ImportedAuditParticipantsRequestingParty) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegation {
+        basis: ::std::result::Result<super::ImportedDelegationBasis, ::std::string::String>,
+        delegate: ::std::result::Result<super::ImportedDelegationDelegate, ::std::string::String>,
+        delegation_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        ended: ::std::result::Result<
+            ::std::option::Option<super::ImportedDelegationEnded>,
+            ::std::string::String,
+        >,
+        may_delegate: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        relationship:
+            ::std::result::Result<super::ImportedDelegationRelationship, ::std::string::String>,
+        scope: ::std::result::Result<super::ImportedDelegationScope, ::std::string::String>,
+        subject: ::std::result::Result<super::ImportedDelegationSubject, ::std::string::String>,
+        term: ::std::result::Result<super::ImportedDelegationTerm, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegation {
+        fn default() -> Self {
+            Self {
+                basis: Err("no value supplied for basis".to_string()),
+                delegate: Err("no value supplied for delegate".to_string()),
+                delegation_id: Err("no value supplied for delegation_id".to_string()),
+                ended: Ok(Default::default()),
+                may_delegate: Ok(Default::default()),
+                relationship: Err("no value supplied for relationship".to_string()),
+                scope: Err("no value supplied for scope".to_string()),
+                subject: Err("no value supplied for subject".to_string()),
+                term: Err("no value supplied for term".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegation {
+        pub fn basis<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationBasis>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.basis = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for basis: {e}"));
+            self
+        }
+        pub fn delegate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationDelegate>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.delegate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for delegate: {e}"));
+            self
+        }
+        pub fn delegation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.delegation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for delegation_id: {e}"));
+            self
+        }
+        pub fn ended<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ImportedDelegationEnded>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ended = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ended: {e}"));
+            self
+        }
+        pub fn may_delegate<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.may_delegate = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for may_delegate: {e}"));
+            self
+        }
+        pub fn relationship<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationRelationship>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.relationship = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for relationship: {e}"));
+            self
+        }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationScope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationSubject>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+        pub fn term<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationTerm>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.term = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for term: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegation> for super::ImportedDelegation {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegation,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                basis: value.basis?,
+                delegate: value.delegate?,
+                delegation_id: value.delegation_id?,
+                ended: value.ended?,
+                may_delegate: value.may_delegate?,
+                relationship: value.relationship?,
+                scope: value.scope?,
+                subject: value.subject?,
+                term: value.term?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegation> for ImportedDelegation {
+        fn from(value: super::ImportedDelegation) -> Self {
+            Self {
+                basis: Ok(value.basis),
+                delegate: Ok(value.delegate),
+                delegation_id: Ok(value.delegation_id),
+                ended: Ok(value.ended),
+                may_delegate: Ok(value.may_delegate),
+                relationship: Ok(value.relationship),
+                scope: Ok(value.scope),
+                subject: Ok(value.subject),
+                term: Ok(value.term),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationBasis {
+        covers:
+            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        description:
+            ::std::result::Result<super::ImportedDelegationBasisDescription, ::std::string::String>,
+        established_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        established_by: ::std::result::Result<::std::string::String, ::std::string::String>,
+        evidence: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedEvidenceItem>,
+            ::std::string::String,
+        >,
+        method: ::std::result::Result<super::ImportedDelegationBasisMethod, ::std::string::String>,
+        parent: ::std::result::Result<::std::option::Option<super::Urn>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegationBasis {
+        fn default() -> Self {
+            Self {
+                covers: Ok(Default::default()),
+                description: Err("no value supplied for description".to_string()),
+                established_at: Err("no value supplied for established_at".to_string()),
+                established_by: Err("no value supplied for established_by".to_string()),
+                evidence: Ok(Default::default()),
+                method: Err("no value supplied for method".to_string()),
+                parent: Ok(Default::default()),
+            }
+        }
+    }
+    impl ImportedDelegationBasis {
+        pub fn covers<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.covers = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for covers: {e}"));
+            self
+        }
+        pub fn description<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationBasisDescription>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.description = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for description: {e}"));
+            self
+        }
+        pub fn established_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.established_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for established_at: {e}"));
+            self
+        }
+        pub fn established_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.established_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for established_by: {e}"));
+            self
+        }
+        pub fn evidence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedEvidenceItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.evidence = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for evidence: {e}"));
+            self
+        }
+        pub fn method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationBasisMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.method = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for method: {e}"));
+            self
+        }
+        pub fn parent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Urn>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.parent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for parent: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationBasis> for super::ImportedDelegationBasis {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationBasis,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                covers: value.covers?,
+                description: value.description?,
+                established_at: value.established_at?,
+                established_by: value.established_by?,
+                evidence: value.evidence?,
+                method: value.method?,
+                parent: value.parent?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationBasis> for ImportedDelegationBasis {
+        fn from(value: super::ImportedDelegationBasis) -> Self {
+            Self {
+                covers: Ok(value.covers),
+                description: Ok(value.description),
+                established_at: Ok(value.established_at),
+                established_by: Ok(value.established_by),
+                evidence: Ok(value.evidence),
+                method: Ok(value.method),
+                parent: Ok(value.parent),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationDelegate {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        name: ::std::result::Result<super::ImportedDelegationDelegateName, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegationDelegate {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+                name: Err("no value supplied for name".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegationDelegate {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn name<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationDelegateName>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.name = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for name: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationDelegate> for super::ImportedDelegationDelegate {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationDelegate,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                id: value.id?,
+                name: value.name?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationDelegate> for ImportedDelegationDelegate {
+        fn from(value: super::ImportedDelegationDelegate) -> Self {
+            Self {
+                id: Ok(value.id),
+                name: Ok(value.name),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationEnded {
+        at: ::std::result::Result<super::Instant, ::std::string::String>,
+        reason: ::std::result::Result<super::ImportedDelegationEndedReason, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegationEnded {
+        fn default() -> Self {
+            Self {
+                at: Err("no value supplied for at".to_string()),
+                reason: Err("no value supplied for reason".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegationEnded {
+        pub fn at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for at: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDelegationEndedReason>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationEnded> for super::ImportedDelegationEnded {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationEnded,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                at: value.at?,
+                reason: value.reason?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationEnded> for ImportedDelegationEnded {
+        fn from(value: super::ImportedDelegationEnded) -> Self {
+            Self {
+                at: Ok(value.at),
+                reason: Ok(value.reason),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationScope {
+        actions: ::std::result::Result<
+            Vec<super::ImportedDelegationScopeActionsItem>,
+            ::std::string::String,
+        >,
+        categories:
+            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegationScope {
+        fn default() -> Self {
+            Self {
+                actions: Err("no value supplied for actions".to_string()),
+                categories: Err("no value supplied for categories".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegationScope {
+        pub fn actions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::ImportedDelegationScopeActionsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.actions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for actions: {e}"));
+            self
+        }
+        pub fn categories<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.categories = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for categories: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationScope> for super::ImportedDelegationScope {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationScope,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                actions: value.actions?,
+                categories: value.categories?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationScope> for ImportedDelegationScope {
+        fn from(value: super::ImportedDelegationScope) -> Self {
+            Self {
+                actions: Ok(value.actions),
+                categories: Ok(value.categories),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationSubject {
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDelegationSubject {
+        fn default() -> Self {
+            Self {
+                id: Err("no value supplied for id".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegationSubject {
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationSubject> for super::ImportedDelegationSubject {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationSubject,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self { id: value.id? })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationSubject> for ImportedDelegationSubject {
+        fn from(value: super::ImportedDelegationSubject) -> Self {
+            Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDelegationTerm {
+        at_majority: ::std::result::Result<bool, ::std::string::String>,
+        ends_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ImportedDelegationTerm {
+        fn default() -> Self {
+            Self {
+                at_majority: Err("no value supplied for at_majority".to_string()),
+                ends_at: Err("no value supplied for ends_at".to_string()),
+            }
+        }
+    }
+    impl ImportedDelegationTerm {
+        pub fn at_majority<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.at_majority = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for at_majority: {e}"));
+            self
+        }
+        pub fn ends_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ends_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ends_at: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDelegationTerm> for super::ImportedDelegationTerm {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDelegationTerm,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                at_majority: value.at_majority?,
+                ends_at: value.ends_at?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDelegationTerm> for ImportedDelegationTerm {
+        fn from(value: super::ImportedDelegationTerm) -> Self {
+            Self {
+                at_majority: Ok(value.at_majority),
+                ends_at: Ok(value.ends_at),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedDirective {
+        action: ::std::result::Result<super::ImportedDirectiveAction, ::std::string::String>,
+        categories:
+            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        created_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        directive_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        effect: ::std::result::Result<super::ImportedDirectiveEffect, ::std::string::String>,
+        operators: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedDirectiveOperatorsItem>,
+            ::std::string::String,
+        >,
+        set_by: ::std::result::Result<::std::string::String, ::std::string::String>,
+        text: ::std::result::Result<super::ImportedDirectiveText, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedDirective {
+        fn default() -> Self {
+            Self {
+                action: Err("no value supplied for action".to_string()),
+                categories: Ok(Default::default()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                directive_id: Err("no value supplied for directive_id".to_string()),
+                effect: Err("no value supplied for effect".to_string()),
+                operators: Ok(Default::default()),
+                set_by: Err("no value supplied for set_by".to_string()),
+                text: Err("no value supplied for text".to_string()),
+            }
+        }
+    }
+    impl ImportedDirective {
+        pub fn action<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDirectiveAction>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.action = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for action: {e}"));
+            self
+        }
+        pub fn categories<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.categories = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for categories: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn directive_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.directive_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for directive_id: {e}"));
+            self
+        }
+        pub fn effect<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDirectiveEffect>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effect = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effect: {e}"));
+            self
+        }
+        pub fn operators<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDirectiveOperatorsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operators = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operators: {e}"));
+            self
+        }
+        pub fn set_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.set_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for set_by: {e}"));
+            self
+        }
+        pub fn text<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedDirectiveText>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.text = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for text: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedDirective> for super::ImportedDirective {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedDirective,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                action: value.action?,
+                categories: value.categories?,
+                created_at: value.created_at?,
+                directive_id: value.directive_id?,
+                effect: value.effect?,
+                operators: value.operators?,
+                set_by: value.set_by?,
+                text: value.text?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedDirective> for ImportedDirective {
+        fn from(value: super::ImportedDirective) -> Self {
+            Self {
+                action: Ok(value.action),
+                categories: Ok(value.categories),
+                created_at: Ok(value.created_at),
+                directive_id: Ok(value.directive_id),
+                effect: Ok(value.effect),
+                operators: Ok(value.operators),
+                set_by: Ok(value.set_by),
+                text: Ok(value.text),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedEvidenceItem {
+        credential: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<super::ImportedEvidenceItemRole, ::std::string::String>,
+        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+        verification: ::std::result::Result<
+            ::std::option::Option<super::ImportedEvidenceItemVerification>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ImportedEvidenceItem {
+        fn default() -> Self {
+            Self {
+                credential: Ok(Default::default()),
+                role: Err("no value supplied for role".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                verification: Ok(Default::default()),
+            }
+        }
+    }
+    impl ImportedEvidenceItem {
+        pub fn credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedEvidenceItemRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn verification<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedEvidenceItemVerification>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verification: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedEvidenceItem> for super::ImportedEvidenceItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedEvidenceItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                credential: value.credential?,
+                role: value.role?,
+                type_: value.type_?,
+                verification: value.verification?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedEvidenceItem> for ImportedEvidenceItem {
+        fn from(value: super::ImportedEvidenceItem) -> Self {
+            Self {
+                credential: Ok(value.credential),
+                role: Ok(value.role),
+                type_: Ok(value.type_),
+                verification: Ok(value.verification),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedEvidenceItemVerification {
+        at: ::std::result::Result<super::Instant, ::std::string::String>,
+        by: ::std::result::Result<
+            ::std::option::Option<super::ImportedEvidenceItemVerificationBy>,
+            ::std::string::String,
+        >,
+        result: ::std::result::Result<
+            super::ImportedEvidenceItemVerificationResult,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ImportedEvidenceItemVerification {
+        fn default() -> Self {
+            Self {
+                at: Err("no value supplied for at".to_string()),
+                by: Ok(Default::default()),
+                result: Err("no value supplied for result".to_string()),
+            }
+        }
+    }
+    impl ImportedEvidenceItemVerification {
+        pub fn at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for at: {e}"));
+            self
+        }
+        pub fn by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ImportedEvidenceItemVerificationBy>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for by: {e}"));
+            self
+        }
+        pub fn result<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedEvidenceItemVerificationResult>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.result = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for result: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedEvidenceItemVerification>
+        for super::ImportedEvidenceItemVerification
+    {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedEvidenceItemVerification,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                at: value.at?,
+                by: value.by?,
+                result: value.result?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedEvidenceItemVerification>
+        for ImportedEvidenceItemVerification
+    {
+        fn from(value: super::ImportedEvidenceItemVerification) -> Self {
+            Self {
+                at: Ok(value.at),
+                by: Ok(value.by),
+                result: Ok(value.result),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct ImportedExport {
         audit: ::std::result::Result<
             ::std::vec::Vec<super::ImportedAuditEvent>,
             ::std::string::String,
         >,
         context: ::std::result::Result<super::ImportedExportContext, ::std::string::String>,
-        delegations:
-            ::std::result::Result<::std::vec::Vec<super::Delegation>, ::std::string::String>,
-        directives: ::std::result::Result<::std::vec::Vec<super::Directive>, ::std::string::String>,
+        delegations: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedDelegation>,
+            ::std::string::String,
+        >,
+        directives:
+            ::std::result::Result<::std::vec::Vec<super::ImportedDirective>, ::std::string::String>,
         entries: ::std::result::Result<
             ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         exported_at: ::std::result::Result<super::Instant, ::std::string::String>,
-        exported_by: ::std::result::Result<super::ImportedExportExportedBy, ::std::string::String>,
+        exported_by: ::std::result::Result<::std::string::String, ::std::string::String>,
         options: ::std::result::Result<
             ::std::option::Option<super::ImportedExportOptions>,
             ::std::string::String,
         >,
-        rules: ::std::result::Result<::std::vec::Vec<super::StandingRule>, ::std::string::String>,
+        rules: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedStandingRule>,
+            ::std::string::String,
+        >,
         schema: ::std::result::Result<::std::string::String, ::std::string::String>,
         subject: ::std::result::Result<super::ImportedExportSubject, ::std::string::String>,
         type_: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -4880,7 +4402,7 @@ pub mod builder {
         }
         pub fn delegations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Delegation>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDelegation>>,
             T::Error: ::std::fmt::Display,
         {
             self.delegations = value
@@ -4890,7 +4412,7 @@ pub mod builder {
         }
         pub fn directives<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Directive>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedDirective>>,
             T::Error: ::std::fmt::Display,
         {
             self.directives = value
@@ -4922,7 +4444,7 @@ pub mod builder {
         }
         pub fn exported_by<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ImportedExportExportedBy>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.exported_by = value
@@ -4942,7 +4464,7 @@ pub mod builder {
         }
         pub fn rules<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::StandingRule>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedStandingRule>>,
             T::Error: ::std::fmt::Display,
         {
             self.rules = value
@@ -5104,7 +4626,7 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ImportedExportSubject {
-        id: ::std::result::Result<super::ImportedExportSubjectId, ::std::string::String>,
+        id: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for ImportedExportSubject {
         fn default() -> Self {
@@ -5116,7 +4638,7 @@ pub mod builder {
     impl ImportedExportSubject {
         pub fn id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::ImportedExportSubjectId>,
+            T: ::std::convert::TryInto<::std::string::String>,
             T::Error: ::std::fmt::Display,
         {
             self.id = value
@@ -5136,6 +4658,135 @@ pub mod builder {
     impl ::std::convert::From<super::ImportedExportSubject> for ImportedExportSubject {
         fn from(value: super::ImportedExportSubject) -> Self {
             Self { id: Ok(value.id) }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ImportedStandingRule {
+        categories:
+            ::std::result::Result<::std::vec::Vec<super::ImportedCategory>, ::std::string::String>,
+        created_at: ::std::result::Result<super::Instant, ::std::string::String>,
+        effect: ::std::result::Result<super::ImportedStandingRuleEffect, ::std::string::String>,
+        operators: ::std::result::Result<
+            ::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>,
+            ::std::string::String,
+        >,
+        requires:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        rule_id: ::std::result::Result<super::Urn, ::std::string::String>,
+        set_by: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for ImportedStandingRule {
+        fn default() -> Self {
+            Self {
+                categories: Ok(Default::default()),
+                created_at: Err("no value supplied for created_at".to_string()),
+                effect: Err("no value supplied for effect".to_string()),
+                operators: Ok(Default::default()),
+                requires: Ok(Default::default()),
+                rule_id: Err("no value supplied for rule_id".to_string()),
+                set_by: Err("no value supplied for set_by".to_string()),
+            }
+        }
+    }
+    impl ImportedStandingRule {
+        pub fn categories<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedCategory>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.categories = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for categories: {e}"));
+            self
+        }
+        pub fn created_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Instant>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
+            self
+        }
+        pub fn effect<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ImportedStandingRuleEffect>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.effect = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for effect: {e}"));
+            self
+        }
+        pub fn operators<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ImportedStandingRuleOperatorsItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.operators = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for operators: {e}"));
+            self
+        }
+        pub fn requires<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.requires = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for requires: {e}"));
+            self
+        }
+        pub fn rule_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Urn>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rule_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rule_id: {e}"));
+            self
+        }
+        pub fn set_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.set_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for set_by: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ImportedStandingRule> for super::ImportedStandingRule {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ImportedStandingRule,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                categories: value.categories?,
+                created_at: value.created_at?,
+                effect: value.effect?,
+                operators: value.operators?,
+                requires: value.requires?,
+                rule_id: value.rule_id?,
+                set_by: value.set_by?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ImportedStandingRule> for ImportedStandingRule {
+        fn from(value: super::ImportedStandingRule) -> Self {
+            Self {
+                categories: Ok(value.categories),
+                created_at: Ok(value.created_at),
+                effect: Ok(value.effect),
+                operators: Ok(value.operators),
+                requires: Ok(value.requires),
+                rule_id: Ok(value.rule_id),
+                set_by: Ok(value.set_by),
+            }
         }
     }
     #[derive(Clone, Debug)]
@@ -5358,133 +5009,6 @@ pub mod builder {
             }
         }
     }
-    #[derive(Clone, Debug)]
-    pub struct StandingRule {
-        categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
-        created_at: ::std::result::Result<super::Instant, ::std::string::String>,
-        effect: ::std::result::Result<super::StandingRuleEffect, ::std::string::String>,
-        operators: ::std::result::Result<
-            ::std::vec::Vec<super::StandingRuleOperatorsItem>,
-            ::std::string::String,
-        >,
-        requires: ::std::result::Result<::std::vec::Vec<super::Uri>, ::std::string::String>,
-        rule_id: ::std::result::Result<super::Urn, ::std::string::String>,
-        set_by: ::std::result::Result<super::StandingRuleSetBy, ::std::string::String>,
-    }
-    impl ::std::default::Default for StandingRule {
-        fn default() -> Self {
-            Self {
-                categories: Ok(Default::default()),
-                created_at: Err("no value supplied for created_at".to_string()),
-                effect: Err("no value supplied for effect".to_string()),
-                operators: Ok(Default::default()),
-                requires: Ok(Default::default()),
-                rule_id: Err("no value supplied for rule_id".to_string()),
-                set_by: Err("no value supplied for set_by".to_string()),
-            }
-        }
-    }
-    impl StandingRule {
-        pub fn categories<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Category>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.categories = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for categories: {e}"));
-            self
-        }
-        pub fn created_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Instant>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.created_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
-            self
-        }
-        pub fn effect<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::StandingRuleEffect>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.effect = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for effect: {e}"));
-            self
-        }
-        pub fn operators<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::StandingRuleOperatorsItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.operators = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for operators: {e}"));
-            self
-        }
-        pub fn requires<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Uri>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.requires = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for requires: {e}"));
-            self
-        }
-        pub fn rule_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Urn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.rule_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for rule_id: {e}"));
-            self
-        }
-        pub fn set_by<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::StandingRuleSetBy>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.set_by = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for set_by: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<StandingRule> for super::StandingRule {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: StandingRule,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                categories: value.categories?,
-                created_at: value.created_at?,
-                effect: value.effect?,
-                operators: value.operators?,
-                requires: value.requires?,
-                rule_id: value.rule_id?,
-                set_by: value.set_by?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::StandingRule> for StandingRule {
-        fn from(value: super::StandingRule) -> Self {
-            Self {
-                categories: Ok(value.categories),
-                created_at: Ok(value.created_at),
-                effect: Ok(value.effect),
-                operators: Ok(value.operators),
-                requires: Ok(value.requires),
-                rule_id: Ok(value.rule_id),
-                set_by: Ok(value.set_by),
-            }
-        }
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/hcp/import/0.1";
@@ -5493,7 +5017,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(16777216usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AuditDisclosed_fc9343da!(), ",", crate::specs::shared_defs::d_AuditParticipants_99e0fec3!(), ",", crate::specs::shared_defs::d_AuditParty_d60c0a20!(), ",", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Delegation_446bc4b2!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_Directive_1c3bbd1f!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"HcpCarriageImportExtension\":{\"$anchor\":\"hcpCarriageImportExtension\",\"additionalProperties\":false,\"description\":\"The value of `ext[\\\"vnd.trusttasks.hcp-carriage\\\"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.\",\"properties\":{\"rulesNotApplied\":{\"description\":\"The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Urn\"},\"maxItems\":1000000,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"rulesNotApplied\"],\"title\":\"HCP — Import — vnd.trusttasks.hcp-carriage response extension\",\"type\":\"object\"},\"ImportedAuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2).\",\"items\":{\"$ref\":\"#/$defs/AuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/AuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":4096,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim.\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\"],\"type\":\"object\"},\"ImportedExport\":{\"additionalProperties\":true,\"description\":\"An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement.\",\"maxItems\":16,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array.\",\"items\":{\"$ref\":\"#/$defs/ImportedAuditEvent\"},\"maxItems\":1000000,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2).\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"maxItems\":1000000,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"maxItems\":1000000,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":100000,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ImportedExportOptions\",\"description\":\"HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3).\",\"items\":{\"$ref\":\"#/$defs/StandingRule\"},\"maxItems\":1000000,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":1000000,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"entries\",\"rules\"],\"type\":\"object\"},\"ImportedExportOptions\":{\"additionalProperties\":true,\"description\":\"HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Superseded versions were requested (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/import/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categoryMap\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Category\"},\"description\":\"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement.\",\"maxProperties\":256,\"type\":\"object\"},\"dryRun\":{\"description\":\"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.\",\"type\":\"boolean\"},\"export\":{\"$ref\":\"#/$defs/ImportedExport\",\"description\":\"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted.\"}},\"required\":[\"export\",\"accessToken\"],\"title\":\"HCP — Import — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",\"HcpCarriageImportExtension\":{\"$anchor\":\"hcpCarriageImportExtension\",\"additionalProperties\":false,\"description\":\"The value of `ext[\\\"vnd.trusttasks.hcp-carriage\\\"]` on the hcp/import response: the hcp/* Trust Task family's own extension, not an HCP member, so that the result itself stays HCP's. Present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set (one naming no `categories`, or a category outside the delegation's scope), pending HCP confirmation (question 40). A Management Client that does not recognize the namespace ignores it (SPEC.md §4.5.1); it is informational and never marked critical.\",\"properties\":{\"rulesNotApplied\":{\"description\":\"The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the import request's `rules` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Urn\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"rulesNotApplied\"],\"title\":\"HCP — Import — vnd.trusttasks.hcp-carriage response extension\",\"type\":\"object\"},\"ImportedAuditDisclosed\":{\"additionalProperties\":true,\"description\":\"One entry an imported `context.read` event disclosed (HCP 8.2): HCP's own shape, without the framework bounds of the shared `AuditDisclosed`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The entry disclosed (HCP 8.2).\"},\"provenance\":{\"description\":\"Whether provenance was disclosed (HCP 8.2).\",\"type\":\"boolean\"},\"revealed\":{\"description\":\"Selectively disclosed evidence (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"additionalProperties\":true,\"description\":\"What was revealed of one evidence item (HCP 8.2).\",\"properties\":{\"claims\":{\"description\":\"The claims revealed (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"description\":\"A claim revealed.\",\"type\":\"string\"},\"maxItems\":16777216,\"type\":\"array\"},\"evidence\":{\"description\":\"The index of the evidence item (HCP 8.2).\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"evidence\",\"claims\"],\"type\":\"object\"},\"maxItems\":16777216,\"type\":\"array\"},\"useUntil\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Until when the disclosed copy may be used (HCP 8.2, 7.6).\"},\"version\":{\"description\":\"Its version (HCP 8.2).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"entryId\",\"version\",\"useUntil\"],\"type\":\"object\"},\"ImportedAuditEvent\":{\"additionalProperties\":true,\"description\":\"One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export valid under HCP's schemas is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in two respects. First, `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Second, it leaves out the framework size bounds and non-empty requirements the shared shape sets beyond HCP's. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"categories\":{\"description\":\"The categories concerned (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedCategory\"},\"maxItems\":16777216,\"type\":\"array\"},\"data\":{\"additionalProperties\":true,\"description\":\"The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3).\",\"type\":\"object\"},\"disclosed\":{\"description\":\"Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). Its maxItems of 20 is HCP's own limit on a retrieval (HCP 7.2), not a framework bound.\",\"items\":{\"$ref\":\"#/$defs/ImportedAuditDisclosed\"},\"maxItems\":20,\"type\":\"array\"},\"entryId\":{\"description\":\"The entry concerned, by its `id`, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"eventId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The event's identifier (HCP 8.2).\"},\"eventType\":{\"description\":\"The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it: a string.\",\"type\":\"string\"},\"grantId\":{\"description\":\"The grant concerned, or null where the event concerns none (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"participants\":{\"$ref\":\"#/$defs/ImportedAuditParticipants\",\"description\":\"Who took part (HCP 8.2, 3.9).\"},\"purpose\":{\"description\":\"The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":[\"string\",\"null\"]},\"purposeDescription\":{\"description\":\"The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.\",\"maxLength\":16777216,\"type\":[\"string\",\"null\"]},\"relatedEntryId\":{\"description\":\"For conflict events, the authoritative entry (or the other entry where neither or both are authoritative); null for every other event type (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown.\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":[\"string\",\"null\"]},\"timestamp\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the event occurred. HCP's member name (HCP 8.2), carried verbatim.\"}},\"required\":[\"eventId\",\"eventType\",\"timestamp\",\"participants\"],\"type\":\"object\"},\"ImportedAuditParticipants\":{\"additionalProperties\":true,\"description\":\"Who took part in an imported audit event (HCP 8.2, 3.9): HCP's own shape, without the framework bounds and non-empty identifiers of the shared `AuditParticipants`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"authorizingPrincipal\":{\"additionalProperties\":true,\"description\":\"The Authorizing Principal (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"clientOperator\":{\"additionalProperties\":true,\"description\":\"The Client Operator (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"initiator\":{\"additionalProperties\":true,\"description\":\"Who initiated the event (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"The initiator's identifier. A string, as in HCP's own shape.\",\"type\":\"string\"},\"role\":{\"description\":\"HCP's own roles (HCP 3.9).\",\"enum\":[\"management-client\",\"context-client\",\"authorization-service\",\"hcp-provider\"],\"type\":\"string\"}},\"required\":[\"role\",\"id\"],\"type\":\"object\"},\"model\":{\"additionalProperties\":true,\"description\":\"The model, where one was involved (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"provider\":{\"additionalProperties\":true,\"description\":\"The HCP Provider (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"requestingParty\":{\"additionalProperties\":true,\"description\":\"The Requesting Party (HCP 8.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The retrieval the event belongs to (HCP 8.2).\"}},\"required\":[\"initiator\",\"provider\"],\"type\":\"object\"},\"ImportedCategory\":{\"description\":\"A category in an imported export (HCP 4.5): the shared `Category` in hcp/_shared/0.1 without its framework maxLength. Its pattern is kept: a URI category needs at least one character after the scheme, as HCP's `uri` and `purposeCode` patterns require, where HCP's `category` pattern alone would accept a bare `scheme:` (question 54).\",\"pattern\":\"^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"ImportedDelegation\":{\"additionalProperties\":true,\"description\":\"A delegation in an imported export, as a record (HCP 17.2, 5.4.1): HCP's own delegation shape. It differs from the shared `Delegation` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty requirements the shared shape sets beyond HCP's, such as a non-empty `basis.description`, `basis.establishedBy` and identifiers. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"basis\":{\"additionalProperties\":true,\"description\":\"The basis of the delegation (HCP 17.2).\",\"properties\":{\"covers\":{\"description\":\"The categories the basis covers (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedCategory\"},\"maxItems\":16777216,\"type\":\"array\"},\"description\":{\"description\":\"The basis in words (HCP 17.2). A string, which HCP's own shape allows to be empty. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.\",\"maxLength\":16777216,\"type\":\"string\"},\"establishedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the basis was established (HCP 17.2).\"},\"establishedBy\":{\"description\":\"Who established the basis (HCP 17.2). A string, which HCP's own shape allows to be empty.\",\"type\":\"string\"},\"evidence\":{\"description\":\"The evidence for the basis (HCP 17.2, 4.2.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedEvidenceItem\"},\"maxItems\":16777216,\"type\":\"array\"},\"method\":{\"description\":\"HCP's own values, carried verbatim (HCP 17.2). Where it is `evidence`, `evidence` holds at least one item, and `parent` is present exactly where it is `delegated`, as HCP's own schema requires; the provider checks these, since the schema does not.\",\"enum\":[\"appointed\",\"attested\",\"evidence\",\"delegated\",\"unspecified\"],\"type\":\"string\"},\"parent\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"For a sub-delegation, the parent delegation (HCP 17.2).\"}},\"required\":[\"method\",\"description\",\"establishedBy\",\"establishedAt\"],\"type\":\"object\"},\"delegate\":{\"additionalProperties\":true,\"description\":\"The delegate (HCP 17.2).\",\"properties\":{\"id\":{\"description\":\"The delegate's identifier. A string, as in HCP's own shape.\",\"type\":\"string\"},\"name\":{\"description\":\"The delegate's name. Non-empty, as HCP's own shape requires.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"name\"],\"type\":\"object\"},\"delegationId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The delegation's identifier (HCP 17.2).\"},\"ended\":{\"additionalProperties\":true,\"description\":\"Present where the delegation has ended (HCP 17.2).\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the delegation ended (HCP 17.2).\"},\"reason\":{\"description\":\"HCP's own values, carried verbatim (HCP 17.2).\",\"enum\":[\"majority\",\"expiry\",\"basis-ended\",\"relinquished\",\"ended-by-subject\",\"parent-ended\",\"ended-by-delegate\"],\"type\":\"string\"}},\"required\":[\"at\",\"reason\"],\"type\":\"object\"},\"mayDelegate\":{\"description\":\"Whether the delegate may appoint a sub-delegate (HCP 17.2).\",\"type\":\"boolean\"},\"relationship\":{\"description\":\"HCP's relationship values, or a URI (HCP 17.2).\",\"pattern\":\"^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"scope\":{\"additionalProperties\":true,\"description\":\"What the delegation covers (HCP 17.2).\",\"properties\":{\"actions\":{\"description\":\"The actions in scope (HCP 17.2, 6.1.5): `read`, `write`, or both.\",\"items\":{\"enum\":[\"read\",\"write\"],\"type\":\"string\"},\"maxItems\":2,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"categories\":{\"description\":\"The categories in scope (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedCategory\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"categories\",\"actions\"],\"type\":\"object\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 17.2).\",\"properties\":{\"id\":{\"description\":\"An identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"term\":{\"additionalProperties\":true,\"description\":\"The delegation's term (HCP 17.2).\",\"properties\":{\"atMajority\":{\"description\":\"Whether it ends when the Context Subject reaches majority (HCP 17.2).\",\"type\":\"boolean\"},\"endsAt\":{\"description\":\"When the delegation ends, or null (HCP 17.2).\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]}},\"required\":[\"endsAt\",\"atMajority\"],\"type\":\"object\"}},\"required\":[\"delegationId\",\"subject\",\"delegate\",\"relationship\",\"basis\",\"scope\",\"term\"],\"type\":\"object\"},\"ImportedDirective\":{\"additionalProperties\":true,\"description\":\"A directive in an imported export (HCP 6.4, 5.4.1): HCP's own directive shape. It differs from the shared `Directive` in hcp/_shared/0.1 only in leaving out the framework size bounds, such as its 4096-character `text`, and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"action\":{\"description\":\"`share`, `sign`, `transact`, or a URI (HCP 6.4).\",\"pattern\":\"^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+)$\",\"type\":\"string\"},\"categories\":{\"description\":\"The categories the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedCategory\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the directive was set (HCP 6.4).\"},\"directiveId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The directive's identifier (HCP 6.4).\"},\"effect\":{\"description\":\"HCP's own values, carried verbatim (HCP 6.4).\",\"enum\":[\"deny\",\"ask-first\",\"permit\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"description\":\"A Client Operator identifier.\",\"minLength\":1,\"type\":\"string\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"},\"setBy\":{\"description\":\"Who set the directive (HCP 6.4). A string, which HCP's own shape allows to be empty.\",\"type\":\"string\"},\"text\":{\"description\":\"The directive in words (HCP 6.4). Non-empty, as HCP's own shape requires. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not.\",\"maxLength\":16777216,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"directiveId\",\"action\",\"effect\",\"text\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"ImportedEvidenceItem\":{\"additionalProperties\":true,\"description\":\"An evidence item in an imported delegation's basis (HCP 4.2.2, 17.2): HCP's own evidence-item shape, without the framework bounds of the shared `EvidenceItem` in hcp/_shared/0.1. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"credential\":{\"description\":\"The credential, for `verifiable-credential`: a W3C Verifiable Credential, whose own data model governs its contents (HCP 4.2.2, 14.2).\"},\"role\":{\"description\":\"HCP's own values, carried verbatim (HCP 4.2.2).\",\"enum\":[\"content\",\"supports\"],\"type\":\"string\"},\"type\":{\"description\":\"The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).\",\"type\":\"string\"},\"verification\":{\"additionalProperties\":true,\"description\":\"The exporting provider's record of its most recent verification (HCP 4.2.2).\",\"properties\":{\"at\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the provider verified.\"},\"by\":{\"description\":\"Who verified (HCP 4.2.2, 4.8).\",\"enum\":[\"provider\",\"trust-domain\"],\"type\":\"string\"},\"result\":{\"description\":\"The outcome.\",\"enum\":[\"verified\",\"failed\"],\"type\":\"string\"}},\"required\":[\"result\",\"at\"],\"type\":\"object\"}},\"required\":[\"role\",\"type\"],\"type\":\"object\"},\"ImportedExport\":{\"additionalProperties\":true,\"description\":\"An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export valid under HCP's export schema is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in three respects, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Third, the framework size bounds and the non-empty requirements beyond HCP's own schemas that the shared shapes set are not applied anywhere in the export: its standing rules, directives, delegations and audit events are `ImportedStandingRule`, `ImportedDirective`, `ImportedDelegation` and `ImportedAuditEvent`, which keep only the constraints HCP's own schemas set. The request as a whole stays bounded by its 16 MiB `maxDocumentBytes`. The one constraint kept beyond HCP's schemas is the category pattern (`ImportedCategory`, question 54). Open, as HCP's own shape is.\",\"properties\":{\"@context\":{\"description\":\"The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"maxItems\":16777216,\"type\":[\"array\",\"string\"]},\"audit\":{\"description\":\"The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedAuditEvent\"},\"maxItems\":16777216,\"type\":\"array\"},\"delegations\":{\"description\":\"The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2). Each is an `ImportedDelegation`, HCP's own delegation shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedDelegation\"},\"maxItems\":16777216,\"type\":\"array\"},\"directives\":{\"description\":\"The Context Subject's directives (HCP 5.4.1, 6.4), each an `ImportedDirective`, HCP's own directive shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedDirective\"},\"maxItems\":16777216,\"type\":\"array\"},\"entries\":{\"description\":\"The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":16777216,\"type\":\"array\"},\"exportedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the export was made (HCP 5.4.1).\"},\"exportedBy\":{\"description\":\"The exporting HCP Provider (HCP 5.4.1). A string, as in HCP's own shape.\",\"type\":\"string\"},\"options\":{\"$ref\":\"#/$defs/ImportedExportOptions\",\"description\":\"HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either.\"},\"rules\":{\"description\":\"The Context Subject's standing rules (HCP 5.4.1, 6.3), each an `ImportedStandingRule`, HCP's own standing-rule shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedStandingRule\"},\"maxItems\":16777216,\"type\":\"array\"},\"schema\":{\"const\":\"https://hcp.example/spec/export/2.0\",\"description\":\"The export structure version, compared as an exact string (HCP 5.4.1, 1.7).\",\"type\":\"string\"},\"subject\":{\"additionalProperties\":true,\"description\":\"The Context Subject (HCP 5.4.1).\",\"properties\":{\"id\":{\"description\":\"The Context Subject's identifier. A string, as in HCP's own shape.\",\"type\":\"string\"}},\"required\":[\"id\"],\"type\":\"object\"},\"type\":{\"const\":\"ContextExport\",\"description\":\"`ContextExport` (HCP 5.4.1). HCP's own value, carried verbatim.\",\"type\":\"string\"},\"versions\":{\"description\":\"Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"additionalProperties\":true,\"type\":\"object\"},\"maxItems\":16777216,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"schema\",\"subject\",\"exportedBy\",\"exportedAt\",\"entries\",\"rules\"],\"type\":\"object\"},\"ImportedExportOptions\":{\"additionalProperties\":true,\"description\":\"HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.\",\"properties\":{\"excludeDeleted\":{\"description\":\"Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"},\"includeAudit\":{\"description\":\"The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown.\",\"type\":\"boolean\"},\"includeVersions\":{\"description\":\"Superseded versions were requested (HCP 5.4.1). Absent means unknown.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"ImportedStandingRule\":{\"additionalProperties\":true,\"description\":\"A standing rule in an imported export (HCP 6.3, 5.4.1): HCP's own standing-rule shape. It differs from the shared `StandingRule` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.\",\"properties\":{\"categories\":{\"description\":\"The categories the rule covers (HCP 6.3); absent means every category. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"$ref\":\"#/$defs/ImportedCategory\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"},\"createdAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"When the rule was set (HCP 6.3).\"},\"effect\":{\"description\":\"Always `deny` (HCP 6.3).\",\"enum\":[\"deny\"],\"type\":\"string\"},\"operators\":{\"description\":\"The Client Operators denied (HCP 6.3). A rule carries `operators`, `requires`, or both, as HCP's own schema requires; the provider checks that, since the schema does not. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"description\":\"A Client Operator identifier.\",\"minLength\":1,\"type\":\"string\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"The commitments a client must have made (HCP 6.3). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not.\",\"items\":{\"format\":\"uri\",\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"maxItems\":16777216,\"minItems\":1,\"type\":\"array\"},\"ruleId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"The rule's identifier (HCP 6.3).\"},\"setBy\":{\"description\":\"Who set the rule (HCP 6.3). A string, which HCP's own shape allows to be empty.\",\"type\":\"string\"}},\"required\":[\"ruleId\",\"effect\",\"setBy\",\"createdAt\"],\"type\":\"object\"},\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/import/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty. Neither is applied within `export` beyond the request's own 16 MiB document bound (see `ImportedExport`).\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categoryMap\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Category\"},\"description\":\"HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement.\",\"maxProperties\":256,\"type\":\"object\"},\"dryRun\":{\"description\":\"HCP `dryRun`: if true, the provider reports the outcome for each entry and changes nothing (HCP 5.4.3). Absent or false means the import is carried out.\",\"type\":\"boolean\"},\"export\":{\"$ref\":\"#/$defs/ImportedExport\",\"description\":\"HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, without the framework size bounds and non-empty requirements of the shared `Export`, and with `options` OPTIONAL, so that an export valid under HCP's export schema is accepted, within the request's 16 MiB `maxDocumentBytes`.\"}},\"required\":[\"export\",\"accessToken\"],\"title\":\"HCP — Import — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -5501,7 +5025,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Outcome\":{\"additionalProperties\":true,\"description\":\"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\\"rejected, with the reason\\\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.\",\"properties\":{\"id\":{\"description\":\"The entry's `id`, as the export carries it (HCP 5.4.3, 9.4.11).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim.\",\"enum\":[\"imported\",\"converted\",\"skipped\",\"rejected\"],\"type\":\"string\"},\"reason\":{\"description\":\"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\\"id held with different content\\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"outcome\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.\",\"properties\":{\"dryRun\":{\"description\":\"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11).\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).\"},\"outcomes\":{\"description\":\"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Outcome\"},\"maxItems\":100000,\"type\":\"array\"}},\"required\":[\"outcomes\"],\"title\":\"HCP — Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Ext_99ef3684!(), ",\"Outcome\":{\"additionalProperties\":true,\"description\":\"The outcome for one entry of the export (HCP 5.4.3, 9.4.11). Open, as HCP's own import-result shape is. A `rejected` outcome carries `reason`: HCP 5.4.3 says \\\"rejected, with the reason\\\". That rule is not checked by the schema, because the registry's Rust generator does not support the conditional keywords it needs.\",\"properties\":{\"id\":{\"description\":\"The entry's `id`, as the export carries it (HCP 5.4.3, 9.4.11).\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`imported`; `converted`, a v1 entry converted under HCP 4.3; `skipped`, a deleted entry the provider chose not to carry (HCP 5.4.3 says the request chose, but its request has no member that chooses; pending HCP confirmation, question 34) or an exact duplicate of one held; or `rejected` (HCP 5.4.3). HCP's own values, carried verbatim.\",\"enum\":[\"imported\",\"converted\",\"skipped\",\"rejected\"],\"type\":\"string\"},\"reason\":{\"description\":\"Why the entry was rejected, in words (HCP 5.4.3, 9.4.11), such as \\\"id held with different content\\\". It discloses nothing the condition forbids (HCP 5.5). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"outcome\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP import result (HCP 5.4.3, 9.4.11): one outcome for each entry in the export. Failures of the import as a whole use trust-task-error, not this shape.\",\"properties\":{\"dryRun\":{\"description\":\"HCP `dryRun`, echoed: true where the request was a dry run and nothing was changed (HCP 9.4.11).\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. Not an HCP member: HCP's import result is `outcomes` and `dryRun` only. This family defines one namespace here, `vnd.trusttasks.hcp-carriage`, the hcp/* Trust Task family's own extension, not HCP's: present only for a delegate's import, and only where the export holds a standing rule the delegate could not set with hcp/rules/set; its value MUST validate against the `HcpCarriageImportExtension` definition in this schema, pending HCP confirmation (question 40).\"},\"outcomes\":{\"description\":\"HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the import request's `entries` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Outcome\"},\"maxItems\":16777216,\"type\":\"array\"}},\"required\":[\"outcomes\"],\"title\":\"HCP — Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

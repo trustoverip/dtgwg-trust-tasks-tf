@@ -59,6 +59,10 @@ fn rejects_invalid_examples() {
             "{\n  \"access\": [\n    {\n      \"actions\": [\n        \"read\"\n      ],\n      \"categories\": [\n        \"general_preferences\"\n      ],\n      \"purposes\": [\n        {\n          \"code\": \"travel booking\"\n        }\n      ],\n      \"type\": \"https://hcp.example/spec/authorization/context-access\"\n    }\n  ]\n}",
         ),
         (
+            "A requested purpose with no `description` — HCP's purpose carries the description shown to the person before they approve (HCP 6.1.5.2).",
+            "{\n  \"access\": [\n    {\n      \"actions\": [\n        \"read\"\n      ],\n      \"categories\": [\n        \"general_preferences\"\n      ],\n      \"purposes\": [\n        {\n          \"code\": \"https://purposes.example/travel-booking\"\n        }\n      ],\n      \"type\": \"https://hcp.example/spec/authorization/context-access\"\n    }\n  ]\n}",
+        ),
+        (
             "`expiresIn` beyond HCP's 24-hour maximum for a temporary grant (HCP 6.1.3).",
             "{\n  \"access\": [\n    {\n      \"actions\": [\n        \"read\"\n      ],\n      \"categories\": [\n        \"general_preferences\"\n      ],\n      \"type\": \"https://hcp.example/spec/authorization/context-access\"\n    }\n  ],\n  \"expiresIn\": 172800\n}",
         ),
