@@ -250,7 +250,7 @@
       "object": "hcp/_shared:Grant",
       "path": "authorizingPrincipal.id",
       "kind": "minLength",
-      "reason": "The member is the authorizing principal's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "reason": "The member is the Authorizing Principal's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
       "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
     },
     {
