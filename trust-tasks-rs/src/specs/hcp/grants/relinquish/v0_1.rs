@@ -38,7 +38,7 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+    ///The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
     #[serde(rename = "accessToken")]
     pub access_token: PayloadAccessToken,
     ///HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to relinquish, which MUST be the grant `accessToken` was issued under; any other fails with `permissionDenied` (HCP 5.2.7).
@@ -50,7 +50,7 @@ impl Payload {
         Default::default()
     }
 }
-///The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -112,7 +112,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAccessToken {
             })
     }
 }
-///The grant is relinquished. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.
+///The grant is relinquished. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -280,7 +280,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/grants/relinquish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to relinquish, which MUST be the grant `accessToken` was issued under; any other fails with `permissionDenied` (HCP 5.2.7).\"}},\"required\":[\"grantId\",\"accessToken\"],\"title\":\"HCP — Relinquish Own Grant — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/grants/relinquish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to relinquish, which MUST be the grant `accessToken` was issued under; any other fails with `permissionDenied` (HCP 5.2.7).\"}},\"required\":[\"grantId\",\"accessToken\"],\"title\":\"HCP — Relinquish Own Grant — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -288,7 +288,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grant is relinquished. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.\",\"properties\":{},\"title\":\"HCP — Relinquish Own Grant — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grant is relinquished. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.\",\"properties\":{},\"title\":\"HCP — Relinquish Own Grant — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -311,7 +311,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::INVALID_TOKE
 pub mod error_codes {
     /// `hcp:invalidToken`
     ///
-    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A token issued under a grant already revoked or relinquished also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation" section).
+    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     ///
     /// Declared `retryable: false`.
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

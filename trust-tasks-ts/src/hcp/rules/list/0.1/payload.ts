@@ -11,7 +11,7 @@ import type { Category, Instant, StandingRule, Uri, Urn } from "../../../../_sha
  */
 export interface HCPListStandingRulesPayload {
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
@@ -20,7 +20,7 @@ export interface HCPListStandingRulesPayload {
  */
 export interface HCPListStandingRulesResponsePayload {
   /**
-   * HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order.
+   * HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28). Empty when there is none. HCP sets no order.
    */
   rules: StandingRule[];
 }
@@ -82,7 +82,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   }
 };
@@ -107,7 +107,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "items": {
             "$ref": "#/$defs/StandingRule"
           },
-          "description": "HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order."
+          "description": "HCP `rules` (HCP 9.4.14): every standing rule the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28). Empty when there is none. HCP sets no order."
         }
       }
     },

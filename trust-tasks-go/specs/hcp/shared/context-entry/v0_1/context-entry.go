@@ -63,8 +63,8 @@ type EntrySubject struct {
 }
 
 // Content Entry content. `profile` names its shape (HCP 4.2). Under the General Context
-// profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence
-// profile it carries `evidence`, the index of the evidence item holding the credential,
+// Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence
+// Profile it carries `evidence`, the index of the evidence item holding the credential,
 // and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under
 // VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here
 // and not as a schema conditional: the registry's Rust generator does not support
@@ -75,15 +75,15 @@ type Content struct {
 	// profile (HCP A.3).
 	Profile URI `json:"profile"`
 
-	// The statement, under the General Context profile: a string or a structured object (HCP
+	// The statement, under the General Context Profile: a string or a structured object (HCP
 	// 11.2).
 	Value json.RawMessage `json:"value,omitempty"`
 
-	// The BCP 47 language tag of a string `value`, under the General Context profile (HCP
+	// The BCP 47 language tag of a string `value`, under the General Context Profile (HCP
 	// 11.2). Optional; may be null.
 	Language *string `json:"language,omitempty"`
 
-	// Under the VC Evidence profile, the index in `evidence` of the item whose credential is
+	// Under the VC Evidence Profile, the index in `evidence` of the item whose credential is
 	// the content (HCP 4.2.2).
 	Evidence *int64 `json:"evidence,omitempty"`
 }
@@ -432,7 +432,7 @@ type RecordedProposal struct {
 }
 
 // EvidenceItemRole `content`: the item's credential is the entry's content (VC Evidence
-// profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+// Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 type EvidenceItemRole string
 
 // Values EvidenceItemRole may take, per this specification's schema.
@@ -482,7 +482,7 @@ type EvidenceItemVerification struct {
 // rule is stated here and not as a schema conditional: the registry's Rust generator does
 // not support `if`/`then`/`else`, so a validator does not check it.
 type EvidenceItem struct {
-	// `content`: the item's credential is the entry's content (VC Evidence profile).
+	// `content`: the item's credential is the entry's content (VC Evidence Profile).
 	// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 	Role EvidenceItemRole `json:"role"`
 

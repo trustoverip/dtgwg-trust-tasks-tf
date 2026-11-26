@@ -23,7 +23,7 @@ export interface HCPListGrantsPayload {
    */
   limit?: number;
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP Binding (HCP 9.4.6; pending HCP confirmation, question 19). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
@@ -38,7 +38,7 @@ export interface HCPListGrantsResponsePayload {
    */
   grants: Grant[];
   /**
-   * HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP binding sends null. The maxLength is a framework bound, not an HCP requirement.
+   * HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP Binding sends null. The maxLength is a framework bound, not an HCP requirement.
    */
   nextCursor?: string;
 }
@@ -121,7 +121,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP binding (HCP 9.4.6; pending HCP confirmation). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. A Context Client's token is answered with that client's own grant only, as over HCP's HTTP Binding (HCP 9.4.6; pending HCP confirmation, question 19). The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   }
 };
@@ -153,7 +153,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "description": "HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP binding sends null. The maxLength is a framework bound, not an HCP requirement."
+          "description": "HCP `nextCursor` (HCP 9.5): an opaque token for the next page, valid for at least 300 seconds, encoding no credential and no entry content. Absent when the set is exhausted, where HCP's HTTP Binding sends null. The maxLength is a framework bound, not an HCP requirement."
         }
       }
     },

@@ -421,7 +421,7 @@ type DelegationBasis struct {
 }
 
 // EvidenceItemRole `content`: the item's credential is the entry's content (VC Evidence
-// profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+// Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 type EvidenceItemRole string
 
 // Values EvidenceItemRole may take, per this specification's schema.
@@ -471,7 +471,7 @@ type EvidenceItemVerification struct {
 // rule is stated here and not as a schema conditional: the registry's Rust generator does
 // not support `if`/`then`/`else`, so a validator does not check it.
 type EvidenceItem struct {
-	// `content`: the item's credential is the entry's content (VC Evidence profile).
+	// `content`: the item's credential is the entry's content (VC Evidence Profile).
 	// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 	Role EvidenceItemRole `json:"role"`
 

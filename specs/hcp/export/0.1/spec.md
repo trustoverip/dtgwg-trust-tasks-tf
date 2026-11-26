@@ -65,20 +65,24 @@ maxDocumentBytes:
     categoryMap of 256 entries whose keys and values are categories of up to 2048 characters, about 1.03 MiB
     together at one byte a character), and its envelope and proof, with about 0.9 MiB to spare. It is a framework
     bound, not an HCP requirement, since HCP sets no size limit. An export that would exceed it is refused with `hcp/export:tooLarge`,
-    and is taken over HCP's own HTTP binding, or with narrower options, instead.
+    and is taken over HCP's own HTTP Binding, or with narrower options, instead.
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
-      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management
-      Client's access token.
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token
+      the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here
+      too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error
+      (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a
+      failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
+      [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
   - code: hcp/export:tooLarge
     meaning: >-
       The export would exceed this task's declared maxDocumentBytes response bound, so it cannot be carried in one
       Trust Task document. Not an HCP error: HCP sets no size limit on an export (HCP 5.4.1, 9.4.8). Retrying the
-      same request cannot succeed; the Management Client takes the export over HCP's HTTP binding (`GET /v2/export`,
+      same request cannot succeed; the Management Client takes the export over HCP's HTTP Binding (`GET /v2/export`,
       HCP 9.4.8), or asks again with narrower options (without versions or the audit log, or excluding deleted
-      entries). Pending HCP confirmation (question 33 in the spec's "Pending HCP confirmation" section).
+      entries). Pending HCP confirmation (question 33).
     retryable: false
 related:
   - hcp/import
@@ -108,7 +112,7 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 ## Authorization
 
-The authority is **the Context Subject's own authority over their data**, which a Management Client exercises for them (HCP 5.4, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP binding. `accessToken` is OPTIONAL. Where the request carries none, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), acting for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). Export is a governance operation: the Context Subject's own export of their data is not a context operation, and is not available to a Context Client (HCP 5.1). Any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9); a Context Client's access is always query-scoped and minimized, and bulk retrieval of a Context Subject's entries by a Context Client is not supported (HCP 5.1). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
+The authority is **the Context Subject's own authority over their data**, which a Management Client exercises for them (HCP 5.4, 6.1.9). It is evidenced by the Management Client's access token in `accessToken`, which the provider validates exactly as over HCP's HTTP Binding. `accessToken` is OPTIONAL. Where the request carries none, the provider authenticates the request's `issuer` VID, by the request's REQUIRED `proof`, as a Management Client the Authorizing Principal enrolled by authenticating for that purpose (HCP 3.2.3), acting for the Authorizing Principal who enrolled it, and refuses any other issuer with `permissionDenied`, with the same fixed `message` as every other not-authorized refusal. Where it carries one, the token rules apply unchanged, including the token binding of [The access token](#the-access-token). Both are *pending HCP confirmation* ([question 56](#pending-hcp-confirmation)). Export is a governance operation: the Context Subject's own export of their data is not a context operation, and is not available to a Context Client (HCP 5.1). Any caller other than a Management Client acting for the Context Subject, or for a delegate, receives not authorized (HCP 6.1.9), carried as `permissionDenied`. A grant held by a Context Client never authorizes it, whatever its scopes (HCP 6.1.9); a Context Client's access is always query-scoped and minimized, and bulk retrieval of a Context Subject's entries by a Context Client is not supported (HCP 5.1). HCP names only its HTTP Binding as the carriage for a governance operation (HCP 5.4, 9.1); this specification accepts the operation as a Trust Task from a Management Client acting for the Authorizing Principal, and from no other caller (HCP 6.1.9), *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 
 Under the Delegated Authorization Profile, a delegate's export carries no more than the delegate could read through the operation that reads each of its members, so that an export never shows a delegate what those operations withhold:
 
@@ -276,7 +280,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
 
 ### An export too large for one document
 
-The person asked for every version and the audit log, and the export would exceed this task's 14 MiB bound, so the provider refuses with `hcp/export:tooLarge`, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP binding, or asks again without the versions or the audit log.
+The person asked for every version and the audit log, and the export would exceed this task's 14 MiB bound, so the provider refuses with `hcp/export:tooLarge`, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The Management Client takes the export over HCP's HTTP Binding, or asks again without the versions or the audit log.
 
 ```json
 {
@@ -288,7 +292,7 @@ The person asked for every version and the audit log, and the export would excee
   "threadId": "urn:uuid:dab7261d-d7ad-4009-878f-897939119604",
   "payload": {
     "code": "hcp/export:tooLarge",
-    "message": "The export exceeds the size this task can carry; use the HTTP binding or narrower options.",
+    "message": "The export exceeds the size this task can carry; use the HTTP Binding or narrower options.",
     "retryable": false
   }
 }
@@ -296,7 +300,7 @@ The person asked for every version and the audit log, and the export would excee
 
 ## Errors
 
-HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider uses the code in the right-hand column. It never sends HCP's Core error object or the HTTP binding's problem details (HCP 9.7).
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider uses the code in the right-hand column. It never sends HCP's Core error object or the HTTP Binding's problem details (HCP 9.7).
 
 | HCP error (5.5) | Code | Trust Task error |
 |---|---|---|
@@ -322,7 +326,7 @@ This task adds one code that is not an HCP error: `hcp/export:tooLarge`, `retrya
 
 ## Export size
 
-HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 14 MiB: a framework bound, not an HCP requirement. It is 2 MiB under the framework's 16 MiB ceiling for a declared bound, which is the request bound of [`hcp/import`](../../import/0.1/spec.md), so that an export this task produces always fits an import request together with the `accessToken`, the `categoryMap` (at most 256 entries), the envelope and the proof that request adds; at their schema bounds those additions come to about 1.03 MiB at one byte a character, leaving about 0.9 MiB to spare. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp/export:tooLarge`, and the Management Client takes the export over HCP's HTTP binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported. The 14 MiB bound is on what the provider writes and the client accepts, not a delivery guarantee: a transport or mediator may cap a message lower (see [`hcp/entries/query`](../../entries/query/0.1/spec.md#hcp-field-mapping)).
+HCP sets no size bound on an export, and does not page it (HCP 5.4.1, 9.4.8). This task carries the export in one document, and declares a `maxDocumentBytes` response bound of 14 MiB: a framework bound, not an HCP requirement. It is 2 MiB under the framework's 16 MiB ceiling for a declared bound, which is the request bound of [`hcp/import`](../../import/0.1/spec.md), so that an export this task produces always fits an import request together with the `accessToken`, the `categoryMap` (at most 256 entries), the envelope and the proof that request adds; at their schema bounds those additions come to about 1.03 MiB at one byte a character, leaving about 0.9 MiB to spare. A provider whose export would exceed it **MUST NOT** truncate the export, since a partial export would hide what HCP's principle requires it to show; it refuses with `hcp/export:tooLarge`, and the Management Client takes the export over HCP's HTTP Binding (HCP 9.4.8) or asks again with narrower options, *pending HCP confirmation* ([question 33](#pending-hcp-confirmation)). The provider appends no `context.exported` event for a refused export, since nothing was exported. The 14 MiB bound is on what the provider writes and the client accepts, not a delivery guarantee: a transport or mediator may cap a message lower (see [`hcp/entries/query`](../../entries/query/0.1/spec.md#hcp-field-mapping)).
 
 ## Repeated requests
 
@@ -333,10 +337,10 @@ HCP requires a `context.exported` event for every export (HCP 5.4.1). Because th
 HCP 2.0-draft-3 leaves the following points open. This specification takes the reading stated for each, and will follow the HCP editors' answer when they give one. The question numbers are those of [the list of questions put to the editors](../../_shared/0.1/QUESTIONS.md).
 
 - **Question 1 — conformance claims.** HCP defines no conformance identifier for Trust Task carriage, so a provider **MUST NOT** claim this carriage in its HCP `conformsTo`; it advertises the task with [`trust-task-discovery`](../../../trust-task-discovery/0.4/spec.md) instead. The binding identifier for the carriage is the same question as [question 37](#pending-hcp-confirmation): whether a carriage other than the HTTP Binding may carry governance operations at all.
-- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP Client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 28 — a delegate's rules and directives.** A delegate's export carries each standing rule and directive whose `categories` are absent or all within the delegation's scope, as [`hcp/rules/list`](../../rules/list/0.1/spec.md) and [`hcp/directives/list`](../../directives/list/0.1/spec.md) return them; one naming any category outside the scope is left out whole.
 - **Question 32 — a delegate's sub-delegations.** A delegate's export carries the delegations naming them and the sub-delegations they appointed, as [`hcp/delegations/list`](../../delegations/list/0.1/spec.md) returns them.
-- **Question 33 — export size.** The export travels in one document bounded at 14 MiB, 2 MiB under the framework's 16 MiB ceiling so that it always fits an `hcp/import` request; a larger export is refused with `hcp/export:tooLarge`, and is taken over HCP's HTTP binding or with narrower options (see [Export size](#export-size)).
+- **Question 33 — export size.** The export travels in one document bounded at 14 MiB, 2 MiB under the framework's 16 MiB ceiling so that it always fits an `hcp/import` request; a larger export is refused with `hcp/export:tooLarge`, and is taken over HCP's HTTP Binding or with narrower options (see [Export size](#export-size)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's export carries only the superseded versions, of the entries it returns, whose own categories are all within the delegation's scope (see [Authorization](#authorization)).
 - **Question 42 — presence signals the carriage adds.** The export's `options` is required, with `includeVersions` and `includeAudit` each `true` or `false`, so that the export says whether `versions` and `audit` were asked for; and every `AuditEvent` in `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null. HCP's own shapes leave these members optional (HCP 5.4.1, 8.2). [`hcp/import`](../../import/0.1/spec.md) still accepts an export without `options`, and audit events without those five members.
@@ -365,7 +369,7 @@ Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specific
 
 **In an agent runtime**, the token is held as [`hcp/entries/query`](../../entries/query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
-**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
+**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP Client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 
 **Retained copies.** The provider verifies the request's `proof` over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
 

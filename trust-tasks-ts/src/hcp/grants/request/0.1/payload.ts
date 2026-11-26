@@ -156,7 +156,7 @@ export interface HCPRequestGrantPayload {
         AccessRequest
       ];
   /**
-   * The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation.
+   * The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation (question 24).
    */
   grantType?: "temporary" | "persistent";
   /**
@@ -164,7 +164,7 @@ export interface HCPRequestGrantPayload {
    */
   expiresIn?: number;
   /**
-   * An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation.
+   * An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation (question 23).
    */
   subjectHint?: string;
   requestingParty?: ProposedRequestingParty;
@@ -244,7 +244,7 @@ export interface ProposedRequestingParty {
   name?: string;
 }
 /**
- * The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
+ * The person approved: the access token issued under the grant, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.
  */
 export interface HCPRequestGrantResponsePayload {
   /**
@@ -332,7 +332,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "temporary",
         "persistent"
       ],
-      "description": "The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation."
+      "description": "The kind of grant the client asks for (HCP 6.1.4). Absent means `temporary`, HCP's default. `persistent` only lets the person be offered persistence as a separate affirmative act; it never pre-selects it (HCP 6.1.4), and the grant is temporary unless the person elects otherwise. Pending HCP confirmation (question 24)."
     },
     "expiresIn": {
       "type": "integer",
@@ -344,7 +344,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 256,
-      "description": "An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation."
+      "description": "An identifier by which the provider can find the person whose context is asked for, and reach them to decide — the counterpart of OpenID Connect `login_hint`. Absent where the provider serves one person only. The provider never says whether it knows the hint (see the specification's Errors). Pending HCP confirmation (question 23)."
     },
     "requestingParty": {
       "$ref": "#/$defs/ProposedRequestingParty",
@@ -498,7 +498,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "integer",
           "minimum": 1,
           "maximum": 3600,
-          "description": "How long the client should wait before it resubmits, as a whole number of seconds counted from receipt of the next step; the client SHOULD NOT resubmit sooner. Unlike trust-task-error's `retryAfter`, which is an RFC 3339 instant, this is a count of seconds, as in HTTP's `Retry-After`. The minimum and maximum are framework bounds: a provider expecting a longer wait says 3600 and holds the resubmission again."
+          "description": "How long the client should wait before it resubmits, as a whole number of seconds counted from receipt of the next step; the client SHOULD NOT resubmit sooner. Unlike trust-task-error's `retryAfter`, which is an RFC 3339 instant, this is a count of seconds, as in HTTP's `Retry-After`. The minimum and maximum are framework bounds: a provider expecting a longer wait says 3600 and answers the resubmission with a further next step."
         }
       }
     },
@@ -535,7 +535,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "tokenExpiresAt",
         "grant"
       ],
-      "description": "The person approved: the grant evidence, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.",
+      "description": "The person approved: the access token issued under the grant, as HCP's OAuth token response carries it (HCP 13.3, 13.4), and the grant as approved, as HCP's grant object (HCP 6.1.5). Sent only after the person's affirmative act (HCP 6.1.6); while they decide the provider answers trust-task-next-step, and a decline is trust-task-error permissionDenied — never this shape.",
       "properties": {
         "accessToken": {
           "type": "string",

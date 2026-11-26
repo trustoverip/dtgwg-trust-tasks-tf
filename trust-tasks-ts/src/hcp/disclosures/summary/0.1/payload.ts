@@ -11,7 +11,7 @@ import type { Category, ClientDescription, Instant, LegalRetention, PurposeCode,
  */
 export interface HCPDisclosureSummaryPayload {
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
   /**
@@ -35,7 +35,7 @@ export interface HCPDisclosureSummaryPayload {
    */
   cursor?: string;
   /**
-   * HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).
+   * HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (pending HCP confirmation, question 3).
    */
   limit?: number;
 }
@@ -174,7 +174,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     },
     "client": {
       "type": "string",
@@ -204,7 +204,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "integer",
       "minimum": 1,
       "maximum": 1000,
-      "description": "HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3)."
+      "description": "HCP `limit` (HCP 9.5, 9.4.12): the most client summaries to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (pending HCP confirmation, question 3)."
     }
   },
   "$defs": {

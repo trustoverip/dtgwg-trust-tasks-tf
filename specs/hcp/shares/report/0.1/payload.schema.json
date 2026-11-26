@@ -30,7 +30,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
     }
   },
   "$defs": {
@@ -59,7 +59,7 @@
       "title": "HCP — Report Onward Sharing — response payload",
       "type": "object",
       "additionalProperties": false,
-      "description": "The report is recorded and the share was one the grant allowed. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.8, 9.4.16), so the payload is the empty object. A share the grant did not allow is recorded all the same and answered with trust-task-error `permissionDenied`.",
+      "description": "The report is recorded and the share was one the grant allowed. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.8, 9.4.16), so the payload is the empty object. A share the grant did not allow is recorded all the same and answered with trust-task-error `permissionDenied`.",
       "properties": {}
     }
   }

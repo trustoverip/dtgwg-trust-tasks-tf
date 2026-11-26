@@ -22,11 +22,11 @@ export interface HCPChangeEntryCategoriesPayload {
    */
   categories: [Category, ...Category[]];
   /**
-   * HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
+   * HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
    */
   expectedVersion: number;
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
@@ -115,13 +115,13 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "expectedVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
     },
     "accessToken": {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   },
   "$defs": {
@@ -665,7 +665,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "content",
             "supports"
           ],
-          "description": "`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."
+          "description": "`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."
         },
         "type": {
           "type": "string",
@@ -849,7 +849,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "required": [
         "profile"
       ],
-      "description": "Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.",
+      "description": "Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.",
       "properties": {
         "profile": {
           "$ref": "#/$defs/Uri",
@@ -860,7 +860,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "string",
             "object"
           ],
-          "description": "The statement, under the General Context profile: a string or a structured object (HCP 11.2)."
+          "description": "The statement, under the General Context Profile: a string or a structured object (HCP 11.2)."
         },
         "language": {
           "type": [
@@ -868,12 +868,12 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "null"
           ],
           "maxLength": 64,
-          "description": "The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null."
+          "description": "The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null."
         },
         "evidence": {
           "type": "integer",
           "minimum": 0,
-          "description": "Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2)."
+          "description": "Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2)."
         }
       }
     },

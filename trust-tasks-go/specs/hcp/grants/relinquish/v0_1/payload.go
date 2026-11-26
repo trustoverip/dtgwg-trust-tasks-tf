@@ -11,7 +11,7 @@ import (
 	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
 
-// Response The grant is relinquished. HCP defines no result and its HTTP binding answers
+// Response The grant is relinquished. HCP defines no result and its HTTP Binding answers
 // `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use
 // trust-task-error, not this shape.
 type Response = map[string]json.RawMessage
@@ -34,9 +34,9 @@ type Payload struct {
 	GrantID Urn `json:"grantId"`
 
 	// The HCP access token for the grant under which the client acts (HCP 12, 13), carried
-	// unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries
+	// unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries
 	// it in the document. The provider validates it exactly as over HTTP and treats it as
-	// opaque.
+	// opaque. The maxLength is a framework bound, not an HCP requirement.
 	AccessToken string `json:"accessToken"`
 }
 
@@ -67,10 +67,10 @@ const ResponseTypeURI = "https://trusttasks.org/spec/hcp/grants/relinquish/0.1#r
 // schema's constraints — not minLength, not pattern, not the oneOf mutual
 // exclusion — so without it every such rule is unenforced. Cross-file $refs are
 // already inlined, so it needs no resolver.
-const PayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$id\":\"https://trusttasks.org/spec/hcp/grants/relinquish/0.1\",\"title\":\"HCP — Relinquish Own Grant — payload\",\"description\":\"The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"grantId\",\"accessToken\"],\"properties\":{\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to relinquish, which MUST be the grant `accessToken` was issued under; any other fails with `permissionDenied` (HCP 5.2.7).\"},\"accessToken\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":8192,\"description\":\"The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\"}},\"$defs\":{\"Urn\":{\"type\":\"string\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\"}}}"
+const PayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$id\":\"https://trusttasks.org/spec/hcp/grants/relinquish/0.1\",\"title\":\"HCP — Relinquish Own Grant — payload\",\"description\":\"The request payload of the HCP 2.0-draft-3 Relinquish own grant operation (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token for that grant in HCP 9.2): an HCP Client gives up the grant under which it acts. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"grantId\",\"accessToken\"],\"properties\":{\"grantId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to relinquish, which MUST be the grant `accessToken` was issued under; any other fails with `permissionDenied` (HCP 5.2.7).\"},\"accessToken\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":8192,\"description\":\"The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\"}},\"$defs\":{\"Urn\":{\"type\":\"string\",\"pattern\":\"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"description\":\"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers.\"}}}"
 
 // ResponsePayloadSchemaJSON is PayloadSchemaJSON for the success-response variant.
-const ResponsePayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$ref\":\"#/$defs/Response\",\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"title\":\"HCP — Relinquish Own Grant — response payload\",\"type\":\"object\",\"additionalProperties\":false,\"description\":\"The grant is relinquished. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.\",\"properties\":{}}}}"
+const ResponsePayloadSchemaJSON = "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$ref\":\"#/$defs/Response\",\"$defs\":{\"Response\":{\"$anchor\":\"response\",\"title\":\"HCP — Relinquish Own Grant — response payload\",\"type\":\"object\",\"additionalProperties\":false,\"description\":\"The grant is relinquished. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.\",\"properties\":{}}}}"
 
 // Spec is the SPEC §7.2 policy for the request variant, taken from this
 // specification's front matter. Pass it to trusttasks.ConsumeInbound — items 5b,

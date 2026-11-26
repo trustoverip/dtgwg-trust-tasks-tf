@@ -131,7 +131,7 @@
       "object": "hcp/entries/withdraw:response",
       "path": "hardDeleted",
       "kind": "enum",
-      "reason": "Always `false`: a withdrawal is never a hard deletion (HCP 5.4.2); HCP's HTTP binding returns the member (9.4.5), its Core text does not list it.",
+      "reason": "Always `false`: a withdrawal is never a hard deletion (HCP 5.4.2); HCP's HTTP Binding returns the member (9.4.5), its Core text does not list it.",
       "ref": "Q10"
     },
     {

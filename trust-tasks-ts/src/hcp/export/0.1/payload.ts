@@ -23,12 +23,12 @@ export interface HCPExportPayload {
    */
   includeAudit?: boolean;
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
 /**
- * The Context Subject's export (HCP 5.4.1). HCP's HTTP binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.
+ * The Context Subject's export (HCP 5.4.1). HCP's HTTP Binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.
  */
 export interface HCPExportResponsePayload {
   /**
@@ -106,7 +106,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   }
 };
@@ -124,7 +124,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "required": [
         "export"
       ],
-      "description": "The Context Subject's export (HCP 5.4.1). HCP's HTTP binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.",
+      "description": "The Context Subject's export (HCP 5.4.1). HCP's HTTP Binding answers with the export document itself as the body (HCP 9.4.8); this payload wraps it, unchanged, in the one member `export`, so that the payload stays closed while the export, like HCP's own shape, stays open. Failures use trust-task-error, not this shape.",
       "properties": {
         "export": {
           "$ref": "#/$defs/Export",
@@ -771,7 +771,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "content",
             "supports"
           ],
-          "description": "`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."
+          "description": "`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2)."
         },
         "type": {
           "type": "string",

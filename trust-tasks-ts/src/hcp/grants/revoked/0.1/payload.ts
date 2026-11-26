@@ -11,7 +11,7 @@ import type { Instant, Urn } from "../../../../_shared/components.js";
  */
 export interface HCPRevocationNoticePayload {
   /**
-   * The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation.
+   * The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation (question 16).
    */
   noticeId: Urn;
   /**
@@ -23,7 +23,7 @@ export interface HCPRevocationNoticePayload {
    */
   revokedAt: Instant;
   /**
-   * How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation.
+   * How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation (question 17).
    */
   reason?: "revoked" | "delegation-ended";
 }
@@ -92,7 +92,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "properties": {
     "noticeId": {
       "$ref": "#/$defs/Urn",
-      "description": "The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation."
+      "description": "The Security Event Token's `jti` (HCP 9.9): identifies the notice. The provider mints it fresh for each notice and keeps it the same on every delivery attempt of that notice, while each attempt is a new document with its own `id`, `issuedAt` and `proof`. The client deduplicates on it: an attempt whose `noticeId` it has already processed is acknowledged and not acted on again. Carrying `jti` in the payload rather than as the document `id` is pending HCP confirmation (question 16)."
     },
     "grantId": {
       "$ref": "#/$defs/Urn",
@@ -108,7 +108,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "revoked",
         "delegation-ended"
       ],
-      "description": "How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation."
+      "description": "How the grant ended. `revoked`: the grant was revoked (HCP 6.2); an absent `reason` means the same. `delegation-ended`: the grant ended, with status `expired`, because the delegation it was authorized under ended (HCP 17.6); the value is the reason HCP's `grant.expired` audit event records (HCP 8.2). Never the delegation's own reason for ending. HCP's grant-revoked event has no such member: this carriage adds it, pending HCP confirmation (question 17)."
     }
   },
   "$defs": {
