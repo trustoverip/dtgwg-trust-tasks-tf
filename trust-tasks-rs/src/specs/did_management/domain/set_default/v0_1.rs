@@ -308,9 +308,10 @@ pub struct Response {
     #[serde(
         rename = "previousDefault",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub previous_default: ::std::option::Option<::std::string::String>,
+    pub previous_default: ::std::option::Option<::std::option::Option<::std::string::String>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -528,7 +529,7 @@ pub mod builder {
         entry: ::std::result::Result<super::DomainEntry, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         previous_default: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
     }
@@ -564,7 +565,9 @@ pub mod builder {
         }
         pub fn previous_default<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.previous_default = value

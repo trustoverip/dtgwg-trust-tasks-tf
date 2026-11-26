@@ -40,34 +40,40 @@ pub mod error {
 #[non_exhaustive]
 pub struct DidTemplate {
     ///Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub defaults: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Human-readable description of what the template provisions.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<::std::string::String>,
+    pub defaults:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    ///Human-readable description of what the template provisions.
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub description: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
     pub kind: DidTemplateKind,
     ///DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub methods: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Template id within its scope. Lowercase alphanumeric and hyphen only.
     pub name: DidTemplateName,
     ///Variables with default values, keyed by variable name.
     #[serde(
         rename = "optionalVars",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub optional_vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub optional_vars:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).
     #[serde(
         rename = "requiredVars",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub required_vars: ::std::vec::Vec<::std::string::String>,
+    pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Template schema version. Currently always 1.
     #[serde(rename = "schemaVersion")]
     pub schema_version: i64,
@@ -318,27 +324,33 @@ pub struct Response {
     ///DID of the admin who last wrote the template.
     #[serde(rename = "createdBy")]
     pub created_by: ::std::string::String,
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub defaults: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub description: ::std::option::Option<::std::string::String>,
+    pub defaults:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub description: ::std::option::Option<::std::option::Option<::std::string::String>>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub kind: ResponseKind,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub methods: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub methods: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     pub name: ResponseName,
     #[serde(
         rename = "optionalVars",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub optional_vars: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub optional_vars:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(
         rename = "requiredVars",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub required_vars: ::std::vec::Vec<::std::string::String>,
+    pub required_vars: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     #[serde(rename = "schemaVersion")]
     pub schema_version: i64,
     ///Resolved scope of the stored template.
@@ -561,11 +573,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct DidTemplate {
         defaults: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         description: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
@@ -573,15 +585,19 @@ pub mod builder {
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::DidTemplateKind, ::std::string::String>,
-        methods:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        name: ::std::result::Result<super::DidTemplateName, ::std::string::String>,
-        optional_vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        methods: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
             ::std::string::String,
         >,
-        required_vars:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        name: ::std::result::Result<super::DidTemplateName, ::std::string::String>,
+        optional_vars: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        required_vars: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         schema_version: ::std::result::Result<i64, ::std::string::String>,
     }
     impl ::std::default::Default for DidTemplate {
@@ -603,7 +619,9 @@ pub mod builder {
         pub fn defaults<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -614,7 +632,9 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -646,7 +666,9 @@ pub mod builder {
         }
         pub fn methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.methods = value
@@ -667,7 +689,9 @@ pub mod builder {
         pub fn optional_vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -678,7 +702,9 @@ pub mod builder {
         }
         pub fn required_vars<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.required_vars = value
@@ -787,11 +813,11 @@ pub mod builder {
         created_at: ::std::result::Result<i64, ::std::string::String>,
         created_by: ::std::result::Result<::std::string::String, ::std::string::String>,
         defaults: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         description: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
@@ -799,15 +825,19 @@ pub mod builder {
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::ResponseKind, ::std::string::String>,
-        methods:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        name: ::std::result::Result<super::ResponseName, ::std::string::String>,
-        optional_vars: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        methods: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
             ::std::string::String,
         >,
-        required_vars:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        name: ::std::result::Result<super::ResponseName, ::std::string::String>,
+        optional_vars: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        required_vars: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         schema_version: ::std::result::Result<i64, ::std::string::String>,
         scope: ::std::result::Result<super::Scope, ::std::string::String>,
         updated_at: ::std::result::Result<i64, ::std::string::String>,
@@ -855,7 +885,9 @@ pub mod builder {
         pub fn defaults<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -866,7 +898,9 @@ pub mod builder {
         }
         pub fn description<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.description = value
@@ -898,7 +932,9 @@ pub mod builder {
         }
         pub fn methods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.methods = value
@@ -919,7 +955,9 @@ pub mod builder {
         pub fn optional_vars<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -930,7 +968,9 @@ pub mod builder {
         }
         pub fn required_vars<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.required_vars = value

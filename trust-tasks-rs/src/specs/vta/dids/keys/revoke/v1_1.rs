@@ -1154,8 +1154,8 @@ impl<'de> ::serde::Deserialize<'de> for KeyAssuranceLevel {
 #[non_exhaustive]
 pub struct KeyChangeApprovalState {
     ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub approvals: ::std::vec::Vec<RecordedApproval>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub approvals: ::std::option::Option<::std::vec::Vec<RecordedApproval>>,
     ///When the preview, and every approval bound to it, stops being usable.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -1366,8 +1366,8 @@ pub struct KeyChangeRecord {
     )]
     pub overlap_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub predecessors: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub predecessors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Custody projection only. The operator's stated reason. Never published.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<KeyChangeRecordReason>,
@@ -1388,8 +1388,8 @@ pub struct KeyChangeRecord {
     pub started_in_version_id: ::std::option::Option<::std::string::String>,
     pub state: KeyChangeState,
     ///Verification-method identifiers (for `update`, public keys or commitments) entering the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub successors: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub successors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl KeyChangeRecord {
     pub fn builder() -> builder::KeyChangeRecord {
@@ -1867,9 +1867,10 @@ pub struct Payload {
     #[serde(
         rename = "recoveryProof",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub recovery_proof: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub recovery_proof:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub replacement: ::std::option::Option<PayloadReplacement>,
     pub role: IdentityKeyRole,
@@ -2446,8 +2447,8 @@ impl ::std::convert::TryFrom<::std::string::String> for ProtectionClass {
 #[non_exhaustive]
 pub struct Publication {
     ///Present when `selfPublish` is true.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub artifacts: ::std::vec::Vec<PublishedArtifact>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub artifacts: ::std::option::Option<::std::vec::Vec<PublishedArtifact>>,
     ///True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.
     #[serde(rename = "selfPublish")]
     pub self_publish: bool,
@@ -3285,8 +3286,8 @@ pub struct Response {
     )]
     pub follow_up: ::std::option::Option<ReissuanceFollowUp>,
     ///Every key whose state this change sets or would set, after the change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub keys: ::std::vec::Vec<IdentityRoleKey>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub keys: ::std::option::Option<::std::vec::Vec<IdentityRoleKey>>,
     ///Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.
     #[serde(
         rename = "newVersionId",
@@ -4537,8 +4538,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct KeyChangeApprovalState {
-        approvals:
-            ::std::result::Result<::std::vec::Vec<super::RecordedApproval>, ::std::string::String>,
+        approvals: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         received: ::std::result::Result<u64, ::std::string::String>,
@@ -4557,7 +4560,9 @@ pub mod builder {
     impl KeyChangeApprovalState {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedApproval>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approvals = value
@@ -4652,8 +4657,10 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
-        predecessors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        predecessors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         reason: ::std::result::Result<
             ::std::option::Option<super::KeyChangeRecordReason>,
             ::std::string::String,
@@ -4669,8 +4676,10 @@ pub mod builder {
             ::std::string::String,
         >,
         state: ::std::result::Result<super::KeyChangeState, ::std::string::String>,
-        successors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        successors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for KeyChangeRecord {
         fn default() -> Self {
@@ -4807,7 +4816,9 @@ pub mod builder {
         }
         pub fn predecessors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.predecessors = value
@@ -4879,7 +4890,9 @@ pub mod builder {
         }
         pub fn successors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.successors = value
@@ -4963,7 +4976,7 @@ pub mod builder {
             ::std::string::String,
         >,
         recovery_proof: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         replacement: ::std::result::Result<
@@ -5088,7 +5101,9 @@ pub mod builder {
         pub fn recovery_proof<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -5232,8 +5247,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Publication {
-        artifacts:
-            ::std::result::Result<::std::vec::Vec<super::PublishedArtifact>, ::std::string::String>,
+        artifacts: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            ::std::string::String,
+        >,
         self_publish: ::std::result::Result<bool, ::std::string::String>,
     }
     impl ::std::default::Default for Publication {
@@ -5247,7 +5264,9 @@ pub mod builder {
     impl Publication {
         pub fn artifacts<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PublishedArtifact>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PublishedArtifact>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.artifacts = value
@@ -5804,7 +5823,10 @@ pub mod builder {
             ::std::option::Option<super::ReissuanceFollowUp>,
             ::std::string::String,
         >,
-        keys: ::std::result::Result<::std::vec::Vec<super::IdentityRoleKey>, ::std::string::String>,
+        keys: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::IdentityRoleKey>>,
+            ::std::string::String,
+        >,
         new_version_id: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -5880,7 +5902,9 @@ pub mod builder {
         }
         pub fn keys<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::IdentityRoleKey>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::IdentityRoleKey>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.keys = value

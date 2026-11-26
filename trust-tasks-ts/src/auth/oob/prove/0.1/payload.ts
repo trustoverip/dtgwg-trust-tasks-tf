@@ -9,7 +9,7 @@ import type { Ext, OobKey, Origin, Purpose, Requester, RequestId, SameNetwork, S
 /**
  * The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by auth/oob/prove/0.3
+ * @deprecated superseded by auth/oob/prove/0.4
  */
 export interface AuthOOBProvePayload {
   /**
@@ -21,7 +21,7 @@ export interface AuthOOBProvePayload {
 /**
  * Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, and which DID was identified. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.
  *
- * @deprecated superseded by auth/oob/prove/0.3
+ * @deprecated superseded by auth/oob/prove/0.4
  */
 export interface AuthOOBProveResponsePayloadStep2 {
   requestId: RequestId;
@@ -64,12 +64,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by auth/oob/prove/0.3";
+export const DEPRECATION: string | null = "superseded by auth/oob/prove/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by auth/oob/prove/0.3
+ * @deprecated superseded by auth/oob/prove/0.4
  */
 export type Payload = AuthOOBProvePayload;
 
@@ -79,7 +79,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/prove/0.1
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by auth/oob/prove/0.3
+ * @deprecated superseded by auth/oob/prove/0.4
  */
 export type Response = AuthOOBProveResponsePayloadStep2;
 

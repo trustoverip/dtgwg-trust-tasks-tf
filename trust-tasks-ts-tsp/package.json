@@ -19,7 +19,7 @@
     "node": ">=20.19.0"
   },
   "dependencies": {
-    "@openvtc/vti-tsp-js": "^0.2.0"
+    "@openvtc/vti-tsp-js": "^0.4.0"
   },
   "peerDependencies": {
     "@openvtc/trust-tasks": "^0.31.0"

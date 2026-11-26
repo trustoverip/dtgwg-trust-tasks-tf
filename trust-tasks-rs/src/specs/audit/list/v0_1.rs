@@ -42,8 +42,12 @@ pub struct AuditEnvelope {
     ///The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.
     pub action: AuditEnvelopeAction,
     ///DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub actor: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub actor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Trust context the event occurred in, for a maintainer that partitions its log per context.
     #[serde(
         rename = "contextId",
@@ -52,8 +56,9 @@ pub struct AuditEnvelope {
     )]
     pub context_id: ::std::option::Option<AuditEnvelopeContextId>,
     ///Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub detail: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub detail:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.
     #[serde(
         rename = "entryHash",
@@ -87,8 +92,12 @@ pub struct AuditEnvelope {
     )]
     pub schema_version: ::std::option::Option<u64>,
     ///DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub target: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub target: ::std::option::Option<::std::option::Option<::std::string::String>>,
 }
 impl AuditEnvelope {
     pub fn builder() -> builder::AuditEnvelope {
@@ -757,7 +766,7 @@ pub mod builder {
     pub struct AuditEnvelope {
         action: ::std::result::Result<super::AuditEnvelopeAction, ::std::string::String>,
         actor: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         context_id: ::std::result::Result<
@@ -765,7 +774,7 @@ pub mod builder {
             ::std::string::String,
         >,
         detail: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         entry_hash: ::std::result::Result<
@@ -786,7 +795,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         schema_version: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         target: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
     }
@@ -821,7 +830,9 @@ pub mod builder {
         }
         pub fn actor<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.actor = value
@@ -842,7 +853,9 @@ pub mod builder {
         pub fn detail<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -923,7 +936,9 @@ pub mod builder {
         }
         pub fn target<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.target = value

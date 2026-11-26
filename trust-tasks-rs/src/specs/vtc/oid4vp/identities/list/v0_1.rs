@@ -42,9 +42,11 @@ pub struct Attestation {
     #[serde(
         rename = "expiresAt",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub expires_at:
+        ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
     ///Which attestation it is, as tabled in the specification.
     pub kind: AttestationKind,
 }
@@ -366,14 +368,19 @@ pub struct Identity {
     #[serde(
         rename = "clientId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub client_id: ::std::option::Option<::std::string::String>,
+    pub client_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.
     pub custody: IdentityCustody,
     ///The identity's DID, for a `swiyu` identity.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub did: ::std::option::Option<::std::string::String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub did: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The administrator's name for the identity.
     pub id: IdentityId,
     #[serde(rename = "installedAt")]
@@ -385,9 +392,10 @@ pub struct Identity {
     #[serde(
         rename = "keyId",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub key_id: ::std::option::Option<::std::string::String>,
+    pub key_id: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).
     pub kind: IdentityKind,
     ///What is wrong with this identity. Empty when nothing is.
@@ -859,9 +867,10 @@ pub struct Response {
     #[serde(
         rename = "defaultIdentity",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub default_identity: ::std::option::Option<::std::string::String>,
+    pub default_identity: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every verifier identity the community holds, by `id`. Empty when it holds none.
@@ -879,7 +888,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Attestation {
         expires_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::option::Option<::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>>,
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::AttestationKind, ::std::string::String>,
@@ -896,7 +905,9 @@ pub mod builder {
         pub fn expires_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                ::std::option::Option<
+                    ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1046,12 +1057,12 @@ pub mod builder {
         certificate:
             ::std::result::Result<::std::option::Option<super::Certificate>, ::std::string::String>,
         client_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         custody: ::std::result::Result<super::IdentityCustody, ::std::string::String>,
         did: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         id: ::std::result::Result<super::IdentityId, ::std::string::String>,
@@ -1059,7 +1070,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         is_default: ::std::result::Result<bool, ::std::string::String>,
         key_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         kind: ::std::result::Result<super::IdentityKind, ::std::string::String>,
@@ -1107,7 +1118,9 @@ pub mod builder {
         }
         pub fn client_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.client_id = value
@@ -1127,7 +1140,9 @@ pub mod builder {
         }
         pub fn did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.did = value
@@ -1167,7 +1182,9 @@ pub mod builder {
         }
         pub fn key_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.key_id = value
@@ -1349,7 +1366,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         default_identity: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -1369,7 +1386,9 @@ pub mod builder {
     impl Response {
         pub fn default_identity<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.default_identity = value

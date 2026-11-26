@@ -105,6 +105,7 @@ mod generate;
 mod lock;
 mod names;
 mod passes;
+mod presence;
 #[cfg(feature = "publish")]
 pub mod publish;
 mod render;

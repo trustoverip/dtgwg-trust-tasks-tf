@@ -104,9 +104,10 @@ updates:
       # generators and regenerating.
       - dependency-name: json-schema-to-typescript
         update-types: ["version-update:semver-major"]
-      # 0.x: 0.2 -> 0.4 counts as a minor update. 0.4 removes
-      # `senderEncryptionKey` from `PackKeys`/`UnpackKeys`, so
-      # trust-tasks-ts-tsp does not compile until it is ported.
+      # 0.x: a minor update (0.4 -> 0.5, say) can move the TSP version, a wire
+      # break for every peer, and change the re-exported `PackKeys` /
+      # `UnpackKeys`. Either is a `fix(ts-tsp)!:` port by hand
+      # (docs/packages/typescript.md), not part of the grouped update.
       - dependency-name: "@openvtc/vti-tsp-js"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     commit-message:

@@ -119,7 +119,7 @@ A conforming **consumer** (the community) **MUST**:
 
 **Authority: being an active member within the community's limits.** No capability is read: every active member may give, bounded only by the settings' `limits` and the signer's tenure (VTI-BDG-040). Giving confers nothing on the recipient or the giver (VTI-BDG-002). The proof establishes who gave, which is what the limits are counted against ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
-This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
+This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
 
 ## Definitions
 

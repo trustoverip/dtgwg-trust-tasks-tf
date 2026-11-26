@@ -919,8 +919,8 @@ impl<'de> ::serde::Deserialize<'de> for KeyAssuranceLevel {
 #[non_exhaustive]
 pub struct KeyChangeApprovalState {
     ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub approvals: ::std::vec::Vec<RecordedApproval>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub approvals: ::std::option::Option<::std::vec::Vec<RecordedApproval>>,
     ///When the preview, and every approval bound to it, stops being usable.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -1062,8 +1062,8 @@ pub struct KeyChangeRecord {
     )]
     pub overlap_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub predecessors: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub predecessors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Custody projection only. The operator's stated reason. Never published.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<KeyChangeRecordReason>,
@@ -1084,8 +1084,8 @@ pub struct KeyChangeRecord {
     pub started_in_version_id: ::std::option::Option<::std::string::String>,
     pub state: KeyChangeState,
     ///Verification-method identifiers (for `update`, public keys or commitments) entering the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub successors: ::std::vec::Vec<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub successors: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl KeyChangeRecord {
     pub fn builder() -> builder::KeyChangeRecord {
@@ -2074,8 +2074,8 @@ pub struct Response {
     ///One entry per role asked for, including roles with no keys.
     pub roles: ::std::vec::Vec<KeyRoleSummary>,
     ///Present exactly when `includeHistory` was true. Newest first.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub rotations: ::std::vec::Vec<KeyChangeRecord>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub rotations: ::std::option::Option<::std::vec::Vec<KeyChangeRecord>>,
     ///The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength.
     #[serde(rename = "versionId")]
     pub version_id: ::std::string::String,
@@ -2627,8 +2627,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct KeyChangeApprovalState {
-        approvals:
-            ::std::result::Result<::std::vec::Vec<super::RecordedApproval>, ::std::string::String>,
+        approvals: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         received: ::std::result::Result<u64, ::std::string::String>,
@@ -2647,7 +2649,9 @@ pub mod builder {
     impl KeyChangeApprovalState {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedApproval>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RecordedApproval>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approvals = value
@@ -2742,8 +2746,10 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
-        predecessors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        predecessors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         reason: ::std::result::Result<
             ::std::option::Option<super::KeyChangeRecordReason>,
             ::std::string::String,
@@ -2759,8 +2765,10 @@ pub mod builder {
             ::std::string::String,
         >,
         state: ::std::result::Result<super::KeyChangeState, ::std::string::String>,
-        successors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        successors: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for KeyChangeRecord {
         fn default() -> Self {
@@ -2897,7 +2905,9 @@ pub mod builder {
         }
         pub fn predecessors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.predecessors = value
@@ -2969,7 +2979,9 @@ pub mod builder {
         }
         pub fn successors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.successors = value
@@ -3401,8 +3413,10 @@ pub mod builder {
         method: ::std::result::Result<super::DidMethodName, ::std::string::String>,
         projection: ::std::result::Result<super::KeyListProjection, ::std::string::String>,
         roles: ::std::result::Result<::std::vec::Vec<super::KeyRoleSummary>, ::std::string::String>,
-        rotations:
-            ::std::result::Result<::std::vec::Vec<super::KeyChangeRecord>, ::std::string::String>,
+        rotations: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::KeyChangeRecord>>,
+            ::std::string::String,
+        >,
         version_id: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
@@ -3482,7 +3496,9 @@ pub mod builder {
         }
         pub fn rotations<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::KeyChangeRecord>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::KeyChangeRecord>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.rotations = value

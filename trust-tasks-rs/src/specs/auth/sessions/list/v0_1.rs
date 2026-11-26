@@ -163,8 +163,8 @@ pub struct Session {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub acr: ::std::option::Option<::std::string::String>,
     ///Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub amr: ::std::vec::Vec<SessionAmrItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub amr: ::std::option::Option<::std::vec::Vec<SessionAmrItem>>,
     ///ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
     #[serde(rename = "expiresAt")]
     pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
@@ -455,7 +455,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        amr: ::std::result::Result<::std::vec::Vec<super::SessionAmrItem>, ::std::string::String>,
+        amr: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::SessionAmrItem>>,
+            ::std::string::String,
+        >,
         expires_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -490,7 +493,9 @@ pub mod builder {
         }
         pub fn amr<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::SessionAmrItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::SessionAmrItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.amr = value

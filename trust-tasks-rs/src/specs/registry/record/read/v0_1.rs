@@ -208,8 +208,9 @@ pub struct Response {
     pub authority_id: ::std::string::String,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub authorized: ::std::option::Option<bool>,
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub context: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub context:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     pub entity_id: ::std::string::String,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub recognized: ::std::option::Option<bool>,
@@ -323,7 +324,7 @@ pub mod builder {
         authority_id: ::std::result::Result<::std::string::String, ::std::string::String>,
         authorized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         context: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         entity_id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -379,7 +380,9 @@ pub mod builder {
         pub fn context<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

@@ -348,8 +348,8 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Disclosed {
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub anchors: ::std::vec::Vec<DisclosedAnchorsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub anchors: ::std::option::Option<::std::vec::Vec<DisclosedAnchorsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub document: ::std::option::Option<DisclosedDocument>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1308,7 +1308,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Disclosed {
         anchors: ::std::result::Result<
-            ::std::vec::Vec<super::DisclosedAnchorsItem>,
+            ::std::option::Option<::std::vec::Vec<super::DisclosedAnchorsItem>>,
             ::std::string::String,
         >,
         document: ::std::result::Result<
@@ -1337,7 +1337,9 @@ pub mod builder {
     impl Disclosed {
         pub fn anchors<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DisclosedAnchorsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::DisclosedAnchorsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.anchors = value

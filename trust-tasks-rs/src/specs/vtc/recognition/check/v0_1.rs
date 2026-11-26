@@ -200,8 +200,12 @@ pub struct Response {
     ///The probed DID, echoed.
     pub did: ResponseDid,
     ///Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub error: ::std::option::Option<ResponseError>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub error: ::std::option::Option<::std::option::Option<ResponseError>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Whether the community recognises this DID. Meaningless unless registryConfigured is true.
@@ -391,7 +395,7 @@ pub mod builder {
     pub struct Response {
         did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
         error: ::std::result::Result<
-            ::std::option::Option<super::ResponseError>,
+            ::std::option::Option<::std::option::Option<super::ResponseError>>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -422,7 +426,9 @@ pub mod builder {
         }
         pub fn error<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ResponseError>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<super::ResponseError>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.error = value
