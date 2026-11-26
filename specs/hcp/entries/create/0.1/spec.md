@@ -271,7 +271,8 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **The grant and write-scope checks**, and the issuer check on an `issuer-attested` write (HCP 3.7, 5.2.3).
 - **Provenance** (HCP 3.5): the provider records `assurance`, `submittedByClient`, `authorizedUnder`, `recordedByProvider` and `recordedAt` from what it knows, never from the request.
 - **Credential ingest** (HCP 14.6): verification of a credential that is the content, which the provider **MUST NOT** modify (HCP 4.2.2).
-- **Conflict detection** (HCP 4.7) and the `conflict.proposed` event for a proposal the client makes (HCP 4.7.4).
+- **Conflict detection** (HCP 4.7) and the `conflict.proposed` event for a proposal the client makes (HCP 4.7.4). A provider that accepts `model-inferred` entries conforms to the Memory Manager Profile and lists it (HCP 15.1, 18.1): it evaluates candidate conflicts on every write, whichever of the two entries is written second, and records a `contradicts` relationship where its declared method finds one (HCP 15.2).
+- **Health context** (HCP 16.2). A provider that accepts `issuer-attested` entries in `health_context` conforms to the Health Context Profile and lists it (HCP 16.1, 18.1). Such an entry carries a credential, as its content or in support of it, and at least one credential it carries passes verification at ingest; HCP rejects a write that does not, with invalid request where it carries no credential and credential invalid where none passes (HCP 16.2, 14.6).
 - **Encrypted storage** (HCP 4.8): content checks made within the Context Subject's trust domain.
 
 ## Security & Privacy

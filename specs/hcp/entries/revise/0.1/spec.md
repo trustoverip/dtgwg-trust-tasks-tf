@@ -283,7 +283,8 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **The current-version check** (HCP 5.2.4): made against provider-held state, atomically with the write.
 - **The grant, write-scope and issuer checks** (HCP 3.7, 5.2.4), and the rejected-version rule (HCP 3.8).
 - **Provenance of the new version** (HCP 3.5), attributed to its own Context Asserter, and its empty confirmations (HCP 3.8).
-- **Credential ingest** (HCP 14.6) for a revised credential.
+- **Credential ingest** (HCP 14.6) for a revised credential, and for a revised `issuer-attested` entry in `health_context` the Health Context Profile's rule that it carries a credential at least one of which passes verification, as for create (HCP 16.2).
+- **Conflict detection on the revision** (HCP 15.2, 15.3). A provider conforming to the Memory Manager Profile (HCP 15.1, 18.1) evaluates detection on a revision as on every write; where the revision means its method no longer finds a conflict the provider asserted, it removes that `contradicts` relationship, and the resolution rule of HCP 4.7.3 applies.
 
 ## Security & Privacy
 

@@ -299,6 +299,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - The status transitions on the other entries in a conflict (HCP 4.7.3): the response carries only the entry named.
 - Refusing a Context Client's revision of a rejected version (HCP 3.8).
+- Review of unconfirmed health inferences (HCP 16.2): a provider conforming to the Health Context Profile **SHOULD** offer the person a way to review unconfirmed `model-inferred` entries in `health_context` through a Management Client, and discloses none to a Context Client until it is confirmed.
 - The `context.confirmed` and `conflict.resolved` audit events and their durability (HCP 8.1, 8.4).
 - Carriage by the HTTP Binding: HCP carries governance operations only over that binding (HCP 1.6, 5.4, 9.1), and a Trust Task is not it. This specification carries the operation for a Management Client acting for the Authorizing Principal (HCP 6.1.9) instead, *pending HCP confirmation* ([question 37](#pending-hcp-confirmation)).
 

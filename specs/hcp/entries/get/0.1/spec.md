@@ -265,6 +265,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **The grant, scope, standing-rule and purpose checks** (HCP 5.2.2, 6.2.2, 6.3, 4.2.6), and the narrowing of HCP 6.1.5.1: they are made against provider-held state.
 - **Existence hiding** (HCP 5.2.2, 5.5): every refusal looks the same.
 - **Use limits** (HCP 7.6) and **directives** (HCP 6.4): carried, but honouring them is on the client.
+- **Health context** (HCP 16.2). A copy disclosed from `health_context`, a High-sensitivity category, is usable for at most 24 hours (HCP 7.6). A provider conforming to the Health Context Profile (HCP 16.1, 18.1) does not disclose a `model-inferred` entry in `health_context` to a Context Client unless the most recent confirmation record on its current version is `confirmed`: until then a get of it is refused with `permissionDenied`, as for an entry that does not exist.
 
 ## Security & Privacy
 
