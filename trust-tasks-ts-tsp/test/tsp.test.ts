@@ -10,11 +10,14 @@ import {
   ENVELOPE_TYPE,
   TspEnvelopeError,
   TspConsumer,
+  TSP_VERSION,
   DOCUMENT_TOO_LARGE_WIRE_MESSAGE,
   type SenderPublicKeys,
   type PackKeys,
   type UnpackKeys,
 } from "../src/index.js";
+import { peekRevision } from "@openvtc/vti-tsp-js";
+import { AFFINIDI_TSP_1_0_DOCUMENT, AFFINIDI_TSP_1_0_HEX, VTI_TSP_JS_0_2_REV2_HEX } from "./fixtures.js";
 
 interface Party {
   vid: string;
@@ -39,14 +42,12 @@ function party(vid: string, seed: number): Party {
 function packKeys(sender: Party, receiver: Party): PackKeys {
   return {
     senderSigningKey: sender.sigPriv,
-    senderEncryptionKey: sender.encPriv,
     receiverEncryptionKey: receiver.encPub,
   };
 }
 function unpackKeys(recipient: Party, sender: Party): UnpackKeys {
   return {
     receiverDecryptionKey: recipient.encPriv,
-    senderEncryptionKey: sender.encPub,
     senderSigningKey: sender.sigPub,
   };
 }
@@ -150,6 +151,95 @@ test("a tampered message does not open", async () => {
   await assert.rejects(
     unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) }),
     (e: unknown) => e instanceof TspEnvelopeError,
+  );
+});
+
+// ── TSP 1.0 interop and draft peers ─────────────────────────────────────────
+
+const fromHex = (hex: string) => Uint8Array.from(Buffer.from(hex, "hex"));
+
+test("what this binding seals is TSP 1.0 (YTSP-BAA)", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const wire = await packTrustTask(echoDoc(), { senderVid: alice.vid, receiverVid: bob.vid, keys: packKeys(alice, bob) });
+  const { major, minor } = peekRevision(wire);
+  assert.equal(`${major}.${minor}`, TSP_VERSION);
+});
+
+test("a TSP 1.0 message packed by the Rust affinidi-tsp opens", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const wire = fromHex(AFFINIDI_TSP_1_0_HEX);
+  assert.equal(`${peekRevision(wire).major}.${peekRevision(wire).minor}`, "1.0");
+  assert.equal(advertisedSender(wire), alice.vid);
+  const unpacked = await unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) });
+  assert.deepEqual(unpacked.document, AFFINIDI_TSP_1_0_DOCUMENT);
+  assert.equal(unpacked.transport.peer, alice.vid);
+  assert.equal(unpacked.transport.local, bob.vid);
+});
+
+test("consumer: a TSP 1.0 message from the Rust affinidi-tsp runs the pipeline and is answered", async () => {
+  const h = harness();
+  const r = await h.receive(fromHex(AFFINIDI_TSP_1_0_HEX));
+  assert.equal(r.outcome.kind, "handled");
+  assert.deepEqual(h.calls, ["from affinidi-tsp"]);
+  const back = await unpackTrustTask(await h.consumer.packReply(r), { recipientVid: h.alice.vid, keys: unpackKeys(h.alice, h.bob) });
+  assert.equal(back.document.type, `${echoType}#response`);
+});
+
+// A peer still on the Rev 2 draft (what this package spoke on vti-tsp-js 0.2)
+// is refused from the version marker with a failure naming the version, not as
+// an unreadable or unauthenticated message. TSP has no negotiation.
+const isDraftRefusal = (e: unknown) =>
+  e instanceof TspEnvelopeError &&
+  e.failure === "unsupportedTspVersion" &&
+  e.message.includes("Rev 2 (YTSP-AAB)") &&
+  e.message.includes(`TSP ${TSP_VERSION}`);
+
+test("a Rev 2 message from an old peer is refused as unsupportedTspVersion", async () => {
+  const alice = party("did:example:alice", 1);
+  const bob = party("did:example:bob", 2);
+  const wire = fromHex(VTI_TSP_JS_0_2_REV2_HEX);
+  assert.equal(advertisedSender(wire), undefined);
+  await assert.rejects(unpackTrustTask(wire, { recipientVid: bob.vid, keys: unpackKeys(bob, alice) }), isDraftRefusal);
+});
+
+test("consumer: a Rev 2 message from an old peer is refused before sender resolution", async () => {
+  const h = harness();
+  let resolved = false;
+  const consumer = new TspConsumer({
+    recipientVid: h.bob.vid,
+    decryptionKey: h.bob.encPriv,
+    signingKey: h.bob.sigPriv,
+    resolveSender: () => {
+      resolved = true;
+      return senderKeys(h.alice);
+    },
+    now,
+  });
+  await assert.rejects(consumer.receive<Echo, Echo>(fromHex(VTI_TSP_JS_0_2_REV2_HEX), echoSpec, () => undefined), isDraftRefusal);
+  assert.equal(resolved, false);
+});
+
+// MINOR never gates a message (TSP 1.0 §3.1): a 1.x frame that does not open is an
+// unreadable message, not a peer on another version. Bytes 6..8 are the
+// version count code, `f8 10 00` for 1.0; the last byte carries MINOR's low bits.
+test("a TSP 1.x message with an unknown MINOR that does not open is notForThisReceiver", async () => {
+  const h = harness();
+  const bumped = Uint8Array.from(await h.seal(echoDoc()));
+  bumped[8] = 0x05; // TSP 1.5: the signature over the header no longer verifies
+  assert.deepEqual(peekRevision(bumped), { major: 1, minor: 5, recognised: false });
+  const unreadable = (e: unknown) =>
+    e instanceof TspEnvelopeError && e.failure === "notForThisReceiver" && e.message.includes("MAJOR 1, MINOR 5");
+  await assert.rejects(unpackTrustTask(bumped, { recipientVid: h.bob.vid, keys: unpackKeys(h.bob, h.alice) }), unreadable);
+  await assert.rejects(h.receive(bumped), unreadable);
+});
+
+test("bytes that are not TSP at all stay notForThisReceiver", async () => {
+  const h = harness();
+  await assert.rejects(
+    h.receive(new TextEncoder().encode("not a TSP message")),
+    (e: unknown) => e instanceof TspEnvelopeError && e.failure === "notForThisReceiver",
   );
 });
 

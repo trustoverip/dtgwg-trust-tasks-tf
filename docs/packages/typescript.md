@@ -38,6 +38,14 @@ consumer takes the recipient's raw Ed25519/X25519 private keys and a
 `resolveSender(vid)` callback for the sender's public keys (the Go-style model).
 Its sealed `{type, document}` envelope matches the Rust/Dart/Go bindings; refusals
 are `ErrorResponse` returns, not throws (the TS core's convention).
+It speaks **TSP 1.0** (`YTSP-BAA`, HPKE-Base), as the Rust crate's `affinidi-tsp`
+does, and refuses a message from a peer on a TSP draft (Rev 2 or Rev 3) as
+`unsupportedTspVersion`; TSP has no version negotiation. Moving
+`@openvtc/vti-tsp-js` across a TSP version is a wire break for every peer and an
+API break for this package (its re-exported `PackKeys`/`UnpackKeys` change), so
+it goes in a `!` PR scoped `ts-tsp`. Its interop test opens a fixed message packed
+by the Rust `affinidi-tsp` (`test/fixtures.ts` records how it was produced);
+regenerate that fixture when the TSP version moves, not when the crate does.
 
 `@openvtc/trust-tasks-capability-client` (dir `trust-tasks-ts-capability-client`)
 is the TypeScript port of the Rust `trust-tasks-capability-client` crate: **pure
