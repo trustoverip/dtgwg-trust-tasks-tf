@@ -10,6 +10,20 @@
 
 window.TT_BINDINGS = [
   {
+    id: "tsp/0.3",
+    slug: "tsp",
+    version: "0.3",
+    title: "Trust Spanning Protocol (TSP)",
+    summary:
+      "Carries Trust Task documents inside ToIP Trust Spanning Protocol 1.0 messages, with the 0.2 envelope and optional deliveryId unchanged. Requires TSP 1.0: a consumer refuses a TSP MAJOR other than 1 (the Rev 2 and Rev 3 drafts among them) without answering, and never refuses on the TSP MINOR.",
+    bindingURI: "https://trusttasks.org/binding/tsp/0.3",
+    envelopeType: "https://trusttasks.org/binding/tsp/0.1/envelope",
+    status: "draft",
+    accent: "sky",
+    prosePath: "/bindings/tsp/0.3/spec.md",
+    implementations: [],
+  },
+  {
     id: "tsp/0.2",
     slug: "tsp",
     version: "0.2",
