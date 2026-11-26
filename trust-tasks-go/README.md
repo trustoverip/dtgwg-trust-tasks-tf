@@ -223,6 +223,16 @@ defect this family's conventions exist to prevent". Rust spells this `Option<Vec
 `scopes?: string[]`; a bare Go slice was the only one of the three that could not
 say it.
 
+An optional member whose schema also admits `null` has a third state, and a
+pointer has only two, so it is a `trusttasks.Nullable[T]` tagged `omitzero`
+instead: the zero value is absent, `trusttasks.Null[T]()` writes `null`, and
+`trusttasks.Value(v)` writes `v`. `acl/update/0.3` reads an absent `label` as
+"leave it unchanged" and `"label": null` as "clear it". For a slice or map `T`
+only `Null()` writes `null`, and `Value(nil)` writes `[]` or `{}`: where an
+`acl` task's `allowedKeys` admits `null` (every key) beside `[]` (none), a
+filtered-to-nothing nil slice grants no key. See `docs/packages/go.md` in the
+repository.
+
 Unrecognized **top-level** members survive a round trip in `Document.Extra`, per
 the §7.1 / §7.2 guidance to preserve them.
 
