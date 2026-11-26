@@ -30,13 +30,13 @@ typedef Urn = String;
 class Payload {
   const Payload({
     required this.delegationId,
-    required this.accessToken,
+    this.accessToken,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Payload.fromJson(Map<String, dynamic> json) => Payload(
         delegationId: json['delegationId'] as String,
-        accessToken: json['accessToken'] as String,
+        accessToken: json['accessToken'] as String?,
       );
 
   /// HCP `delegationId` (the `{delegationId}` path parameter of HCP 9.2, 9.4.13; HCP
@@ -46,13 +46,17 @@ class Payload {
   /// The Management Client's HCP access token (HCP 9.3), carried unchanged: a
   /// delegate's, or the Context Subject's for an appointed delegation (HCP 9.2). HCP's
   /// HTTP binding sends it as a Bearer token; this member carries it in the document.
-  /// The provider validates it exactly as over HTTP and treats it as opaque.
-  final String accessToken;
+  /// The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL:
+  /// where it is absent, the provider authenticates the request's `issuer` VID, by the
+  /// REQUIRED request proof, as a Management Client the Authorizing Principal enrolled
+  /// (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is
+  /// present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+  final String? accessToken;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'delegationId': delegationId,
-        'accessToken': accessToken,
+        if (accessToken != null) 'accessToken': accessToken!,
       };
 }
 
@@ -89,7 +93,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/delegations/end/0.1","title":"HCP — Relinquish or End Delegation — payload","description":"The request payload of the HCP 2.0-draft-3 Relinquish or end delegation operation (Delegated Authorization Profile, HCP 17.6, 17.5, 17.10; `DELETE /v2/delegations/{delegationId}` in HCP 9.2, 9.4.13): a Management Client, acting for the delegate, relinquishes a delegation, or, acting for the Context Subject or an appointing delegate, ends one. The reason is fixed by who the caller is, never sent. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.13. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP\'s own schema allows to be empty.","type":"object","additionalProperties":false,"required":["delegationId","accessToken"],"properties":{"delegationId":{"\$ref":"#/\$defs/Urn","description":"HCP `delegationId` (the `{delegationId}` path parameter of HCP 9.2, 9.4.13; HCP 17.2): the delegation to relinquish or end."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged: a delegate\'s, or the Context Subject\'s for an appointed delegation (HCP 9.2). HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."}},"\$defs":{"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/delegations/end/0.1","title":"HCP — Relinquish or End Delegation — payload","description":"The request payload of the HCP 2.0-draft-3 Relinquish or end delegation operation (Delegated Authorization Profile, HCP 17.6, 17.5, 17.10; `DELETE /v2/delegations/{delegationId}` in HCP 9.2, 9.4.13): a Management Client, acting for the delegate, relinquishes a delegation, or, acting for the Context Subject or an appointing delegate, ends one. The reason is fixed by who the caller is, never sent. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.13. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP\'s own schema allows to be empty.","type":"object","additionalProperties":false,"required":["delegationId"],"properties":{"delegationId":{"\$ref":"#/\$defs/Urn","description":"HCP `delegationId` (the `{delegationId}` path parameter of HCP 9.2, 9.4.13; HCP 17.2): the delegation to relinquish or end."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged: a delegate\'s, or the Context Subject\'s for an appointed delegation (HCP 9.2). HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request\'s `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."}},"\$defs":{"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

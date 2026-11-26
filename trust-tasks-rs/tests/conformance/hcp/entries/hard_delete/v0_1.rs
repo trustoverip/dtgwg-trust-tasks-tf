@@ -43,10 +43,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\"\n}",
-        ),
-        (
             "A `hardDelete` flag in the payload — HCP's query parameter is carried by the Type URI, not a member; a withdraw is a different task.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"entryId\": \"urn:uuid:d29f48ce-af52-4f6d-b36c-102222532293\",\n  \"hardDelete\": true\n}",
         ),

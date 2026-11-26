@@ -159,8 +159,8 @@ pub struct AuditEvent {
     pub grant_id: ::std::option::Option<AuditEventGrantId>,
     ///Who took part (HCP 8.2, 3.9).
     pub participants: AuditParticipants,
-    ///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-    pub purpose: ::std::option::Option<AuditEventPurpose>,
+    ///The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements.
+    pub purpose: ::std::option::Option<::std::string::String>,
     ///The stated task, or null where none was stated (HCP 8.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
     #[serde(rename = "purposeDescription")]
     pub purpose_description: ::std::option::Option<AuditEventPurposeDescription>,
@@ -366,72 +366,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AuditEventGrantId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for AuditEventGrantId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AuditEventPurpose(::std::string::String);
-impl ::std::ops::Deref for AuditEventPurpose {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AuditEventPurpose> for ::std::string::String {
-    fn from(value: AuditEventPurpose) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AuditEventPurpose {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AuditEventPurpose {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AuditEventPurpose {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -838,7 +772,7 @@ impl<'de> ::serde::Deserialize<'de> for AuditPartyId {
             })
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -959,9 +893,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///Only events whose `categories` include this category (HCP 8.3: "filter by ... category"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub category: ::std::option::Option<Category>,
@@ -988,12 +926,26 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub to: ::std::option::Option<Instant>,
 }
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+            category: Default::default(),
+            client: Default::default(),
+            cursor: Default::default(),
+            event_type: Default::default(),
+            from: Default::default(),
+            limit: Default::default(),
+            to: Default::default(),
+        }
+    }
+}
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1575,7 +1527,7 @@ pub mod builder {
         >,
         participants: ::std::result::Result<super::AuditParticipants, ::std::string::String>,
         purpose: ::std::result::Result<
-            ::std::option::Option<super::AuditEventPurpose>,
+            ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
         purpose_description: ::std::result::Result<
@@ -1691,7 +1643,7 @@ pub mod builder {
         }
         pub fn purpose<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::AuditEventPurpose>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
             T::Error: ::std::fmt::Display,
         {
             self.purpose = value
@@ -1990,7 +1942,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         category:
             ::std::result::Result<::std::option::Option<super::Category>, ::std::string::String>,
         client: ::std::result::Result<
@@ -2015,7 +1970,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 category: Ok(Default::default()),
                 client: Ok(Default::default()),
                 cursor: Ok(Default::default()),
@@ -2029,7 +1984,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -2199,7 +2154,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/audit/read/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"category\":{\"$ref\":\"#/$defs/Category\",\"description\":\"Only events whose `categories` include this category (HCP 8.3: \\\"filter by ... category\\\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).\"},\"client\":{\"description\":\"Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: \\\"filter by HCP Client\\\"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"eventType\":{\"description\":\"Only events of this type, one of those HCP 8.1 lists, such as `context.read` (HCP 8.3: \\\"filter by ... event type\\\"; named after the audit event's own `eventType`, HCP 8.2). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or after this instant: the lower bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"},\"limit\":{\"description\":\"HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or before this instant: the upper bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — Read Audit Log — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/hcp/audit/read/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"category\":{\"$ref\":\"#/$defs/Category\",\"description\":\"Only events whose `categories` include this category (HCP 8.3: \\\"filter by ... category\\\"; the name as in HCP 9.4.12). The member name is this carriage's reading, pending HCP confirmation (question 29).\"},\"client\":{\"description\":\"Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: \\\"filter by HCP Client\\\"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"HCP `cursor` (HCP 9.5): the opaque continuation token from a previous response's `nextCursor`. Absent asks for the first page. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"eventType\":{\"description\":\"Only events of this type, one of those HCP 8.1 lists, such as `context.read` (HCP 8.3: \\\"filter by ... event type\\\"; named after the audit event's own `eventType`, HCP 8.2). The member name is this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or after this instant: the lower bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"},\"limit\":{\"description\":\"HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"Only events whose `timestamp` is at or before this instant: the upper bound of HCP 8.3's date range (the name as in HCP 9.4.12). Inclusive, pending HCP confirmation (questions 29 and 30).\"}},\"title\":\"HCP — Read Audit Log — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -2209,7 +2164,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(2097152usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AuditDisclosed_fc9343da!(), ",", crate::specs::shared_defs::d_AuditEvent_d4b2d021!(), ",", crate::specs::shared_defs::d_AuditParticipants_99e0fec3!(), ",", crate::specs::shared_defs::d_AuditParty_d60c0a20!(), ",", crate::specs::shared_defs::d_Category_80b9bd03!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of the audit log, as the caller may read it (HCP 8.3, 17.7). Failures use trust-task-error, not this shape.\",\"properties\":{\"events\":{\"description\":\"The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"events\"],\"title\":\"HCP — Read Audit Log — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_AuditDisclosed_fc9343da!(), ",", crate::specs::shared_defs::d_AuditEvent_e48c2562!(), ",", crate::specs::shared_defs::d_AuditParticipants_99e0fec3!(), ",", crate::specs::shared_defs::d_AuditParty_d60c0a20!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One page of the audit log, as the caller may read it (HCP 8.3, 17.7). Failures use trust-task-error, not this shape.\",\"properties\":{\"events\":{\"description\":\"The audit events of this page, oldest first (HCP 8.2). HCP 9.4.7 names no member for them; `events` is this carriage's name, pending HCP confirmation (question 30). For a delegate or former delegate, only the events HCP 17.7 lets them read; for a former delegate, `entryId` and `relatedEntryId` are withheld as null and `disclosed` and the `data` of a `context.*` event are left out (HCP 17.7), pending HCP confirmation (question 42). Empty when nothing matches.\",\"items\":{\"$ref\":\"#/$defs/AuditEvent\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"HCP `nextCursor` (HCP 9.5): an opaque token for the next page, which encodes no credential or entry content and stays valid for at least 300 seconds. Absent, never null, when the result set is exhausted: a departure from HCP 9.5's null, pending HCP confirmation (question 3). The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"events\"],\"title\":\"HCP — Read Audit Log — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

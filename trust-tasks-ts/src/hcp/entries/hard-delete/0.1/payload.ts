@@ -15,9 +15,9 @@ export interface HCPHardDeleteEntryPayload {
    */
   entryId: Urn;
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
-  accessToken: string;
+  accessToken?: string;
 }
 /**
  * The entry is permanently removed (HCP 5.4.2). The shape of HCP 9.4.5's withdraw result with `hardDeleted` true and no `status`, pending HCP confirmation (question 11 in the spec's "Pending HCP confirmation" section). Failures use trust-task-error, not this shape.
@@ -90,8 +90,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "entryId",
-    "accessToken"
+    "entryId"
   ],
   "properties": {
     "entryId": {
@@ -102,7 +101,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   },
   "$defs": {

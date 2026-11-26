@@ -35,10 +35,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-            "{\n  \"excludeDeleted\": true\n}",
-        ),
-        (
             "An export option as a string — HCP 5.4.1's options are booleans; the `include=audit` query parameter of HCP 9.4.8 maps to `includeAudit: true`.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"includeAudit\": \"audit\"\n}",
         ),

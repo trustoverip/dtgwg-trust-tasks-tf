@@ -82,9 +82,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.5): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).
     #[serde(rename = "entryId")]
     pub entry_id: Urn,
@@ -94,7 +98,7 @@ impl Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -251,13 +255,16 @@ impl<'de> ::serde::Deserialize<'de> for Urn {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         entry_id: ::std::result::Result<super::Urn, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 entry_id: Err("no value supplied for entry_id".to_string()),
             }
         }
@@ -265,7 +272,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -374,7 +381,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/hard-delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Hard delete operation (HCP 5.4.2, 5.4; `DELETE /v2/entries/{entryId}?hardDelete=true` in HCP 9.2, 9.4.5): a Management Client, acting for the Authorizing Principal, permanently removes an entry. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.5): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).\"}},\"required\":[\"entryId\",\"accessToken\"],\"title\":\"HCP — Hard Delete Entry — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/hard-delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Hard delete operation (HCP 5.4.2, 5.4; `DELETE /v2/entries/{entryId}?hardDelete=true` in HCP 9.2, 9.4.5): a Management Client, acting for the Authorizing Principal, permanently removes an entry. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.5): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.5).\"}},\"required\":[\"entryId\"],\"title\":\"HCP — Hard Delete Entry — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {

@@ -11,9 +11,9 @@ import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipant
  */
 export interface HCPReadAuditLogPayload {
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
-  accessToken: string;
+  accessToken?: string;
   /**
    * Only events in which this HCP Client took part, as initiator or as the client of the grant concerned, by its client identifier (HCP 8.3: "filter by HCP Client"; the name as in HCP 9.4.12). The member name and what it matches are this carriage's reading, pending HCP confirmation (question 29). The maxLength is a framework bound, not an HCP requirement.
    */
@@ -109,15 +109,12 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "description": "The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "accessToken"
-  ],
   "properties": {
     "accessToken": {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     },
     "client": {
       "type": "string",
@@ -167,7 +164,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     }
   }
 };
@@ -265,9 +262,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
             "string",
             "null"
           ],
+          "format": "uri",
+          "minLength": 1,
           "maxLength": 2048,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). Required, pending HCP confirmation (question 42). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The purpose code stated, an absolute URI with the same shape as `PurposeCode` in common.schema.json (HCP's `anyOf [purposeCode, null]`), or null where none was (HCP 8.2, 6.1.5.2). `format` constrains only a string, so null still passes. Required, pending HCP confirmation (question 42). The minLength and maxLength are framework bounds, not HCP requirements."
         },
         "purposeDescription": {
           "type": [
@@ -452,7 +451,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     }
   }
 };

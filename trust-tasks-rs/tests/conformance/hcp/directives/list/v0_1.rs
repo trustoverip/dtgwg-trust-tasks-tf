@@ -35,10 +35,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{}",
-        ),
-        (
             "Unknown top-level request member — HCP's `GET /v2/directives` takes no parameters (HCP 9.4.15), so there is no filter.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"action\": \"share\"\n}",
         ),

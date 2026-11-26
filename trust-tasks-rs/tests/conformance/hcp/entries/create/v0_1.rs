@@ -55,10 +55,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_at_x\",\n  \"assertion\": {\n    \"declarationType\": \"guessed\"\n  },\n  \"classification\": {\n    \"categories\": [\n      \"general_preferences\"\n    ]\n  },\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"record\": {\n    \"provenance\": {\n      \"source\": \"person-input\"\n    }\n  },\n  \"schema\": \"https://hcp.example/spec/entry/2.0\",\n  \"subject\": {\n    \"id\": \"urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35\"\n  }\n}",
         ),
         (
-            "Missing `accessToken` — the token is the evidence of the grant.",
-            "{\n  \"assertion\": {\n    \"declarationType\": \"person-declared\"\n  },\n  \"classification\": {\n    \"categories\": [\n      \"general_preferences\"\n    ]\n  },\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"record\": {\n    \"provenance\": {\n      \"source\": \"person-input\"\n    }\n  },\n  \"schema\": \"https://hcp.example/spec/entry/2.0\",\n  \"subject\": {\n    \"id\": \"urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35\"\n  }\n}",
-        ),
-        (
             "A provider-assigned `id` at the top level — the provider assigns the entry's `id` (HCP 5.2.3).",
             "{\n  \"accessToken\": \"hcp_at_x\",\n  \"assertion\": {\n    \"declarationType\": \"person-declared\"\n  },\n  \"classification\": {\n    \"categories\": [\n      \"general_preferences\"\n    ]\n  },\n  \"content\": {\n    \"profile\": \"https://hcp.example/spec/profiles/general-context/2.0\",\n    \"value\": \"Prefers a window table.\"\n  },\n  \"id\": \"urn:uuid:7d1e4b2a-0c9f-4a61-8e3d-5b6a7c8d9e0f\",\n  \"record\": {\n    \"provenance\": {\n      \"source\": \"person-input\"\n    }\n  },\n  \"schema\": \"https://hcp.example/spec/entry/2.0\",\n  \"subject\": {\n    \"id\": \"urn:uuid:3f8a1c2e-5b7d-4e9f-a0c6-8d2b4e1f7a35\"\n  }\n}",
         ),

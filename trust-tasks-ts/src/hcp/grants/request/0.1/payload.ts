@@ -485,6 +485,23 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
+    "NextStepHint": {
+      "$anchor": "next-step-hint",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "retryAfter"
+      ],
+      "description": "The `hint` a provider puts in the `trust-task-next-step` entry that holds a request (the entry whose `typeUri` is this specification's request Type URI). trust-task-next-step leaves a hint's shape to the specification its `typeUri` names, and a client validates the hint against this definition, addressed by its anchor (`https://trusttasks.org/spec/hcp/grants/request/0.1#next-step-hint`), before it uses it; a hint that fails is ignored, as if absent. A carriage rule of the hcp/* family, not HCP's: HCP has no hold.",
+      "properties": {
+        "retryAfter": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "How long the client should wait before it resubmits, as a whole number of seconds counted from receipt of the next step; the client SHOULD NOT resubmit sooner. Unlike trust-task-error's `retryAfter`, which is an RFC 3339 instant, this is a count of seconds, as in HTTP's `Retry-After`. The minimum and maximum are framework bounds: a provider expecting a longer wait says 3600 and holds the resubmission again."
+        }
+      }
+    },
     "PurposeCode": {
       "type": "string",
       "format": "uri",
@@ -498,7 +515,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     }
   }
 };
@@ -739,7 +756,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 2048,
       "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5)."
+      "description": "An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
     },
     "RequestingParty": {
       "type": "object",

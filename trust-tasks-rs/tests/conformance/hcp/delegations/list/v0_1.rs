@@ -35,10 +35,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9, 9.3).",
-            "{\n  \"status\": \"ended\"\n}",
-        ),
-        (
             "A `status` HCP does not define — `ended` is the only value HCP 9.4.13 names.",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"status\": \"active\"\n}",
         ),

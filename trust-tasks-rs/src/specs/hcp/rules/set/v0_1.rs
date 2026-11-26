@@ -32,7 +32,7 @@ pub mod error {
         }
     }
 }
-///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5).
+///An HCP context category (HCP 4.5), the primary unit of access control: either a slug from HCP's category registry, such as `general_preferences` or `health_context`, or a custom category written as an absolute URI under a domain its definer controls. A custom category is not portable between providers without bilateral agreement (HCP 4.5). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -153,9 +153,13 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
-    #[serde(rename = "accessToken")]
-    pub access_token: PayloadAccessToken,
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    #[serde(
+        rename = "accessToken",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub access_token: ::std::option::Option<PayloadAccessToken>,
     ///HCP `categories` (HCP 6.3, 9.4.14): the categories the rule applies to. Absent means every category, held now or later. A delegate's rule must stay within the delegation's scope (HCP 6.3, 17.4). The maxItems is a framework bound, not an HCP requirement.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub categories: ::std::vec::Vec<Category>,
@@ -166,12 +170,22 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub requires: ::std::vec::Vec<Uri>,
 }
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            access_token: Default::default(),
+            categories: Default::default(),
+            operators: Default::default(),
+            requires: Default::default(),
+        }
+    }
+}
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -629,7 +643,10 @@ impl<'de> ::serde::Deserialize<'de> for Urn {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
-        access_token: ::std::result::Result<super::PayloadAccessToken, ::std::string::String>,
+        access_token: ::std::result::Result<
+            ::std::option::Option<super::PayloadAccessToken>,
+            ::std::string::String,
+        >,
         categories: ::std::result::Result<::std::vec::Vec<super::Category>, ::std::string::String>,
         operators: ::std::result::Result<
             ::std::vec::Vec<super::PayloadOperatorsItem>,
@@ -640,7 +657,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
-                access_token: Err("no value supplied for access_token".to_string()),
+                access_token: Ok(Default::default()),
                 categories: Ok(Default::default()),
                 operators: Ok(Default::default()),
                 requires: Ok(Default::default()),
@@ -650,7 +667,7 @@ pub mod builder {
     impl Payload {
         pub fn access_token<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::PayloadAccessToken>,
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadAccessToken>>,
             T::Error: ::std::fmt::Display,
         {
             self.access_token = value
@@ -880,7 +897,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/rules/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"anyOf\":[{\"required\":[\"operators\"]},{\"required\":[\"requires\"]}],\"description\":\"The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; the schema checks it with an `anyOf` of the two `required` clauses. The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categories\":{\"description\":\"HCP `categories` (HCP 6.3, 9.4.14): the categories the rule applies to. Absent means every category, held now or later. A delegate's rule must stay within the delegation's scope (HCP 6.3, 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"operators\":{\"description\":\"HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"HCP `requires` (HCP 6.3, 9.4.14): client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"accessToken\"],\"title\":\"HCP — Set Standing Rule — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/rules/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"anyOf\":[{\"required\":[\"operators\"]},{\"required\":[\"requires\"]}],\"description\":\"The request payload of the HCP 2.0-draft-3 Set standing rule operation (HCP 6.3, 5.4; `POST /v2/rules` in HCP 9.2, 9.4.14): a Management Client, acting for the Context Subject or a delegate, sets a standing rule. HCP defines no request schema for this operation; the members come from HCP 9.4.14 and the standing rule of HCP 6.3. HCP 9.4.14 requires `operators`, `requires`, or both; the schema checks it with an `anyOf` of the two `required` clauses. The provider sets `ruleId`, `effect`, `setBy` and `createdAt`; none is taken from the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"categories\":{\"description\":\"HCP `categories` (HCP 6.3, 9.4.14): the categories the rule applies to. Absent means every category, held now or later. A delegate's rule must stay within the delegation's scope (HCP 6.3, 17.4). The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Category\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"operators\":{\"description\":\"HCP `operators` (HCP 6.3, 9.4.14): the Client Operators (HCP 3.2.8) the rule applies to. A DNS domain matches every operator whose identifier's host is that domain or a subdomain of it; any other value matches one operator identifier exactly. Absent means every operator, which HCP allows only with `requires`. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"requires\":{\"description\":\"HCP `requires` (HCP 6.3, 9.4.14): client conformance claims (HCP 18.1). Where present, the rule denies only clients of the named operators that do not make every claim listed. The maxItems is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/Uri\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"title\":\"HCP — Set Standing Rule — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -888,7 +905,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_80b9bd03!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rule is set. Carries HCP's `201` result, the rule with its `ruleId` and `createdAt` (HCP 9.4.14), wrapped in `rule`. Failures use trust-task-error, not this shape.\",\"properties\":{\"rule\":{\"$ref\":\"#/$defs/StandingRule\",\"description\":\"The standing rule as the provider holds it (HCP 6.3, 9.4.14): the requested `operators`, `requires` and `categories`, with `ruleId`, `effect` (`deny`), `setBy` and `createdAt` set by the provider.\"}},\"required\":[\"rule\"],\"title\":\"HCP — Set Standing Rule — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rule is set. Carries HCP's `201` result, the rule with its `ruleId` and `createdAt` (HCP 9.4.14), wrapped in `rule`. Failures use trust-task-error, not this shape.\",\"properties\":{\"rule\":{\"$ref\":\"#/$defs/StandingRule\",\"description\":\"The standing rule as the provider holds it (HCP 6.3, 9.4.14): the requested `operators`, `requires` and `categories`, with `ruleId`, `effect` (`deny`), `setBy` and `createdAt` set by the provider.\"}},\"required\":[\"rule\"],\"title\":\"HCP — Set Standing Rule — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_StandingRule_5334a7d4!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

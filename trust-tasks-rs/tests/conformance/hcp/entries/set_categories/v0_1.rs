@@ -51,10 +51,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categories\": [\n    \"work_context\"\n  ],\n  \"entryId\": \"urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"categories\": [\n    \"work_context\"\n  ],\n  \"entryId\": \"urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357\",\n  \"expectedVersion\": 2\n}",
-        ),
-        (
             "A `ref` beside `entryId` — a Management Client names an entry by its `id` (HCP 9.4.2); a `ref` is a Context Client's grant-scoped reference (HCP 7.4).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categories\": [\n    \"work_context\"\n  ],\n  \"entryId\": \"urn:uuid:3928a8a2-e963-4355-b5b2-cbb8b23fe357\",\n  \"expectedVersion\": 1,\n  \"ref\": \"hcp-ref-c73e19\"\n}",
         ),

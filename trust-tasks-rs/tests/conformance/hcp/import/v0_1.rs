@@ -66,10 +66,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"dryRun\": true\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9).",
-            "{\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
-        ),
-        (
             "A `categoryMap` value that is not a category — each replacement is an HCP category (HCP 4.5, 5.4.3).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"categoryMap\": {\n    \"https://categories.example/fitness\": \"General Preferences\"\n  },\n  \"export\": {\n    \"@context\": [\n      \"https://hcp.example/contexts/v2\"\n    ],\n    \"entries\": [],\n    \"exportedAt\": \"2026-11-25T09:00:02Z\",\n    \"exportedBy\": \"https://context.provider.example\",\n    \"options\": {\n      \"includeAudit\": false,\n      \"includeVersions\": false\n    },\n    \"rules\": [],\n    \"schema\": \"https://hcp.example/spec/export/2.0\",\n    \"subject\": {\n      \"id\": \"did:web:person.example\"\n    },\n    \"type\": \"ContextExport\"\n  }\n}",
         ),

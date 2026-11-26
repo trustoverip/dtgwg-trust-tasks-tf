@@ -44,10 +44,6 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority (HCP 6.1.9, 9.3).",
-            "{\n  \"eventType\": \"context.read\"\n}",
-        ),
-        (
             "`limit` above the carriage's ceiling of 1000 — a framework bound (question 3).",
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"limit\": 5000\n}",
         ),

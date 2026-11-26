@@ -39,10 +39,6 @@ fn rejects_invalid_examples() {
             "{\n  \"accessToken\": \"hcp_mt_x\",\n  \"directiveId\": \"directive-7\"\n}",
         ),
         (
-            "Missing `accessToken` — the Management Client's token is the evidence of the person's authority.",
-            "{\n  \"directiveId\": \"urn:uuid:d5f7b9c1-3e2a-4d6f-8b0e-2c4a6e8f0b19\"\n}",
-        ),
-        (
             "Missing `directiveId` — a removal names the directive it removes.",
             "{\n  \"accessToken\": \"hcp_mt_x\"\n}",
         ),
