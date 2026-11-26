@@ -38,7 +38,7 @@
           "minLength": 1,
           "maxLength": 2048,
           "pattern": "^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
-          "description": "The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3)."
+          "description": "The delegate's relationship to the Context Subject: a value registered in HCP A.1 (`parent-or-guardian`, `legal-guardian`, `attorney-in-fact`, `caregiver`) or an absolute URI. It confers nothing by itself; `scope` sets what the delegate may do (HCP 17.2). Distinct from an entry's reserved `subject.relationship` (HCP 11.3). The pattern admits the slug or an absolute URI's outline only: it carries no `format: uri`, which would refuse every slug, so checking that a custom value is a well-formed absolute URI, as HCP's prose requires (HCP A.3), is the consumer's check."
         },
         "basis": { "$ref": "#/$defs/DelegationBasis", "description": "What the authority rests on, and how the Authorization Service established it (HCP 17.3)." },
         "scope": { "$ref": "#/$defs/DelegationScope", "description": "The categories and actions the delegate may authorize (HCP 17.4)." },
