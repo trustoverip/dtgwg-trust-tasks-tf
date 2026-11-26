@@ -17,8 +17,9 @@ import {
  * peer has to upgrade. */
 export const TSP_VERSION = "1.0";
 
-/** The binding's stable identifier (`bindings/tsp/0.1` §1). Never on the wire. */
-export const BINDING_URI = "https://trusttasks.org/binding/tsp/0.1";
+/** The binding's stable identifier (`bindings/tsp/0.3` §1), which requires TSP
+ * 1.0. Never on the wire. The envelope `type` is still the `tsp/0.1` one. */
+export const BINDING_URI = "https://trusttasks.org/binding/tsp/0.3";
 
 /** The `type` member of the envelope object a TSP message carries (§1, §2). A
  * TSP VID is a framework VID, so — unlike DIDComm — no identifier is transformed. */

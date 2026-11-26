@@ -125,7 +125,7 @@ binding on Affinidi's `package:didcomm`.
   its own range says; the range matches `trust_tasks_proof`'s so the two share
   one graph.
 
-`trust-tasks-dart-tsp` publishes as `trust_tasks_tsp`, the TSP binding on
+`trust-tasks-dart-tsp` publishes as `trust_tasks_tsp`, the TSP binding (`tsp/0.3`) on
 `affinidi_tsp`. It is the odd one out in two ways:
 
 - **It is not released yet.** Its dependency `affinidi_tsp` is on pub.dev now

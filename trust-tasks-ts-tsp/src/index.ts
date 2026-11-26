@@ -1,5 +1,5 @@
 /**
- * The ToIP Trust Spanning Protocol transport binding (`bindings/tsp/0.1`) for
+ * The ToIP Trust Spanning Protocol transport binding (`bindings/tsp/0.3`) for
  * Trust Tasks, on `@openvtc/vti-tsp-js`.
  *
  * {@link packTrustTask} and {@link unpackTrustTask} move a document in and out

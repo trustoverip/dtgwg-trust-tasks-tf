@@ -1,7 +1,7 @@
 # trust-tasks-go/tsp
 
 The [Trust Tasks](https://trusttasks.org) ToIP Trust Spanning Protocol (TSP)
-transport binding ([`bindings/tsp/0.1`](https://trusttasks.org/binding/tsp/0.1))
+transport binding ([`bindings/tsp/0.3`](https://trusttasks.org/binding/tsp/0.3))
 for Go, built on
 [`github.com/affinidi/affinidi-tsp-go`](https://github.com/affinidi/affinidi-tsp-go).
 The Go counterpart of the Rust `trust-tasks-tsp` crate and the Dart

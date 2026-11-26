@@ -1,7 +1,7 @@
 # trust_tasks_tsp
 
 The [Trust Tasks](https://trusttasks.org) ToIP Trust Spanning Protocol (TSP)
-transport binding ([`bindings/tsp/0.1`](https://trusttasks.org/binding/tsp/0.1))
+transport binding ([`bindings/tsp/0.3`](https://trusttasks.org/binding/tsp/0.3))
 for Dart, built on
 [`affinidi_tsp`](https://github.com/affinidi/affinidi-tsp-dart). The Dart
 counterpart of the Rust

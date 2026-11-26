@@ -21,7 +21,23 @@ window.TT_BINDINGS = [
     status: "draft",
     accent: "sky",
     prosePath: "/bindings/tsp/0.3/spec.md",
-    implementations: [],
+    implementations: [
+      {
+        name: "trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
+        language: "Rust",
+      },
+      {
+        name: "@openvtc/trust-tasks-tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ts-tsp",
+        language: "TypeScript",
+      },
+      {
+        name: "trust-tasks-go/tsp",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
+        language: "Go",
+      },
+    ],
   },
   {
     id: "tsp/0.2",
@@ -49,23 +65,7 @@ window.TT_BINDINGS = [
     status: "draft",
     accent: "sky",
     prosePath: "/bindings/tsp/0.1/spec.md",
-    implementations: [
-      {
-        name: "trust-tasks-tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-tsp",
-        language: "Rust",
-      },
-      {
-        name: "@openvtc/trust-tasks-tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ts-tsp",
-        language: "TypeScript",
-      },
-      {
-        name: "trust-tasks-go/tsp",
-        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
-        language: "Go",
-      },
-    ],
+    implementations: [],
   },
   {
     id: "https/0.3",

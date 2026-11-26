@@ -2860,7 +2860,7 @@ function RustImplementationPage({ setRoute }) {
       role: "TSP binding · preferred transport",
       tagline: "pack/unpack over ToIP Trust Spanning Protocol.",
       summary:
-        "The preferred transport binding — a ToIP Trust Spanning Protocol (TSP) binding built on affinidi-tsp. pack_trust_task seals a TrustTask into a TSP message whose HPKE authenticated encryption binds the sender's VID; unpack_trust_task returns the document together with a TspHandler whose authenticated peer is the verified VID_sndr — the framework's §4.8.1 transport-authenticated identity. Direct, nested, and routed carriage are all supported.",
+        "The preferred transport binding — a ToIP Trust Spanning Protocol (TSP) binding built on affinidi-tsp. pack_trust_task seals a TrustTask into a TSP 1.0 message, signed by the sender's VID and sealed to the recipient with the sender's VID inside the payload; unpack_trust_task returns the document together with a TspHandler whose authenticated peer is the verified VID_sndr — the framework's §4.8.1 transport-authenticated identity. Direct, nested, and routed carriage are all supported. It implements binding tsp/0.3 and refuses a peer still on a TSP draft as TspError::UnsupportedTspVersion.",
       bullets: [
         "pack_trust_task / unpack_trust_task helpers",
         "pack_trust_task_nested — metadata privacy sealed to the final recipient",
@@ -3273,10 +3273,10 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Sealed over ToIP TSP.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
             The preferred transport binding. <code>pack_trust_task</code> seals a <code>TrustTask</code> into a <a href="https://trustoverip.github.io/tswg-tsp-specification/" target="_blank" rel="noreferrer">ToIP Trust Spanning Protocol</a> message
-            whose HPKE authenticated encryption binds the sender's VID. <code>unpack_trust_task</code> returns the document together with a
+            — TSP 1.0, signed by the sender's VID and sealed to the recipient with the sender's VID inside the payload. <code>unpack_trust_task</code> returns the document together with a
             <code>TspHandler</code> whose authenticated peer is the verified <code>VID_sndr</code> — exactly what the framework's
             <SpecRef section="4.8.1" setRoute={setRoute}>§4.8.1</SpecRef> precedence rule consumes. Built on <a href="https://crates.io/crates/affinidi-tsp" target="_blank" rel="noreferrer"><code>affinidi-tsp</code></a>;
-            <code>pack_trust_task_nested</code> and <code>pack_trust_task_routed</code> add metadata-private and intermediary-relayed carriage per the <a href="/binding/tsp/0.1" onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: "tsp", version: "0.1" }); }}>tsp/0.1 binding</a>.
+            <code>pack_trust_task_nested</code> and <code>pack_trust_task_routed</code> add metadata-private and intermediary-relayed carriage per the <a href="/binding/tsp/0.3" onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: "tsp", version: "0.3" }); }}>tsp/0.3 binding</a>.
           </p>
           <CodeBlock json={tspSnippet} language="rust" />
 
@@ -3970,7 +3970,7 @@ const IMPLEMENTATION_DETAILS = {
       {
         name: "trust-tasks-go/tsp", accent: "sky", role: "TSP binding · not yet released",
         tagline: "Seal a document into a ToIP TSP message.",
-        summary: "A separate nested Go module built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP 1.0 message, signed by the sender's VID and sealed to the recipient; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte. Built on affinidi-tsp-go v0.2 (TSP 1.0); a peer on a TSP draft is refused. Built and tested, but not yet tagged for release: it has no release wiring yet.",
+        summary: "A separate nested Go module built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP 1.0 message, signed by the sender's VID and sealed to the recipient; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte. It implements binding tsp/0.3 on affinidi-tsp-go v0.2 (TSP 1.0). Built and tested, but not yet tagged for release: it has no release wiring yet.",
         bullets: [
           "PackTrustTask / UnpackTrustTask over a Direct TSP message",
           "Consumer.Receive — guarded §7.2, replay record on by default",
@@ -4052,7 +4052,7 @@ const IMPLEMENTATION_DETAILS = {
       {
         name: "trust_tasks_tsp", accent: "sky", role: "TSP binding · not yet on pub.dev",
         tagline: "Seal a document into a ToIP TSP message.",
-        summary: "packTrustTask / unpackTrustTask over Direct TSP 1.0 messages, and TspConsumer, the guarded inbound path. Built on affinidi_tsp 0.2 from pub.dev; a peer on a TSP draft is refused. Built and tested — the sealed {type, document} envelope matches the Rust crate and the Go module byte for byte — but not on pub.dev yet: it has no release wiring yet. That is the half circle on the matrix.",
+        summary: "packTrustTask / unpackTrustTask over Direct TSP 1.0 messages, and TspConsumer, the guarded inbound path. It implements binding tsp/0.3 on affinidi_tsp 0.2 from pub.dev. Built and tested — the sealed {type, document} envelope matches the Rust crate and the Go module byte for byte — but not on pub.dev yet: it has no release wiring yet. That is the half circle on the matrix.",
         bullets: [
           "packTrustTask / unpackTrustTask over a Direct TSP message",
           "TspConsumer — guarded §7.2, replay record on by default",
