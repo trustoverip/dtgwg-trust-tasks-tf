@@ -16,6 +16,692 @@
   ],
   "entries": [
     {
+      "object": "hcp/_shared:Uri",
+      "path": "(root)",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `uri` pattern already refuses the empty string.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Uri)"
+    },
+    {
+      "object": "hcp/_shared:Category",
+      "path": "(root)",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: both branches of HCP's `category` already refuses the empty string.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Category)"
+    },
+    {
+      "object": "hcp/_shared:PurposeCode",
+      "path": "(root)",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `purposeCode` pattern already refuses the empty string.",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared PurposeCode)"
+    },
+    {
+      "object": "hcp/_shared:MinimizationReport",
+      "path": "method",
+      "kind": "minLength",
+      "reason": "The member names the relevance method the provider declares (HCP 7.3, 19.3); an empty name declares no method. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (hcp/_shared MinimizationReport)"
+    },
+    {
+      "object": "hcp/_shared:Content",
+      "path": "profile",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `uri` pattern already refuses the empty string.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Content)"
+    },
+    {
+      "object": "hcp/_shared:EvidenceItem",
+      "path": "type",
+      "kind": "minLength",
+      "reason": "The member is the evidence type, `verifiable-credential` or a URI (HCP 4.2.2, A.3); the empty string is neither. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared EvidenceItem)"
+    },
+    {
+      "object": "hcp/_shared:ClientDescription",
+      "path": "id",
+      "kind": "minLength",
+      "reason": "The member is the client's identifier; an empty identifier identifies no client. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared ClientDescription)"
+    },
+    {
+      "object": "hcp/_shared:ClientDescription",
+      "path": "name",
+      "kind": "minLength",
+      "reason": "The member is the client's name, shown to the Context Subject; an empty name tells them nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared ClientDescription)"
+    },
+    {
+      "object": "hcp/_shared:ClientDescription",
+      "path": "operator.id",
+      "kind": "minLength",
+      "reason": "The member is the Client Operator's identifier; an empty identifier identifies no operator. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared ClientDescription)"
+    },
+    {
+      "object": "hcp/_shared:ClientDescription",
+      "path": "operator.name",
+      "kind": "minLength",
+      "reason": "The member is the Client Operator's name, shown to the Context Subject; an empty name tells them nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared ClientDescription)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.assertedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies the Context Asserter (HCP 3.2.6); an empty identifier attributes the assertion to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.assertedBy.via.id",
+      "kind": "minLength",
+      "reason": "The member identifies the attestation authorization or recorded arrangement the asserter acted under; an empty identifier names none. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.authorizedUnder",
+      "kind": "minLength",
+      "reason": "The member names the grant under which the version was written; an empty value names no grant. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.confirmations[].confirmedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies who confirmed the entry; an empty identifier attributes the confirmation to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.recordedByProvider",
+      "kind": "minLength",
+      "reason": "The member names the HCP Provider that recorded the version; an empty value names no provider. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.provenance.source",
+      "kind": "minLength",
+      "reason": "The member states the entry's origin: a conversation or document identifier, `person-input` or `integration` (HCP 4.2); the empty string is none of these. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.relationships[].assertedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies who asserted the relationship; an empty identifier attributes it to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.relationships[].proposal.entry",
+      "kind": "minLength",
+      "reason": "The member names the entry the proposed act applies to (HCP 4.7.4); an empty value names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.relationships[].proposal.proposedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies who made the proposal; an empty identifier attributes it to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.relationships[].proposal.weighed[]",
+      "kind": "minLength",
+      "reason": "The member names an entry the proposal weighed (HCP 4.7.4); an empty value names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "record.relationships[].target",
+      "kind": "minLength",
+      "reason": "The member is the related entry's `id`; an empty value relates the entry to nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "subject.id",
+      "kind": "minLength",
+      "reason": "The member is a URI identifying the Context Subject (HCP 4.2); an empty value identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "type",
+      "kind": "minItems",
+      "reason": "Non-empty bound that narrows nothing: HCP's `contains` (the types MUST include `ContextEntry`, HCP 4.2) already refuses an empty list.",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Entry",
+      "path": "type[]",
+      "kind": "minLength",
+      "reason": "The member is one of the entry's type names (HCP 4.2); an empty name is no type. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping (hcp/_shared Entry)"
+    },
+    {
+      "object": "hcp/_shared:Disclosure",
+      "path": "provenance.submittedBy.name",
+      "kind": "minLength",
+      "reason": "The member is the submitting client's name, as disclosed; an empty name tells the reader nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (hcp/_shared Disclosure)"
+    },
+    {
+      "object": "hcp/_shared:Disclosure",
+      "path": "provenance.submittedBy.operator",
+      "kind": "minLength",
+      "reason": "The member is the Client Operator's name, as disclosed; an empty name tells the reader nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (hcp/_shared Disclosure)"
+    },
+    {
+      "object": "hcp/_shared:Disclosure",
+      "path": "relationships[].target",
+      "kind": "minLength",
+      "reason": "The member is the `ref` of the related entry disclosed in the same response; an empty `ref` names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping (hcp/_shared Disclosure)"
+    },
+    {
+      "object": "hcp/_shared:Named",
+      "path": "id",
+      "kind": "minLength",
+      "reason": "The member is a named party's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Named)"
+    },
+    {
+      "object": "hcp/_shared:Named",
+      "path": "name",
+      "kind": "minLength",
+      "reason": "The member is a named party's name, shown to the Context Subject; an empty name tells them nothing (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Named)"
+    },
+    {
+      "object": "hcp/_shared:AccessDetail",
+      "path": "onwardSharing.domains[]",
+      "kind": "minLength",
+      "reason": "The member is a domain the grant allows onward sharing to; an empty domain names none. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared AccessDetail)"
+    },
+    {
+      "object": "hcp/_shared:AccessDetail",
+      "path": "onwardSharing.notTo[]",
+      "kind": "minLength",
+      "reason": "The member is a domain the grant forbids onward sharing to; an empty domain names none, so the restriction would restrict nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared AccessDetail)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "authorizingPrincipal.delegation",
+      "kind": "minLength",
+      "reason": "The member names the delegation under which a delegate authorized the grant, present only then (HCP 6.1.5, 17.4); an empty value names no delegation. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "authorizingPrincipal.id",
+      "kind": "minLength",
+      "reason": "The member is the authorizing principal's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "client.claims[]",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `uri` pattern already refuses the empty string.",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "client.id",
+      "kind": "minLength",
+      "reason": "The member is the grant's client identifier; an empty identifier identifies no client. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "requestingParty.id",
+      "kind": "minLength",
+      "reason": "The member is the requesting party's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:Grant",
+      "path": "subject.id",
+      "kind": "minLength",
+      "reason": "The member is the Context Subject's identifier, a pseudonym specific to the client (HCP 3.4); an empty identifier identifies no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/grants/read-own/0.1/spec.md#hcp-field-mapping (hcp/_shared Grant)"
+    },
+    {
+      "object": "hcp/_shared:StandingRule",
+      "path": "requires[]",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `uri` pattern already refuses the empty string.",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping (hcp/_shared StandingRule)"
+    },
+    {
+      "object": "hcp/_shared:StandingRule",
+      "path": "setBy",
+      "kind": "minLength",
+      "reason": "The member is `context-subject` or the `delegationId` of the delegate who set the rule (HCP 6.3, 17.2); the empty string is neither. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping (hcp/_shared StandingRule)"
+    },
+    {
+      "object": "hcp/_shared:Directive",
+      "path": "action",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `action` (its enum or its URI pattern) already refuses the empty string.",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping (hcp/_shared Directive)"
+    },
+    {
+      "object": "hcp/_shared:Directive",
+      "path": "setBy",
+      "kind": "minLength",
+      "reason": "The member is `context-subject` or the `delegationId` of the delegate who set the directive (HCP 6.4, 6.3); the empty string is neither. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping (hcp/_shared Directive)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "basis.description",
+      "kind": "minLength",
+      "reason": "The member says what the delegated authority rests on, shown to the Context Subject and the delegate (HCP 17.3); an empty description tells them nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "basis.establishedBy",
+      "kind": "minLength",
+      "reason": "The member names the Authorization Service that established the delegation (HCP 17.2); an empty value names none. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "delegate.id",
+      "kind": "minLength",
+      "reason": "The member is the delegate's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "relationship",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `relationship` (its enum or its URI pattern) already refuses the empty string.",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "subject.id",
+      "kind": "minLength",
+      "reason": "The member is the Context Subject's identifier; an empty identifier identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "eventType",
+      "kind": "minLength",
+      "reason": "The member is one of the event types HCP 8.1 lists, left open for a later draft's types; the empty string is no event type (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.authorizingPrincipal.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.clientOperator.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.initiator.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.model.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.provider.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:AuditEvent",
+      "path": "participants.requestingParty.id",
+      "kind": "minLength",
+      "reason": "The member is an audit participant's identifier (HCP 8.2); an empty identifier attributes the event to no one (the member's description already says the bound is the framework's). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/audit/read/0.1/spec.md#hcp-field-mapping (hcp/_shared AuditEvent)"
+    },
+    {
+      "object": "hcp/_shared:Export",
+      "path": "exportedBy",
+      "kind": "minLength",
+      "reason": "The member names the exporting HCP Provider (HCP 5.4.1); an empty value names none; hcp/import does not apply this bound to an export it takes. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/export/0.1/spec.md#hcp-field-mapping (hcp/_shared Export)"
+    },
+    {
+      "object": "hcp/_shared:Export",
+      "path": "subject.id",
+      "kind": "minLength",
+      "reason": "The member is the Context Subject's identifier; an empty identifier identifies no one; hcp/import does not apply this bound to an export it takes. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/export/0.1/spec.md#hcp-field-mapping (hcp/_shared Export)"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.provenance.assertedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies the Context Asserter (HCP 3.2.6); an empty identifier attributes the new entry to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.provenance.source",
+      "kind": "minLength",
+      "reason": "The member states the entry's origin: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3); the empty string is none of these. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.relationships[].proposal.entry",
+      "kind": "minLength",
+      "reason": "The member names the entry the proposed act applies to, by `ref` or `id` (HCP 5.2.3); an empty value names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.relationships[].proposal.rationale",
+      "kind": "minLength",
+      "reason": "The member says why, in words the Context Subject reads (HCP 4.7.4); an empty rationale tells them nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.relationships[].proposal.weighed[]",
+      "kind": "minLength",
+      "reason": "The member names an entry the proposal weighed (HCP 4.7.4); an empty value names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "record.relationships[].target",
+      "kind": "minLength",
+      "reason": "The member names the related entry, by `ref` or `id` (HCP 5.2.3); an empty value relates the entry to nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "subject.id",
+      "kind": "minLength",
+      "reason": "The member is a URI identifying the Context Subject, the per-client pseudonym from the grant (HCP 3.4, 4.2); an empty value identifies no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/get:request",
+      "path": "ref",
+      "kind": "minLength",
+      "reason": "The member is the grant-scoped reference naming the entry to read (HCP 5.2.2, 7.4); an empty reference names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/query:request",
+      "path": "categories",
+      "kind": "minItems",
+      "reason": "The member lists the categories to query; absent means every category the grant can read (HCP 5.2.1); HCP gives an empty list no meaning, and refusing it keeps it from being read as either \"none\" or \"all\" (the member's description says so). HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "record.provenance.assertedBy.id",
+      "kind": "minLength",
+      "reason": "The member identifies the Context Asserter (HCP 3.2.6); an empty identifier attributes the revision to no one. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/revise/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "record.provenance.source",
+      "kind": "minLength",
+      "reason": "The member states the entry's origin: a conversation or document identifier, `person-input` or `integration` (HCP 4.2, 5.2.3); the empty string is none of these. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/revise/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "record.relationships[].target",
+      "kind": "minLength",
+      "reason": "The member names the related entry, by `ref` or `id` (HCP 5.2.3); an empty value relates the entry to nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/revise/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "ref",
+      "kind": "minLength",
+      "reason": "The member is the grant-scoped reference naming the entry to revise (HCP 5.2.4, 7.4); an empty reference names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/revise/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/withdraw:request",
+      "path": "ref",
+      "kind": "minLength",
+      "reason": "The member is the grant-scoped reference naming the entry to withdraw (HCP 5.2.5, 7.4); an empty reference names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/withdraw:response",
+      "path": "ref",
+      "kind": "minLength",
+      "reason": "The member returns the `ref` the request named (HCP 9.4.5), which the request already requires to be non-empty; an empty value would not be the one named. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:response",
+      "path": "outcomes[].id",
+      "kind": "minLength",
+      "reason": "The member is the entry's `id` as the export carries it (HCP 5.4.3, 9.4.11); an empty value names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:response",
+      "path": "outcomes[].reason",
+      "kind": "minLength",
+      "reason": "The member says why the entry was rejected, in words (HCP 5.4.3, 9.4.11); an empty reason tells the client nothing. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/shares/report:request",
+      "path": "refs[]",
+      "kind": "minLength",
+      "reason": "The member is the `ref` of an entry the client reports sharing (HCP 7.4); an empty reference names no entry. HCP's schema accepts the empty value; the minimum is a Trust Tasks framework non-empty bound on what an hcp/* party writes, not an HCP requirement (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/shares/report/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "action",
+      "kind": "minLength",
+      "reason": "Non-empty bound that narrows nothing: HCP's `action` (its enum or its URI pattern) already refuses the empty string.",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/create:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed request root: a top-level entry member that HCP does not define cannot be written through this task, although HCP's Create body is an entry whose undefined members a provider preserves (HCP 4.2, 9.4.3, A.2). The nested `subject`, `content`, `classification`, `assertion` and `record` stay open. The spec's field mapping says so.",
+      "ref": "specs/hcp/entries/create/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/get:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/get:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/get/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/query:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/query:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/query/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/revise:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed request root, as in hcp/entries/create: a top-level member that HCP does not define cannot be sent through this task, although HCP's revise request schema admits one (HCP A.2). The nested `content`, `assertion` and `record` stay open. The spec's field mapping says so.",
+      "ref": "specs/hcp/entries/revise/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/withdraw:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/entries/withdraw:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/entries/withdraw/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/export:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/export/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/shares/report:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/shares/report/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/rules/set:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/rules/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/delegations/list:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/disclosures/summary:response",
+      "path": "(root)",
+      "kind": "closed",
+      "reason": "Closed at the top level (`additionalProperties: false`), so an extension member HCP would allow there is not carried; the HCP shapes nested within stay open (the spec's \"Where this payload is stricter than HCP's shapes\" paragraph).",
+      "ref": "specs/hcp/disclosures/summary/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/_shared:Category",
+      "path": "(root)",
+      "kind": "union",
+      "reason": "HCP's choice of a category-registry slug or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it. It also requires a character after the scheme, which HCP's `category` URI branch does not (question 54).",
+      "ref": "Q54"
+    },
+    {
+      "object": "hcp/_shared:Directive",
+      "path": "action",
+      "kind": "union",
+      "reason": "HCP's choice of `share`, `sign` or `transact` or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it.",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping (hcp/_shared Directive)"
+    },
+    {
+      "object": "hcp/_shared:Delegation",
+      "path": "relationship",
+      "kind": "union",
+      "reason": "HCP's choice of a relationship value registered in HCP A.1 or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it.",
+      "ref": "specs/hcp/delegations/list/0.1/spec.md#hcp-field-mapping (hcp/_shared Delegation)"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.audit[].categories[]",
+      "kind": "union",
+      "reason": "HCP's choice of a category-registry slug or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it. It also requires a character after the scheme, which HCP's `category` URI branch does not (question 54). Within hcp/import this is the one constraint kept beyond HCP's schemas (`ImportedCategory`).",
+      "ref": "Q54"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.delegations[].relationship",
+      "kind": "union",
+      "reason": "HCP's choice of a relationship value registered in HCP A.1 or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it. Within hcp/import it widens what is accepted, never narrows it, so every HCP-valid export is still taken.",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.directives[].action",
+      "kind": "union",
+      "reason": "HCP's choice of `share`, `sign` or `transact` or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it. Within hcp/import it widens what is accepted, never narrows it, so every HCP-valid export is still taken.",
+      "ref": "specs/hcp/import/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/directives/set:request",
+      "path": "action",
+      "kind": "union",
+      "reason": "HCP's choice of `share`, `sign` or `transact` or an absolute URI is merged into one pattern, so that the four generated libraries carry a plain string rather than a union type. The pattern accepts every registered value and requires an absolute URI with no whitespace otherwise, but it drops HCP's `format: uri`, so a string such as `x:<y>` that HCP's schema refuses passes this one; HCP A.3's requirement of an absolute URI still binds what a party writes, and the schema does not check it.",
+      "ref": "specs/hcp/directives/set/0.1/spec.md#hcp-field-mapping"
+    },
+    {
+      "object": "hcp/import:request",
+      "path": "export.audit[].purpose",
+      "kind": "format",
+      "reason": "`ImportedAuditEvent.purpose` keeps HCP's URI pattern but not its `format: uri`. The imported shape keeps only constraints HCP's own schemas set, so that every HCP-valid export is accepted (question 42); leaving the format out only widens what is accepted, never refuses an HCP-valid export. The pattern still requires an absolute URI with no whitespace.",
+      "ref": "Q42"
+    },
+    {
       "object": "hcp/import:request",
       "path": "export.*",
       "kind": "maxItems",
