@@ -138,7 +138,7 @@ The Management Client sends the revocation to the provider. The payload is the t
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T11:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5vgFc2hLmXyQ7d9kT3rNpB8sWj4aZe6uHq1oVcR2xYbM9nKf7tL3pD5gS8wJ2eA6iU4yO1mC9vX7zB3nQ5hT2kF"
   }
 }

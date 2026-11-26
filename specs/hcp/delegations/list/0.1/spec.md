@@ -154,7 +154,7 @@ The Management Client asks for the delegations. The payload is the top-level sch
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T12:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Tg8hY1jU4kI7oL0pZ3xC6vB9nM2qW5eR8tY1uI4oP7aS0dF3gH6jK9lZ2xC5vB8nM1qW4eR7tY0uI3oP6a"
   }
 }

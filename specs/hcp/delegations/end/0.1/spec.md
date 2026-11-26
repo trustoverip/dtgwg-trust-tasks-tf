@@ -152,7 +152,7 @@ Before it sends the request, a Management Client **SHOULD** tell the person it a
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T13:00:00Z",
     "verificationMethod": "did:web:wallet.caregiver.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Nc8vX1zL4kJ7hG0fD3sA6pO9iU2yT5rE8wQ1mN4bV7cX0zL3kJ6hG9fD2sA5pO8iU1yT4rE7wQ0mN3bV6c"
   }
 }

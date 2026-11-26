@@ -155,7 +155,7 @@ The Management Client asks for the summary. The payload is the top-level schema 
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Wq5eR8tY1uI4oP7aS0dF3gH6jK9lZ2xC5vB8nM1qW4eR7tY0uI3oP6aS9dF2gH5jK8lZ1xC4vB7nM0qW3e"
   }
 }

@@ -165,7 +165,7 @@ The person's screen-reader need was filed under `health_context` only. They add 
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Kp6vM9nLcR4xB8hT3wQ1sY7dF2gJ5aZe9uN3oVbC6iK8kD1tH5yP7xS4wE2rA9jU6fG1lO8pM3vX5zN9bT7cW2"
   }
 }
