@@ -13,6 +13,12 @@ import (
 // BindingURI is the binding's stable identifier (bindings/tsp/0.1 §1).
 const BindingURI = "https://trusttasks.org/binding/tsp/0.1"
 
+// TSPVersion is the one TSP version this binding seals and opens: TSP 1.0
+// (YTSP-BAA), through affinidi-tsp-go v0.2. A MAJOR other than 1 — the drafts
+// Rev 3 YTSP-AAC and Rev 2 YTSP-AAB — is refused [FailUnsupportedTSPVersion];
+// an unknown 1.x MINOR is not a version refusal (TSP §9.1).
+const TSPVersion = "1.0"
+
 // EnvelopeType is the type member of the envelope object a TSP message carries
 // (§1, §2). A TSP VID is a framework VID, so — unlike DIDComm — no identifier is
 // transformed on the way in or out.
@@ -59,6 +65,12 @@ const (
 	// FailInvalidBody: the payload is not a Trust Task envelope object, or its
 	// document is not a Trust Task document.
 	FailInvalidBody
+	// FailUnsupportedTSPVersion: the message is framed in a TSP MAJOR other
+	// than 1 — a peer still on a draft (Rev 3 YTSP-AAC, Rev 2 YTSP-AAB). TSP
+	// has no version negotiation, so the peer has to upgrade. MINOR never gates
+	// a message (TSP §9.1): a 1.x message that fails to open is
+	// FailNotForThisReceiver.
+	FailUnsupportedTSPVersion
 )
 
 func (f Failure) String() string {
@@ -73,6 +85,8 @@ func (f Failure) String() string {
 		return "wrongEnvelopeType"
 	case FailInvalidBody:
 		return "invalidBody"
+	case FailUnsupportedTSPVersion:
+		return "unsupportedTspVersion"
 	}
 	return fmt.Sprintf("Failure(%d)", uint8(f))
 }
@@ -135,7 +149,8 @@ func PackTrustTask(document any, sender *tsp.PrivateIdentity, receiver *tsp.Iden
 // AdvertisedSender is the sender VID a TSP message names, read without verifying
 // anything. Unauthenticated until [UnpackTrustTask] opens the message — use it
 // only to decide whether to open it (for an allowlist, or to resolve the
-// sender's identity first). Empty when the bytes are not a TSP message.
+// sender's identity first). Empty when the bytes are not a TSP 1.x message: a
+// draft-version message (see [TSPVersion]) names no sender here.
 func AdvertisedSender(wire []byte) string {
 	env, err := tsp.Peek(wire)
 	if err != nil {
@@ -159,11 +174,24 @@ type Unpacked struct {
 // message names.
 //
 // It returns an *EnvelopeError for anything that stops before a document is in
-// hand.
+// hand. A message in a TSP draft version is refused [FailUnsupportedTSPVersion]
+// whatever sender is passed, nil included.
 func UnpackTrustTask(wire []byte, recipient *tsp.PrivateIdentity, sender *tsp.Identity) (*Unpacked, error) {
+	// A message in a TSP MAJOR other than 1 — a peer still on a draft — is
+	// told apart from its version marker, before any key is used or the sender
+	// identity is needed (its sender cannot be read with [AdvertisedSender]), so
+	// an operator sees "upgrade the peer" rather than a failed decryption.
+	if _, err := tsp.Peek(wire); tsp.KindOf(err) == tsp.KindVersion {
+		return nil, &EnvelopeError{
+			Failure: FailUnsupportedTSPVersion,
+			Detail:  err.Error(),
+			cause:   err,
+		}
+	}
+
 	msg, err := tsp.Open(recipient, sender, wire)
 	if err != nil {
-		// Every open failure — bad framing, wrong receiver, wrong sender key,
+		// Every other open failure — bad framing, wrong receiver, wrong sender key,
 		// failed signature or AEAD — is "not for this receiver to act on", and
 		// none leaves an authenticated document to reply about.
 		return nil, &EnvelopeError{

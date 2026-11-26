@@ -16,6 +16,13 @@ const String bindingUri = _bindingUri;
 // constant inside that class.
 const String _bindingUri = 'https://trusttasks.org/binding/tsp/0.1';
 
+/// The one TSP version this binding seals and opens: TSP 1.0 (`YTSP-BAA`),
+/// through `affinidi_tsp` 0.2. A message in a MAJOR other than 1 — the drafts
+/// Rev 3 (`YTSP-AAC`) and Rev 2 (`YTSP-AAB`) — is refused
+/// [TspFailure.unsupportedTspVersion]; an unknown 1.x MINOR is not a version
+/// refusal (TSP §9.1).
+const String tspVersion = '1.0';
+
 /// The `type` member of the envelope object a TSP message carries (§1, §2). A
 /// TSP VID is a framework VID, so — unlike DIDComm — no identifier is
 /// transformed on the way in or out.
@@ -41,7 +48,8 @@ final class TspTransport implements TransportHandler {
 ///
 /// TSP has no anonymous sender mode, so a message that opens at all carries a
 /// verified sender (§2). None of these can be answered with a
-/// `trust-task-error`: [notForThisReceiver], [unauthenticated] and
+/// `trust-task-error`: [notForThisReceiver], [unauthenticated],
+/// [unsupportedTspVersion] and
 /// [notSealed] leave no opened, authenticated document to reply about, and
 /// [wrongEnvelopeType] / [invalidBody] are refused at the binding layer (§4).
 enum TspFailure {
@@ -71,6 +79,33 @@ enum TspFailure {
   /// The payload is not a Trust Task envelope object, or its `document` is not
   /// a Trust Task document.
   invalidBody,
+
+  /// The message is framed in a TSP MAJOR other than 1 ([tspVersion]) — a peer
+  /// still on a draft (Rev 3 `YTSP-AAC`, Rev 2 `YTSP-AAB`). Told apart from the
+  /// version marker before any key is used or the sender is resolved. TSP has
+  /// no version negotiation, so the peer has to upgrade. MINOR never gates a
+  /// message (TSP §9.1): a 1.x message that fails to open is
+  /// [notForThisReceiver].
+  unsupportedTspVersion,
+}
+
+/// A [TspFailure.unsupportedTspVersion] refusal when [wire] is framed in a TSP
+/// MAJOR other than 1, else null. Reads only the framing. Internal: the
+/// consumer calls it before resolving the sender, which a draft message does
+/// not let it read.
+TspEnvelopeException? tspVersionRefusal(Uint8List wire) {
+  try {
+    Tsp.peek(wire);
+  } on TspVersionException catch (e) {
+    return TspEnvelopeException(
+      TspFailure.unsupportedTspVersion,
+      '${e.message} (the sender must move to TSP $tspVersion; there is no '
+      'version negotiation)',
+    );
+  } on Object {
+    // Not a framing this function judges; open() reports it.
+  }
+  return null;
 }
 
 /// A TSP message refused by [unpackTrustTask].
@@ -136,7 +171,8 @@ Future<Uint8List> packTrustTask(
 /// The sender VID a TSP message *names*, read from the envelope without
 /// verifying anything. Unauthenticated until [unpackTrustTask] opens the
 /// message — use it only to decide whether to open it (for an allowlist, or to
-/// resolve the sender's VID first).
+/// resolve the sender's VID first). Null for a message in a TSP draft version
+/// (see [tspVersion]).
 String? advertisedSender(Uint8List wire) {
   if (!Tsp.looksLikeTsp(wire)) return null;
   try {
@@ -150,12 +186,15 @@ String? advertisedSender(Uint8List wire) {
 /// Task document. [sender] is the resolved public VID whose signature and HPKE
 /// authentication are checked; it must be the VID the message names.
 ///
-/// Throws [TspEnvelopeException].
+/// Throws [TspEnvelopeException]: [TspFailure.unsupportedTspVersion] for a
+/// message from a peer on a TSP draft.
 Future<UnpackedTrustTask> unpackTrustTask(
   Uint8List wire, {
   required PrivateVid recipient,
   required PublicVid sender,
 }) async {
+  final draft = tspVersionRefusal(wire);
+  if (draft != null) throw draft;
   final TspMessage message;
   try {
     message = await Tsp.open(wire, receiver: recipient, sender: sender);

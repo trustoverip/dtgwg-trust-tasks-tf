@@ -8,4 +8,7 @@
 // envelope object is the same {type, document} shape the Rust trust-tasks-tsp
 // crate and the Dart trust_tasks_tsp package seal, so a document sealed by any
 // of them opens in the others.
+//
+// It speaks TSP 1.0 ([TSPVersion]) and nothing else: a message from a peer
+// still on a TSP draft is refused [FailUnsupportedTSPVersion].
 package tsp

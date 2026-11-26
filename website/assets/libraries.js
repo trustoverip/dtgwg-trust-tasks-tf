@@ -38,7 +38,7 @@
    A `transports` entry may carry `unreleased: "<why>"` for a
    package that is built and tested here but has no release a
    reader can install yet; the matrix shows it as built, not
-   shipped. (Go's TSP module waits on a tagged affinidi-tsp-go.)
+   shipped. (Go's TSP module has no release wiring yet.)
 
    bindings.js names the same packages under each binding's
    `implementations`; `checkBindingImplementations()` holds the
@@ -241,9 +241,9 @@ window.TT_LIBRARIES = [
     ],
     transports: {
       // Separate nested modules, so the core stays dependency-free.
-      // Untagged: it requires affinidi-tsp-go at a pseudo-version, and has no
-      // release wiring until that library is tagged (docs/packages/go.md).
-      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — waits on a tagged affinidi-tsp-go" },
+      // Untagged: it requires the tagged affinidi-tsp-go v0.2 (TSP 1.0), but
+      // has no release wiring yet (docs/packages/go.md).
+      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — release wiring pending" },
       "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },
       "capability-client": { package: "trust-tasks-go/capabilityclient", dir: "trust-tasks-go/capabilityclient" },
@@ -279,9 +279,10 @@ window.TT_LIBRARIES = [
       proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
       "capability-client": { package: "trust_tasks_capability_client", dir: "trust-tasks-dart-capability-client" },
     },
-    // trust_tasks_tsp is built and tested (bindings/tsp) but not on pub.dev yet
-    // — affinidi_tsp, the library it seals with, is not published — so it is a
-    // foundation, not a shipped cell. The named evidence is the repo.
+    // trust_tasks_tsp is built and tested (bindings/tsp) on the published
+    // affinidi_tsp 0.2 (TSP 1.0), but is not on pub.dev yet — it has no release
+    // wiring — so it is a foundation, not a shipped cell. The named evidence is
+    // the repo.
     foundations: {
       "binding:tsp": { package: "affinidi-tsp-dart", url: "https://github.com/affinidi/affinidi-tsp-dart" },
     },
