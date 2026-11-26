@@ -22,7 +22,7 @@ type ExportSubject struct {
 // `maxDocumentBytes` (14 MiB for an hcp/export response, 16 MiB for an hcp/import
 // request) is reached first (each item serializes to more than 100 bytes), as HCP 5.4.1
 // lists every rule, directive and delegation and the list operations bound none: an
-// export too large for one document is refused with `hcp:exportTooLarge` (hcp/export),
+// export too large for one document is refused with `hcp/export:tooLarge` (hcp/export),
 // never cut short by an item count.
 type Export struct {
 	// The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP
