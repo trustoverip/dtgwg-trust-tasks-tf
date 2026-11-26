@@ -220,7 +220,7 @@ The provider answers with the revised entry. The payload is the sub-schema reach
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6NqT2xWs8YmL4vRc1KbH9pGj3dZf7uAe5oSiM2xV6tD9kB1rN4yQ8gE3hJ7lP5aU2cW6nO1sF9eZ4vX8bR3mT7k"
   }
 }

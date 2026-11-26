@@ -246,7 +246,7 @@ The inference had been held `conflicted` against a model inference from another 
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Wd8pR5vMcT2nB9hK6xL1sY4dF7gJ3aZe8uQ5oVnC2iN7kB1tH4yD6xS3wE8rA5jU2fG9lO6pK1vX4zM7bT3cQ9"
   }
 }
@@ -308,7 +308,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries an entry identifier, the person's decision and a version number, and the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider. The response carries the whole entry: the person's context, its provenance, which names the clients and operators that wrote it, and its relationships to other entries; it may be in a High-sensitivity category and may carry a credential as evidence. A producer **MUST NOT** put the token or any context in `ext` or in any `message`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the entry reaches the Management Client as a signed assertion any third party can verify. The Management Client **MUST NOT** pass the signed response, or any part of it, to anyone the person has not chosen to share it with.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the entry reaches the Management Client as a statement signed by the provider, which anyone holding the provider's public key can check came from it. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). The Management Client **MUST NOT** pass the signed response, or any part of it, to anyone the person has not chosen to share it with.
 
 ### The access token
 

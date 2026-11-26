@@ -406,7 +406,7 @@ This export is valid under HCP's own export schema but not under the shared `hcp
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-26T09:00:00Z",
     "verificationMethod": "did:web:wallet.person.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3fQm8Yk2Lr7Vb4Nc9Xh6Tp1Wd5Js8Ge2Ua7Rn4Kq9Mv3Hy6Bz1Ct5Fx8Dw2Ls7Pj4Ng9Ek3Rb6Ym1Vh5Qa8Tz2Xc7Gd4Wn9Jf3Ku6Ms1"
   }
 }

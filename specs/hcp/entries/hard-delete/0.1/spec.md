@@ -183,7 +183,7 @@ HCP 9.4.5 shows the result of a withdraw but not of a hard deletion. This specif
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Rt5mK8vNcQ1wB7hX4pL9sY3dF6gJ0aZe5uT2oVnC8iM1kB4tH7yD3xS9wE6rA2jU5fG8lO4pK7vX1zN3bQ6cY8"
   }
 }

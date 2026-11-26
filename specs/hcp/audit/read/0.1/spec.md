@@ -230,7 +230,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:30:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Hn6tQ9wE4rY7uI1oP3aS5dF8gJ2kL4zX6cV9bN1mQ3wE5rT7yU9iO2pA4sD6fG8hJ1kL3zX5cV7bN9mQ2w"
   }
 }
@@ -273,7 +273,7 @@ The Management Client acts for a former delegate. The provider returns only an e
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:40:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Kp2sW8eR3tY6uI9oA1sD4fG7hJ0kL2zX5cV8bN3mQ6wE9rT2yU5iO8pA1sD4fG7hJ0kL3zX6cV9bN2mQ5e"
   }
 }
@@ -336,7 +336,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider, and the filters, which can themselves say what the person is concerned about (a category such as `health_context`). The response carries the person's audit log: clients, Client Operators, categories, purposes, stated tasks, grant identifiers and stable entry identifiers, which together describe the person's life. A producer **MUST NOT** put the token, a filter, or any part of an event in `ext` or in any `message`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each page is a signed statement that any third party can verify. That helps the person in a dispute, and makes the page more valuable to leak. A Management Client **MUST NOT** pass a page to anyone but the person it acts for, unless that person asks it to.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each page is a statement signed by the provider, which anyone holding the provider's public key can check came from it. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). That helps the person in a dispute, and makes the page more valuable to leak. A Management Client **MUST NOT** pass a page to anyone but the person it acts for, unless that person asks it to.
 
 ### The access token
 

@@ -238,7 +238,7 @@ An empty `clients` is a successful answer: no client received context within the
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T11:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6Lm9nB2vC5xZ8aS1dF4gH7jK0lQ3wE6rT9yU2iO5pA8sD1fG4hJ7kL0zX3cV6bN9mQ2wE5rT8yU1iO4pA7s"
   }
 }

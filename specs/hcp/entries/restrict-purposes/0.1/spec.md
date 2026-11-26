@@ -251,7 +251,7 @@ The provider answers with the entry. The payload is the sub-schema reachable via
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Xv9pT4mKcR7nB3hW1xL8sY5dF2gJ6aZe9uQ4oVnC7iN1kB5tH3yD8xS2wE6rA9jU4fG1lO7pK2vX5zM8bT6cQ3"
   }
 }
@@ -311,7 +311,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries an entry identifier, a list of purpose codes or null, a version number, and the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider. The response carries the whole entry: the person's context, and its provenance, which names the clients and operators that wrote it; it may be in a High-sensitivity category and may carry a credential as evidence. A producer **MUST NOT** put the token or any context in `ext` or in any `message`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the entry reaches the Management Client as a signed assertion any third party can verify. The Management Client **MUST NOT** pass the signed response, or any part of it, to anyone the person has not chosen to share it with.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the entry reaches the Management Client as a statement signed by the provider, which anyone holding the provider's public key can check came from it. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). The Management Client **MUST NOT** pass the signed response, or any part of it, to anyone the person has not chosen to share it with.
 
 ### The access token
 

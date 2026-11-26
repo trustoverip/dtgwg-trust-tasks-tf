@@ -219,7 +219,7 @@ A Management Client **MUST** show the person `relationship`, `basis.method` and 
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T12:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Pq7wE0rT3yU6iO9pA2sD5fG8hJ1kL4zX7cV0bN3mQ6wE9rT2yU5iO8pA1sD4fG7hJ0kL3zX6cV9bN2mQ5w"
   }
 }

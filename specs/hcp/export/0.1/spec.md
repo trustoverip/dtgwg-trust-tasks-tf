@@ -268,7 +268,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:02Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zw3Poyx2XKHKGfru9rWYpAoPPXnhbCMuexjDmyC37VFxHbPhNBTbU9t2W7Hjwg4rrn1eopN2W6qxUdNw8MqPFzPv"
   }
 }
@@ -357,7 +357,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries the export options and the Management Client's access token where it carries one, a bearer secret that **MUST** travel only to the provider. The response carries the person's whole context: every entry the provider holds, every status included, which may hold High-sensitivity categories such as `health_context` and credentials as evidence; the person's standing rules, directives and delegations, which reveal whom they distrust and who acts for them; and, where asked, every superseded version and the audit log, which records every client that read their context. This is the most a provider ever releases in one document. A producer **MUST NOT** put context or the token in `ext` or in any `message`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the export reaches the Management Client as a signed assertion that any third party can verify, which makes a leaked copy more credible. A Management Client **MUST** hold the export only for the person, and **MUST NOT** pass it to anyone but a provider the person chose to import it into, or the person themselves.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), the export reaches the Management Client as a statement signed by the provider, which anyone holding the provider's public key can check came from it, and that makes a leaked copy more credible. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). A Management Client **MUST** hold the export only for the person, and **MUST NOT** pass it to anyone but a provider the person chose to import it into, or the person themselves.
 
 ### The access token
 

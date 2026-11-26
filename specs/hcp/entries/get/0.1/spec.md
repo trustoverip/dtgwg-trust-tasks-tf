@@ -220,7 +220,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-25T09:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Gk2pXwVqN7sLmT3dRcB9yHf6jZa1eU8oKnQ5vC2xWb7MtE4rP9gS3iJ6hA1yD8uF5lO2wX9zC7nB4mV6kT3qR"
   }
 }

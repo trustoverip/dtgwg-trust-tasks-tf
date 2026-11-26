@@ -249,7 +249,7 @@ Failures use `trust-task-error`, not a `#response` document (see [Errors](#error
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-11-24T10:00:01Z",
     "verificationMethod": "did:web:context.provider.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSARiKBk9czhSePTFehP8c3PGfb6a22gkfUKKPWtsuNYYHNXS5d2"
   }
 }
@@ -324,7 +324,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 The request carries the access token, a bearer secret, and the query text, which can itself reveal something about the person. The response carries the person's context: up to 20 disclosures that may include High-sensitivity categories such as `health_context`, and credentials as evidence. A producer **MUST NOT** put context, query text or the token in `ext` or in any `message`. The smallest answer is an empty `entries`; the provider, not the client, decides how much to disclose, and a client asks for no more than its purpose needs, through `categories` and `maxEntries`.
 
-Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a signed assertion that any third party can verify. That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
+Because the response proof is REQUIRED ([SPEC §7.3 item 8](/SPEC.md#73-specification-requirements)), each disclosure reaches the client as a statement signed by the provider, which anyone holding the provider's public key can check came from it. The proof is made for `authentication`, not as an attestation ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). That makes the copy more valuable to leak or resell. HCP bars onward passing (HCP 3.12, 6.2.2), and a client **MUST NOT** pass the signed response, or any part of it, to anyone the grant does not cover.
 
 ### The access token
 
