@@ -106,13 +106,13 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 ## Definitions
 
 - **Management Client**, **Context Client**, **HCP Provider**, **Context Subject**, **Authorizing Principal**, **delegate**, **entry**, **category**, **standing rule**, **delegation** and **export** have their HCP 2.0-draft-3 meanings.
-- The export's shape is `ImportedExport`, a local definition in [`payload.schema.json`](payload.schema.json): HCP's own export shape (HCP 5.4.1), which is the shared [`Export`](../../_shared/0.1/export.schema.json) that [`hcp/export`](../../export/0.1/spec.md) returns except that `options`, and each of its members, is OPTIONAL. It is open, as HCP's own shape is, and its `entries` are left open, because an import accepts entries in any schema the provider accepts, HCP v1 forms included (HCP 5.4.3, 4.3); each entry is validated against the schema it names.
+- The export's shape is `ImportedExport`, a local definition in [`payload.schema.json`](payload.schema.json): HCP's own export shape (HCP 5.4.1), which is the shared [`Export`](../../_shared/0.1/export.schema.json) that [`hcp/export`](../../export/0.1/spec.md) returns except that `options`, and each of its members, is OPTIONAL, and that its standing rules, directives, delegations and audit events keep only the constraints HCP's own schemas set (see [Request](#request)). It is open, as HCP's own shape is, and its `entries` are left open, because an import accepts entries in any schema the provider accepts, HCP v1 forms included (HCP 5.4.3, 4.3); each entry is validated against the schema it names.
 
 ### HCP field mapping
 
 | HCP field | Member | Notes |
 |---|---|---|
-| request `export` | `export` | Unchanged. |
+| request `export` | `export` | Unchanged. Any export valid under HCP's export schema is accepted, within the request's 16 MiB bound: the framework size bounds and the non-empty values the shared `hcp/_shared` shapes require beyond HCP's are not applied within it (see [Request](#request)). |
 | request `dryRun` | `dryRun` | Unchanged. |
 | request `categoryMap` | `categoryMap` | Unchanged. At most 256 replacements, a framework bound HCP does not set. |
 | `Authorization: Bearer` header (HCP 9.3) | `accessToken` | Moved from the transport into the payload, unchanged. |
@@ -120,6 +120,8 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 | result `outcomes` | `outcomes` | Unchanged: each with `id`, `outcome` and, for a rejection, `reason`. |
 | result `dryRun` | `dryRun` | Unchanged. |
 | (none) | `ext["vnd.trusttasks.hcp-carriage"].rulesNotApplied` | **Added** by this family, not HCP, for a delegate's import: the standing rules it did not apply, carried in the framework's `ext` so that the result stays HCP's, *pending HCP confirmation* ([question 40](#pending-hcp-confirmation)). |
+
+**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say. Neither applies within `export`, which is checked against HCP's own shapes (see [Request](#request)).
 
 ### Parties
 
@@ -135,6 +137,7 @@ As for [`hcp/entries/query`](../../entries/query/0.1/spec.md#parties), a provide
 The Management Client sends the export to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
 - `export` (REQUIRED) is the HCP export to load, unchanged from the exporting provider. An export written to HCP's export schema alone is accepted: `options`, which [`hcp/export`](../../export/0.1/spec.md#response) always writes, is OPTIONAL here, as in HCP's own shape, and so is each of its members (HCP 5.4.1). Where `options` is absent, or `includeVersions` or `includeAudit` within it is, it is unknown whether superseded versions or the audit log were requested, and the provider **MUST NOT** infer either, from the presence or absence of `versions` or `audit` or otherwise, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). Each event in `audit` is likewise HCP's own audit-event shape, `ImportedAuditEvent`: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, which the shared [`AuditEvent`](../../_shared/0.1/audit-event.schema.json) requires, each a value or null, as [`hcp/export`](../../export/0.1/spec.md#response) writes them, are OPTIONAL here, as HCP's own shape leaves them (HCP 8.2). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider **MUST NOT** read the absence as null, *pending HCP confirmation* ([question 42](#pending-hcp-confirmation)). A standing rule in `rules` carries `operators`, `requires`, or both (HCP 6.3), as HCP's own standing-rule schema requires; an export holding one with neither is refused with `malformedRequest`. The shared [`StandingRule`](../../_shared/0.1/standing-rule.schema.json) does not check that rule, so the provider does.
+- **What the export is checked against.** An export valid under HCP's own export schema is accepted, whatever its size within the request's 16 MiB `maxDocumentBytes` (see [question 33](#pending-hcp-confirmation)). The framework size bounds that the shared `hcp/_shared` shapes set, such as a directive `text` of at most 4096 characters or at most 256 categories, and the non-empty values they require beyond HCP's, such as a non-empty `setBy`, `basis.description` or identifier, are framework bounds for what an `hcp/*` provider writes, not HCP requirements, and are not applied within the import payload: its standing rules, directives, delegations and audit events are `ImportedStandingRule`, `ImportedDirective`, `ImportedDelegation` and `ImportedAuditEvent`, local definitions in [`payload.schema.json`](payload.schema.json) that keep only what HCP's own schemas require. Where a local definition still declares a `maxItems` or `maxLength`, the lints require one, and it is the 16 MiB document bound itself, so it refuses nothing that bound does not. Two constraints are kept beyond HCP's export schema: a URI category needs at least one character after its scheme, as HCP's `uri` and `purposeCode` patterns require, where HCP's `category` pattern alone would accept a bare `scheme:` (*pending HCP confirmation*, [question 54](#pending-hcp-confirmation)); and the HCP rules the schema does not express, such as a standing rule's `operators` or `requires`, are checked by the provider. An entry is validated against the schema it names, as before.
 - `dryRun` (OPTIONAL), where true, asks for the outcome for each entry and changes nothing. A Management Client **SHOULD** make a dry run first and show the person its outcomes, in particular every `rejected` one and every category the export uses that the provider does not hold, before it imports.
 - `categoryMap` (OPTIONAL) names, for each category the export uses that the provider does not hold, the category the provider holds that replaces it. Its keys are the categories being replaced, its values their replacements. Absent means no category is replaced, and an entry with a category the provider does not hold is rejected (HCP 5.4.3).
 - `accessToken` (REQUIRED) is the Management Client's token.
@@ -336,6 +339,79 @@ This export, from a provider that does not write `options`, says nothing of whet
 }
 ```
 
+### An export valid under HCP's schemas, beyond the shared shapes' bounds
+
+This export is valid under HCP's own export schema but not under the shared `hcp/_shared` shapes that [`hcp/export`](../../export/0.1/spec.md) writes: its directive's `text` is longer than the shared `Directive`'s 4096 characters, its standing rule and directive have an empty `setBy`, and its ended delegation, kept as a record, has an empty `basis.description`, `basis.establishedBy` and `delegate.id`. It is accepted, and the dry run reports an outcome for each entry, here none. Whether the provider then applies the directive, and what it does with an empty `setBy`, are its own HCP rules, not the schema's (see [question 40](#pending-hcp-confirmation)).
+
+```json
+{
+  "id": "urn:uuid:0c5b1e47-9a2d-4f63-8e1b-6d27c4a9f310",
+  "type": "https://trusttasks.org/spec/hcp/import/0.1#request",
+  "issuer": "did:web:wallet.person.example",
+  "recipient": "did:web:new-context.provider.example",
+  "issuedAt": "2026-11-26T09:00:00Z",
+  "threadId": "urn:uuid:8b3f0d62-71ce-4a95-b2e4-5c19a7d03e8f",
+  "payload": {
+    "export": {
+      "@context": ["https://hcp.example/contexts/v2"],
+      "type": "ContextExport",
+      "schema": "https://hcp.example/spec/export/2.0",
+      "subject": { "id": "did:web:person.example" },
+      "exportedBy": "https://other-context.provider.example",
+      "exportedAt": "2026-11-26T08:30:00Z",
+      "entries": [],
+      "rules": [
+        {
+          "ruleId": "urn:uuid:4e8a2c17-5b9d-4f01-a3c6-7d2e9b1f0a54",
+          "effect": "deny",
+          "operators": ["ads.example"],
+          "setBy": "",
+          "createdAt": "2026-09-14T18:20:00Z"
+        }
+      ],
+      "directives": [
+        {
+          "directiveId": "urn:uuid:a71d3e09-2c4b-4d8f-9e15-b6f0c8a2d473",
+          "action": "share",
+          "effect": "ask-first",
+          "text": "Clause 1: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 2: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 3: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 4: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 5: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 6: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 7: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 8: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 9: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 10: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 11: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 12: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 13: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 14: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 15: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 16: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 17: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 18: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 19: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next. Clause 20: before any client acting for me shares my travel context with an airline, hotel or booking site, it asks me first, names the party and the categories, and waits for my answer; an answer I gave for one trip does not cover the next.",
+          "categories": ["travel_preferences"],
+          "setBy": "",
+          "createdAt": "2026-09-20T10:00:00Z"
+        }
+      ],
+      "delegations": [
+        {
+          "delegationId": "urn:uuid:3f6b8d21-0e7a-4c59-b4d2-9a1c5e7f0b36",
+          "subject": { "id": "did:web:person.example" },
+          "delegate": { "id": "", "name": "Sam" },
+          "relationship": "caregiver",
+          "basis": {
+            "method": "attested",
+            "description": "",
+            "establishedBy": "",
+            "establishedAt": "2026-07-01T09:00:00Z"
+          },
+          "scope": { "categories": ["travel_preferences"], "actions": ["read"] },
+          "term": { "endsAt": null, "atMajority": false },
+          "ended": { "at": "2026-10-01T09:00:00Z", "reason": "relinquished" }
+        }
+      ]
+    },
+    "dryRun": true,
+    "accessToken": "hcp_mt_3c7e1a9f5b2d8e40"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-11-26T09:00:00Z",
+    "verificationMethod": "did:web:wallet.person.example#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z3fQm8Yk2Lr7Vb4Nc9Xh6Tp1Wd5Js8Ge2Ua7Rn4Kq9Mv3Hy6Bz1Ct5Fx8Dw2Ls7Pj4Ng9Ek3Rb6Ym1Vh5Qa8Tz2Xc7Gd4Wn9Jf3Ku6Ms1"
+  }
+}
+```
+
 ## Response
 
 The provider answers with one outcome for each entry. The payload is the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json).
@@ -453,8 +529,10 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 34 — entries that cannot be imported, and `skipped`.** An entry whose content credential fails verification, an entry in a schema the provider does not accept, and, under a delegation, an entry outside the delegation's scope, are each a `rejected` outcome, and the rest of the import proceeds; the scope is checked first, after `categoryMap`, and an out-of-scope entry gets the one fixed `reason` whether or not its `id` is held. A deleted entry is `skipped` where the provider chooses to omit it (see [Outcomes](#outcomes)).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's import applies only the standing rules the delegate could set with [`hcp/rules/set`](../../rules/set/0.1/spec.md), recorded as set by the delegate, and lists the others in `rulesNotApplied`, which this family carries under its own `ext` namespace `vnd.trusttasks.hcp-carriage`, not in HCP's result (see [Response](#response)).
-- **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each event in its `audit` is likewise HCP's own audit-event shape, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, which [`hcp/export`](../../export/0.1/spec.md) always writes, each a value or null, may be absent; where one is, it is unknown what the exporting provider recorded for it, which the provider never reads as null (HCP 5.4.1, 5.4.3, 8.2).
+- **Question 42 — presence signals the carriage adds.** The `export` taken is HCP's own export shape: `options`, which [`hcp/export`](../../export/0.1/spec.md) always writes, may be absent here, as may each of its members, and where one is absent it is unknown whether versions or the audit log were requested, which the provider never infers (see [Request](#request)). Each event in its `audit` is likewise HCP's own audit-event shape, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, which [`hcp/export`](../../export/0.1/spec.md) always writes, each a value or null, may be absent; where one is, it is unknown what the exporting provider recorded for it, which the provider never reads as null (HCP 5.4.1, 5.4.3, 8.2). Nor does the import apply, anywhere in the export, the framework size bounds or the non-empty values beyond HCP's that the shared shapes require of what an `hcp/*` provider writes (see [Request](#request)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 54 — HCP's URI patterns disagree.** HCP's `category` pattern accepts a URI category with nothing after the scheme, where its `uri` and `purposeCode` patterns require at least one character. The categories of an imported export keep the `uri` reading, as every `hcp/*` category does, so an export whose category is a bare `scheme:` is refused with `malformedRequest`, the one place an export valid under HCP's export schema is refused by this schema (see [Request](#request)).
+- **Question 55 — HCP's grant and delegation schemas disagree.** HCP's delegation schema does not require a delegation's `scope.categories` to be unique, where its grant schema requires a grant's categories to be; an imported delegation follows HCP's delegation schema and does not require it either.
 
 ## What HCP requires that a document cannot express
 

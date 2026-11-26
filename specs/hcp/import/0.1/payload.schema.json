@@ -2,14 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/import/0.1",
   "title": "HCP — Import — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "The request payload of the HCP 2.0-draft-3 Import operation (HCP 5.4.3, 5.4; `POST /v2/import` in HCP 9.4.11): a Management Client, at the Context Subject's direction, loads the entries of an HCP export into the Context Subject's instance. The members are HCP 5.4.3's request fields, with the access token moved into the payload. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty. Neither is applied within `export` beyond the request's own 16 MiB document bound (see `ImportedExport`).",
   "type": "object",
   "additionalProperties": false,
   "required": ["export", "accessToken"],
   "properties": {
     "export": {
       "$ref": "#/$defs/ImportedExport",
-      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, in which `options` is OPTIONAL, so that an export written to HCP's schema alone is accepted."
+      "description": "HCP `export`: an HCP export (HCP 5.4.1), with entries in any schema the provider accepts, including HCP v1 forms where it declares them in `accepts_entry_schemas` (HCP 5.4.3, 4.3, 19). Its shape is `ImportedExport`, HCP's own export shape, without the framework size bounds and non-empty requirements of the shared `Export`, and with `options` OPTIONAL, so that an export valid under HCP's export schema is accepted, within the request's 16 MiB `maxDocumentBytes`."
     },
     "dryRun": {
       "type": "boolean",
@@ -18,9 +18,7 @@
     "categoryMap": {
       "type": "object",
       "maxProperties": 256,
-      "additionalProperties": {
-        "$ref": "../../_shared/0.1/common.schema.json#/$defs/Category"
-      },
+      "additionalProperties": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Category" },
       "description": "HCP `categoryMap`: for categories the provider does not hold, the category each is to be replaced by (HCP 5.4.3). Each key is a category used by entries in the export that the provider does not hold; its value is the category the provider holds that replaces it. That each key is itself a category is not checked by the schema. Each replacement is recorded as a `context.recategorized` audit event (HCP 5.4.3, 4.2.1). The maxProperties of 256 is a framework bound, not an HCP requirement."
     },
     "accessToken": {
@@ -41,9 +39,9 @@
       "properties": {
         "outcomes": {
           "type": "array",
-          "maxItems": 100000,
+          "maxItems": 16777216,
           "items": { "$ref": "#/$defs/Outcome" },
-          "description": "HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the export's `entries` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+          "description": "HCP `outcomes`: one for each entry in the export (HCP 5.4.3). The maxItems matches the import request's `entries` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement."
         },
         "dryRun": {
           "type": "boolean",
@@ -59,12 +57,12 @@
       "type": "object",
       "additionalProperties": true,
       "required": ["@context", "type", "schema", "subject", "exportedBy", "exportedAt", "entries", "rules"],
-      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in two respects only, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Every other member is as in the shared `Export`, whose maxItems bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
+      "description": "An HCP export as hcp/import takes it (HCP 5.4.1, 5.4.3): HCP's own export shape, so that an export valid under HCP's export schema is accepted. It differs from the shared `Export` in hcp/_shared/0.1, which hcp/export returns, in three respects, each as in HCP's own shape (question 42). First, `options`, and each member of it, is OPTIONAL here, where the shared `Export` requires them: where `options`, or `includeVersions` or `includeAudit` within it, is absent, it is unknown whether superseded versions or the audit log were requested, and the provider MUST NOT infer either, from the presence or absence of `versions` or `audit` or otherwise. Second, each event in `audit` is an `ImportedAuditEvent`, in which `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL, where the shared `AuditEvent` requires them. Third, the framework size bounds and the non-empty requirements beyond HCP's own schemas that the shared shapes set are not applied anywhere in the export: its standing rules, directives, delegations and audit events are `ImportedStandingRule`, `ImportedDirective`, `ImportedDelegation` and `ImportedAuditEvent`, which keep only the constraints HCP's own schemas set. The request as a whole stays bounded by its 16 MiB `maxDocumentBytes`. The one constraint kept beyond HCP's schemas is the category pattern (`ImportedCategory`, question 54). Open, as HCP's own shape is.",
       "properties": {
         "@context": {
           "type": ["array", "string"],
-          "maxItems": 16,
-          "description": "The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). As an array, at most 16 items: a framework bound, not an HCP requirement."
+          "maxItems": 16777216,
+          "description": "The export's JSON-LD context, `https://hcp.example/contexts/v2` in HCP 2.0-draft-3 (HCP 5.4.1). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "type": {
           "type": "string",
@@ -82,55 +80,59 @@
           "required": ["id"],
           "description": "The Context Subject (HCP 5.4.1).",
           "properties": {
-            "id": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The Context Subject's identifier." }
+            "id": {
+              "type": "string",
+              "description": "The Context Subject's identifier. A string, as in HCP's own shape."
+            }
           }
         },
         "exportedBy": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The exporting HCP Provider (HCP 5.4.1)."
+          "description": "The exporting HCP Provider (HCP 5.4.1). A string, as in HCP's own shape."
         },
         "exportedAt": {
           "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
           "description": "When the export was made (HCP 5.4.1)."
         },
-        "options": { "$ref": "#/$defs/ImportedExportOptions", "description": "HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either." },
+        "options": {
+          "$ref": "#/$defs/ImportedExportOptions",
+          "description": "HCP `options`: the options requested (HCP 5.4.1). OPTIONAL, as in HCP's own shape. Absent means it is unknown whether `versions` or `audit` were requested, and the provider MUST NOT infer either."
+        },
         "entries": {
           "type": "array",
-          "maxItems": 100000,
+          "maxItems": 16777216,
           "items": { "type": "object", "additionalProperties": true },
-          "description": "The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names."
+          "description": "The current version of each entry exported, whatever its `record.status` (HCP 5.4.1). An export a provider writes carries each in the form of HCP 4.2 (see context-entry.schema.json `Entry`); an import accepts entries in any schema the importing provider accepts, including HCP v1 forms (HCP 5.4.3, 4.3), so items are left open here, as in HCP's own shape, and each is validated against the schema it names. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "versions": {
           "type": "array",
-          "maxItems": 1000000,
+          "maxItems": 16777216,
           "items": { "type": "object", "additionalProperties": true },
-          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array."
+          "description": "Superseded versions, each in the form of HCP 4.2. Present only where requested (HCP 5.4.1). Whether they were requested is known only from `options.includeVersions` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "rules": {
           "type": "array",
-          "maxItems": 1000000,
-          "items": { "$ref": "../../_shared/0.1/standing-rule.schema.json#/$defs/StandingRule" },
-          "description": "The Context Subject's standing rules (HCP 5.4.1, 6.3)."
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedStandingRule" },
+          "description": "The Context Subject's standing rules (HCP 5.4.1, 6.3), each an `ImportedStandingRule`, HCP's own standing-rule shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "directives": {
           "type": "array",
-          "maxItems": 1000000,
-          "items": { "$ref": "../../_shared/0.1/directive.schema.json#/$defs/Directive" },
-          "description": "The Context Subject's directives (HCP 5.4.1, 6.4)."
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedDirective" },
+          "description": "The Context Subject's directives (HCP 5.4.1, 6.4), each an `ImportedDirective`, HCP's own directive shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "delegations": {
           "type": "array",
-          "maxItems": 1000000,
-          "items": { "$ref": "../../_shared/0.1/delegation.schema.json#/$defs/Delegation" },
-          "description": "The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2)."
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedDelegation" },
+          "description": "The delegations made for the Context Subject, ended ones included, as a record. An import does not establish them (HCP 5.4.1, 17.2). Each is an `ImportedDelegation`, HCP's own delegation shape. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "audit": {
           "type": "array",
-          "maxItems": 1000000,
+          "maxItems": 16777216,
           "items": { "$ref": "#/$defs/ImportedAuditEvent" },
-          "description": "The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array."
+          "description": "The audit log, as events in the structure of HCP 8.2, each an `ImportedAuditEvent`, HCP's own audit-event shape. Present only where requested (HCP 5.4.1). Whether it was requested is known only from `options.includeAudit` where present, never from this array. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         }
       }
     },
@@ -139,26 +141,325 @@
       "additionalProperties": true,
       "description": "HCP `options` as hcp/import takes it (HCP 5.4.1): each member OPTIONAL, as in HCP's own shape, where the shared `ExportOptions` requires `includeVersions` and `includeAudit`. A member that is present says whether that option was requested; one that is absent leaves it unknown, and the provider MUST NOT infer it.",
       "properties": {
-        "excludeDeleted": { "type": "boolean", "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown." },
-        "includeVersions": { "type": "boolean", "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown." },
-        "includeAudit": { "type": "boolean", "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown." }
+        "excludeDeleted": {
+          "type": "boolean",
+          "description": "Entries whose `record.status` is `deleted` were omitted (HCP 5.4.1). Absent means unknown."
+        },
+        "includeVersions": {
+          "type": "boolean",
+          "description": "Superseded versions were requested (HCP 5.4.1). Absent means unknown."
+        },
+        "includeAudit": {
+          "type": "boolean",
+          "description": "The audit log was requested (HCP 5.4.1, 8.3). Absent means unknown."
+        }
       }
+    },
+    "ImportedStandingRule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["ruleId", "effect", "setBy", "createdAt"],
+      "description": "A standing rule in an imported export (HCP 6.3, 5.4.1): HCP's own standing-rule shape. It differs from the shared `StandingRule` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "ruleId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The rule's identifier (HCP 6.3)."
+        },
+        "effect": { "type": "string", "enum": ["deny"], "description": "Always `deny` (HCP 6.3)." },
+        "operators": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16777216,
+          "items": { "type": "string", "minLength": 1, "description": "A Client Operator identifier." },
+          "description": "The Client Operators denied (HCP 6.3). A rule carries `operators`, `requires`, or both, as HCP's own schema requires; the provider checks that, since the schema does not. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+        },
+        "requires": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16777216,
+          "items": { "type": "string", "format": "uri", "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$" },
+          "description": "The commitments a client must have made (HCP 6.3). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedCategory" },
+          "description": "The categories the rule covers (HCP 6.3); absent means every category. The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+        },
+        "setBy": {
+          "type": "string",
+          "description": "Who set the rule (HCP 6.3). A string, which HCP's own shape allows to be empty."
+        },
+        "createdAt": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "When the rule was set (HCP 6.3)."
+        }
+      }
+    },
+    "ImportedDirective": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["directiveId", "action", "effect", "text", "setBy", "createdAt"],
+      "description": "A directive in an imported export (HCP 6.4, 5.4.1): HCP's own directive shape. It differs from the shared `Directive` in hcp/_shared/0.1 only in leaving out the framework size bounds, such as its 4096-character `text`, and the non-empty `setBy` the shared shape sets. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "directiveId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The directive's identifier (HCP 6.4)."
+        },
+        "action": {
+          "type": "string",
+          "pattern": "^(share|sign|transact|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+          "description": "`share`, `sign`, `transact`, or a URI (HCP 6.4)."
+        },
+        "effect": {
+          "type": "string",
+          "enum": ["deny", "ask-first", "permit"],
+          "description": "HCP's own values, carried verbatim (HCP 6.4)."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16777216,
+          "description": "The directive in words (HCP 6.4). Non-empty, as HCP's own shape requires. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not."
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedCategory" },
+          "description": "The categories the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+        },
+        "operators": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16777216,
+          "items": { "type": "string", "minLength": 1, "description": "A Client Operator identifier." },
+          "description": "The Client Operators the directive covers (HCP 6.4). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+        },
+        "setBy": {
+          "type": "string",
+          "description": "Who set the directive (HCP 6.4). A string, which HCP's own shape allows to be empty."
+        },
+        "createdAt": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "When the directive was set (HCP 6.4)."
+        }
+      }
+    },
+    "ImportedDelegation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["delegationId", "subject", "delegate", "relationship", "basis", "scope", "term"],
+      "description": "A delegation in an imported export, as a record (HCP 17.2, 5.4.1): HCP's own delegation shape. It differs from the shared `Delegation` in hcp/_shared/0.1 only in leaving out the framework size bounds and the non-empty requirements the shared shape sets beyond HCP's, such as a non-empty `basis.description`, `basis.establishedBy` and identifiers. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "delegationId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The delegation's identifier (HCP 17.2)."
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The Context Subject (HCP 17.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "delegate": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id", "name"],
+          "description": "The delegate (HCP 17.2).",
+          "properties": {
+            "id": { "type": "string", "description": "The delegate's identifier. A string, as in HCP's own shape." },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The delegate's name. Non-empty, as HCP's own shape requires."
+            }
+          }
+        },
+        "relationship": {
+          "type": "string",
+          "pattern": "^(parent-or-guardian|legal-guardian|attorney-in-fact|caregiver|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+          "description": "HCP's relationship values, or a URI (HCP 17.2)."
+        },
+        "basis": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["method", "description", "establishedBy", "establishedAt"],
+          "description": "The basis of the delegation (HCP 17.2).",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["appointed", "attested", "evidence", "delegated", "unspecified"],
+              "description": "HCP's own values, carried verbatim (HCP 17.2). Where it is `evidence`, `evidence` holds at least one item, and `parent` is present exactly where it is `delegated`, as HCP's own schema requires; the provider checks these, since the schema does not."
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 16777216,
+              "description": "The basis in words (HCP 17.2). A string, which HCP's own shape allows to be empty. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not."
+            },
+            "evidence": {
+              "type": "array",
+              "maxItems": 16777216,
+              "items": { "$ref": "#/$defs/ImportedEvidenceItem" },
+              "description": "The evidence for the basis (HCP 17.2, 4.2.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+            },
+            "covers": {
+              "type": "array",
+              "maxItems": 16777216,
+              "items": { "$ref": "#/$defs/ImportedCategory" },
+              "description": "The categories the basis covers (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+            },
+            "establishedBy": {
+              "type": "string",
+              "description": "Who established the basis (HCP 17.2). A string, which HCP's own shape allows to be empty."
+            },
+            "establishedAt": {
+              "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+              "description": "When the basis was established (HCP 17.2)."
+            },
+            "parent": {
+              "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+              "description": "For a sub-delegation, the parent delegation (HCP 17.2)."
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["categories", "actions"],
+          "description": "What the delegation covers (HCP 17.2).",
+          "properties": {
+            "categories": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16777216,
+              "items": { "$ref": "#/$defs/ImportedCategory" },
+              "description": "The categories in scope (HCP 17.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+            },
+            "actions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": { "type": "string", "enum": ["read", "write"] },
+              "description": "The actions in scope (HCP 17.2, 6.1.5): `read`, `write`, or both."
+            }
+          }
+        },
+        "term": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["endsAt", "atMajority"],
+          "description": "The delegation's term (HCP 17.2).",
+          "properties": {
+            "endsAt": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "When the delegation ends, or null (HCP 17.2)."
+            },
+            "atMajority": {
+              "type": "boolean",
+              "description": "Whether it ends when the Context Subject reaches majority (HCP 17.2)."
+            }
+          }
+        },
+        "ended": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["at", "reason"],
+          "description": "Present where the delegation has ended (HCP 17.2).",
+          "properties": {
+            "at": {
+              "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+              "description": "When the delegation ended (HCP 17.2)."
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "majority",
+                "expiry",
+                "basis-ended",
+                "relinquished",
+                "ended-by-subject",
+                "parent-ended",
+                "ended-by-delegate"
+              ],
+              "description": "HCP's own values, carried verbatim (HCP 17.2)."
+            }
+          }
+        },
+        "mayDelegate": {
+          "type": "boolean",
+          "description": "Whether the delegate may appoint a sub-delegate (HCP 17.2)."
+        }
+      }
+    },
+    "ImportedEvidenceItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["role", "type"],
+      "description": "An evidence item in an imported delegation's basis (HCP 4.2.2, 17.2): HCP's own evidence-item shape, without the framework bounds of the shared `EvidenceItem` in hcp/_shared/0.1. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["content", "supports"],
+          "description": "HCP's own values, carried verbatim (HCP 4.2.2)."
+        },
+        "type": {
+          "type": "string",
+          "description": "The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3)."
+        },
+        "credential": {
+          "description": "The credential, for `verifiable-credential`: a W3C Verifiable Credential, whose own data model governs its contents (HCP 4.2.2, 14.2)."
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["result", "at"],
+          "description": "The exporting provider's record of its most recent verification (HCP 4.2.2).",
+          "properties": {
+            "result": { "type": "string", "enum": ["verified", "failed"], "description": "The outcome." },
+            "at": {
+              "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+              "description": "When the provider verified."
+            },
+            "by": {
+              "type": "string",
+              "enum": ["provider", "trust-domain"],
+              "description": "Who verified (HCP 4.2.2, 4.8)."
+            }
+          }
+        }
+      }
+    },
+    "ImportedCategory": {
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9_]*|[a-zA-Z][a-zA-Z0-9+.-]*:\\S+)$",
+      "description": "A category in an imported export (HCP 4.5): the shared `Category` in hcp/_shared/0.1 without its framework maxLength. Its pattern is kept: a URI category needs at least one character after the scheme, as HCP's `uri` and `purposeCode` patterns require, where HCP's `category` pattern alone would accept a bare `scheme:` (question 54)."
     },
     "ImportedAuditEvent": {
       "type": "object",
       "additionalProperties": true,
       "required": ["eventId", "eventType", "timestamp", "participants"],
-      "description": "One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export written to HCP's schema alone is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in one respect only: `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Every other member is as in the shared `AuditEvent`, whose bounds these match: framework bounds, not HCP requirements. Open, as HCP's own shape is.",
+      "description": "One audit event of an export as hcp/import takes it (HCP 8.2, 5.4.1, 5.4.3): HCP's own audit-event shape, so that an export valid under HCP's schemas is accepted. It differs from the shared `AuditEvent` in hcp/_shared/0.1, which hcp/export and hcp/audit/read return, in two respects. First, `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId` are OPTIONAL here, as in HCP's own shape, where the shared `AuditEvent` requires each, a value or null (question 42). Where one is absent, it is unknown what the exporting provider recorded for it, and the provider MUST NOT read the absence as null. Second, it leaves out the framework size bounds and non-empty requirements the shared shape sets beyond HCP's. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
       "properties": {
-        "eventId": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn", "description": "The event's identifier (HCP 8.2)." },
+        "eventId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The event's identifier (HCP 8.2)."
+        },
         "eventType": {
           "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it. The minLength and maxLength are framework bounds, not HCP requirements."
+          "description": "The event type, one of those HCP 8.1 lists. Left open, as HCP's own shape leaves it: a string."
         },
-        "timestamp": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant", "description": "When the event occurred. HCP's member name (HCP 8.2), carried verbatim." },
-        "participants": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditParticipants", "description": "Who took part (HCP 8.2, 3.9)." },
+        "timestamp": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "When the event occurred. HCP's member name (HCP 8.2), carried verbatim."
+        },
+        "participants": { "$ref": "#/$defs/ImportedAuditParticipants", "description": "Who took part (HCP 8.2, 3.9)." },
         "entryId": {
           "type": ["string", "null"],
           "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
@@ -171,20 +472,19 @@
         },
         "categories": {
           "type": "array",
-          "maxItems": 256,
-          "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Category" },
-          "description": "The categories concerned (HCP 8.2). The maxItems is a framework bound, not an HCP requirement."
+          "maxItems": 16777216,
+          "items": { "$ref": "#/$defs/ImportedCategory" },
+          "description": "The categories concerned (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         },
         "purpose": {
           "type": ["string", "null"],
-          "maxLength": 2048,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
+          "description": "The purpose code stated, or null where none was (HCP 8.2, 6.1.5.2). OPTIONAL, as in HCP's own shape; absent means unknown."
         },
         "purposeDescription": {
           "type": ["string", "null"],
-          "maxLength": 4096,
-          "description": "The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is a framework bound, not an HCP requirement."
+          "maxLength": 16777216,
+          "description": "The stated task, or null where none was stated (HCP 8.2). OPTIONAL, as in HCP's own shape; absent means unknown. The maxLength is the request's own 16 MiB document bound, so it refuses nothing that bound does not."
         },
         "grantId": {
           "type": ["string", "null"],
@@ -194,13 +494,126 @@
         "disclosed": {
           "type": "array",
           "maxItems": 20,
-          "items": { "$ref": "../../_shared/0.1/audit-event.schema.json#/$defs/AuditDisclosed" },
-          "description": "Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). A retrieval discloses at most 20 entries (HCP 7.2)."
+          "items": { "$ref": "#/$defs/ImportedAuditDisclosed" },
+          "description": "Present on `context.read`: every entry the retrieval disclosed (HCP 8.2). Its maxItems of 20 is HCP's own limit on a retrieval (HCP 7.2), not a framework bound."
         },
         "data": {
           "type": "object",
           "additionalProperties": true,
           "description": "The members HCP 8.2 fixes for the event type. Implementations may add members, which are preserved and not interpreted (HCP 8.2, A.3)."
+        }
+      }
+    },
+    "ImportedAuditParticipants": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["initiator", "provider"],
+      "description": "Who took part in an imported audit event (HCP 8.2, 3.9): HCP's own shape, without the framework bounds and non-empty identifiers of the shared `AuditParticipants`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "initiator": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["role", "id"],
+          "description": "Who initiated the event (HCP 8.2).",
+          "properties": {
+            "role": {
+              "type": "string",
+              "enum": ["management-client", "context-client", "authorization-service", "hcp-provider"],
+              "description": "HCP's own roles (HCP 3.9)."
+            },
+            "id": { "type": "string", "description": "The initiator's identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "clientOperator": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The Client Operator (HCP 8.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "requestingParty": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The Requesting Party (HCP 8.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "authorizingPrincipal": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The Authorizing Principal (HCP 8.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "provider": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The HCP Provider (HCP 8.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        },
+        "retrievalId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The retrieval the event belongs to (HCP 8.2)."
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["id"],
+          "description": "The model, where one was involved (HCP 8.2).",
+          "properties": {
+            "id": { "type": "string", "description": "An identifier. A string, as in HCP's own shape." }
+          }
+        }
+      }
+    },
+    "ImportedAuditDisclosed": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["entryId", "version", "useUntil"],
+      "description": "One entry an imported `context.read` event disclosed (HCP 8.2): HCP's own shape, without the framework bounds of the shared `AuditDisclosed`. Within the import payload, no framework size bound or non-empty requirement beyond HCP's own schema applies (question 42). Open, as HCP's own shape is.",
+      "properties": {
+        "entryId": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn",
+          "description": "The entry disclosed (HCP 8.2)."
+        },
+        "version": { "type": "integer", "minimum": 1, "description": "Its version (HCP 8.2)." },
+        "useUntil": {
+          "$ref": "../../_shared/0.1/common.schema.json#/$defs/Instant",
+          "description": "Until when the disclosed copy may be used (HCP 8.2, 7.6)."
+        },
+        "provenance": { "type": "boolean", "description": "Whether provenance was disclosed (HCP 8.2)." },
+        "revealed": {
+          "type": "array",
+          "maxItems": 16777216,
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["evidence", "claims"],
+            "description": "What was revealed of one evidence item (HCP 8.2).",
+            "properties": {
+              "evidence": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the evidence item (HCP 8.2)."
+              },
+              "claims": {
+                "type": "array",
+                "maxItems": 16777216,
+                "items": { "type": "string", "description": "A claim revealed." },
+                "description": "The claims revealed (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
+              }
+            }
+          },
+          "description": "Selectively disclosed evidence (HCP 8.2). The maxItems is the request's own 16 MiB document bound, which no array in the document can reach, so it refuses nothing that bound does not."
         }
       }
     },
@@ -215,10 +628,10 @@
         "rulesNotApplied": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 1000000,
+          "maxItems": 16777216,
           "uniqueItems": true,
           "items": { "$ref": "../../_shared/0.1/common.schema.json#/$defs/Urn" },
-          "description": "The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the export's `rules` bound in hcp/_shared/0.1 and is a framework bound, not an HCP requirement."
+          "description": "The `ruleId` of each standing rule in the export the delegate could not set, which the provider did not apply, or in a dry run would not apply (HCP 6.3, 17.4), pending HCP confirmation (question 40). The maxItems matches the import request's `rules` bound, the request's own 16 MiB document bound, and is a framework bound, not an HCP requirement."
         }
       }
     },

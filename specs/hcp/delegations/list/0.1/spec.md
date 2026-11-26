@@ -117,6 +117,8 @@ The REQUIRED `proof` on the request establishes which Management Client VID sent
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | result `delegations` (HCP 9.4.13) | `delegations` | Unchanged. Not paginated (HCP 9.4.13). |
 
+**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
+
 ### Parties
 
 | HCP role | Trust Task member |
@@ -259,6 +261,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 32 — a delegate's sub-delegations.** HCP 17.10 governs where HCP 9.4.13 is narrower: a delegate's list also carries each sub-delegation they appointed, so that they can end it with [`hcp/delegations/end`](../../end/0.1/spec.md) (`ended-by-delegate`, HCP 17.6, 17.10).
 - **Question 37 — governance over a carriage other than the HTTP Binding.** HCP carries governance operations only over its HTTP Binding (HCP 1.6, 5.4, 9.1, 10.1). This specification takes it that another carriage, here a Trust Task, may carry them where the caller is a Management Client acting for the Authorizing Principal (HCP 6.1.9), and applies every rule HCP places on the operation unchanged (see [Conformance](#conformance)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 55 — HCP's grant and delegation schemas disagree.** HCP's delegation schema does not require a delegation's `scope.categories` to be unique, where its grant schema requires a grant's categories to be. The shared `Delegation` follows HCP's delegation schema and does not require it either.
 
 ## What HCP requires that a document cannot express
 

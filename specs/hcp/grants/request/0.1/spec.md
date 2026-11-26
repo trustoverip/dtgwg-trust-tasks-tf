@@ -97,18 +97,20 @@ HCP has no request schema for this task. The request members follow an OAuth aut
 
 | HCP / OAuth field | Member | Notes |
 |---|---|---|
-| `authorization_details` of type `https://hcp.example/spec/authorization/context-access` (HCP 13.3; RFC 9396) | `access` | Each detail carries `type`, `actions`, `categories`, and optionally `purposes`, `narrowedTo` and `onwardSharing`, as HCP 6.1.5 defines them. |
+| `authorization_details` of type `https://hcp.example/spec/authorization/context-access` (HCP 13.3; RFC 9396) | `access` | Each detail carries `type`, `actions`, `categories`, and optionally `purposes`, `narrowedTo` and `onwardSharing`, as HCP 6.1.5 defines them. Each purpose carries `code` and `description`, both REQUIRED, as HCP's purpose does (HCP 6.1.5.2). |
 | `scope` (HCP 6.1.1, 13.3) | not carried | Scope strings are a compact view of `access`; a client names details. |
 | `resource` (RFC 8707, HCP 13.3) | `recipient` | The provider the grant is for. |
 | `client_id` | `issuer` | See [Authorization](#authorization). |
 | `login_hint` (OpenID Connect) | `subjectHint` | Not in HCP. See [Finding the person](#finding-the-person). |
 | grant `grantType` (HCP 6.1.4) | `grantType` (request), `grant.grantType` (response) | As asked in the request; as elected in the response. |
 | grant `expiresAt`, temporary default and maximum (HCP 6.1.3) | `expiresIn` (request), `grant.expiresAt` (response) | `grant.expiresAt` is `null` for a persistent grant, as HCP writes it. |
-| grant `requestingParty` (HCP 6.1.5) | `requestingParty` (request), `grant.requestingParty` (response) | Unchanged. |
+| grant `requestingParty` (HCP 6.1.5) | `requestingParty` (request), `grant.requestingParty` (response) | Unchanged. Its `name` is bounded at 1024 characters in both, a framework bound HCP does not set. |
 | token response `access_token`, `expires_in` (HCP 13.3, 13.4) | `accessToken`, `tokenExpiresAt` | The token is opaque. `expires_in` is carried as the instant it ends. |
 | token response `authorization_details` (HCP 13.3) | `grant.access` | What the person approved. |
 | the grant object (HCP 6.1.5) | `grant` | HCP's grant object with its own members, `grantId`, `issuedAt`, `expiresAt` and `status` among them, unrenamed: being inside `grant`, its `issuedAt` is not read as the document's. `authorizingPrincipal.delegation` is withheld from the client (HCP 17.4). |
 | refresh token (HCP 13.4) | not carried | Version 0.1 issues no refresh token; a client asks again, or the person makes the grant persistent. |
+
+**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
 
 ### Parties
 
@@ -123,7 +125,7 @@ As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), the pr
 
 The client sends the request to the provider. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json). `access` is REQUIRED; `grantType`, `expiresIn`, `subjectHint` and `requestingParty` are OPTIONAL.
 
-- **Purposes.** A detail that names no `purposes` is allowed: the provider **MUST** then ask the person to choose one or more before approving (HCP 6.1.5.2), and the response tells the client which were approved.
+- **Purposes.** A detail that names no `purposes` is allowed: the provider **MUST** then ask the person to choose one or more before approving (HCP 6.1.5.2), and the response tells the client which were approved. Each purpose a detail does name carries a `code` and a `description`, both REQUIRED: HCP's purpose always has the description shown to the person before they approve (HCP 6.1.5.2). The provider shows its own description instead where it has one for that code.
 - **Persistence.** `grantType: persistent` asks that the person be offered persistent access. Temporary is the default outcome of every request (HCP 6.1.4): the provider **MUST** offer persistence only as a separate affirmative act after the person confirms the grant, **MUST NOT** pre-select it, and issues a temporary grant unless the person elects it, *pending HCP confirmation* ([question 24](#pending-hcp-confirmation)).
 - **Duration.** `expiresIn` asks for a temporary grant's lifetime, in seconds. Absent means HCP's default of 4 hours; the schema caps it at HCP's 24-hour maximum (HCP 6.1.3). The provider **MAY** grant less, and the person **MAY** choose less.
 - **Narrowing and onward sharing.** A `narrowedTo` key the provider does not support, or an `onwardSharing` request in a detail that lacks `read` or covers a category whose default sensitivity is not Low, is refused with `malformedRequest` at once, before the person is asked (HCP 6.1.5, 6.1.5.1 rule 2).
@@ -324,6 +326,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 24 — asking for persistence.** `grantType: persistent` lets the provider offer persistence as HCP 6.1.4's separate act; it never pre-selects it, and the outcome is temporary unless the person elects it.
 - **Question 25 — the token in a Trust Task response.** The response carries the access token and the grant as approved, as HCP's OAuth token response does (HCP 13.3), with no refresh token in this version. A token obtained this way is accepted by the `hcp/*` tasks as any HCP access token is.
 - **Question 39 — who may collect the grant, and after approval.** A resubmission is matched to the held request by (`threadId`, `issuer`); one from another `issuer` is refused with `permissionDenied`, and every next step and the response go to the held request's `issuer`. For 1 hour after the response is first sent, a resubmission from that `issuer` gets a response for the same grant, never a new grant; after that hour it gets `permissionDenied`.
+- **Question 55 — HCP's grant and delegation schemas disagree.** HCP's grant schema requires a non-empty `client.name`, where its common `clientDescription`, which an entry's provenance uses, does not. The shared `Grant` follows HCP's grant schema and requires it, as does the shared `ClientDescription`.
 
 ## What HCP requires that a document cannot express
 

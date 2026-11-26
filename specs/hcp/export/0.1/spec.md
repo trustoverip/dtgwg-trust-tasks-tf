@@ -139,6 +139,8 @@ The REQUIRED `proof` establishes which Management Client VID sent the document a
 | `HCP-Version` header | the Type URI and `carries.version` | Version 0.1 of this task carries HCP 2.0-draft-3 only. |
 | response body, the export (HCP 5.4.1) | `export` | **Wrapped**: HCP's body is the export itself; here it is the value of the one member `export`, unchanged. |
 
+**Where this payload is stricter than HCP's shapes.** Each payload is closed at its top level (`additionalProperties: false`): a top-level member outside this mapping is refused, where HCP's own request and result shapes leave the top level open, so an extension member HCP would allow there is not carried. The HCP shapes nested within stay open, as HCP's are. Every size bound, and every non-empty requirement (a `minLength` or `minItems` of 1) on a member that HCP's own schema allows to be empty, is a Trust Tasks framework bound on what an `hcp/*` party writes, not an HCP requirement, as the schema descriptions say.
+
 ### Parties
 
 | HCP role | Trust Task member |
@@ -339,6 +341,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 40 — a delegate's export and import beyond entries.** A delegate's export carries only the superseded versions, of the entries it returns, whose own categories are all within the delegation's scope (see [Authorization](#authorization)).
 - **Question 42 — presence signals the carriage adds.** The export's `options` is required, with `includeVersions` and `includeAudit` each `true` or `false`, so that the export says whether `versions` and `audit` were asked for; and every `AuditEvent` in `audit` carries `entryId`, `relatedEntryId`, `purpose`, `purposeDescription` and `grantId`, each with its value or null. HCP's own shapes leave these members optional (HCP 5.4.1, 8.2). [`hcp/import`](../../import/0.1/spec.md) still accepts an export without `options`, and audit events without those five members.
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
+- **Question 55 — HCP's grant and delegation schemas disagree.** HCP's delegation schema does not require a delegation's `scope.categories` to be unique, where its grant schema requires a grant's categories to be. The shared `Delegation` follows HCP's delegation schema and does not require it either.
 
 ## What HCP requires that a document cannot express
 
