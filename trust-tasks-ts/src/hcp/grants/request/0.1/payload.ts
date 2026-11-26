@@ -248,11 +248,11 @@ export interface ProposedRequestingParty {
  */
 export interface HCPRequestGrantResponsePayload {
   /**
-   * The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement.
+   * The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime is given by `tokenExpiresAt`, and is at most 24 hours (HCP 13.4). The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
   /**
-   * When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`.
+   * When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`. This version issues no refresh token, so it SHOULD equal the grant's `expiresAt`, within HCP 13.4's 24-hour maximum (and HCP 16.2's 1 hour for a grant covering `health_context`).
    */
   tokenExpiresAt: Instant;
   /**
@@ -541,11 +541,11 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "type": "string",
           "minLength": 1,
           "maxLength": 8192,
-          "description": "The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime follows HCP 13.4 (default 1 hour, at most 24 hours). The maxLength is a framework bound, not an HCP requirement."
+          "description": "The HCP access token for the new grant (the token response's `access_token`, HCP 13.3), opaque to the client. The client presents it unchanged as `accessToken` in hcp/entries/query and every other hcp/* task it sends under the grant. Its lifetime is given by `tokenExpiresAt`, and is at most 24 hours (HCP 13.4). The maxLength is a framework bound, not an HCP requirement."
         },
         "tokenExpiresAt": {
           "$ref": "#/$defs/Instant",
-          "description": "When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`."
+          "description": "When `accessToken` stops being accepted (the token response's `expires_in`, HCP 13.4, as an instant), in whole seconds. Never after the grant's `expiresAt`. This version issues no refresh token, so it SHOULD equal the grant's `expiresAt`, within HCP 13.4's 24-hour maximum (and HCP 16.2's 1 hour for a grant covering `health_context`)."
         },
         "grant": {
           "$ref": "#/$defs/Grant",
