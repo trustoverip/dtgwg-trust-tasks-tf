@@ -509,7 +509,7 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
     #[serde(
         rename = "accessToken",
         default,
@@ -529,7 +529,7 @@ impl Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -597,7 +597,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAccessToken {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    ///HCP `directives` (HCP 9.4.15): every directive the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order.
+    ///HCP `directives` (HCP 9.4.15): every directive the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28). Empty when there is none. HCP sets no order.
     pub directives: ::std::vec::Vec<Directive>,
 }
 impl Response {
@@ -904,7 +904,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$id\":\"https://trusttasks.org/spec/hcp/directives/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List directives operation (HCP 6.4, 5.4; `GET /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, reads the directives. HCP defines no request schema and no parameters for this operation; the only member is the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"}},\"title\":\"HCP — List Directives — payload\",\"type\":\"object\"}\n",
+        "{\"$id\":\"https://trusttasks.org/spec/hcp/directives/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 List directives operation (HCP 6.4, 5.4; `GET /v2/directives` in HCP 9.2, 9.4.15): a Management Client, acting for the Context Subject or a delegate, reads the directives. HCP defines no request schema and no parameters for this operation; the only member is the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"}},\"title\":\"HCP — List Directives — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -913,7 +913,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(4194304usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The directives the caller may see. Carries HCP's `200` result, a `directives` array (HCP 9.4.15). Not paginated: HCP gives this operation no cursor. Failures use trust-task-error, not this shape.\",\"properties\":{\"directives\":{\"description\":\"HCP `directives` (HCP 9.4.15): every directive the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28 in the spec). Empty when there is none. HCP sets no order.\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"type\":\"array\"}},\"required\":[\"directives\"],\"title\":\"HCP — List Directives — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The directives the caller may see. Carries HCP's `200` result, a `directives` array (HCP 9.4.15). Not paginated: HCP gives this operation no cursor. Failures use trust-task-error, not this shape.\",\"properties\":{\"directives\":{\"description\":\"HCP `directives` (HCP 9.4.15): every directive the provider holds for the Context Subject, or, for a delegate, those whose `categories` are absent or all within the delegation's scope (pending HCP confirmation, question 28). Empty when there is none. HCP sets no order.\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"type\":\"array\"}},\"required\":[\"directives\"],\"title\":\"HCP — List Directives — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {
@@ -936,7 +936,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::INVALID_TOKE
 pub mod error_codes {
     /// `hcp:invalidToken`
     ///
-    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management Client's access token.
+    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     ///
     /// Declared `retryable: false`.
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

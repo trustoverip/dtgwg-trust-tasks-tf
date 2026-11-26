@@ -7,7 +7,7 @@ import type { Assertion, Assurance, Basis, Category, Classification, ClientDescr
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token stands for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
+ * The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token evidences. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPQueryContextPayload {
   /**
@@ -34,7 +34,7 @@ export interface HCPQueryContextPayload {
    */
   maxEntries?: number;
   /**
-   * The HCP access token that stands for the grant (an OAuth or first-party token, HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2), and this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+   * The HCP access token for the grant under which the client acts (an OAuth or first-party token, HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2), and this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
 }
@@ -350,7 +350,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/entries/query/0.1",
   "title": "HCP — Query Context — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token stands for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
+  "description": "The request payload of the HCP 2.0-draft-3 Query operation (HCP 5.2.1): a Context Client asks a provider for the context relevant to a query, for a named purpose, under the grant its access token evidences. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -392,7 +392,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The HCP access token that stands for the grant (an OAuth or first-party token, HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2), and this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+      "description": "The HCP access token for the grant under which the client acts (an OAuth or first-party token, HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); HCP leaves how authorization evidence is carried to each binding (HCP 1.2), and this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
     }
   },
   "$defs": {

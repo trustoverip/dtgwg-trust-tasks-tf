@@ -21488,7 +21488,7 @@ export interface WitnessKey {
   proofsSigned: number;
 }
 /**
- * The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation; not checked by the schema.
+ * The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation (question 7); not checked by the schema.
  */
 export interface WriteClassification {
   /**

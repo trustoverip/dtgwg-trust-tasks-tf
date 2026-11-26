@@ -21,16 +21,16 @@ export interface HCPRestrictEntryPurposesPayload {
    */
   permittedPurposes: PurposeCode[] | null;
   /**
-   * HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
+   * HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
    */
   expectedVersion: number;
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
 /**
- * The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.
+ * The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10), pending HCP confirmation (question 14). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.
  */
 export interface HCPRestrictEntryPurposesResponsePayload {
   /**
@@ -116,13 +116,13 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     "expectedVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
+      "description": "HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5)."
     },
     "accessToken": {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   },
   "$defs": {
@@ -155,7 +155,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "required": [
         "entry"
       ],
-      "description": "The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.",
+      "description": "The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10), pending HCP confirmation (question 14). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.",
       "properties": {
         "entry": {
           "$ref": "#/$defs/Entry",

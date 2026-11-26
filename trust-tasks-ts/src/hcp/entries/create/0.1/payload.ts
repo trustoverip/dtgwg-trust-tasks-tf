@@ -7,7 +7,7 @@ import type { AssertedBy, Assertion, Assurance, Basis, Category, Classification,
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
+ * The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token evidences. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPCreateEntryPayload {
   /**
@@ -41,7 +41,7 @@ export interface HCPCreateEntryPayload {
    */
   record: CreateRecord;
   /**
-   * The HCP access token that stands for the grant (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
 }
@@ -104,7 +104,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/entries/create/0.1",
   "title": "HCP — Create Entry — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token stands for. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
+  "description": "The request payload of the HCP 2.0-draft-3 Create operation (HCP 5.2.3): an HCP Client writes a new entry about the Context Subject, under the grant its access token evidences. The members are the entry in the form of HCP 4.2, carrying the fields of HCP 5.2.3 and omitting those the provider assigns (HCP 9.4.3), plus the access token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -153,7 +153,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The HCP access token that stands for the grant (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     }
   },
   "$defs": {
@@ -510,7 +510,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "required": [
         "categories"
       ],
-      "description": "The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation; not checked by the schema.",
+      "description": "The classification a create supplies (HCP 5.2.3). `classification.permittedPurposes` is set only by the Authorizing Principal, through a governance operation (HCP 4.2.1, 4.2.6), so a create that carries it is refused with `malformedRequest`, pending HCP confirmation (question 7); not checked by the schema.",
       "properties": {
         "categories": {
           "type": "array",
