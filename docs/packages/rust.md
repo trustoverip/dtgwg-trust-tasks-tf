@@ -59,19 +59,30 @@ never refuses one it accepts. A `$ref` is read with JSON Schema 2020-12
 semantics (its siblings apply too), which every registry schema uses. A `true`
 member is treated like `{}`: any value, `null` included.
 
-Generation fails rather than guess where that guarantee could break: a member
-that admits `null` but that typify renders as a bare collection instead of an
-`Option` (a type-less `{"additionalProperties": …}`, say), and a member whose
-nullable tag typify dropped (each tag carries its own id, and every one must be
-read back off a generated field). Give such a member an explicit `type`.
+Generation fails rather than guess where that guarantee could break, and the
+error names the member:
+
+- A member that admits `null` but that typify renders as a bare collection
+  instead of an `Option` (a type-less `{"additionalProperties": …}`, say). The
+  error also names the owning struct. Give the member an explicit `type` that
+  includes `"null"`, or one that excludes it.
+- A member whose nullable tag typify dropped. Each tag carries its own id, and
+  every one must be read back off a generated field. Only a tag on a member
+  under a `oneOf` / `anyOf` branch can be accounted for by a required enum
+  variant field of the same name, since typify writes no doc on a variant's
+  fields. Move the member's schema into a `$defs` type, or report it as a
+  `trust-tasks-build` bug. One case is not caught: where typify copies a
+  description onto two fields, the tag read back off one copy also accounts
+  for the other.
 
 Each optional field reads through one of two helpers, `present` (the member
 admits `null`) or `not_null` (it doesn't), and is skipped on the way out only
 when it is `None`, so a decoded document re-encodes with the same members. In
-`trust-tasks-rs` the helpers are the crate-private `specs::__presence`, shared by
-every prebuilt module (the leading underscores keep it apart from the family
-modules beside it: a slug segment starts with a letter); a module an application generates carries its own
-private copy, so it needs nothing new from the runtime's `__private`.
+`trust-tasks-rs` the helpers are the crate-private `specs::__presence`, shared
+by every prebuilt module (the leading underscores keep it apart from the family
+modules beside it: a slug segment starts with a letter); a module an
+application generates carries its own private copy, so it needs nothing new
+from the runtime's `__private`.
 Required members are not touched. A member with a declared JSON Schema
 `default` is left as typify renders it, so an absent one reads as that
 default, **except** a default equal to the type's intrinsic one (`[]`, `{}`,
