@@ -563,6 +563,15 @@ type PendingChange struct {
 	LastError *string `json:"lastError,omitempty"`
 }
 
+// RoomRecordMembers The record members a community-owned room's profile lists: the
+// optional `SealedRecordBody` members its writers may use beyond the base set, as a set
+// (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`,
+// `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`, `inReplyTo`
+// and `writtenAt` are what a room used as a conversation needs for replies, reactions and
+// the order of its messages. The community writes them into the room's profile through
+// its VTA, as the room's owner; a value a writer does not know grants it nothing.
+type RoomRecordMembers = []string
+
 // Visibility How much of a room its host can see, fixed at creation and immutable
 // thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`:
 // record content is sealed, and the host still learns which member acted. `private`:

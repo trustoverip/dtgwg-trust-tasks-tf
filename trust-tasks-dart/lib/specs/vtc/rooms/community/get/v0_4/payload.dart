@@ -518,7 +518,7 @@ typedef Ext = Map<String, dynamic>;
 /// https://trusttasks.org/spec/vtc/rooms/community/get/0.4#response. One room the
 /// community owns, in any state of its owner's lifecycle, with its counts. Its members
 /// are vtc/rooms/community/members/list's.
-@Deprecated('superseded by vtc/rooms/community/get/0.5')
+@Deprecated('superseded by vtc/rooms/community/get/0.6')
 class Response {
   const Response({
     required this.room,
@@ -542,7 +542,7 @@ class Response {
 }
 
 /// VTC Rooms Community Get — payload
-@Deprecated('superseded by vtc/rooms/community/get/0.5')
+@Deprecated('superseded by vtc/rooms/community/get/0.6')
 class Payload {
   const Payload({
     required this.roomId,
@@ -573,7 +573,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/rooms/community/get/0.5';
+const String? deprecation = 'superseded by vtc/rooms/community/get/0.6';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =
