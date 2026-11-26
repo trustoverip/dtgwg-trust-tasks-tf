@@ -205,6 +205,22 @@ integration test file that uses a family opens with `#![cfg(feature = "…")]`
 for each one it names.
 
 
+## `trust-tasks-tsp` speaks TSP 1.0 only
+
+`trust-tasks-tsp` implements binding `tsp/0.3` (`BINDING_URI`) on
+`affinidi-tsp` 0.5, which speaks TSP 1.0 (`YTSP-BAA`, `TSP_VERSION`), as the
+TypeScript, Go and Dart TSP bindings do. A peer on a TSP draft (MAJOR other
+than 1) is refused `TspError::UnsupportedTspVersion` from the version marker,
+before any key is used: `advertised_sender` refuses it before the caller
+resolves the sender, which `affinidi_tsp::MetaEnvelope::parse` (it reads any
+version, as a relay must) does not. An unknown 1.x MINOR is not a version
+refusal (TSP 1.0 §3.1). TSP has no version negotiation, so moving
+`affinidi-tsp` across a TSP MAJOR is a wire break for every peer: do it
+deliberately, in a `!` PR scoped `tsp`. `tests/tsp_version.rs` opens the
+Rust-packed 1.0 fixture the other three libraries test against and refuses
+their Rev 2 and Rev 3 fixtures; `check-bindings` holds the four libraries'
+binding URI, envelope type and TSP version together.
+
 ## The Rust message bindings share one consumer — `GuardedConsumer`
 
 `DidcommConsumer`, `TspConsumer` and `DidcommV1Consumer` are thin wrappers

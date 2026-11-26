@@ -123,6 +123,10 @@ final class TspConsumer {
     required Object? Function(R payload) encodeResponse,
     required Handler<P, R> handler,
   }) async {
+    // A peer on a TSP draft names no sender this library can read; refuse it
+    // from the version marker, before the allowlist or resolution.
+    final draft = tspVersionRefusal(wire);
+    if (draft != null) throw draft;
     final named = advertisedSender(wire);
     if (named == null) {
       throw const TspEnvelopeException(

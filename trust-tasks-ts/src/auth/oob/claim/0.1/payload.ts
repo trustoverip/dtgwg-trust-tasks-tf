@@ -9,7 +9,7 @@ import type { Ext, Origin, Purpose, RequestId, Service } from "../../../../_shar
 /**
  * An approver claims a pending out-of-band request, locking it to a throwaway Ed25519 key (`K_a`) generated for this one exchange. The document is the first request of a trigger-link exchange (VTI-LNK-054): issued and signed by `K_a`, addressed to the service, and carrying the request's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by auth/oob/claim/0.2
+ * @deprecated superseded by auth/oob/claim/0.3
  */
 export interface AuthOOBClaimPayload {
   /**
@@ -21,7 +21,7 @@ export interface AuthOOBClaimPayload {
 /**
  * Step 1 of the disclosure ladder, signed by the service's assertionMethod key: who the service is, where the request will be used and for what, and when the decision window closes. It MUST contain nothing about the starter.
  *
- * @deprecated superseded by auth/oob/claim/0.2
+ * @deprecated superseded by auth/oob/claim/0.3
  */
 export interface AuthOOBClaimResponsePayloadStep1 {
   requestId: RequestId;
@@ -55,12 +55,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by auth/oob/claim/0.2";
+export const DEPRECATION: string | null = "superseded by auth/oob/claim/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by auth/oob/claim/0.2
+ * @deprecated superseded by auth/oob/claim/0.3
  */
 export type Payload = AuthOOBClaimPayload;
 
@@ -70,7 +70,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/claim/0.1
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by auth/oob/claim/0.2
+ * @deprecated superseded by auth/oob/claim/0.3
  */
 export type Response = AuthOOBClaimResponsePayloadStep1;
 

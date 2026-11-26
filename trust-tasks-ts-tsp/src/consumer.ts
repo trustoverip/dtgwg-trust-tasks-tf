@@ -18,6 +18,7 @@ import {
   packTrustTask,
   unpackTrustTask,
   advertisedSender,
+  unsupportedVersion,
   newUrnUuid,
   TspEnvelopeError,
   TspTransport,
@@ -29,17 +30,17 @@ import {
 /** The public keys of a sender VID, resolved out of band — the Go/TS TSP
  * libraries do no DID resolution, so the caller supplies these. */
 export interface SenderPublicKeys {
-  /** X25519 public key (HPKE-Auth sender verification). */
+  /** X25519 public key — what {@link TspConsumer.packReply} seals a reply to. */
   encryptionKey: Uint8Array;
-  /** Ed25519 public key (message signature verification). */
+  /** Ed25519 public key (message signature verification, which is what
+   * authenticates the sender under TSP 1.0's HPKE-Base). */
   signingKey: Uint8Array;
 }
 
 export interface TspConsumerConfig {
   /** The identity messages are addressed to, and replies are sealed from. */
   recipientVid: string;
-  /** The recipient's X25519 private key — decrypts inbound and authenticates
-   * sealed replies. */
+  /** The recipient's X25519 private key — decrypts inbound messages. */
   decryptionKey: Uint8Array;
   /** The recipient's Ed25519 private key — signs sealed replies. */
   signingKey: Uint8Array;
@@ -139,7 +140,8 @@ export class TspConsumer {
   }
 
   /** Resolve the sender, open `wire`, and run it through §7.2 for `spec`. Throws
-   * {@link TspEnvelopeError} for a message that never reached the pipeline (§4). */
+   * {@link TspEnvelopeError} for a message that never reached the pipeline (§4),
+   * `unsupportedTspVersion` for one from a peer on a TSP draft. */
   async receive<P, R>(
     wire: Uint8Array,
     spec: SpecPolicy,
@@ -147,6 +149,8 @@ export class TspConsumer {
   ): Promise<Received<R>> {
     const named = advertisedSender(wire);
     if (named === undefined) {
+      const draft = unsupportedVersion(wire);
+      if (draft !== undefined) throw draft;
       throw new TspEnvelopeError("notForThisReceiver", "not a TSP message this consumer can read");
     }
     if (this.config.allowedSenders && !this.config.allowedSenders.has(named)) {
@@ -160,7 +164,6 @@ export class TspConsumer {
     }
     const keys: UnpackKeys = {
       receiverDecryptionKey: this.config.decryptionKey,
-      senderEncryptionKey: senderKeys.encryptionKey,
       senderSigningKey: senderKeys.signingKey,
     };
     const unpacked = await unpackTrustTask<P>(wire, { recipientVid: this.config.recipientVid, keys });
@@ -258,7 +261,6 @@ export class TspConsumer {
     const senderKeys = await this.config.resolveSender(peer);
     const keys: PackKeys = {
       senderSigningKey: this.config.signingKey,
-      senderEncryptionKey: this.config.decryptionKey,
       receiverEncryptionKey: senderKeys.encryptionKey,
     };
     const document = JSON.parse(new TextDecoder().decode(received.reply)) as Record<string, unknown>;

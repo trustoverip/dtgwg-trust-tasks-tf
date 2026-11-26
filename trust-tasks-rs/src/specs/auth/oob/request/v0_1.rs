@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by auth/oob/request/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by auth/oob/request/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -179,7 +179,7 @@ impl ::std::convert::TryFrom<::std::string::String> for Mode {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/oob/request/0.2")]
+#[deprecated(note = "superseded by auth/oob/request/0.3")]
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -320,7 +320,7 @@ impl<'de> ::serde::Deserialize<'de> for RequestId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/oob/request/0.2")]
+#[deprecated(note = "superseded by auth/oob/request/0.3")]
 pub struct Response {
     ///The instant by which the request must be claimed, as integer UTC epoch seconds — the same unit as the trigger link's `_exp`, into which it is written unchanged. At most 180 s after the request was accepted; 120 s is RECOMMENDED.
     #[serde(rename = "claimDeadline")]

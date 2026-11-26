@@ -8,6 +8,8 @@ import type { Ext, Mode, Purpose, RequestId } from "../../../../_shared/componen
 
 /**
  * A starter asks a service to open an out-of-band request that an approver will decide on another device. The document is issued and signed by the starter's fresh Ed25519 key, which is fixed for the life of the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/request/0.3
  */
 export interface AuthOOBRequestPayload {
   purpose: Purpose;
@@ -16,6 +18,8 @@ export interface AuthOOBRequestPayload {
 }
 /**
  * The handle of the new request and the instant its claim window closes. The starter builds the trigger link from these and the service's DID.
+ *
+ * @deprecated superseded by auth/oob/request/0.3
  */
 export interface AuthOOBRequestResponsePayload {
   requestId: RequestId;
@@ -46,15 +50,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by auth/oob/request/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/request/0.3
+ */
 export type Payload = AuthOOBRequestPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/request/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/oob/request/0.3
+ */
 export type Response = AuthOOBRequestResponsePayload;
 
 /**

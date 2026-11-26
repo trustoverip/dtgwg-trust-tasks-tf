@@ -7,7 +7,7 @@
 // step, so Bob learns who sent it from the cryptography, not from anything in
 // the document — which is why Alice's document can leave `issuer` out. The same
 // message then arrives a second time, as an intermediary re-forward would, and
-// Bob absorbs it instead of executing it again (bindings/tsp/0.1 §7.1).
+// Bob absorbs it instead of executing it again (bindings/tsp/0.3 §7.1).
 
 import 'package:affinidi_tsp/affinidi_tsp.dart';
 import 'package:ssi/ssi.dart';
