@@ -166,6 +166,10 @@ const SUBJECT: &str = "hcp-sub-demo-alex";
 /// How long after the response a resubmission still gets the same grant
 /// (hcp/grants/request "After approval"), in seconds.
 pub const AFTER_APPROVAL_WINDOW: i64 = 3600;
+/// The hold's lifetime, provider policy: how long a request the person has not
+/// decided stays held, counted from the held request's `issuedAt`. When it
+/// passes, the policy denies (hcp/grants/request "Holding" rule 6).
+pub const HOLD_LIFETIME: i64 = 300;
 
 /// The person's context, as the toy provider stores it (HCP 4.2, much
 /// simplified): `(ref, category, value)`.
@@ -209,15 +213,35 @@ enum HoldState {
         grant_id: String,
         responded_at: DateTime<Utc>,
     },
+    /// Ended: the person said no. Never reopened.
+    Declined,
+    /// Ended: the lifetime passed undecided. Never reopened.
+    Expired,
 }
 
-/// A grant request on one thread: held, approved by the person, then granted.
+/// A grant request on one thread (hcp/grants/request "Holding"): held, then
+/// approved by the person and granted, or ended: declined by the person, or
+/// expired when its lifetime passed undecided.
 struct Hold {
     issuer: String,
     payload: Value,
     /// JCS of the payload, to compare resubmissions.
     canonical: String,
+    /// The held request's issuedAt: the lifetime counts from it.
+    held_at: DateTime<Utc>,
     state: HoldState,
+}
+
+impl Hold {
+    /// A pending hold whose lifetime has passed ends: the policy denies
+    /// (hcp/grants/request "Holding" rule 6).
+    fn expire_if_due(&mut self, now: DateTime<Utc>) {
+        if matches!(self.state, HoldState::Pending)
+            && (now - self.held_at).num_seconds() > HOLD_LIFETIME
+        {
+            self.state = HoldState::Expired;
+        }
+    }
 }
 
 #[derive(Default)]
@@ -413,6 +437,8 @@ impl World {
                 HoldState::Pending => "pending",
                 HoldState::Approved => "approved",
                 HoldState::Granted { .. } => "granted",
+                HoldState::Declined => "declined",
+                HoldState::Expired => "expired",
             };
             (hold.issuer.clone(), name)
         })
@@ -511,19 +537,46 @@ impl World {
         Ok(reply)
     }
 
-    /// The person decides, in the provider's own modality (here: approves at once).
-    pub fn person_approves(&self, thread_id: &str) {
+    /// The person decides, in the provider's own modality. Only a pending hold
+    /// changes; an ended thread stays ended.
+    fn person_decides(&self, thread_id: &str, verb: &str, decided: HoldState) {
         let s = &self.shared;
-        s.state
-            .lock()
-            .expect("state")
-            .held
-            .get_mut(thread_id)
-            .expect("a held request")
-            .state = HoldState::Approved;
-        s.push(&format!(
-            "[person] approves the grant request on thread {thread_id} in the provider's app\n"
+        let changed = {
+            let mut state = s.state.lock().expect("state");
+            let hold = state.held.get_mut(thread_id).expect("a held request");
+            hold.expire_if_due(s.clock.now());
+            let pending = matches!(hold.state, HoldState::Pending);
+            if pending {
+                hold.state = decided;
+            }
+            pending
+        };
+        let line = format!(
+            "[person] {verb} the grant request on thread {thread_id} in the provider's app"
+        );
+        if changed {
+            s.push(&format!("{line}\n"));
+        } else {
+            s.push(&format!(
+                "{line}, but the hold has ended: nothing changes\n"
+            ));
+        }
+    }
+
+    pub fn person_approves(&self, thread_id: &str) {
+        self.person_decides(thread_id, "approves", HoldState::Approved);
+    }
+
+    pub fn person_declines(&self, thread_id: &str) {
+        self.person_decides(thread_id, "declines", HoldState::Declined);
+    }
+
+    /// The person never decides: the hold's lifetime passes with no document sent.
+    pub fn person_does_not_decide(&self, thread_id: &str) {
+        self.shared.push(&format!(
+            "[person] does not decide on thread {thread_id}; the hold's lifetime ({HOLD_LIFETIME} s) passes\n"
         ));
+        self.shared.clock.advance(HOLD_LIFETIME);
     }
 
     /// The Context Client stops using a grant: drops its token and every copy
@@ -718,6 +771,7 @@ impl Shared {
                             issuer: issuer.clone(),
                             payload: payload.clone(),
                             canonical,
+                            held_at: self.clock.now(),
                             state: HoldState::Pending,
                         };
                         state.held.insert(thread_id.clone(), hold);
@@ -729,36 +783,49 @@ impl Shared {
                     Some(hold) if hold.issuer != issuer => Answer::Deny,
                     // 4. Not the held request: compare JCS forms, never bytes.
                     Some(hold) if hold.canonical != canonical => Answer::Differs,
-                    Some(hold) => match &hold.state {
-                        // 5. The person has not decided yet.
-                        HoldState::Pending => Answer::NextStep,
-                        // 6. Approved: issue the one grant.
-                        HoldState::Approved => {
-                            let grant = self.issue_grant(&mut state.tokens, &issuer, &hold.payload);
-                            hold.state = HoldState::Granted {
-                                grant_id: grant.grant_id.clone(),
-                                responded_at: self.clock.now(),
-                            };
-                            let response = grant_response(&grant, &state.registered_clients);
-                            state.grants.push(grant);
-                            Answer::Grant(response)
-                        }
-                        // 7. Within the hour after the response, the same
-                        //    grant while it is active; never a second one.
-                        HoldState::Granted {
-                            grant_id,
-                            responded_at,
-                        } => {
-                            let elapsed = (self.clock.now() - *responded_at).num_seconds();
-                            let grant = state.grants.iter().find(|g| &g.grant_id == grant_id);
-                            match grant {
-                                Some(grant) if grant.active && elapsed <= AFTER_APPROVAL_WINDOW => {
-                                    Answer::Grant(grant_response(grant, &state.registered_clients))
+                    // 5. A pending hold whose lifetime has passed ends first.
+                    Some(hold) => {
+                        hold.expire_if_due(self.clock.now());
+                        match &hold.state {
+                            // 5. The person has not decided yet.
+                            HoldState::Pending => Answer::NextStep,
+                            // The thread has ended and is never reopened: the same
+                            // refusal a decline and an unknown person get.
+                            HoldState::Declined | HoldState::Expired => Answer::Deny,
+                            // 6. Approved: issue the one grant.
+                            HoldState::Approved => {
+                                let grant =
+                                    self.issue_grant(&mut state.tokens, &issuer, &hold.payload);
+                                hold.state = HoldState::Granted {
+                                    grant_id: grant.grant_id.clone(),
+                                    responded_at: self.clock.now(),
+                                };
+                                let response = grant_response(&grant, &state.registered_clients);
+                                state.grants.push(grant);
+                                Answer::Grant(response)
+                            }
+                            // 7. Within the hour after the response, the same
+                            //    grant while it is active; never a second one.
+                            HoldState::Granted {
+                                grant_id,
+                                responded_at,
+                            } => {
+                                let elapsed = (self.clock.now() - *responded_at).num_seconds();
+                                let grant = state.grants.iter().find(|g| &g.grant_id == grant_id);
+                                match grant {
+                                    Some(grant)
+                                        if grant.active && elapsed <= AFTER_APPROVAL_WINDOW =>
+                                    {
+                                        Answer::Grant(grant_response(
+                                            grant,
+                                            &state.registered_clients,
+                                        ))
+                                    }
+                                    _ => Answer::Deny,
                                 }
-                                _ => Answer::Deny,
                             }
                         }
-                    },
+                    }
                 }
             }
         };
@@ -1108,7 +1175,7 @@ pub fn retry_after_of(hint: Option<&Value>) -> i64 {
     }
 }
 
-// ── The six steps, one function each ───────────────────────────────────────
+// ── The eight steps, one function each ─────────────────────────────────────
 
 /// What the Context Client asks for in step 2.
 pub fn ask() -> Value {
@@ -1313,6 +1380,92 @@ pub async fn step_notice(world: &World, grant_id: &str) -> Result<TrustTask<Valu
     Ok(tell)
 }
 
+/// Errors unless `reply` is the fixed permissionDenied every refusal of a
+/// grant request carries.
+fn expect_denied(reply: &Value) -> Result<(), Error> {
+    if reply["type"] != ERROR_TYPE_URI || reply["payload"]["code"] != "permissionDenied" {
+        return Err("expected permissionDenied".into());
+    }
+    Ok(())
+}
+
+/// Step 7's thread and its refusal, as received.
+pub struct Declined {
+    pub thread_id: String,
+    pub refused: Value,
+}
+
+/// Step 7. The person declines (HCP 6.1.7): the client's next resubmission on
+/// the thread is refused with the fixed permissionDenied, and no grant is
+/// issued (hcp/grants/request "Errors").
+pub async fn step_decline(world: &World) -> Result<Declined, Error> {
+    let (p, c, _) = world.parties();
+    world.step("7. Grant request declined (hcp/grants/request 0.1): the person says no");
+    let grant_uri = request_uri(grant_request::Payload::TYPE_URI);
+    let first = world.request(c, p, &grant_uri, ask(), None).await;
+    let held = world.exchange(c, p, &first).await?;
+    if held["type"] != next_step::Payload::TYPE_URI {
+        return Err("expected a next step".into());
+    }
+    let thread_id = first.thread_id.clone().expect("threadId");
+    world.person_declines(&thread_id);
+    world
+        .clock()
+        .advance(retry_after_of(held["payload"]["expects"][0].get("hint")));
+    let resubmission = world
+        .request(c, p, &grant_uri, ask(), Some(&thread_id))
+        .await;
+    let refused = world.exchange(c, p, &resubmission).await?;
+    expect_denied(&refused)?;
+    Ok(Declined { thread_id, refused })
+}
+
+/// Step 8's first thread, the new thread, and the two refusals, as received.
+pub struct TimedOut {
+    pub thread_id: String,
+    pub new_thread_id: String,
+    pub refused: Vec<Value>,
+}
+
+/// Step 8. The hold's lifetime passes with no decision: the policy denies. The
+/// next resubmission gets the same permissionDenied; the thread is never
+/// reopened, so a late approval changes nothing and a further resubmission is
+/// refused too; a new request on a new thread is put to the person again
+/// (hcp/grants/request "Holding" rule 6).
+pub async fn step_timeout(world: &World) -> Result<TimedOut, Error> {
+    let (p, c, _) = world.parties();
+    world.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes");
+    let grant_uri = request_uri(grant_request::Payload::TYPE_URI);
+    let first = world.request(c, p, &grant_uri, ask(), None).await;
+    if world.exchange(c, p, &first).await?["type"] != next_step::Payload::TYPE_URI {
+        return Err("expected a next step".into());
+    }
+    let thread_id = first.thread_id.clone().expect("threadId");
+    world.person_does_not_decide(&thread_id);
+    let mut refused = Vec::new();
+    for late_approval in [false, true] {
+        if late_approval {
+            world.person_approves(&thread_id); // too late: the thread has ended
+        }
+        let resubmission = world
+            .request(c, p, &grant_uri, ask(), Some(&thread_id))
+            .await;
+        let reply = world.exchange(c, p, &resubmission).await?;
+        expect_denied(&reply)?;
+        refused.push(reply);
+    }
+    // A client that still needs a grant asks again, on a new thread.
+    let again = world.request(c, p, &grant_uri, ask(), None).await;
+    if world.exchange(c, p, &again).await?["type"] != next_step::Payload::TYPE_URI {
+        return Err("expected a next step".into());
+    }
+    Ok(TimedOut {
+        thread_id,
+        new_thread_id: again.thread_id.clone().expect("threadId"),
+        refused,
+    })
+}
+
 pub struct DemoResult {
     pub transcript: String,
     pub thread_id: String,
@@ -1321,9 +1474,13 @@ pub struct DemoResult {
     pub post_revoke_error: Value,
     /// Step 6's notice, as sent.
     pub notice: TrustTask<Value>,
+    /// Step 7's thread and refusal.
+    pub declined: Declined,
+    /// Step 8's threads and refusals.
+    pub timed_out: TimedOut,
 }
 
-/// The six steps in order.
+/// The eight steps in order.
 pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
     step_discover(world).await?;
     let Granted {
@@ -1334,11 +1491,15 @@ pub async fn run_demo(world: &World) -> Result<DemoResult, Error> {
     step_revoke(world, &grant_id).await?;
     let post_revoke_error = step_query_after_revoke(world, &grant_id).await?;
     let notice = step_notice(world, &grant_id).await?;
+    let declined = step_decline(world).await?;
+    let timed_out = step_timeout(world).await?;
     Ok(DemoResult {
         transcript: world.transcript(),
         thread_id,
         grant_id,
         post_revoke_error,
         notice,
+        declined,
+        timed_out,
     })
 }

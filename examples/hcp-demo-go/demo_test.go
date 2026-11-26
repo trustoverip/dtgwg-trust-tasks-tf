@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"maps"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -179,11 +180,12 @@ func Test07TheGrantsTokenFromAnotherVIDIsPermissionDenied(t *testing.T) {
 func Test08AGrantRequestFromAnUnregisteredIssuerIsPermissionDenied(t *testing.T) {
 	w, _ := afterDemo()
 	M, P := w.Management, w.Provider
+	before := len(w.held) // four: steps 2, 7 and 8's two threads
 	if got := code(t, w.Exchange(M, P, Request(w, M, P, grantRequestType, Ask(), ""))); got != "permissionDenied" {
 		t.Errorf("got %q, want permissionDenied", got)
 	}
-	if len(w.held) != 1 {
-		t.Errorf("%d holds, want 1", len(w.held))
+	if len(w.held) != before {
+		t.Errorf("%d holds, want %d", len(w.held), before)
 	}
 }
 
@@ -356,5 +358,77 @@ func Test16TheGrantsTokenLastsAsLongAsTheGrant(t *testing.T) { // no refresh in 
 	g := w.grants[0]
 	if g.tokenExpiresAt != g.expiresAt || g.expiresAt != "2026-11-25T14:00:06Z" {
 		t.Errorf("tokenExpiresAt %s, expiresAt %s, want both 2026-11-25T14:00:06Z", g.tokenExpiresAt, g.expiresAt)
+	}
+}
+
+// denied is the exact payload every refusal of a grant request carries, with
+// the reply's own inResponseTo.
+func denied(t *testing.T, reply tt.Document[json.RawMessage]) {
+	t.Helper()
+	if reply.Type != tt.TrustTaskErrorTypeURI {
+		t.Fatalf("got %q, want a trust-task-error", reply.Type)
+	}
+	got := asMap(t, reply.Payload)
+	if got["inResponseTo"] == nil {
+		t.Errorf("payload %v has no inResponseTo", got)
+	}
+	want := map[string]any{"code": "permissionDenied", "message": "The request is not authorized.", "retryable": false, "inResponseTo": got["inResponseTo"]}
+	if !maps.EqualFunc(got, want, func(a, b any) bool { return reflect.DeepEqual(a, b) }) {
+		t.Errorf("payload %v, want %v", got, want)
+	}
+}
+
+func Test17AfterADeclineTheThreadIsRefusedNeverReopensAndNoGrantIsIssued(t *testing.T) {
+	w, r := afterDemo()
+	C, P := w.ContextClient, w.Provider
+	denied(t, r.Declined.Refused)
+	if s := w.held[r.Declined.ThreadID].state; s != declined {
+		t.Errorf("hold state %d, want declined", s)
+	}
+	if len(w.grants) != 1 { // step 2's, revoked
+		t.Errorf("%d grants, want 1", len(w.grants))
+	}
+	w.PersonApproves(r.Declined.ThreadID) // a later approval changes nothing
+	if s := w.held[r.Declined.ThreadID].state; s != declined {
+		t.Errorf("hold state %d after a late approval, want declined", s)
+	}
+	if got := code(t, w.Exchange(C, P, Request(w, C, P, grantRequestType, Ask(), r.Declined.ThreadID))); got != "permissionDenied" {
+		t.Errorf("got %q, want permissionDenied", got)
+	}
+	if len(w.grants) != 1 {
+		t.Errorf("%d grants, want 1", len(w.grants))
+	}
+}
+
+func Test18OnceTheHoldsLifetimePassesTheThreadIsRefusedAndANewThreadIsHeldAgain(t *testing.T) {
+	w, r := afterDemo()
+	if len(r.TimedOut.Refused) != 2 {
+		t.Fatalf("%d refusals, want 2", len(r.TimedOut.Refused))
+	}
+	for _, refused := range r.TimedOut.Refused {
+		denied(t, refused)
+	}
+	if s := w.held[r.TimedOut.ThreadID].state; s != expired {
+		t.Errorf("hold state %d, want expired", s)
+	}
+	if s := w.held[r.TimedOut.NewThreadID].state; s != pending {
+		t.Errorf("new thread's hold state %d, want pending", s)
+	}
+	if len(w.grants) != 1 { // step 2's, revoked
+		t.Errorf("%d grants, want 1", len(w.grants))
+	}
+
+	// The lifetime counts from the held request's issuedAt: still pending when it has not passed.
+	fresh := NewWorld()
+	C, P := fresh.ContextClient, fresh.Provider
+	first := Request(fresh, C, P, grantRequestType, Ask(), "")
+	fresh.Exchange(C, P, first)
+	threadID := *replyOf[json.RawMessage](first).ThreadID
+	fresh.Clock.Advance(HoldLifetime - 2) // the resubmission is issued exactly HoldLifetime after the request
+	if held := replyOf[json.RawMessage](fresh.Exchange(C, P, Request(fresh, C, P, grantRequestType, Ask(), threadID))); held.Type != "https://trusttasks.org/spec/trust-task-next-step/0.1" {
+		t.Errorf("got %q, want a next step", held.Type)
+	}
+	if s := fresh.held[threadID].state; s != pending {
+		t.Errorf("hold state %d, want pending", s)
 	}
 }

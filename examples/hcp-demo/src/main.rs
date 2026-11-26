@@ -1,4 +1,4 @@
-//! The HCP-over-Trust-Tasks demo: run the six steps and print every document.
+//! The HCP-over-Trust-Tasks demo: run the eight steps and print every document.
 //!
 //! ```sh
 //! cargo run -p trust-tasks-example-hcp-demo
@@ -22,7 +22,7 @@ async fn main() -> Result<(), Error> {
         return Err("the Context Client still holds the revoked grant".into());
     }
     println!(
-        "\nhcp-demo: discover, grant request (held, then granted), query, revoke, post-revoke refusal and notice all OK"
+        "\nhcp-demo: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and timeout all OK"
     );
     Ok(())
 }

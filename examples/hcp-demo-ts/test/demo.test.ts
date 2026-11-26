@@ -10,6 +10,7 @@ import {
   AFTER_APPROVAL_WINDOW,
   ASK,
   DEFAULT_RETRY_AFTER,
+  HOLD_LIFETIME,
   MANAGEMENT_TOKEN,
   World,
   checkReply,
@@ -42,7 +43,7 @@ async function afterGrant() {
   return { world, ...(await stepGrantRequest(world)) };
 }
 
-test("1. the six steps print exactly the golden transcript (shared by every language's port)", async () => {
+test("1. the eight steps print exactly the golden transcript (shared by every language's port)", async () => {
   const { transcript } = await runDemo();
   assert.equal(transcript, readFileSync(GOLDEN, "utf8"));
 });
@@ -101,9 +102,10 @@ test("7. the grant's token presented from another VID is refused with permission
 test("8. a grant request from an issuer that is not a registered client is refused with permissionDenied", async () => {
   const { world } = await afterDemo();
   const { management: M, provider: P } = world;
+  const before = world.held.size;
   const reply = await world.exchange(M, P, world.request(M, P, REQUEST, ASK));
   assert.equal(reply.payload.code, "permissionDenied");
-  assert.equal(world.held.size, 1);
+  assert.equal(world.held.size, before);
 });
 
 test("9. a resubmission whose payload differs from the held request is refused with malformedRequest", async () => {
@@ -184,4 +186,42 @@ test("16. the grant's token lasts as long as the grant (no refresh in 0.1)", asy
   assert.equal(world.grants.length, 1);
   assert.equal(world.grants[0]!.tokenExpiresAt, world.grants[0]!.expiresAt);
   assert.equal(world.grants[0]!.expiresAt, "2026-11-25T14:00:06Z");
+});
+
+const DENIAL = { code: "permissionDenied", message: "The request is not authorized.", retryable: false };
+
+test("17. after a decline the next resubmission is refused with the fixed permissionDenied, the thread never reopens, and no grant is issued", async () => {
+  const { world, declined } = await afterDemo();
+  const { contextClient: C, provider: P } = world;
+  assert.equal(declined.refused.type, ERROR);
+  assert.deepEqual(declined.refused.payload, { ...DENIAL, inResponseTo: declined.refused.payload.inResponseTo });
+  assert.equal(world.held.get(declined.threadId)!.state, "declined");
+  assert.equal(world.grants.length, 1); // step 2's, revoked
+  world.personApproves(declined.threadId); // a later approval changes nothing
+  assert.equal(world.held.get(declined.threadId)!.state, "declined");
+  const again = await world.exchange(C, P, world.request(C, P, REQUEST, ASK, declined.threadId));
+  assert.equal(again.payload.code, "permissionDenied");
+  assert.equal(world.grants.length, 1);
+});
+
+test("18. once the hold's lifetime passes undecided the thread is refused with the fixed permissionDenied and never reopened; a new thread is put to the person again", async () => {
+  const { world, timedOut } = await afterDemo();
+  assert.equal(timedOut.refused.length, 2);
+  for (const refused of timedOut.refused) {
+    assert.equal(refused.type, ERROR);
+    assert.deepEqual(refused.payload, { ...DENIAL, inResponseTo: refused.payload.inResponseTo });
+  }
+  assert.equal(world.held.get(timedOut.threadId)!.state, "expired");
+  assert.equal(world.held.get(timedOut.newThreadId)!.state, "pending");
+  assert.equal(world.grants.length, 1); // step 2's, revoked
+
+  // The lifetime counts from the held request's issuedAt: still pending when it has not passed.
+  const fresh = new World();
+  const { contextClient: C, provider: P } = fresh;
+  const first = fresh.request(C, P, REQUEST, ASK);
+  await fresh.exchange(C, P, first);
+  fresh.clock.advance(HOLD_LIFETIME - 2); // the resubmission is issued exactly HOLD_LIFETIME after the request
+  const held = await fresh.exchange(C, P, fresh.request(C, P, REQUEST, ASK, first.threadId));
+  assert.equal(held.type, "https://trusttasks.org/spec/trust-task-next-step/0.1");
+  assert.equal(fresh.held.get(first.threadId!)!.state, "pending");
 });

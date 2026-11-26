@@ -147,6 +147,11 @@ const String _subject = 'hcp-sub-demo-alex';
 /// (hcp/grants/request "After approval").
 const int afterApprovalWindow = 3600;
 
+/// The hold's lifetime, provider policy: how long a request the person has not
+/// decided stays held, counted from the held request's `issuedAt`. When it
+/// passes, the policy denies (hcp/grants/request "Holding" rule 6).
+const int holdLifetime = 300;
+
 /// The person's context, as the toy provider stores it (HCP 4.2, much
 /// simplified).
 const List<({String ref, String category, String value})> _entries = [
@@ -194,17 +199,25 @@ final class Grant {
   String? revokedAt;
 }
 
-/// A grant request on one thread: held, approved by the person, then granted
-/// (hcp/grants/request "Holding").
+/// A grant request on one thread (hcp/grants/request "Holding"): held, then
+/// approved by the person and granted, or ended: declined by the person, or
+/// expired when its lifetime passed undecided. An ended thread is never
+/// reopened.
 final class Hold {
-  Hold(this.issuer, this.payload, this.canonical);
+  Hold(this.issuer, this.payload, this.canonical, this.heldAt);
 
   final String issuer;
   final grant_request.Payload payload;
 
   /// JCS of the payload as received, to compare resubmissions.
   final String canonical;
-  String state = 'pending'; // 'pending' → 'approved' → 'granted'
+
+  /// The held request's issuedAt: the lifetime counts from it.
+  final DateTime heldAt;
+
+  /// 'pending' → 'approved' → 'granted', or 'pending' → 'declined' |
+  /// 'expired'.
+  String state = 'pending';
   String? grantId;
 
   /// When the response was first sent.
@@ -534,6 +547,7 @@ final class World {
         issuer,
         grant_request.Payload.fromJson(doc.payload),
         canonical,
+        clock.now(),
       );
       return signed(_nextStep(me, doc));
     }
@@ -549,9 +563,14 @@ final class World {
       );
     }
 
+    _expireIfDue(hold);
     switch (hold.state) {
       case 'pending':
         return signed(_nextStep(me, doc));
+      case 'declined' || 'expired':
+        // The thread has ended and is never reopened: the same refusal a
+        // decline and an unknown person get.
+        return refuse('permissionDenied', _neutralDenial);
       case 'approved':
         // The person approved (the toy approves everything asked, read only):
         // issue the one grant.
@@ -668,13 +687,43 @@ final class World {
     );
   }
 
-  /// The person decides, in the provider's own modality (here: approves at
-  /// once).
-  void personApproves(String threadId) {
-    held[threadId]!.state = 'approved';
+  /// A pending hold whose lifetime has passed ends: the policy denies
+  /// (hcp/grants/request "Holding" rule 6).
+  void _expireIfDue(Hold hold) {
+    if (hold.state == 'pending' &&
+        clock.now().difference(hold.heldAt).inSeconds > holdLifetime) {
+      hold.state = 'expired';
+    }
+  }
+
+  /// The person decides, in the provider's own modality. Only a pending hold
+  /// changes; an ended thread stays ended.
+  void _personDecides(String threadId, String verb, String state) {
+    final hold = held[threadId]!;
+    _expireIfDue(hold);
+    final line =
+        "[person] $verb the grant request on thread $threadId in the provider's app";
+    if (hold.state == 'pending') {
+      hold.state = state;
+      transcript.write('$line\n');
+    } else {
+      transcript.write('$line, but the hold has ended: nothing changes\n');
+    }
+  }
+
+  void personApproves(String threadId) =>
+      _personDecides(threadId, 'approves', 'approved');
+
+  void personDeclines(String threadId) =>
+      _personDecides(threadId, 'declines', 'declined');
+
+  /// The person never decides: the hold's lifetime passes with no document
+  /// sent.
+  void personDoesNotDecide(String threadId) {
     transcript.write(
-      "[person] approves the grant request on thread $threadId in the provider's app\n",
+      "[person] does not decide on thread $threadId; the hold's lifetime ($holdLifetime s) passes\n",
     );
+    clock.advance(holdLifetime);
   }
 
   /// The Context Client stops using a grant: drops its token and every copy
@@ -803,7 +852,7 @@ String _quote(String s) {
   return out.toString();
 }
 
-// ── The six steps, one function each ─────────────────────────────────────────
+// ── The eight steps, one function each ───────────────────────────────────────
 
 /// What the Context Client asks for in step 2.
 final Json ask = const grant_request.Payload(
@@ -995,6 +1044,80 @@ Future<Json> stepNotice(World w, String grantId) async {
   return notice;
 }
 
+/// Throws unless [reply] is the fixed permissionDenied every refusal of a
+/// grant request carries.
+void _expectDenied(Json reply) {
+  if (reply['type'] != error.typeUri ||
+      (reply['payload'] as Json)['code'] != 'permissionDenied') {
+    throw StateError('expected permissionDenied');
+  }
+}
+
+/// 7. The person declines (HCP 6.1.7): the client's next resubmission on the
+/// thread is refused with the fixed permissionDenied, and no grant is issued
+/// (hcp/grants/request "Errors"). Returns the thread and the refusal.
+Future<({String threadId, Json refused})> stepDecline(World w) async {
+  final (p, c) = (w.provider, w.contextClient);
+  w.step(
+    '7. Grant request declined (hcp/grants/request 0.1): the person says no',
+  );
+  const type = '${grant_request.typeUri}#request';
+  final first = await w.request(c, p, type, ask);
+  final held = await w.exchange(c, p, first);
+  if (held['type'] != next_step.typeUri) {
+    throw StateError('expected a next step');
+  }
+  final threadId = first['threadId'] as String;
+  w.personDeclines(threadId);
+  final expects = (held['payload'] as Json)['expects'] as List<dynamic>;
+  w.clock.advance(retryAfterOf((expects.first as Json)['hint']));
+  final refused = await w.exchange(
+    c,
+    p,
+    await w.request(c, p, type, ask, threadId: threadId),
+  );
+  _expectDenied(refused);
+  return (threadId: threadId, refused: refused);
+}
+
+/// 8. The hold's lifetime passes with no decision: the policy denies. The next
+/// resubmission gets the same permissionDenied; the thread is never reopened,
+/// so a late approval changes nothing and a further resubmission is refused
+/// too; a new request on a new thread is put to the person again
+/// (hcp/grants/request "Holding" rule 6). Returns both threads and the
+/// refusals.
+Future<({String threadId, String newThreadId, List<Json> refused})> stepTimeout(
+  World w,
+) async {
+  final (p, c) = (w.provider, w.contextClient);
+  w.step(
+    "8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes",
+  );
+  const type = '${grant_request.typeUri}#request';
+  final first = await w.request(c, p, type, ask);
+  if ((await w.exchange(c, p, first))['type'] != next_step.typeUri) {
+    throw StateError('expected a next step');
+  }
+  final threadId = first['threadId'] as String;
+  w.personDoesNotDecide(threadId);
+  Future<Json> resubmit() async =>
+      w.exchange(c, p, await w.request(c, p, type, ask, threadId: threadId));
+  final refused = [await resubmit()];
+  w.personApproves(threadId); // too late: the thread has ended
+  refused.add(await resubmit());
+  refused.forEach(_expectDenied);
+  // A client that still needs a grant asks again, on a new thread.
+  final again = await w.request(c, p, type, ask);
+  if ((await w.exchange(c, p, again))['type'] != next_step.typeUri) {
+    throw StateError('expected a next step');
+  }
+  return (
+    threadId: threadId,
+    newThreadId: again['threadId'] as String,
+    refused: refused,
+  );
+}
+
 final class DemoResult {
   const DemoResult({
     required this.transcript,
@@ -1002,15 +1125,19 @@ final class DemoResult {
     required this.grantId,
     required this.postRevokeError,
     required this.notice,
+    required this.declined,
+    required this.timedOut,
   });
   final String transcript;
   final String threadId;
   final String grantId;
   final Json postRevokeError;
   final Json notice;
+  final ({String threadId, Json refused}) declined;
+  final ({String threadId, String newThreadId, List<Json> refused}) timedOut;
 }
 
-/// The six steps in order.
+/// The eight steps in order.
 Future<DemoResult> runDemo([World? world]) async {
   final w = world ?? await World.create();
   await stepDiscover(w);
@@ -1019,11 +1146,15 @@ Future<DemoResult> runDemo([World? world]) async {
   await stepRevoke(w, grantId);
   final postRevokeError = await stepQueryAfterRevoke(w, grantId);
   final notice = await stepNotice(w, grantId);
+  final declined = await stepDecline(w);
+  final timedOut = await stepTimeout(w);
   return DemoResult(
     transcript: w.transcript.toString(),
     threadId: threadId,
     grantId: grantId,
     postRevokeError: postRevokeError,
     notice: notice,
+    declined: declined,
+    timedOut: timedOut,
   );
 }

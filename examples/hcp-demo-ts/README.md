@@ -34,6 +34,13 @@ per key. Never reuse them.
    [`hcp/grants/revoked`](../../specs/hcp/grants/revoked/0.1/spec.md) 0.1 to the grant's client,
    which records the `noticeId` and the grant, stops using the grant, and acknowledges. It never
    sends the old token again.
+7. **Decline.** The client asks again on a new thread and the person declines (HCP 6.1.7). The
+   client's next resubmission is refused with `permissionDenied`, the same fixed refusal an
+   unknown person gets, and no grant is issued.
+8. **Timeout.** The client asks again and the person never decides. Once the hold's lifetime
+   (300 s, provider policy) has passed, the policy denies: the next resubmission gets the same
+   `permissionDenied`, the thread is never reopened (a late approval changes nothing), and a new
+   request on a new thread is put to the person again.
 
 The provider also applies the rules the tests exercise: a token presented from another VID gets
 `permissionDenied`; only its one registered client may ask for a grant; a resubmission must carry
@@ -60,8 +67,9 @@ npm run all        # generate from trust-tasks.lock, build, run the demo, run th
 
 `npm start` runs the demo again. `npm test` runs the tests listed in
 [SCENARIO.md](SCENARIO.md#tests-every-port-has): the golden transcript, the query after revoke, a
-tampered document, a schema-invalid document, the client's handling of the notice, and the
-provider's token and grant-request rules. If you change the scenario on purpose,
+tampered document, a schema-invalid document, the client's handling of the notice, the
+provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and
+the hold's timeout. If you change the scenario on purpose,
 run `npm run build && npm run update-golden` and update [SCENARIO.md](SCENARIO.md), which the Rust,
 Go and Dart ports follow.
 
@@ -97,9 +105,9 @@ The full run is in [transcript.golden.txt](transcript.golden.txt).
   minimization beyond category filtering, no audit log and no directives (every query result
   carries an empty `directives` list), and a registry of one client. It is not an HCP
   implementation.
-- **There is no consent UI.** The person's decision is one function call, and it always approves
-  what was asked. The demo shows the shape of the hold: a next step first, then the grant on
-  resubmission.
+- **There is no consent UI.** The person's decision is one function call, which approves what
+  was asked (step 2) or declines (step 7); in step 8 the person never decides. The demo shows the
+  shape of the hold: a next step first, then the grant or the refusal on resubmission.
 - **Keys and identities are fixed.** Every party knows the others' public keys up front, so there
   is no DID resolution and no discovery of the provider's DID document.
 - **Clock and identifiers are fixed** (see [SCENARIO.md](SCENARIO.md)), so every run, in every
@@ -119,7 +127,7 @@ and `npm run generate` writes `src/trust-tasks/` (git-ignored). The framework ta
 (`trust-task-discovery`, `trust-task-next-step`) ship with `@openvtc/trust-tasks` and are imported
 from it. The files:
 
-- `src/demo.ts`: the parties, the toy provider, the client's state and the six steps, one
+- `src/demo.ts`: the parties, the toy provider, the client's state and the eight steps, one
   function each.
 - `src/validator.ts`: payload validation with ajv. The getting-started example's structural
   stand-in ignores `pattern`, which the HCP schemas rely on.

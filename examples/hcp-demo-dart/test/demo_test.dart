@@ -44,7 +44,7 @@ Future<(World, ({String threadId, String grantId}))> afterGrant() async {
 }
 
 void main() {
-  test('1. the six steps print exactly the golden transcript '
+  test('1. the eight steps print exactly the golden transcript '
       "(shared by every language's port)", () async {
     final result = await runDemo();
     expect(result.transcript, golden.readAsStringSync());
@@ -146,13 +146,14 @@ void main() {
       'refused with permissionDenied', () async {
     final (world, _) = await afterDemo();
     final (m, p) = (world.management, world.provider);
+    final before = world.held.length;
     final reply = await world.exchange(
       m,
       p,
       await world.request(m, p, requestType, ask),
     );
     expect(codeOf(reply), 'permissionDenied');
-    expect(world.held, hasLength(1));
+    expect(world.held, hasLength(before));
   });
 
   test('9. a resubmission whose payload differs from the held request is '
@@ -313,4 +314,69 @@ void main() {
       expect(world.grants[0].expiresAt, '2026-11-25T14:00:06Z');
     },
   );
+
+  Map<String, dynamic> denial(Map<String, dynamic> refused) => {
+    'code': 'permissionDenied',
+    'message': 'The request is not authorized.',
+    'retryable': false,
+    'inResponseTo': payloadOf(refused)['inResponseTo'],
+  };
+
+  test(
+    '17. after a decline the next resubmission is refused with the fixed '
+    'permissionDenied, the thread never reopens, and no grant is issued',
+    () async {
+      final (world, result) = await afterDemo();
+      final (c, p) = (world.contextClient, world.provider);
+      final (:threadId, :refused) = result.declined;
+      expect(refused['type'], errorType);
+      expect(payloadOf(refused), denial(refused));
+      expect(world.held[threadId]!.state, 'declined');
+      expect(world.grants, hasLength(1)); // step 2's, revoked
+      world.personApproves(threadId); // a later approval changes nothing
+      expect(world.held[threadId]!.state, 'declined');
+      final again = await world.exchange(
+        c,
+        p,
+        await world.request(c, p, requestType, ask, threadId: threadId),
+      );
+      expect(codeOf(again), 'permissionDenied');
+      expect(world.grants, hasLength(1));
+    },
+  );
+
+  test("18. once the hold's lifetime passes undecided the thread is refused "
+      'with the fixed permissionDenied and never reopened; a new thread is put '
+      'to the person again', () async {
+    final (world, result) = await afterDemo();
+    final (:threadId, :newThreadId, :refused) = result.timedOut;
+    expect(refused, hasLength(2));
+    for (final r in refused) {
+      expect(r['type'], errorType);
+      expect(payloadOf(r), denial(r));
+    }
+    expect(world.held[threadId]!.state, 'expired');
+    expect(world.held[newThreadId]!.state, 'pending');
+    expect(world.grants, hasLength(1)); // step 2's, revoked
+
+    // The lifetime counts from the held request's issuedAt: still pending
+    // when it has not passed.
+    final fresh = await World.create();
+    final (c, p) = (fresh.contextClient, fresh.provider);
+    final first = await fresh.request(c, p, requestType, ask);
+    await fresh.exchange(c, p, first);
+    final firstThread = first['threadId'] as String;
+    // The resubmission is issued exactly holdLifetime after the request.
+    fresh.clock.advance(holdLifetime - 2);
+    final held = await fresh.exchange(
+      c,
+      p,
+      await fresh.request(c, p, requestType, ask, threadId: firstThread),
+    );
+    expect(
+      held['type'],
+      'https://trusttasks.org/spec/trust-task-next-step/0.1',
+    );
+    expect(fresh.held[firstThread]!.state, 'pending');
+  });
 }

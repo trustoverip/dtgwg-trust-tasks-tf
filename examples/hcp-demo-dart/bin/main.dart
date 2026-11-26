@@ -1,4 +1,4 @@
-// The HCP-over-Trust-Tasks demo: run the six steps and print every document.
+// The HCP-over-Trust-Tasks demo: run the eight steps and print every document.
 //
 //   dart pub get
 //   dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
@@ -20,6 +20,7 @@ Future<void> main() async {
   }
   print(
     '\nhcp-demo-dart: discover, grant request (held, then granted), query, '
-    'revoke, post-revoke refusal and revocation notice all OK',
+    'revoke, post-revoke refusal, revocation notice, decline and timeout all '
+    'OK',
   );
 }

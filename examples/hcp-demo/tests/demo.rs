@@ -8,7 +8,8 @@ use trust_tasks::Payload as _;
 use trust_tasks_example_hcp_demo::{
     ask, check_reply, grant_request, query, query_payload, request_uri, retry_after_of, revoked,
     run_demo, step_discover, step_grant_request, step_notice, step_revoke, DemoResult, Granted,
-    World, AFTER_APPROVAL_WINDOW, DEFAULT_RETRY_AFTER, ERROR_TYPE_URI, MANAGEMENT_TOKEN,
+    World, AFTER_APPROVAL_WINDOW, DEFAULT_RETRY_AFTER, ERROR_TYPE_URI, HOLD_LIFETIME,
+    MANAGEMENT_TOKEN,
 };
 
 /// The golden transcript every language's port shares, kept beside the
@@ -41,7 +42,7 @@ fn query_uri() -> String {
 }
 
 #[tokio::test]
-async fn t01_the_six_steps_print_exactly_the_golden_transcript() {
+async fn t01_the_eight_steps_print_exactly_the_golden_transcript() {
     let (_, result) = after_demo().await;
     if result.transcript != GOLDEN {
         // Name the first differing line rather than dump two 450-line strings.
@@ -144,10 +145,12 @@ async fn t07_the_grants_token_from_another_vid_is_refused_with_permission_denied
 async fn t08_a_grant_request_from_an_unregistered_issuer_is_refused_with_permission_denied() {
     let (world, _) = after_demo().await;
     let (p, _, m) = world.parties();
+    let before = world.hold_count();
+    assert_eq!(before, 4);
     let sent = world.request(m, p, &grant_uri(), ask(), None).await;
     let reply = world.exchange(m, p, &sent).await.expect("a reply");
     assert_eq!(reply["payload"]["code"], "permissionDenied");
-    assert_eq!(world.hold_count(), 1);
+    assert_eq!(world.hold_count(), before);
 }
 
 #[tokio::test]
@@ -304,4 +307,70 @@ async fn t16_the_grants_token_lasts_as_long_as_the_grant_no_refresh_in_0_1() {
     let (token_expires_at, expires_at) = &expiries[0];
     assert_eq!(token_expires_at, expires_at);
     assert_eq!(expires_at, "2026-11-25T14:00:06Z");
+}
+
+/// The fixed refusal of a grant request, with the `inResponseTo` it answers.
+fn assert_denial(refused: &Value) {
+    assert_eq!(refused["type"], ERROR_TYPE_URI);
+    assert_eq!(
+        refused["payload"],
+        json!({
+            "code": "permissionDenied",
+            "message": "The request is not authorized.",
+            "retryable": false,
+            "inResponseTo": refused["payload"]["inResponseTo"],
+        })
+    );
+}
+
+#[tokio::test]
+async fn t17_after_a_decline_the_resubmission_is_refused_the_thread_never_reopens_and_no_grant_is_issued(
+) {
+    let (world, result) = after_demo().await;
+    let (p, c, _) = world.parties();
+    let declined = &result.declined;
+    assert_denial(&declined.refused);
+    let state = |world: &World| world.hold(&declined.thread_id).map(|(_, s)| s);
+    assert_eq!(state(&world), Some("declined"));
+    assert_eq!(world.grant_count(), 1); // step 2's, revoked
+    world.person_approves(&declined.thread_id); // a later approval changes nothing
+    assert_eq!(state(&world), Some("declined"));
+    let again = world
+        .request(c, p, &grant_uri(), ask(), Some(&declined.thread_id))
+        .await;
+    let reply = world.exchange(c, p, &again).await.expect("a reply");
+    assert_eq!(reply["payload"]["code"], "permissionDenied");
+    assert_eq!(world.grant_count(), 1);
+}
+
+#[tokio::test]
+async fn t18_once_the_holds_lifetime_passes_undecided_the_thread_is_refused_and_a_new_thread_is_held_again(
+) {
+    let (world, result) = after_demo().await;
+    let timed_out = &result.timed_out;
+    assert_eq!(timed_out.refused.len(), 2);
+    timed_out.refused.iter().for_each(assert_denial);
+    let state = |thread_id: &str| world.hold(thread_id).map(|(_, s)| s);
+    assert_eq!(state(&timed_out.thread_id), Some("expired"));
+    assert_eq!(state(&timed_out.new_thread_id), Some("pending"));
+    assert_eq!(world.grant_count(), 1); // step 2's, revoked
+
+    // The lifetime counts from the held request's issuedAt: still pending
+    // when it has not passed.
+    let fresh = World::new();
+    let (p, c, _) = fresh.parties();
+    let first = fresh.request(c, p, &grant_uri(), ask(), None).await;
+    fresh.exchange(c, p, &first).await.expect("a reply");
+    // The resubmission is issued exactly HOLD_LIFETIME after the request.
+    fresh.clock().advance(HOLD_LIFETIME - 2);
+    let thread_id = first.thread_id.clone().expect("threadId");
+    let again = fresh
+        .request(c, p, &grant_uri(), ask(), Some(&thread_id))
+        .await;
+    let held = fresh.exchange(c, p, &again).await.expect("a reply");
+    assert_eq!(
+        held["type"],
+        "https://trusttasks.org/spec/trust-task-next-step/0.1"
+    );
+    assert_eq!(fresh.hold(&thread_id).map(|(_, s)| s), Some("pending"));
 }

@@ -37,6 +37,13 @@ per key. Never reuse them.
    [`hcp/grants/revoked`](../../specs/hcp/grants/revoked/0.1/spec.md) 0.1 to the grant's client,
    which records the `noticeId` and the grant, stops using the grant, and acknowledges. It never
    sends the old token again.
+7. **Decline.** The client asks again on a new thread and the person declines (HCP 6.1.7). The
+   client's next resubmission is refused with `permissionDenied`, the same fixed refusal an
+   unknown person gets, and no grant is issued.
+8. **Timeout.** The client asks again and the person never decides. Once the hold's lifetime
+   (300 s, provider policy) has passed, the policy denies: the next resubmission gets the same
+   `permissionDenied`, the thread is never reopened (a late approval changes nothing), and a new
+   request on a new thread is put to the person again.
 
 The provider also applies the rules the tests exercise: a token presented from another VID gets
 `permissionDenied`; only its one registered client may ask for a grant; a resubmission must carry
@@ -55,9 +62,9 @@ cargo run -p trust-tasks-example-hcp-demo     # the demo
 cargo test -p trust-tasks-example-hcp-demo    # the tests
 ```
 
-The tests are the 14 listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the
+The tests are the 18 listed in [SCENARIO.md](../hcp-demo-ts/SCENARIO.md#tests-every-port-has): the
 golden transcript, the query after revoke, a tampered document, a schema-invalid document, the
-client's handling of the notice, the provider's token and grant-request rules, and the reply check.
+client's handling of the notice, the provider's token and grant-request rules, the hold's hint and the token's lifetime, the decline and the hold's timeout, and the reply check.
 The golden file is shared with the other ports and lives beside the
 TypeScript version, [`../hcp-demo-ts/transcript.golden.txt`](../hcp-demo-ts/transcript.golden.txt);
 the test reads it from there and never keeps a copy. A change to the scenario starts in SCENARIO.md
@@ -93,9 +100,9 @@ hcp-demo: discover, grant request (held, then granted), query, revoke, post-revo
   minimization beyond category filtering, no audit log and no directives (every query result
   carries an empty `directives` list), and a registry of one client. It is not an HCP
   implementation.
-- **There is no consent UI.** The person's decision is one function call, and it always approves
-  what was asked. The demo shows the shape of the hold: a next step first, then the grant on
-  resubmission.
+- **There is no consent UI.** The person's decision is one function call, which approves what
+  was asked (step 2) or declines (step 7); in step 8 the person never decides. The demo shows the
+  shape of the hold: a next step first, then the grant or the refusal on resubmission.
 - **Keys and identities are fixed.** Every party knows the others' public keys up front, so there
   is no DID resolution and no discovery of the provider's DID document.
 - **Clock and identifiers are fixed** (see [SCENARIO.md](../hcp-demo-ts/SCENARIO.md)), so every
@@ -125,7 +132,7 @@ here.
 
 The files:
 
-- `src/lib.rs`: the parties, the toy provider, the client's state, the handlers and the six
+- `src/lib.rs`: the parties, the toy provider, the client's state, the handlers and the eight
   steps, one function each.
 - `src/main.rs`: runs the demo and prints the transcript.
 - `tests/demo.rs`: the tests.

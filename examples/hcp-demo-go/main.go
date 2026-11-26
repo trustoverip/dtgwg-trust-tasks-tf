@@ -1,4 +1,4 @@
-// The HCP-over-Trust-Tasks demo, in Go: run the six steps and print every
+// The HCP-over-Trust-Tasks demo, in Go: run the eight steps and print every
 // document. The Go port of examples/hcp-demo-ts, printing the same transcript
 // byte for byte.
 //
@@ -29,5 +29,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "hcp-demo-go: expected hcp:invalidToken after revoke, got %s\n", code)
 		os.Exit(1)
 	}
-	fmt.Println("\nhcp-demo-go: discover, grant request (held, then granted), query, revoke, post-revoke refusal and notice all OK")
+	fmt.Println("\nhcp-demo-go: discover, grant request (held, then granted), query, revoke, post-revoke refusal, notice, decline and timeout all OK")
 }

@@ -114,6 +114,12 @@ const NEUTRAL_DENIAL = "The request is not authorized."; // one fixed text for e
 const SUBJECT = "hcp-sub-demo-alex";
 /** How long after the response a resubmission still gets the same grant (hcp/grants/request "After approval"). */
 export const AFTER_APPROVAL_WINDOW = 3600;
+/**
+ * The hold's lifetime, provider policy: how long a request the person has not
+ * decided stays held, counted from the held request's `issuedAt`. When it
+ * passes, the policy denies (hcp/grants/request "Holding" rule 6).
+ */
+export const HOLD_LIFETIME = 300;
 
 /** The person's context, as the toy provider stores it (HCP 4.2, much simplified). */
 const ENTRIES = [
@@ -137,12 +143,17 @@ export interface Grant {
   revokedAt?: string;
 }
 
-/** A grant request on one thread: held, approved by the person, then granted (hcp/grants/request "Holding"). */
+/**
+ * A grant request on one thread (hcp/grants/request "Holding"): held, then
+ * approved by the person and granted, or ended: declined by the person, or
+ * expired when its lifetime passed undecided. An ended thread is never reopened.
+ */
 interface Hold {
   issuer: string;
   payload: grantRequest.Payload;
   canonical: string; // JCS of the payload, to compare resubmissions
-  state: "pending" | "approved" | "granted";
+  heldAt: number; // the held request's issuedAt, in ms: the lifetime counts from it
+  state: "pending" | "approved" | "granted" | "declined" | "expired";
   grantId?: string;
   respondedAt?: number; // when the response was first sent, in ms
 }
@@ -348,16 +359,21 @@ export class World {
     const canonical = canonicalize(doc.payload);
     const hold = this.held.get(threadId);
     if (hold === undefined) {
-      this.held.set(threadId, { issuer, payload: doc.payload, canonical, state: "pending" });
+      this.held.set(threadId, { issuer, payload: doc.payload, canonical, heldAt: this.clock.now(), state: "pending" });
       return this.nextStep(me, doc);
     }
     // A resubmission is matched by (threadId, issuer); a refusal leaves the held request as it is.
     if (hold.issuer !== issuer) return refuse("permissionDenied", NEUTRAL_DENIAL);
     if (hold.canonical !== canonical) return refuse("malformedRequest", "The resubmission differs from the held request.");
 
+    this.expireIfDue(hold);
     switch (hold.state) {
       case "pending":
         return this.nextStep(me, doc);
+      case "declined":
+      case "expired":
+        // The thread has ended and is never reopened: the same refusal a decline and an unknown person get.
+        return refuse("permissionDenied", NEUTRAL_DENIAL);
       case "approved": {
         // The person approved (the toy approves everything asked, read only): issue the one grant.
         const grantedAt = this.clock.iso();
@@ -434,10 +450,36 @@ export class World {
     };
   }
 
-  /** The person decides, in the provider's own modality (here: approves at once). */
+  /** A pending hold whose lifetime has passed ends: the policy denies (hcp/grants/request "Holding" rule 6). */
+  private expireIfDue(hold: Hold): void {
+    if (hold.state === "pending" && this.clock.now() - hold.heldAt > HOLD_LIFETIME * 1000) hold.state = "expired";
+  }
+
+  /** The person decides, in the provider's own modality. Only a pending hold changes; an ended thread stays ended. */
+  private personDecides(threadId: string, verb: "approves" | "declines", state: "approved" | "declined"): void {
+    const hold = this.held.get(threadId)!;
+    this.expireIfDue(hold);
+    const line = `[person] ${verb} the grant request on thread ${threadId} in the provider's app`;
+    if (hold.state === "pending") {
+      hold.state = state;
+      this.transcript.push(`${line}\n`);
+    } else {
+      this.transcript.push(`${line}, but the hold has ended: nothing changes\n`);
+    }
+  }
+
   personApproves(threadId: string): void {
-    this.held.get(threadId)!.state = "approved";
-    this.transcript.push(`[person] approves the grant request on thread ${threadId} in the provider's app\n`);
+    this.personDecides(threadId, "approves", "approved");
+  }
+
+  personDeclines(threadId: string): void {
+    this.personDecides(threadId, "declines", "declined");
+  }
+
+  /** The person never decides: the hold's lifetime passes with no document sent. */
+  personDoesNotDecide(threadId: string): void {
+    this.transcript.push(`[person] does not decide on thread ${threadId}; the hold's lifetime (${HOLD_LIFETIME} s) passes\n`);
+    this.clock.advance(HOLD_LIFETIME);
   }
 
   /** The Context Client stops using a grant: drops its token and every copy disclosed under it (HCP 6.2.2, 7.6). */
@@ -531,7 +573,7 @@ export function retryAfterOf(hint: unknown): number {
   return (hint as { retryAfter: number }).retryAfter;
 }
 
-// ── The six steps, one function each ───────────────────────────────────────
+// ── The eight steps, one function each ───────────────────────────────────────
 
 /** What the Context Client asks for in step 2. */
 export const ASK: grantRequest.Payload = {
@@ -631,15 +673,65 @@ export async function stepNotice(world: World, grantId: string): Promise<TrustTa
   return notice;
 }
 
+/** Throws unless `reply` is the fixed permissionDenied every refusal of a grant request carries. */
+function expectDenied(reply: TrustTaskDocument<any>): void {
+  if (reply.type !== error.TYPE_URI || reply.payload.code !== "permissionDenied") throw new Error("expected permissionDenied");
+}
+
+/**
+ * 7. The person declines (HCP 6.1.7): the client's next resubmission on the
+ * thread is refused with the fixed permissionDenied, and no grant is issued
+ * (hcp/grants/request "Errors"). Returns the thread and the refusal.
+ */
+export async function stepDecline(world: World): Promise<{ threadId: string; refused: TrustTaskDocument<any> }> {
+  const { provider: P, contextClient: C } = world;
+  world.step("7. Grant request declined (hcp/grants/request 0.1): the person says no");
+  const first = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK);
+  const held = await world.exchange(C, P, first);
+  if (held.type !== nextStep.TYPE_URI) throw new Error("expected a next step");
+  world.personDeclines(first.threadId!);
+  world.clock.advance(retryAfterOf((held.payload as nextStep.Payload).expects[0]?.hint));
+  const refused = await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId));
+  expectDenied(refused);
+  return { threadId: first.threadId!, refused };
+}
+
+/**
+ * 8. The hold's lifetime passes with no decision: the policy denies. The next
+ * resubmission gets the same permissionDenied; the thread is never reopened,
+ * so a late approval changes nothing and a further resubmission is refused
+ * too; a new request on a new thread is put to the person again
+ * (hcp/grants/request "Holding" rule 6). Returns both threads and the refusals.
+ */
+export async function stepTimeout(
+  world: World,
+): Promise<{ threadId: string; newThreadId: string; refused: TrustTaskDocument<any>[] }> {
+  const { provider: P, contextClient: C } = world;
+  world.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes");
+  const first = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK);
+  if ((await world.exchange(C, P, first)).type !== nextStep.TYPE_URI) throw new Error("expected a next step");
+  world.personDoesNotDecide(first.threadId!);
+  const refused = [await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId))];
+  world.personApproves(first.threadId!); // too late: the thread has ended
+  refused.push(await world.exchange(C, P, world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK, first.threadId)));
+  refused.forEach(expectDenied);
+  // A client that still needs a grant asks again, on a new thread.
+  const again = world.request(C, P, `${grantRequest.TYPE_URI}#request`, ASK);
+  if ((await world.exchange(C, P, again)).type !== nextStep.TYPE_URI) throw new Error("expected a next step");
+  return { threadId: first.threadId!, newThreadId: again.threadId!, refused };
+}
+
 export interface DemoResult {
   transcript: string;
   threadId: string;
   grantId: string;
   postRevokeError: TrustTaskDocument<{ code: string }>;
   notice: TrustTaskDocument<revoked.Payload>;
+  declined: { threadId: string; refused: TrustTaskDocument<any> };
+  timedOut: { threadId: string; newThreadId: string; refused: TrustTaskDocument<any>[] };
 }
 
-/** The six steps in order. */
+/** The eight steps in order. */
 export async function runDemo(world = new World()): Promise<DemoResult> {
   await stepDiscover(world);
   const { threadId, grantId } = await stepGrantRequest(world);
@@ -647,5 +739,7 @@ export async function runDemo(world = new World()): Promise<DemoResult> {
   await stepRevoke(world, grantId);
   const postRevokeError = await stepQueryAfterRevoke(world, grantId);
   const notice = await stepNotice(world, grantId);
-  return { transcript: world.transcript.join(""), threadId, grantId, postRevokeError, notice };
+  const declined = await stepDecline(world);
+  const timedOut = await stepTimeout(world);
+  return { transcript: world.transcript.join(""), threadId, grantId, postRevokeError, notice, declined, timedOut };
 }

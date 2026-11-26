@@ -97,8 +97,14 @@ person is known to that client by the pseudonym `hcp-sub-demo-alex`.
 purpose codes, `issuedAt`, `expiresAt`, status (`active` | `revoked`), `revokedAt`.
 
 **A hold table** keyed by `threadId`: the held request's `issuer`, its payload and the payload's
-JCS form, a state (`pending` → `approved` → `granted`), and once granted the `grantId` and the
-instant the response was first sent.
+JCS form, the held request's `issuedAt` (`heldAt`), a state (`pending` → `approved` → `granted`,
+or `pending` → `declined` or `expired`), and once granted the `grantId` and the instant the
+response was first sent. `declined` and `expired` are ended states: the thread is never reopened.
+
+**The hold's lifetime** (provider policy, hcp/grants/request "Holding" rule 6) is **300 s**, counted
+from `heldAt`. A hold that is still `pending` when more than 300 s have passed (now − `heldAt` >
+300 s) becomes `expired`; the provider checks this whenever it looks at the hold (a resubmission,
+or the person's decision). The lifetime applies only while the person has not decided.
 
 Each entry disclosed in a query response is:
 
@@ -122,13 +128,16 @@ and `retryable: false`; every `hcp:invalidToken` has "The access token is not va
 **`hcp/grants/request`** (spec: Authorization, Holding while the person decides, After approval):
 
 1. The `issuer` is not in the client registry → `permissionDenied`. Nothing is held.
-2. No hold for the `threadId` → hold it (`pending`, recording `issuer`, payload, JCS form) and
-   answer the next step.
+2. No hold for the `threadId` → hold it (`pending`, recording `issuer`, payload, JCS form and
+   `heldAt`) and answer the next step.
 3. The hold's `issuer` differs from this `issuer` → `permissionDenied`; the hold is unaffected.
 4. The payload's JCS form differs from the held one → `malformedRequest` with message "The
    resubmission differs from the held request."; the hold is unaffected. Compare JCS forms, never
    the bytes or a language's own serialisation: members in another order are the same payload.
-5. `pending` → a further next step (same shape, `inResponseTo` the resubmission).
+5. A `pending` hold whose lifetime has passed becomes `expired`. Then: `pending` → a further next
+   step (same shape, `inResponseTo` the resubmission); `declined` or `expired` → `permissionDenied`
+   (the thread has ended; the same fixed message as every refusal, so a decline, a timeout and an
+   unknown person look alike).
 6. `approved` → issue the one grant (approved as asked), set the hold to `granted` with the
    `grantId` and the response time, and answer the response. `grant.expiresAt` is now plus the
    request's `expiresIn` (4 hours when absent), and `tokenExpiresAt` equals it: 0.1 has no refresh,
@@ -210,6 +219,15 @@ values not listed here are in the golden transcript. The ids are the counter val
 | 4 | Management Client → Provider | `…/hcp/grants/revoke/0.1#request` | #11, 10:00:10 | `grantId` #6, `accessToken hcp_mt_demo_management` | `#response` #12: `{}`; the grant is `revoked`, `revokedAt` 10:00:10 |
 | 5 | Context Client → Provider | `…/hcp/entries/query/0.1#request` | #13, 10:00:12 | the same payload as step 3 (the token still in the wallet: no notice has arrived) | `trust-task-error/0.6` #14: `code "hcp:invalidToken"`, `message "The access token is not valid."`, `retryable false`, `inResponseTo` #13. The client forgets grant #6 |
 | 6 | Provider → Context Client (`byVid(grant.client)`) | `…/hcp/grants/revoked/0.1#request` | #16, 10:00:14 | `grantId` #6, `noticeId` #15 (HCP's `jti`, the same on every delivery attempt), `revokedAt` 10:00:10 | `#response` #17 from the Context Client: `{}`. The client records #15 → #6 |
+| 7a | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #18, 10:00:16 | step 2's payload, a new thread | `trust-task-next-step/0.1` #19, as in step 2 |
+| — | the person | — | — | prints `[person] declines the grant request on thread <#18> in the provider's app`; the hold becomes `declined`. The client waits the next step's `retryAfter` (1 s) | — |
+| 7b | Context Client → Provider | same, **resubmission** | #20, thread #18, 10:00:19 | identical payload | `trust-task-error/0.6` #21: `code "permissionDenied"`, `message "The request is not authorized."`, `retryable false`. No grant is issued |
+| 8a | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #22, 10:00:21 | step 2's payload, a new thread | `trust-task-next-step/0.1` #23 |
+| — | the person | — | — | does not decide: prints `[person] does not decide on thread <#22>; the hold's lifetime (300 s) passes`, and the clock moves on 300 s without a document | — |
+| 8b | Context Client → Provider | same, **resubmission** | #24, thread #22, 10:05:23 | identical payload | `trust-task-error/0.6` #25: the same `permissionDenied`; the hold is `expired` (10:05:23 is 302 s after `heldAt` 10:00:21) |
+| — | the person | — | — | approves too late: prints `[person] approves the grant request on thread <#22> in the provider's app, but the hold has ended: nothing changes`; the hold stays `expired` | — |
+| 8c | Context Client → Provider | same, **resubmission** | #26, thread #22, 10:05:25 | identical payload | `trust-task-error/0.6` #27: the same `permissionDenied` (the thread is never reopened) |
+| 8d | Context Client → Provider | `…/hcp/grants/request/0.1#request` | #28, 10:05:27 | step 2's payload, a **new thread** | `trust-task-next-step/0.1` #29: the new request is put to the person again (its hold is `pending`; the run ends there) |
 
 ## Transcript format
 
@@ -227,6 +245,8 @@ The titles are exactly:
 4. `4. Revoke (hcp/grants/revoke 0.1) from the Management Client`
 5. `5. Query after revoke (hcp/entries/query 0.1) fails with hcp:invalidToken`
 6. `6. Revocation notice (hcp/grants/revoked 0.1)`
+7. `7. Grant request declined (hcp/grants/request 0.1): the person says no`
+8. `8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes`
 
 Then, for each document sent and each reply, in order:
 
@@ -240,14 +260,17 @@ document (proof included) as JSON with **object keys sorted by code point** at e
 per line, empty arrays `[]` and empty objects `{}`, and strings escaped as `JSON.stringify` does
 (non-ASCII left as is). **Redaction:** the value of every member named `accessToken` is printed as
 its first 6 characters followed by `…` (U+2026). The person's decision prints one line,
-`[person] approves the grant request on thread <threadId> in the provider's app`, between the
-next step and the resubmission. Nothing else is printed into the transcript: the client's wallet
+`[person] approves the grant request on thread <threadId> in the provider's app` (or `declines`),
+between the next step and the resubmission; a decision on a hold that is no longer `pending`
+changes nothing and prints the same line followed by `, but the hold has ended: nothing changes`.
+When the person never decides (step 8) the line is `[person] does not decide on thread
+<threadId>; the hold's lifetime (300 s) passes`. Nothing else is printed into the transcript: the client's wallet
 and notice record change silently. A port's `main` may print a closing summary line after it;
 the golden file does not contain it.
 
 ## Tests every port has
 
-"After the demo" means on the same world, once all six steps have run; "after the grant" means on
+"After the demo" means on the same world, once all eight steps have run; "after the grant" means on
 a fresh world after steps 1 and 2 only. Refusals the library pipeline builds (tests 3 and 4) are
 unsigned and their `issuedAt` may come from the library's own clock, so those tests check only the
 code.
@@ -266,7 +289,7 @@ code.
 7. After the grant: the Management Client sends a query with the grant's token
    (`hcp_at_demo_0001`) and otherwise step 3's payload → `permissionDenied`.
 8. After the demo: the Management Client (not a registered client) sends a new grant request with
-   step 2's payload → `permissionDenied`; the hold table still holds one entry.
+   step 2's payload → `permissionDenied`; the hold table holds as many entries as before (four).
 9. After the grant: a resubmission on thread #3 with `expiresIn 3600` → `malformedRequest`.
 10. After the grant: a resubmission on thread #3 with step 2's payload, members in another order
     → the grant response, `grant.grantId` #6, and the grant table still holds one grant.
@@ -290,6 +313,17 @@ code.
     default, 5.
 16. After the grant: the grant table holds one grant, whose `tokenExpiresAt` equals its
     `expiresAt`, `2026-11-25T14:00:06Z`.
+17. After the demo: step 7's reply is a `trust-task-error` whose payload is exactly `code
+    "permissionDenied"`, `message "The request is not authorized."`, `retryable false` and its
+    `inResponseTo`; step 7's hold is `declined`; the grant table holds one grant (step 2's). Then
+    the person approves on step 7's thread (the hold stays `declined`), and a resubmission on it
+    with step 2's payload → `permissionDenied`; the grant table still holds one grant.
+18. After the demo: step 8's two replies on its first thread are each that same exact
+    `permissionDenied` payload; that hold is `expired`, the new thread's hold is `pending`, and the
+    grant table holds one grant. Then, on a fresh world: the Context Client sends step 2's grant
+    request and gets the next step, the clock moves on 298 s (`HOLD_LIFETIME` − 2), and a
+    resubmission (issued exactly 300 s after the held request) → a next step, the hold still
+    `pending`: the lifetime has not passed.
 
 ## Documented differences
 

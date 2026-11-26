@@ -131,6 +131,11 @@ const (
 	// AfterApprovalWindow is how long after the response a resubmission still
 	// gets the same grant, in seconds (hcp/grants/request "After approval").
 	AfterApprovalWindow = 3600
+	// HoldLifetime is the hold's lifetime, provider policy: how long a request
+	// the person has not decided stays held, in seconds from the held request's
+	// issuedAt. When it passes, the policy denies (hcp/grants/request "Holding"
+	// rule 6).
+	HoldLifetime = 300
 )
 
 // entry is the person's context, as the toy provider stores it (HCP 4.2, much simplified).
@@ -166,14 +171,19 @@ const (
 	pending holdState = iota
 	approved
 	granted
+	declined
+	expired
 )
 
-// hold is a grant request on one thread: held, approved by the person, then
-// granted (hcp/grants/request "Holding").
+// hold is a grant request on one thread (hcp/grants/request "Holding"): held,
+// then approved by the person and granted, or ended: declined by the person,
+// or expired when its lifetime passed undecided. An ended thread is never
+// reopened.
 type hold struct {
 	issuer      string
 	payload     grantrequest.Payload
-	canonical   string // the JCS form of the payload, to compare resubmissions
+	canonical   string    // the JCS form of the payload, to compare resubmissions
+	heldAt      time.Time // the held request's issuedAt: the lifetime counts from it
 	state       holdState
 	grantID     string
 	respondedAt time.Time // when the response was first sent
@@ -506,7 +516,7 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 	h := w.held[threadID]
 	// 2. A new thread: hold it.
 	if h == nil {
-		w.held[threadID] = &hold{issuer: issuer, payload: doc.Payload.Value, canonical: doc.Payload.JCS, state: pending}
+		w.held[threadID] = &hold{issuer: issuer, payload: doc.Payload.Value, canonical: doc.Payload.JCS, heldAt: w.Clock.Now(), state: pending}
 		return w.nextStep(me, doc)
 	}
 	// 3, 4. A resubmission is matched by (threadId, issuer), and must be the held
@@ -518,9 +528,13 @@ func handleGrantRequest(w *World, me *Party, doc *tt.Document[withJCS[grantreque
 		return refuse(w, me, doc, "malformedRequest", "The resubmission differs from the held request.")
 	}
 
+	// 5. A pending hold whose lifetime has passed ends.
+	w.expireIfDue(h)
 	switch h.state {
 	case pending: // 5. still with the person
 		return w.nextStep(me, doc)
+	case declined, expired: // 5. the thread has ended and is never reopened: the same refusal as an unknown person
+		return refuse(w, me, doc, "permissionDenied", neutralDenial)
 	case approved: // 6. the person approved (the toy approves everything asked, read only): issue the one grant
 		w.tokens++
 		g := &grant{
@@ -700,11 +714,39 @@ func handleRevoked(w *World, me *Party, doc *tt.Document[revoked.Payload]) (*tt.
 	return reply(w, me, doc, revoked.Response{})
 }
 
-// PersonApproves is the person deciding, in the provider's own modality (here:
-// approving at once).
-func (w *World) PersonApproves(threadID string) {
-	w.held[threadID].state = approved
-	fmt.Fprintf(&w.transcript, "[person] approves the grant request on thread %s in the provider's app\n", threadID)
+// expireIfDue ends a pending hold whose lifetime has passed: the policy denies
+// (hcp/grants/request "Holding" rule 6).
+func (w *World) expireIfDue(h *hold) {
+	if h.state == pending && w.Clock.Now().Sub(h.heldAt) > HoldLifetime*time.Second {
+		h.state = expired
+	}
+}
+
+// personDecides is the person deciding, in the provider's own modality. Only a
+// pending hold changes; an ended thread stays ended.
+func (w *World) personDecides(threadID, verb string, state holdState) {
+	h := w.held[threadID]
+	w.expireIfDue(h)
+	line := fmt.Sprintf("[person] %s the grant request on thread %s in the provider's app", verb, threadID)
+	if h.state == pending {
+		h.state = state
+		fmt.Fprintf(&w.transcript, "%s\n", line)
+	} else {
+		fmt.Fprintf(&w.transcript, "%s, but the hold has ended: nothing changes\n", line)
+	}
+}
+
+// PersonApproves is the person approving (the toy approves everything asked).
+func (w *World) PersonApproves(threadID string) { w.personDecides(threadID, "approves", approved) }
+
+// PersonDeclines is the person saying no.
+func (w *World) PersonDeclines(threadID string) { w.personDecides(threadID, "declines", declined) }
+
+// PersonDoesNotDecide is the person never deciding: the hold's lifetime passes
+// with no document sent.
+func (w *World) PersonDoesNotDecide(threadID string) {
+	fmt.Fprintf(&w.transcript, "[person] does not decide on thread %s; the hold's lifetime (%d s) passes\n", threadID, HoldLifetime)
+	w.Clock.Advance(HoldLifetime)
 }
 
 // ForgetGrant is the Context Client no longer using a grant: it drops the
@@ -861,7 +903,7 @@ func replyOf[P any](raw json.RawMessage) tt.Document[P] {
 	return doc
 }
 
-// ── The six steps, one function each ───────────────────────────────────────
+// ── The eight steps, one function each ─────────────────────────────────────
 
 // Ask is what the Context Client asks for in step 2.
 func Ask() grantrequest.Payload {
@@ -918,6 +960,16 @@ func RetryAfterOf(hint json.RawMessage) int64 {
 	return h.RetryAfter
 }
 
+// retryAfterOfNextStep is RetryAfterOf the hint of a next step's first
+// expectation.
+func retryAfterOfNextStep(p nextstep.Payload) int64 {
+	var hint json.RawMessage
+	if len(p.Expects) > 0 && p.Expects[0].Hint != nil {
+		hint, _ = json.Marshal(*p.Expects[0].Hint)
+	}
+	return RetryAfterOf(hint)
+}
+
 // StepGrantRequest is step 2, Grant request: held with a next step while the
 // person decides, then resubmitted on the same thread (HCP 6.1.6, 6.1.7; SPEC
 // §8.6). The client keeps the token in its wallet. It returns the thread and
@@ -934,11 +986,7 @@ func StepGrantRequest(w *World) (threadID, grantID string) {
 	w.PersonApproves(threadID)
 	// The client SHOULD NOT resubmit sooner than the next step's retryAfter
 	// (hcp/grants/request "Holding").
-	var hint json.RawMessage
-	if len(held.Payload.Expects) > 0 && held.Payload.Expects[0].Hint != nil {
-		hint, _ = json.Marshal(*held.Payload.Expects[0].Hint)
-	}
-	w.Clock.Advance(RetryAfterOf(hint))
+	w.Clock.Advance(retryAfterOfNextStep(held.Payload))
 	// Resubmission: a new document, fresh id, same threadId and payload.
 	granted := replyOf[grantrequest.Response](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID)))
 	if granted.Type != grantrequest.ResponseTypeURI {
@@ -1014,6 +1062,77 @@ func StepNotice(w *World, grantID string) tt.Document[revoked.Payload] {
 	return replyOf[revoked.Payload](notice)
 }
 
+// expectDenied panics unless reply is the fixed permissionDenied every refusal
+// of a grant request carries.
+func expectDenied(reply tt.Document[json.RawMessage]) {
+	var p tt.ErrorPayload
+	if reply.Type != tt.TrustTaskErrorTypeURI || json.Unmarshal(reply.Payload, &p) != nil || p.Code != "permissionDenied" {
+		panic("expected permissionDenied")
+	}
+}
+
+// Declined is what step 7 produces: the thread and the refusal.
+type Declined struct {
+	ThreadID string
+	Refused  tt.Document[json.RawMessage]
+}
+
+// StepDecline is step 7: the person declines (HCP 6.1.7), so the client's
+// next resubmission on the thread is refused with the fixed permissionDenied,
+// and no grant is issued (hcp/grants/request "Errors").
+func StepDecline(w *World) Declined {
+	P, C := w.Provider, w.ContextClient
+	w.step("7. Grant request declined (hcp/grants/request 0.1): the person says no")
+	first := Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), "")
+	held := replyOf[nextstep.Payload](w.Exchange(C, P, first))
+	if held.Type != nextstep.TypeURI {
+		panic("expected a next step")
+	}
+	threadID := *replyOf[json.RawMessage](first).ThreadID
+	w.PersonDeclines(threadID)
+	w.Clock.Advance(retryAfterOfNextStep(held.Payload))
+	refused := replyOf[json.RawMessage](w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID)))
+	expectDenied(refused)
+	return Declined{ThreadID: threadID, Refused: refused}
+}
+
+// TimedOut is what step 8 produces: both threads and the refusals.
+type TimedOut struct {
+	ThreadID, NewThreadID string
+	Refused               []tt.Document[json.RawMessage]
+}
+
+// StepTimeout is step 8: the hold's lifetime passes with no decision, so the
+// policy denies. The next resubmission gets the same permissionDenied; the
+// thread is never reopened, so a late approval changes nothing and a further
+// resubmission is refused too; a new request on a new thread is put to the
+// person again (hcp/grants/request "Holding" rule 6).
+func StepTimeout(w *World) TimedOut {
+	P, C := w.Provider, w.ContextClient
+	w.step("8. Grant request timed out (hcp/grants/request 0.1): the hold's lifetime passes")
+	ask := func(threadID string) json.RawMessage {
+		return w.Exchange(C, P, Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), threadID))
+	}
+	first := Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), "")
+	if replyOf[json.RawMessage](w.Exchange(C, P, first)).Type != nextstep.TypeURI {
+		panic("expected a next step")
+	}
+	threadID := *replyOf[json.RawMessage](first).ThreadID
+	w.PersonDoesNotDecide(threadID)
+	refused := []tt.Document[json.RawMessage]{replyOf[json.RawMessage](ask(threadID))}
+	w.PersonApproves(threadID) // too late: the thread has ended
+	refused = append(refused, replyOf[json.RawMessage](ask(threadID)))
+	for _, r := range refused {
+		expectDenied(r)
+	}
+	// A client that still needs a grant asks again, on a new thread.
+	again := Request(w, C, P, grantrequest.TypeURI+"#request", Ask(), "")
+	if replyOf[json.RawMessage](w.Exchange(C, P, again)).Type != nextstep.TypeURI {
+		panic("expected a next step")
+	}
+	return TimedOut{ThreadID: threadID, NewThreadID: *replyOf[json.RawMessage](again).ThreadID, Refused: refused}
+}
+
 // Result is what a run produces.
 type Result struct {
 	Transcript      string
@@ -1021,9 +1140,11 @@ type Result struct {
 	GrantID         string
 	PostRevokeError tt.Document[tt.ErrorPayload]
 	Notice          tt.Document[revoked.Payload]
+	Declined        Declined
+	TimedOut        TimedOut
 }
 
-// RunDemo plays the six steps, in order, on w (a fresh world when nil).
+// RunDemo plays the eight steps, in order, on w (a fresh world when nil).
 func RunDemo(w *World) Result {
 	if w == nil {
 		w = NewWorld()
@@ -1034,5 +1155,7 @@ func RunDemo(w *World) Result {
 	StepRevoke(w, grantID)
 	postRevokeError := StepQueryAfterRevoke(w, grantID)
 	notice := StepNotice(w, grantID)
-	return Result{Transcript: w.transcript.String(), ThreadID: threadID, GrantID: grantID, PostRevokeError: postRevokeError, Notice: notice}
+	declined := StepDecline(w)
+	timedOut := StepTimeout(w)
+	return Result{Transcript: w.transcript.String(), ThreadID: threadID, GrantID: grantID, PostRevokeError: postRevokeError, Notice: notice, Declined: declined, TimedOut: timedOut}
 }
