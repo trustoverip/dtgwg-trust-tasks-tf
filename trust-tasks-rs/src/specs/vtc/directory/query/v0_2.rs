@@ -185,10 +185,18 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///Comma-separated narrowing hint. A hint only — never an authorisation.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub fields: ::std::option::Option<PayloadFields>,
     ///DID of the member whose directory projection is requested.
     pub subject: PayloadSubject,
@@ -325,7 +333,11 @@ pub struct Response {
     ///The member's directory entry: the identifier every other directory read and the member's card are addressed by (vtc/directory/entries/show, images/get). Present on every answer. It is not derived from, and does not reveal, any DID of the member; the caller already named the DID it was answered for.
     #[serde(rename = "entryId")]
     pub entry_id: EntryId,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::not_null",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
     pub ext: ::std::option::Option<Ext>,
     ///The permitted projection. A withheld field is ABSENT, never present-and-null.
     pub fields: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
