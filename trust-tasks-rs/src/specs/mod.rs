@@ -54,6 +54,12 @@
 // step with the schema member it sets, which is the one property the builder
 // has to keep.
 #![allow(clippy::should_implement_trait)]
+// A schema member typed `"type": "null"` alone (HCP's reserved
+// `subject.relationship`, carried as HCP's own schema writes it) becomes a
+// `()` field, and typify's builder then wraps it as `Ok(Default::default())`
+// and `Ok(value.relationship)`, which `clippy::unit_arg` flags. The schema
+// is right and the code is typify's emission, so the lint is allowed here.
+#![allow(clippy::unit_arg)]
 
 // trust-tasks-codegen:begin
 #[cfg(feature = "acl")]

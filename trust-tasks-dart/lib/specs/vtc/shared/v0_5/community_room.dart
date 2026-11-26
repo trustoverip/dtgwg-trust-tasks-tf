@@ -1326,3 +1326,13 @@ class RoomMembershipV2 {
         if (purgeAt != null) 'purgeAt': purgeAt!,
       };
 }
+
+/// The record members a community-owned room's profile lists: the optional
+/// `SealedRecordBody` members its writers may use beyond the base set, as a set
+/// (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`,
+/// `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`,
+/// `inReplyTo` and `writtenAt` are what a room used as a conversation needs for
+/// replies, reactions and the order of its messages. The community writes them into
+/// the room's profile through its VTA, as the room's owner; a value a writer does not
+/// know grants it nothing.
+typedef RoomRecordMembers = List<String>;

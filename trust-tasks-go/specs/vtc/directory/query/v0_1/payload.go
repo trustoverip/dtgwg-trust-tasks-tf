@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTC Directory Query — response payload
+//
+// Deprecated: superseded by vtc/directory/query/0.2
 type Response struct {
 	// The projected member's DID.
 	Subject string `json:"subject"`
@@ -26,6 +28,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Directory Query — payload
+//
+// Deprecated: superseded by vtc/directory/query/0.2
 type Payload struct {
 	// DID of the member whose directory projection is requested.
 	Subject string `json:"subject"`
@@ -50,7 +54,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/directory/query/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/directory/query/0.1#response"
