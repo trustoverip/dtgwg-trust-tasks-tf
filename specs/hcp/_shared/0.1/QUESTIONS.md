@@ -30,7 +30,7 @@ below. When the editors answer, update that section and the marked sentences.
   below. The specs are built on these readings; an answer that differs changes the specs.
 - **Taken in the 2026-11-25 review decisions:** question 56 (new). The same decisions also settled details now
   recorded under questions 16 (a 24-hour limit on notice delivery), 25 (why a decline is `permissionDenied`), 36
-  (the trust anchor when a provider has no HCP discovery document) and 39 (an abandoned hold is denied, never
+  (the trust anchor when a provider has no HCP discovery document) and 39 (an expired hold is denied, never
   reopened).
 - **Still open, no assumption taken:** questions 44, 46, 48 and 57. Question 47 needs none yet, because we do not offer
   what it asks about.
@@ -73,6 +73,10 @@ below. When the editors answer, update that section and the marked sentences.
   resting on supporting credentials), with no assumption taken; 56 questions now (1-57, 41 unused). The same change
   widens `hcp:credentialInvalid` in `hcp/entries/create` and `hcp/entries/revise` to 16.2's case, which HCP states
   and so needs no question.
+- 2026-11-26, terminology pass: the three `hcp:` family codes (`invalidToken`, `versionConflict`,
+  `credentialInvalid`) are defined once, in [the family conventions](CONVENTIONS.md#1-family-error-codes), and every
+  spec declares each with the same meaning, so 2's reading now reaches every spec that declares `hcp:invalidToken`.
+  Every working-assumption mark names its question; no question changed.
 
 Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, C4→10, 16→11, (new)→12, 20→13, (new)→14, 2→15,
 3→16, 4→17, C6→18, (new)→19, 24→20, 8→21, 9→22, 10→23, 11→24, 12→25, C7→26, 13→27, 26 (the second 23)→28, 15→29,
@@ -83,7 +87,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
 ## Every `hcp/*` spec
 
 1. **May a provider claim the carriage in `conformsTo`, and can HCP define an identifier for it?** HCP 1.7, 18 and
-   19 give conformance identifiers only for Core, the HTTP and MCP bindings and the profiles. A provider serving the
+   19 give conformance identifiers only for Core, the HTTP and MCP Bindings and the profiles. A provider serving the
    `hcp/*` Trust Tasks conforms to neither binding.
    *Assumption taken:* a provider MUST NOT list any identifier for the carriage in `conformsTo`, and advertises the
    tasks through `trust-task-discovery`. *Request:* a third binding identifier for Trust Task carriage, beside `http`
@@ -105,7 +109,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     *Ask:* does 9.3 permit `Authorization: DPoP` for clients that support it, or should it say "a Bearer or
     sender-constrained token"? If DPoP is allowed, is it signalled in discovery (19) or in the token response?
     *Specs:* none changed; it bears on how the `hcp/*` specs say the provider validates the token "exactly as over
-    HCP's HTTP binding".
+    HCP's HTTP Binding".
 
 <!-- Added 2026-11-25; a separate list, so the number renders as written. -->
 
@@ -136,7 +140,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     *Assumption taken:* a request proof is REQUIRED on every `hcp/*` request that carries `accessToken`, so the token
     binding always applies. This is a carriage rule of the `hcp/*` family, and it is stricter than HCP's bearer model,
     under which presenting a valid token is enough (9.3): over the carriage an unsigned request with a valid token is
-    refused, where HCP's HTTP binding would serve it.
+    refused, where HCP's HTTP Binding would serve it.
     *Ask:* is HCP content for a carriage to require sender authentication on every token-carrying request, beyond its
     bearer model? Or would HCP rather a carriage accept an unsigned request as a plain bearer request, as over HTTP,
     with the binding protecting only signed requests?
@@ -166,7 +170,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
 56. **May a Management Client be authenticated by a proof under a key the Authorizing Principal enrolled (3.2.3
     "credentials"), with no bearer token, over a carriage that requires a request proof?** 3.2.3 defines a
     Management Client as acting "under credentials the Authorizing Principal obtained by authenticating for that
-    purpose"; it does not say the credentials are a bearer token. HCP's HTTP binding uses a token on every call (9.3),
+    purpose"; it does not say the credentials are a bearer token. HCP's HTTP Binding uses a token on every call (9.3),
     and no HCP operation issues a Management Client token. A wallet that the person pairs with their provider already
     proves its identity by signing every request (question 53), but holds no token.
     *Assumption taken:* `accessToken` is optional on governance requests and on `hcp/entries/create`. Where it is
@@ -189,8 +193,10 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
    issued under a revoked grant succeeds, and that such a failure is a notice of revocation, but names no error.
    5.5 defines `invalid-token` ("Missing, malformed, or expired authorization evidence") and `scope-denied`.
    *Assumption taken:* `invalid-token`, carried as `hcp:invalidToken`.
-   *Specs:* `hcp/entries/query` (errorCodes, the revoked-grant example, Errors), `hcp/grants/revoke` (Revocation
-   rules), `hcp/entries/{get,create,revise,withdraw}`, `hcp/grants/{read-own,relinquish}`, `hcp/shares/report`.
+   *Specs:* the `hcp:invalidToken` definition in [the family conventions](CONVENTIONS.md#1-family-error-codes),
+   which every spec declaring the code carries unchanged; `hcp/entries/query` (the revoked-grant example, Errors),
+   `hcp/grants/revoke` (Revocation rules), `hcp/entries/{get,create,revise,withdraw}`,
+   `hcp/grants/{read-own,relinquish}`, `hcp/shares/report` (Pending sections).
 
 3. **Pagination and `nextCursor: null` (9.5).** The audit log is cursor-paginated, and grants (9.4.6) and the
    disclosure summary (9.4.12) may be, with `nextCursor` null when the set is exhausted. The Trust Task wire
@@ -398,7 +404,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     9396-shaped `access` details.
     *Ask:* would HCP sanction this channel (or a profile for it), and should it live under the `hcp/` namespace?
 
-22. **Can the client's VID be its HCP client identifier?** With no token yet, the request's proof is the only client
+22. **Can the client's VID be its HCP Client identifier?** With no token yet, the request's proof is the only client
     authentication.
     *Assumption taken:* the request `issuer` VID, authenticated by its proof, is the client identifier recorded in the
     grant's `client.id`; an unregistered issuer gets `permissionDenied`; the person is shown the registered
@@ -458,8 +464,8 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     the person, and it is `permissionDenied` if the grant is no longer active. After that hour it gets
     `permissionDenied`, and a new request on a new thread is put to the person again. A hold has a lifetime set by the
     provider's policy; when it passes, the policy denies, and the next resubmission on that thread gets the same
-    `permissionDenied` as a decline or an unknown person. A thread that has ended (declined, timed out, or approved
-    and past its hour) is never reopened, so a client cannot tell an abandoned hold from an unknown person (the rule
+    `permissionDenied` as a decline or an unknown person. A thread that has ended (declined, expired, or approved
+    and past its hour) is never reopened, so a client cannot tell an expired hold from an unknown person (the rule
     is `hcp/grants/request`, Holding while the person decides, rule 6).
     *Ask:* is binding the outcome to the requesting client's authenticated identity, plus a bounded same-grant retry
     window, consistent with 6.1.6 and 6.1.7? Should HCP name such a window, or the repeat behaviour, for non-redirect
@@ -621,7 +627,7 @@ Old to new: 7→1, 1→2, 14→3, 6→4, 5→5, C1→6, C3→7, C2→8, C5→9, 
     the export response at **14 MiB** (14680064 bytes), so that an export always fits an import request with the
     token, `categoryMap`, envelope and proof it adds (about 1.03 MiB at their schema bounds). A provider whose export
     would exceed 14 MiB refuses with the task's own error code `hcp/export:tooLarge` (renamed from `hcp:exportTooLarge`,
-    so that the code is scoped to the task that raises it), and the Management Client uses HCP's HTTP binding or asks
+    so that the code is scoped to the task that raises it), and the Management Client uses HCP's HTTP Binding or asks
     again without versions or the audit log.
     *Ask:* is a paged or chunked export planned?
     *Specs:* `hcp/export`, `hcp/import`.

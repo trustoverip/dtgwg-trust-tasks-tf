@@ -38,12 +38,13 @@ class Payload {
   final Urn grantId;
 
   /// The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP
-  /// binding sends it as a Bearer token; this member carries it in the document. The
-  /// provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where
-  /// it is absent, the provider authenticates the request's `issuer` VID, by the
-  /// REQUIRED request proof, as a Management Client the Authorizing Principal enrolled
-  /// (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is
-  /// present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+  /// Binding sends it as a Bearer token; this member carries it in the document. The
+  /// provider validates it exactly as over HTTP and treats it as opaque. The maxLength
+  /// is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the
+  /// provider authenticates the request's `issuer` VID, by the REQUIRED request proof,
+  /// as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses
+  /// any other issuer with permissionDenied; where it is present, the token rules apply
+  /// unchanged. Pending HCP confirmation (question 56).
   final String? accessToken;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -86,7 +87,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoke/0.1","title":"HCP — Revoke Grant — payload","description":"The request payload of the HCP 2.0-draft-3 Revoke grant operation (HCP 6.2, 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2): a Management Client, acting for the Authorizing Principal, ends a grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP\'s own schema allows to be empty.","type":"object","additionalProperties":false,"required":["grantId"],"properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to revoke."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request\'s `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."}},"\$defs":{"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/hcp/grants/revoke/0.1","title":"HCP — Revoke Grant — payload","description":"The request payload of the HCP 2.0-draft-3 Revoke grant operation (HCP 6.2, 5.4; `DELETE /v2/grants/{grantId}` in HCP 9.2): a Management Client, acting for the Authorizing Principal, ends a grant. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP\'s own schema allows to be empty.","type":"object","additionalProperties":false,"required":["grantId"],"properties":{"grantId":{"\$ref":"#/\$defs/Urn","description":"HCP `grantId` (the `{grantId}` path parameter of HCP 9.2): the grant to revoke."},"accessToken":{"type":"string","minLength":1,"maxLength":8192,"description":"The Management Client\'s HCP access token (HCP 9.3), carried unchanged. HCP\'s HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request\'s `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."}},"\$defs":{"Urn":{"type":"string","pattern":"^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\$","description":"An HCP identifier: a UUID in `urn:uuid:` form, of any UUID version (HCP 4.2), as HCP uses for entry, grant, directive and retrieval identifiers."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

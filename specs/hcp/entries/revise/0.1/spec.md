@@ -58,22 +58,27 @@ maxDocumentBytes:
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
-      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A request under a
-      revoked grant also fails here, pending HCP confirmation (question 2 in the spec's "Pending HCP confirmation"
-      section).
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token
+      the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here
+      too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error
+      (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a
+      failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
+      [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
   - code: hcp:versionConflict
     meaning: >-
-      HCP `version-conflict` (HCP 5.5): `expectedVersion` is not the entry's current `record.version`. Nothing is
-      changed (HCP 5.2.4). The client reads the entry again before it decides whether to revise the newer version;
-      the same document never succeeds.
+      HCP `version-conflict` (HCP 5.5): `expectedVersion` is not the entry's current `record.version` (HCP 5.2.4,
+      5.4). Nothing changes, and the same document never succeeds: the client reads the entry again, and a Management
+      Client shows the person the current version, before deciding whether to ask again. Defined once for the family
+      in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
   - code: hcp:credentialInvalid
     meaning: >-
-      HCP `credential-invalid` (HCP 5.5): a credential that is the revised content fails verification, in its proof,
-      its securing mechanism, its verification method or its status (HCP 14.6); or, for an `issuer-attested` entry in
-      `health_context`, no credential the revision carries, content or supporting, passes verification (HCP 16.2).
-      The `message` says which check failed, and reveals no status-list internals.
+      HCP `credential-invalid` (HCP 5.5): a credential that is an entry's content, as created or revised, fails
+      verification, in its proof, its securing mechanism, its verification method or its status (HCP 14.6); or, for
+      an `issuer-attested` entry in `health_context`, no credential the request carries, content or supporting, passes
+      verification (HCP 16.2). The `message` says which check failed, and reveals no status-list internals. Defined
+      once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
 uncheckedRules:
   - member: "/properties/ref"
@@ -199,7 +204,7 @@ The request payload's root is closed, as in `hcp/entries/create`: a top-level me
 | Context Client or Management Client | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client's anchor for the provider is the provider VID the client obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it.
+As for [`hcp/entries/query`](../../query/0.1/spec.md#parties), a client **MUST** send a token only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
@@ -308,7 +313,7 @@ The provider answers with the revised entry. The payload is the sub-schema reach
 
 ## Errors
 
-HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider never sends HCP's Core error object or the HTTP binding's problem details (HCP 9.7).
+HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows. The provider never sends HCP's Core error object or the HTTP Binding's problem details (HCP 9.7).
 
 | HCP error (5.5) | Code | Trust Task error |
 |---|---|---|
@@ -318,7 +323,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 | conflict | `idempotency-conflict` (HCP 9.6) | `idConflict` (see [Repeated requests](#repeated-requests)) |
 | version conflict | `version-conflict`: `expectedVersion` is not the current version (HCP 5.2.4) | `hcp:versionConflict`, `retryable: false`. Nothing is changed. The provider checks authorization first, so a caller that may not see the entry gets `permissionDenied`, never this. |
 | credential invalid | `credential-invalid`: the revised content is a credential that fails verification (HCP 14.6), or the entry is `issuer-attested` in `health_context` and no credential the revision carries, content or supporting, passes (HCP 16.2) | `hcp:credentialInvalid`, `retryable: false`, with a `message` that names the failed check and reveals no status-list internals (HCP 5.5) |
-| subject unavailable | `subject-unavailable` (HCP 4.8) | `unavailable`. The client may retry later. |
+| subject unavailable | `subject-unavailable` (HCP 4.8) | `unavailable`. The client may retry later (HCP 5.5). |
 | rate limited | `rate-limited` | `unavailable`, with `retryAfter` |
 | unsupported version | `unsupported-version` | `unsupportedVersion` |
 
@@ -337,7 +342,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 - **Question 6 — naming the entry.** Exactly one of `ref` and `entryId`; both or neither is `malformedRequest`, and a Context Client that sends `entryId` gets `permissionDenied` (see [Request](#request)).
 - **Question 8 — `basis`, `permittedPurposes` and `proposal` on a revision.** Carried, as HCP's text says ("as for create", HCP 5.2.4, 4.7.4), although HCP's published revise request schema omits them (see [HCP field mapping](#hcp-field-mapping)).
 - **Question 9 — revising a rejected version.** A Context Client's revision of an entry whose current version the Context Subject rejected is refused with `permissionDenied` (see [Authorization](#authorization)).
-- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP Client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
 
 ## What HCP requires that a document cannot express
@@ -360,7 +365,7 @@ As for [`hcp/entries/create`](../../create/0.1/spec.md#data-carried): a revised 
 
 **In an agent runtime**, the token is held as [`hcp/entries/query`](../../query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
-**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
+**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP Client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 
 **Retained copies.** The provider verifies the request's `proof` over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
 

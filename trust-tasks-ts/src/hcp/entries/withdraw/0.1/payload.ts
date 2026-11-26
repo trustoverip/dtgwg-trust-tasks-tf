@@ -23,7 +23,7 @@ export interface HCPWithdrawEntryPayload {
    */
   reason: string;
   /**
-   * The HCP access token that stands for the grant (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+   * The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
 }
@@ -44,7 +44,7 @@ export interface HCPWithdrawEntryResponsePayload {
    */
   status: "deleted";
   /**
-   * HCP `hardDeleted`, which HCP's HTTP binding returns (HCP 9.4.5): always `false` here, since a withdrawal is never a hard deletion (HCP 5.4.2). OPTIONAL.
+   * HCP `hardDeleted`, which HCP's HTTP Binding returns (HCP 9.4.5): always `false` here, since a withdrawal is never a hard deletion (HCP 5.4.2). OPTIONAL.
    */
   hardDeleted?: false;
   /**
@@ -130,7 +130,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The HCP access token that stands for the grant (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
     }
   },
   "$defs": {
@@ -176,7 +176,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "hardDeleted": {
           "type": "boolean",
           "const": false,
-          "description": "HCP `hardDeleted`, which HCP's HTTP binding returns (HCP 9.4.5): always `false` here, since a withdrawal is never a hard deletion (HCP 5.4.2). OPTIONAL."
+          "description": "HCP `hardDeleted`, which HCP's HTTP Binding returns (HCP 9.4.5): always `false` here, since a withdrawal is never a hard deletion (HCP 5.4.2). OPTIONAL."
         },
         "respondedAt": {
           "$ref": "#/$defs/Instant",

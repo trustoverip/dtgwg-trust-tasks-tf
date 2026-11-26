@@ -7,11 +7,11 @@ import type { AuditDisclosed, AuditEvent_HcpV0_1 as AuditEvent, AuditParticipant
 
 
 /**
- * The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
+ * The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject, a delegate or a former delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.
  */
 export interface HCPReadAuditLogPayload {
   /**
-   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+   * The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
    */
   accessToken?: string;
   /**
@@ -39,7 +39,7 @@ export interface HCPReadAuditLogPayload {
    */
   cursor?: string;
   /**
-   * HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3).
+   * HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (pending HCP confirmation, question 3).
    */
   limit?: number;
 }
@@ -106,7 +106,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/hcp/audit/read/0.1",
   "title": "HCP — Read Audit Log — payload",
-  "description": "The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject or a delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
+  "description": "The request payload of the HCP 2.0-draft-3 Read audit log operation (HCP 8.3, 5.4; `GET /v2/audit` in HCP 9.2, 9.4.7, paginated per HCP 9.5): a Management Client, acting for the Context Subject, a delegate or a former delegate, reads one page of the audit log, filtered as asked. HCP defines no request or result schema for this operation; the filters come from HCP 8.3 and the paging members from HCP 9.5. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -114,7 +114,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
+      "description": "The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56)."
     },
     "client": {
       "type": "string",
@@ -150,7 +150,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "integer",
       "minimum": 1,
       "maximum": 1000,
-      "description": "HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (question 3)."
+      "description": "HCP `limit` (HCP 9.5): the most events to return in this page. Absent leaves the page size to the provider. The maximum of 1000 is a framework bound, not an HCP requirement (pending HCP confirmation, question 3)."
     }
   },
   "$defs": {

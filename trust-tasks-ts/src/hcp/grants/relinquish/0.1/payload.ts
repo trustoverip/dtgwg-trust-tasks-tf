@@ -15,12 +15,12 @@ export interface HCPRelinquishOwnGrantPayload {
    */
   grantId: Urn;
   /**
-   * The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque.
+   * The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement.
    */
   accessToken: string;
 }
 /**
- * The grant is relinquished. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.
+ * The grant is relinquished. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.
  */
 export interface HCPRelinquishOwnGrantResponsePayload {}
 
@@ -89,7 +89,7 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 8192,
-      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque."
+      "description": "The HCP access token for the grant under which the client acts (HCP 12, 13), carried unchanged. HCP's HTTP Binding sends it as a Bearer token (HCP 9.3); this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement."
     }
   },
   "$defs": {
@@ -111,7 +111,7 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "title": "HCP — Relinquish Own Grant — response payload",
       "type": "object",
       "additionalProperties": false,
-      "description": "The grant is relinquished. HCP defines no result and its HTTP binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.",
+      "description": "The grant is relinquished. HCP defines no result and its HTTP Binding answers `204 No Content` (HCP 5.2.7, 9.4.6), so the payload is the empty object. Failures use trust-task-error, not this shape.",
       "properties": {}
     }
   }

@@ -51,9 +51,12 @@ retention:
 errorCodes:
   - code: hcp:invalidToken
     meaning: >-
-      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence". A token issued under a
-      grant already revoked or relinquished also fails here, pending HCP confirmation (question 2 in the spec's
-      "Pending HCP confirmation" section).
+      HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token
+      the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here
+      too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error
+      (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a
+      failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in
+      [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
 related:
   - hcp/grants/revoke
@@ -65,7 +68,7 @@ related:
 
 The **HCP — Relinquish Own Grant** Trust Task carries the Relinquish own grant operation of the [Human Context Protocol (HCP) 2.0-draft-3](https://github.com/loyalagents/hcp-spec/blob/b790561/spec/2.0-draft-3/specification.md) (HCP 5.2.7; `DELETE /v2/grants/{grantId}` with a Context Client's token in HCP 9.2). A *Context Client* gives up the grant under which it acts. Relinquishing is a revocation of that grant: it takes effect at once, and is recorded as a revocation the client initiated. No revocation notice is sent to the client that relinquished (HCP 5.2.7).
 
-HCP's MCP binding does not carry this operation in 2.0-draft-3 (HCP 5.2.7); this task carries it over any Trust Task binding. It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
+HCP's MCP Binding does not carry this operation in 2.0-draft-3 (HCP 5.2.7); this task carries it over any transport binding. It is a member of the HCP *protocol family* ([SPEC §9.4](/SPEC.md#94-carried-protocols)).
 
 ## Status of this Document
 
@@ -85,7 +88,7 @@ This specification adds one check HCP does not make: the token binding of [The a
 
 The authority is **the grant itself**, evidenced by the access token in `accessToken`. A client can relinquish only the grant it presents: a request whose `grantId` is not the grant the token was issued under **MUST** fail with not authorized (HCP 5.2.7), carried as `permissionDenied`. Revoking any other grant is a governance operation, [`hcp/grants/revoke`](../../revoke/0.1/spec.md) (HCP 5.2.7, 6.2.1).
 
-Over HCP's HTTP binding the same `DELETE /v2/grants/{grantId}` with a Management Client's token revokes any grant (HCP 9.4.6). This task carries relinquishment only: a Management Client's token is refused with `permissionDenied`, and a Management Client revokes with `hcp/grants/revoke`.
+Over HCP's HTTP Binding the same `DELETE /v2/grants/{grantId}` with a Management Client's token revokes any grant (HCP 9.4.6). This task carries relinquishment only: a Management Client's token is refused with `permissionDenied`, and a Management Client revokes with `hcp/grants/revoke`.
 
 The REQUIRED `proof` establishes which client VID sent the document ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); it is not the authorization. A token issued to a client other than the one the `issuer` VID identifies is refused with `permissionDenied` (see [The access token](#the-access-token)).
 
@@ -112,7 +115,7 @@ The REQUIRED `proof` establishes which client VID sent the document ([SPEC §7.2
 | Context Client (HCP 5.2.7 says HCP Client; a Management Client's token is refused, see [Authorization](#authorization)) | `issuer` of the request, `recipient` of the response |
 | HCP Provider | `recipient` of the request, `issuer` of the response |
 
-As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a client's anchor for the provider is the provider VID the client obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it.
+As for [`hcp/entries/query`](../../../entries/query/0.1/spec.md#parties), a client **MUST** send a token only to the provider VID it obtained when the person connected it, and where the provider publishes an HCP discovery document (HCP 19.1), the provider **MUST** make its VID verifiably bound to it and the client **MUST** check that binding before it sends a token to the VID.
 
 ## Request
 
@@ -169,7 +172,7 @@ HCP defines nine Core errors (HCP 5.5). They map to Trust Task errors as follows
 |---|---|---|
 | invalid request | `malformed-request` | `malformedRequest` |
 | unauthenticated | `invalid-token` | `hcp:invalidToken`, `retryable: false` |
-| not authorized | `scope-denied`: a `grantId` that is not the grant the token was issued under (HCP 5.2.7), or a Management Client's token (see [Authorization](#authorization)) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5) |
+| not authorized | `scope-denied`: a `grantId` that is not the grant the token was issued under (HCP 5.2.7), or a Management Client's token (see [Authorization](#authorization)) | `permissionDenied`, with one fixed `message` whatever the reason (HCP 5.5, [SPEC §8.2.1](/SPEC.md#821-what-a-message-may-not-say)) |
 | conflict | `idempotency-conflict` | Does not arise: relinquishment carries no idempotency key (HCP 9.6). A re-delivered document is handled under [Repeated requests](#repeated-requests). |
 | version conflict | `version-conflict` | Does not arise. |
 | credential invalid | `credential-invalid` | Does not arise. |
@@ -193,7 +196,7 @@ HCP 2.0-draft-3 leaves the following points open. This specification takes the r
 
 - **Question 1 — conformance claims.** A provider **MUST NOT** claim this carriage in its HCP `conformsTo` (see [Conformance](#conformance)).
 - **Question 2 — a request under a revoked grant.** Refused with `hcp:invalidToken`, which covers a second relinquishment with a new document (see [Repeated requests](#repeated-requests)).
-- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
+- **Question 22 — the client's identity.** The `issuer` VID, authenticated by the request's `proof`, identifies the HCP Client the token was issued to; a token issued to any other client **MUST** be refused with `permissionDenied`. This token binding is a carriage rule of this family, a check HCP does not itself make (see [The access token](#the-access-token) and [Conformance](#conformance)).
 - **Question 53 — a request proof on every request that carries a token.** A request `proof` is **REQUIRED** on every `hcp/*` request that carries `accessToken`, so that the token binding of question 22 always applies and a token lifted from a stored or forwarded document cannot be replayed in an unsigned request. This is a carriage rule of this family, not HCP's, and is stricter than HCP's bearer model, under which presenting a valid token is enough (HCP 9.3); see [The access token](#the-access-token).
 
 ## What HCP requires that a document cannot express
@@ -214,7 +217,7 @@ The request carries a grant identifier and the access token, a bearer secret tha
 
 **In an agent runtime**, the token is held as [`hcp/entries/query`](../../../entries/query/0.1/spec.md#the-access-token) requires: by the component that builds and sends the document, never in a model's context or a tool's result (HCP 10.5).
 
-**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
+**Token binding, a carriage rule of this family.** Every request that carries `accessToken` carries a `proof`, *pending HCP confirmation* ([question 53](#pending-hcp-confirmation)), and the provider **MUST** refuse with `permissionDenied` a token issued to a client other than the one the `issuer` VID identifies, so that a token lifted from a stored or forwarded document is of no use from another VID. HCP validates the token alone and does not bind it to a VID (HCP 9.3): this rule is the `hcp/*` family's, not HCP's, and rests on the `issuer` VID identifying the HCP Client, *pending HCP confirmation* ([question 22](#pending-hcp-confirmation)). It is a check HCP does not make (see [Conformance](#conformance)).
 
 **Retained copies.** The provider verifies the request's `proof` over the document as received, at receipt, before it removes anything ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)). A provider that retains the request document, as a duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) or as evidence of the request, **MUST** remove `accessToken` from the copy it keeps and record in its place `accessTokenDigest`: the SHA-256 multihash of the token's UTF-8 bytes, multibase-encoded as base64url without padding (prefix `u`), the framework's `DigestMultibase` form ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)). The kept copy's `proof` no longer verifies over it, so the provider records with the copy that the proof was verified at receipt: when, under which verification method, and with what result. It relies on that record, and **MUST NOT** verify the proof again over the kept copy. A record that keeps only a digest of the document, such as its task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)), keeps no token either.
 
@@ -228,6 +231,6 @@ The provider keeps the `grant.revoked` audit event (HCP 5.2.7), readable by the 
 
 ### Consent/purpose
 
-Relinquishing ends the client's use of the person's permission; it needs no consent from the person, who can always grant again. The data in the document is used only to carry out and record the relinquishment ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
+Relinquishing ends the client's use of the person's permission; it needs no approval from the person, who can always grant again. The data in the document is used only to carry out and record the relinquishment ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)).
 
 The acceptance window for `issuedAt` is consumer policy; a generous window suits this task, since refusing a late relinquishment leaves alive a grant the client meant to end.

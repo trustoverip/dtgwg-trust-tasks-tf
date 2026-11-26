@@ -966,20 +966,20 @@ impl<'de> ::serde::Deserialize<'de> for ClientDescriptionOperatorName {
             })
     }
 }
-///Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+///Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct Content {
-    ///Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
+    ///Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub evidence: ::std::option::Option<u64>,
-    ///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+    ///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub language: ::std::option::Option<ContentLanguage>,
     ///The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).
     pub profile: Uri,
-    ///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+    ///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub value: ::std::option::Option<ContentValue>,
 }
@@ -988,7 +988,7 @@ impl Content {
         Default::default()
     }
 }
-///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1047,7 +1047,7 @@ impl<'de> ::serde::Deserialize<'de> for ContentLanguage {
             })
     }
 }
-///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
@@ -1263,7 +1263,7 @@ pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub credential: ::std::option::Option<::serde_json::Value>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+    ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
     #[serde(rename = "type")]
@@ -1276,7 +1276,7 @@ impl EvidenceItem {
         Default::default()
     }
 }
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 #[derive(
     ::serde::Deserialize,
@@ -1589,7 +1589,7 @@ impl ::std::fmt::Display for Instant {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+    ///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
     #[serde(
         rename = "accessToken",
         default,
@@ -1599,7 +1599,7 @@ pub struct Payload {
     ///HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).
     #[serde(rename = "entryId")]
     pub entry_id: Urn,
-    ///HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
+    ///HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).
     #[serde(rename = "expectedVersion")]
     pub expected_version: ::std::num::NonZeroU64,
     ///HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement.
@@ -1611,7 +1611,7 @@ impl Payload {
         Default::default()
     }
 }
-///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
+///The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -3265,7 +3265,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RelationshipType {
         value.parse()
     }
 }
-///The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.
+///The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10), pending HCP confirmation (question 14). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -5287,7 +5287,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).\"},\"expectedVersion\":{\"description\":\"HCP `expectedVersion`: the `record.version` the Management Client showed the Context Subject. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).\",\"minimum\":1,\"type\":\"integer\"},\"permittedPurposes\":{\"description\":\"HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"maxItems\":256,\"type\":[\"array\",\"null\"],\"uniqueItems\":true}},\"required\":[\"entryId\",\"permittedPurposes\",\"expectedVersion\"],\"title\":\"HCP — Restrict Entry Purposes — payload\",\"type\":\"object\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$id\":\"https://trusttasks.org/spec/hcp/entries/restrict-purposes/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of the HCP 2.0-draft-3 Restrict purposes operation (HCP 4.2.6, 5.4; `PUT /v2/entries/{entryId}/purposes` in HCP 9.2, 9.4.10): a Management Client, acting for the Authorizing Principal, sets or removes the Authorizing Principal's narrowing of the purposes an entry may be disclosed for. HCP defines no schema for this operation; the members come from HCP 9.2 and 9.4.10. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. Every maxLength, maxItems and maxProperties in this schema is a Trust Tasks framework bound (SPEC §7.3 item 19), not an HCP requirement; so is every minLength or minItems of 1 on a member HCP's own schema allows to be empty.\",\"properties\":{\"accessToken\":{\"description\":\"The Management Client's HCP access token (HCP 9.3), carried unchanged. HCP's HTTP Binding sends it as a Bearer token; this member carries it in the document. The provider validates it exactly as over HTTP and treats it as opaque. The maxLength is a framework bound, not an HCP requirement. OPTIONAL: where it is absent, the provider authenticates the request's `issuer` VID, by the REQUIRED request proof, as a Management Client the Authorizing Principal enrolled (HCP 3.2.3), and refuses any other issuer with permissionDenied; where it is present, the token rules apply unchanged. Pending HCP confirmation (question 56).\",\"maxLength\":8192,\"minLength\":1,\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `entryId` (the `{entryId}` path parameter of HCP 9.2, 9.4.10): the entry's stable `id` (HCP 4.2), by which a Management Client names an entry (HCP 9.4.2).\"},\"expectedVersion\":{\"description\":\"HCP `expectedVersion`: the `record.version` the Management Client showed the person. Where it is not the entry's current version, the operation fails with version conflict and changes nothing (HCP 5.4, 5.5).\",\"minimum\":1,\"type\":\"integer\"},\"permittedPurposes\":{\"description\":\"HCP `permittedPurposes`: the entry's new `classification.permittedPurposes`, the purpose codes it may be disclosed for (HCP 4.2.6, 9.4.10). It can only narrow: a purpose it lists that `assertion.permittedPurposes` does not list has no effect (HCP 4.2.6). Null removes the Authorizing Principal's narrowing (HCP 9.4.10); HCP's own value, carried verbatim. An empty list permits no purpose: the entry may then be disclosed for none (HCP 4.2.6). The maxItems of 256 is a framework bound, not an HCP requirement.\",\"items\":{\"$ref\":\"#/$defs/PurposeCode\"},\"maxItems\":256,\"type\":[\"array\",\"null\"],\"uniqueItems\":true}},\"required\":[\"entryId\",\"permittedPurposes\",\"expectedVersion\"],\"title\":\"HCP — Restrict Entry Purposes — payload\",\"type\":\"object\"}\n"),
     );
 }
 impl crate::Payload for Response {
@@ -5298,7 +5298,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(524288usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_facccb41!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.10): the whole entry, as a Management Client receives it (HCP 7.4). Its `record.version` is unchanged: a change of `classification` creates no version (HCP 4.2.1).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Restrict Entry Purposes — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_9ff5fa61!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_b85c3770!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with its new `classification.permittedPurposes`, absent where the narrowing was removed (HCP 9.4.10), pending HCP confirmation (question 14). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.10): the whole entry, as a Management Client receives it (HCP 7.4). Its `record.version` is unchanged: a change of `classification` creates no version (HCP 4.2.1).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Restrict Entry Purposes — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {
@@ -5322,7 +5322,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
 pub mod error_codes {
     /// `hcp:invalidToken`
     ///
-    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the Management Client's access token.
+    /// HCP `invalid-token` (HCP 5.5): "Missing, malformed, or expired authorization evidence", here the access token the request presents. A token issued under a revoked grant, a relinquished one included (HCP 5.2.7), fails here too: HCP requires that no request presenting evidence issued under a revoked grant succeeds, but names no error (HCP 6.2.2), and this family reads that evidence as invalid, pending HCP confirmation (question 2). Such a failure is itself a notice of revocation to the client (HCP 6.2.2). Defined once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     ///
     /// Declared `retryable: false`.
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -5332,7 +5332,7 @@ pub mod error_codes {
     };
     /// `hcp:versionConflict`
     ///
-    /// HCP `version-conflict` (HCP 5.5): `expectedVersion` is not the entry's current `record.version` (HCP 5.4). Nothing changes. The Management Client shows the person the current version before asking again.
+    /// HCP `version-conflict` (HCP 5.5): `expectedVersion` is not the entry's current `record.version` (HCP 5.2.4, 5.4). Nothing changes, and the same document never succeeds: the client reads the entry again, and a Management Client shows the person the current version, before deciding whether to ask again. Defined once for the family in [the hcp family conventions](/specs/hcp/_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     ///
     /// Declared `retryable: false`.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
