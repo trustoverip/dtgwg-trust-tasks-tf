@@ -6,4 +6,4 @@
 library;
 
 export 'src/consumer.dart';
-export 'src/envelope.dart';
+export 'src/envelope.dart' hide tspVersionRefusal;
