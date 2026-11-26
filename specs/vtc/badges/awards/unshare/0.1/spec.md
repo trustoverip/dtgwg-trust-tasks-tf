@@ -83,7 +83,7 @@ A conforming **consumer** (the community) **MUST**:
 
 **Authority: holding the award — read now.** The signer stops only a share of an award of their own; the community reads the award's recipient at execution time and refuses every other signer as `notFound`. Stopping confers and removes nothing (VTI-BDG-002). The proof establishes who asked ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
-This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
+This is an act of the member (VTI-BDG-095): a member portal holding a key the member authorized for `vtc/badges` under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) (`signingScope`) **MAY** sign it, for the session that authorization arms.
 
 ## Definitions
 
