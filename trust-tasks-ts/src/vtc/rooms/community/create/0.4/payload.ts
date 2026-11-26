@@ -6,7 +6,7 @@
 import type { CommunityRoomV2_VtcV0_3 as CommunityRoomV2, Ext, HostedRoom_VtcV0_3 as HostedRoom, Reason, RetentionPolicy, RoomDescription, RoomLabel, RoomTag, RoomTags, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
 
 
-/** @deprecated superseded by vtc/rooms/community/create/0.5 */
+/** @deprecated superseded by vtc/rooms/community/create/0.6 */
 export interface VTCRoomsCommunityCreatePayload {
   label: RoomLabel;
   /**
@@ -39,7 +39,7 @@ export interface VTCRoomsCommunityCreatePayload {
 /**
  * Success response to vtc/rooms/community/create. Type https://trusttasks.org/spec/vtc/rooms/community/create/0.3#response. The room as created, owned by the community.
  *
- * @deprecated superseded by vtc/rooms/community/create/0.5
+ * @deprecated superseded by vtc/rooms/community/create/0.6
  */
 export interface VTCRoomsCommunityCreateResponsePayload {
   room: CommunityRoomV2;
@@ -70,12 +70,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/rooms/community/create/0.5";
+export const DEPRECATION: string | null = "superseded by vtc/rooms/community/create/0.6";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/rooms/community/create/0.5
+ * @deprecated superseded by vtc/rooms/community/create/0.6
  */
 export type Payload = VTCRoomsCommunityCreatePayload;
 
@@ -85,7 +85,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/communit
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/rooms/community/create/0.5
+ * @deprecated superseded by vtc/rooms/community/create/0.6
  */
 export type Response = VTCRoomsCommunityCreateResponsePayload;
 

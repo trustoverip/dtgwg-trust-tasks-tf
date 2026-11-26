@@ -2161,6 +2161,13 @@ export type RoomDescription = string;
  */
 export type RoomLabel = string;
 /**
+ * The record members a community-owned room's profile lists: the optional `SealedRecordBody` members its writers may use beyond the base set, as a set (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`, `inReplyTo` and `writtenAt` are what a room used as a conversation needs for replies, reactions and the order of its messages. The community writes them into the room's profile through its VTA, as the room's owner; a value a writer does not know grants it nothing.
+ *
+ * @minItems 1
+ * @maxItems 32
+ */
+export type RoomRecordMembers = [string, ...string[]];
+/**
  * Where a room the community owns stands in its owner's lifecycle — distinct from `HostedRoom.lifecycle`, which is the host's clock (`live`, `lapsed`, `dormant`, `reclaimable`) and is computed from the room's epoch, never set. `active`: open to change. `archived`: closed to change by an administrator — no admissions, and the room's host accepts no writes from its members; what members may still do is `ArchiveAccess`. Reversible with vtc/rooms/community/unarchive. `removalScheduled`: an administrator removed the room with a grace period; it admits nobody and its content is kept until `purgeAt`, and vtc/rooms/community/removal/cancel returns it to `archived`. `purging`: the grace period ended (or there was none) and the community is deleting the room's content from its host and storage; not reversible. `removed`: the content is gone; the community keeps only this record of the room, for its history.
  */
 export type RoomState = "active" | "archived" | "removalScheduled" | "purging" | "removed";
