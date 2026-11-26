@@ -551,9 +551,9 @@ pub struct Payload {
     #[serde(
         rename = "credentialRefs",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub credential_refs: ::std::vec::Vec<PayloadCredentialRefsItem>,
+    pub credential_refs: ::std::option::Option<::std::vec::Vec<PayloadCredentialRefsItem>>,
     ///Link the contact to a community directory entry, replacing any link it had. Absent: unchanged.
     #[serde(
         rename = "directoryRef",
@@ -1450,9 +1450,9 @@ pub struct Response {
     #[serde(
         rename = "changedClaims",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub changed_claims: ::std::vec::Vec<ClaimType>,
+    pub changed_claims: ::std::option::Option<::std::vec::Vec<ClaimType>>,
     #[serde(rename = "contactId")]
     pub contact_id: Ulid,
     ///True when this is the first revision for the subject. Always false for an annotating request.
@@ -1825,7 +1825,7 @@ pub mod builder {
             ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
         context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
         credential_refs: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadCredentialRefsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
             ::std::string::String,
         >,
         directory_ref: ::std::result::Result<
@@ -1904,7 +1904,9 @@ pub mod builder {
         }
         pub fn credential_refs<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadCredentialRefsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.credential_refs = value
@@ -2091,8 +2093,10 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         annotations_changed: ::std::result::Result<bool, ::std::string::String>,
-        changed_claims:
-            ::std::result::Result<::std::vec::Vec<super::ClaimType>, ::std::string::String>,
+        changed_claims: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::ClaimType>>,
+            ::std::string::String,
+        >,
         contact_id: ::std::result::Result<super::Ulid, ::std::string::String>,
         created: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -2123,7 +2127,7 @@ pub mod builder {
         }
         pub fn changed_claims<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ClaimType>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::ClaimType>>>,
             T::Error: ::std::fmt::Display,
         {
             self.changed_claims = value

@@ -831,8 +831,9 @@ pub struct Response {
     )]
     pub body_stored_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     ///Present on an `open` room.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub cleartext:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///When the host stored the record's first version, unchanged by every later version and every curation (`RecordMetadataV3.createdAt`). Every tier; absent for a record stored before the host kept it. NOT committed: a reader removes it, with `blobs`, the verification members and `ext`, before hashing the leaf (see `trace`).
     #[serde(
         rename = "createdAt",
@@ -1297,7 +1298,7 @@ pub mod builder {
             ::std::string::String,
         >,
         cleartext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         created_at: ::std::result::Result<
@@ -1394,7 +1395,9 @@ pub mod builder {
         pub fn cleartext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

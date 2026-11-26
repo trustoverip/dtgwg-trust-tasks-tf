@@ -1629,8 +1629,8 @@ pub struct RuleCondition {
     pub op: RuleConditionOp,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub value: ::std::option::Option<RuleConditionValue>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub values: ::std::vec::Vec<RuleConditionValuesItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub values: ::std::option::Option<::std::vec::Vec<RuleConditionValuesItem>>,
 }
 impl RuleCondition {
     pub fn builder() -> builder::RuleCondition {
@@ -3114,7 +3114,7 @@ pub mod builder {
             ::std::string::String,
         >,
         values: ::std::result::Result<
-            ::std::vec::Vec<super::RuleConditionValuesItem>,
+            ::std::option::Option<::std::vec::Vec<super::RuleConditionValuesItem>>,
             ::std::string::String,
         >,
     }
@@ -3183,7 +3183,9 @@ pub mod builder {
         }
         pub fn values<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RuleConditionValuesItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RuleConditionValuesItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.values = value

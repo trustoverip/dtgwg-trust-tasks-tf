@@ -133,24 +133,24 @@ pub struct Payload {
     )]
     pub drip_per_tick: ::std::option::Option<::std::num::NonZeroU64>,
     ///Events this community is running, replacing whatever was there. Absent or empty removes every event.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub events: ::std::vec::Vec<RequestEvent>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub events: ::std::option::Option<::std::vec::Vec<RequestEvent>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Live vetter class periods, current first (e.g. ["2026-10", "2026-09"]). Defaults to the current month.
     #[serde(
         rename = "livePeriods",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub live_periods: ::std::vec::Vec<PayloadLivePeriodsItem>,
+    pub live_periods: ::std::option::Option<::std::vec::Vec<PayloadLivePeriodsItem>>,
     ///Live token labels (e.g. ["token/2026-09"]). Defaults to the current month's.
     #[serde(
         rename = "liveTokenLabels",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub live_token_labels: ::std::vec::Vec<PayloadLiveTokenLabelsItem>,
+    pub live_token_labels: ::std::option::Option<::std::vec::Vec<PayloadLiveTokenLabelsItem>>,
     #[serde(
         rename = "tickLength",
         default,
@@ -1328,9 +1328,10 @@ pub struct StoredEvent {
     #[serde(
         rename = "approvedBy",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub approved_by: ::std::option::Option<::std::string::String>,
+    pub approved_by: ::std::option::Option<::std::option::Option<::std::string::String>>,
     #[serde(rename = "endDate")]
     pub end_date: ::chrono::naive::NaiveDate,
     #[serde(rename = "eventId")]
@@ -1555,14 +1556,17 @@ pub mod builder {
             ::std::option::Option<::std::num::NonZeroU64>,
             ::std::string::String,
         >,
-        events: ::std::result::Result<::std::vec::Vec<super::RequestEvent>, ::std::string::String>,
+        events: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RequestEvent>>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         live_periods: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadLivePeriodsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadLivePeriodsItem>>,
             ::std::string::String,
         >,
         live_token_labels: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadLiveTokenLabelsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadLiveTokenLabelsItem>>,
             ::std::string::String,
         >,
         tick_length:
@@ -1604,7 +1608,7 @@ pub mod builder {
         }
         pub fn events<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RequestEvent>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::vec::Vec<super::RequestEvent>>>,
             T::Error: ::std::fmt::Display,
         {
             self.events = value
@@ -1624,7 +1628,9 @@ pub mod builder {
         }
         pub fn live_periods<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadLivePeriodsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadLivePeriodsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.live_periods = value
@@ -1634,7 +1640,9 @@ pub mod builder {
         }
         pub fn live_token_labels<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadLiveTokenLabelsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadLiveTokenLabelsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.live_token_labels = value
@@ -2295,7 +2303,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct StoredEvent {
         approved_by: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         end_date: ::std::result::Result<::chrono::naive::NaiveDate, ::std::string::String>,
@@ -2321,7 +2329,9 @@ pub mod builder {
     impl StoredEvent {
         pub fn approved_by<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.approved_by = value

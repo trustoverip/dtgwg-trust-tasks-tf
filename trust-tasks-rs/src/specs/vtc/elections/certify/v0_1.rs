@@ -367,10 +367,11 @@ pub struct Payload {
     #[serde(
         rename = "auditAttestations",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub audit_attestations:
+    pub audit_attestations: ::std::option::Option<
         ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+    >,
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -388,24 +389,15 @@ impl Payload {
 #[non_exhaustive]
 pub struct QuestionResult {
     pub abstained: u64,
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub choice: ::std::collections::HashMap<Key, u64>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub choice: ::std::option::Option<::std::collections::HashMap<Key, u64>>,
     pub question: Key,
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub ranking: ::std::collections::HashMap<Key, ::std::vec::Vec<u64>>,
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub score: ::std::collections::HashMap<Key, QuestionResultScoreValue>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub text: ::std::vec::Vec<QuestionResultTextItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ranking: ::std::option::Option<::std::collections::HashMap<Key, ::std::vec::Vec<u64>>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub score: ::std::option::Option<::std::collections::HashMap<Key, QuestionResultScoreValue>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub text: ::std::option::Option<::std::vec::Vec<QuestionResultTextItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub withheld: ::std::option::Option<bool>,
 }
@@ -698,7 +690,9 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         audit_attestations: ::std::result::Result<
-            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::option::Option<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
             ::std::string::String,
         >,
         election_id: ::std::result::Result<super::ElectionId, ::std::string::String>,
@@ -717,7 +711,9 @@ pub mod builder {
         pub fn audit_attestations<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                ::std::option::Option<
+                    ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -770,20 +766,22 @@ pub mod builder {
     pub struct QuestionResult {
         abstained: ::std::result::Result<u64, ::std::string::String>,
         choice: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, u64>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, u64>>,
             ::std::string::String,
         >,
         question: ::std::result::Result<super::Key, ::std::string::String>,
         ranking: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>>,
             ::std::string::String,
         >,
         score: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+            ::std::option::Option<
+                ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+            >,
             ::std::string::String,
         >,
         text: ::std::result::Result<
-            ::std::vec::Vec<super::QuestionResultTextItem>,
+            ::std::option::Option<::std::vec::Vec<super::QuestionResultTextItem>>,
             ::std::string::String,
         >,
         withheld: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
@@ -814,7 +812,9 @@ pub mod builder {
         }
         pub fn choice<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::Key, u64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::Key, u64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.choice = value
@@ -835,7 +835,9 @@ pub mod builder {
         pub fn ranking<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<super::Key, ::std::vec::Vec<u64>>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -847,7 +849,9 @@ pub mod builder {
         pub fn score<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+                ::std::option::Option<
+                    ::std::collections::HashMap<super::Key, super::QuestionResultScoreValue>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -858,7 +862,9 @@ pub mod builder {
         }
         pub fn text<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::QuestionResultTextItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::QuestionResultTextItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.text = value

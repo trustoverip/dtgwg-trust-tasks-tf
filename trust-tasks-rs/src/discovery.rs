@@ -427,7 +427,12 @@ impl DiscoveryRegistry {
     /// configured ([`Self::acceptance_window`],
     /// [`Self::acceptance_window_from`]).
     pub fn respond_to_v0_4(&self, query: &wire_v0_4::Payload) -> wire_v0_4::Response {
-        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let patterns: Vec<&str> = query
+            .patterns
+            .iter()
+            .flatten()
+            .map(|p| p.as_str())
+            .collect();
         let supported_types: Vec<wire_v0_4::ResponseSupportedTypesItem> = self
             .matching(&patterns)
             .map(|uri| {
@@ -536,7 +541,7 @@ mod tests {
     }
 
     fn everything() -> wire_v0_4::Payload {
-        wire_v0_4::Payload { patterns: vec![] }
+        wire_v0_4::Payload { patterns: None }
     }
 
     fn uri_of(entry: &wire_v0_4::ResponseSupportedTypesItem) -> &str {
@@ -635,14 +640,14 @@ mod tests {
 
         // ACL family — all 5 listed, discovery itself not.
         let acl_only = wire_v0_4::Payload {
-            patterns: vec!["acl/*".parse().unwrap()],
+            patterns: Some(vec!["acl/*".parse().unwrap()]),
         };
         let response = registry.respond_to_v0_4(&acl_only);
         assert_eq!(response.supported_types.len(), 5);
 
         // Exact match — only one.
         let only_grant = wire_v0_4::Payload {
-            patterns: vec!["acl/grant".parse().unwrap()],
+            patterns: Some(vec!["acl/grant".parse().unwrap()]),
         };
         let response = registry.respond_to_v0_4(&only_grant);
         assert_eq!(
@@ -656,7 +661,7 @@ mod tests {
 
         // No match.
         let nothing = wire_v0_4::Payload {
-            patterns: vec!["does-not-exist/*".parse().unwrap()],
+            patterns: Some(vec!["does-not-exist/*".parse().unwrap()]),
         };
         let response = registry.respond_to_v0_4(&nothing);
         assert!(response.supported_types.is_empty());
@@ -927,7 +932,7 @@ mod tests {
         use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;
         let window = DiscoveryRegistry::new()
             .acceptance_window_from(&FreshnessPolicy::consequential())
-            .respond_to_v0_3(&wire_v0_3::Payload { patterns: vec![] })
+            .respond_to_v0_3(&wire_v0_3::Payload { patterns: None })
             .acceptance_window
             .expect("a bounded policy has a window");
         assert_eq!(

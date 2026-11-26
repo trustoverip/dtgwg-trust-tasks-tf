@@ -762,8 +762,9 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub introduction: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub introduction:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.
     #[serde(rename = "joinDid")]
     pub join_did: PayloadJoinDid,
@@ -1914,7 +1915,7 @@ pub mod builder {
         community: ::std::result::Result<super::PayloadCommunity, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         introduction: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         join_did: ::std::result::Result<super::PayloadJoinDid, ::std::string::String>,
@@ -1986,7 +1987,9 @@ pub mod builder {
         pub fn introduction<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

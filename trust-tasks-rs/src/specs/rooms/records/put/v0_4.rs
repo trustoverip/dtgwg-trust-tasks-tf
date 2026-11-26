@@ -860,8 +860,8 @@ pub struct PayloadCleartext {
     ///Present when the record carries a file. Its `fileKey` MUST be present — an open room has no storage key to derive one from — and its `blobRef` MUST be the one the record names in `blobs`. The host reads it, like every other member here.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub file: ::std::option::Option<FileManifest>,
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub tags: ::std::vec::Vec<PayloadCleartextTagsItem>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub tags: ::std::option::Option<::std::vec::Vec<PayloadCleartextTagsItem>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub title: ::std::option::Option<PayloadCleartextTitle>,
     #[serde(
@@ -2345,7 +2345,7 @@ pub mod builder {
             ::std::string::String,
         >,
         tags: ::std::result::Result<
-            ::std::vec::Vec<super::PayloadCleartextTagsItem>,
+            ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
             ::std::string::String,
         >,
         title: ::std::result::Result<
@@ -2440,7 +2440,9 @@ pub mod builder {
         }
         pub fn tags<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::PayloadCleartextTagsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.tags = value

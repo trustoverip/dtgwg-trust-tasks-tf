@@ -300,9 +300,9 @@ pub struct ResponseFindingsItem {
     #[serde(
         rename = "sharedWith",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub shared_with: ::std::vec::Vec<ResponseFindingsItemSharedWithItem>,
+    pub shared_with: ::std::option::Option<::std::vec::Vec<ResponseFindingsItemSharedWithItem>>,
     ///Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.
     pub why: ResponseFindingsItemWhy,
 }
@@ -456,9 +456,9 @@ pub struct ResponseFindingsItemSharedWithItem {
     #[serde(
         rename = "disclosedTo",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub disclosed_to: ::std::vec::Vec<::std::string::String>,
+    pub disclosed_to: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.
     #[serde(
         rename = "facetId",
@@ -913,7 +913,7 @@ pub mod builder {
         >,
         severity: ::std::result::Result<super::ResponseFindingsItemSeverity, ::std::string::String>,
         shared_with: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
             ::std::string::String,
         >,
         why: ::std::result::Result<super::ResponseFindingsItemWhy, ::std::string::String>,
@@ -984,7 +984,9 @@ pub mod builder {
         }
         pub fn shared_with<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseFindingsItemSharedWithItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.shared_with = value
@@ -1038,8 +1040,10 @@ pub mod builder {
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        disclosed_to:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        disclosed_to: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         facet_id: ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
         persona_did: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
@@ -1072,7 +1076,9 @@ pub mod builder {
         }
         pub fn disclosed_to<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.disclosed_to = value

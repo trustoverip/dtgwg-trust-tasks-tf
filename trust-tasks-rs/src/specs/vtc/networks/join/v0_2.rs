@@ -123,11 +123,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[non_exhaustive]
 pub struct NetworkMembership {
     ///The community's acknowledgement (VMC carrying the grant's digest).
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub acknowledgement: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub acknowledgement:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The network's membership grant (VMC), once the community acknowledged.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub grant: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub grant: ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     pub groups: ::std::vec::Vec<RegisteredGroup>,
     #[serde(
         rename = "joinedAt",
@@ -143,8 +144,9 @@ pub struct NetworkMembership {
     ///The network's DID.
     pub network: NetworkMembershipNetwork,
     ///The community's repudiation (VSC) of the listing, or — on departure — of the grant.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub repudiation: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub repudiation:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///`acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
     pub state: NetworkMembershipState,
     #[serde(rename = "updatedAt")]
@@ -354,8 +356,8 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The community's groups to serve the network's roles. Every role the network requires must be assigned.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub groups: ::std::vec::Vec<RoleAssignment>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub groups: ::std::option::Option<::std::vec::Vec<RoleAssignment>>,
     ///The network's DID. For a request naming a `url`, the community refuses if the network found there answers as another DID.
     pub network: PayloadNetwork,
     ///The network's API base, as the network's administrators gave it.
@@ -805,11 +807,11 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct NetworkMembership {
         acknowledgement: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         grant: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         groups:
@@ -828,7 +830,7 @@ pub mod builder {
         >,
         network: ::std::result::Result<super::NetworkMembershipNetwork, ::std::string::String>,
         repudiation: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         state: ::std::result::Result<super::NetworkMembershipState, ::std::string::String>,
@@ -857,7 +859,9 @@ pub mod builder {
         pub fn acknowledgement<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -869,7 +873,9 @@ pub mod builder {
         pub fn grant<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -935,7 +941,9 @@ pub mod builder {
         pub fn repudiation<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -1015,8 +1023,10 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        groups:
-            ::std::result::Result<::std::vec::Vec<super::RoleAssignment>, ::std::string::String>,
+        groups: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<super::RoleAssignment>>,
+            ::std::string::String,
+        >,
         network: ::std::result::Result<super::PayloadNetwork, ::std::string::String>,
         url: ::std::result::Result<::std::string::String, ::std::string::String>,
     }
@@ -1043,7 +1053,9 @@ pub mod builder {
         }
         pub fn groups<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleAssignment>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::RoleAssignment>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.groups = value

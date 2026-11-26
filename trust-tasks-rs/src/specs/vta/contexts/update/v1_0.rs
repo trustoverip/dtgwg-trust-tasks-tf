@@ -47,26 +47,27 @@ pub struct ContextPolicy {
     #[serde(
         rename = "presentableTypes",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub presentable_types: ::std::vec::Vec<::std::string::String>,
+    pub presentable_types: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///Resource limits for the context. Shape is maintainer-defined.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub quotas: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub quotas:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Key ids the signing oracle may be invoked on within this context. Absent: every key the context holds. Present-but-empty: no keys.
     #[serde(
         rename = "signableKeys",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub signable_keys: ::std::vec::Vec<::std::string::String>,
+    pub signable_keys: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
     ///VIDs permitted to receive presentations from this context. Absent: any verifier. Present-but-empty: none.
     #[serde(
         rename = "trustedVerifiers",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub trusted_verifiers: ::std::vec::Vec<::std::string::String>,
+    pub trusted_verifiers: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl ::std::default::Default for ContextPolicy {
     fn default() -> Self {
@@ -624,16 +625,22 @@ pub mod builder {
     pub struct ContextPolicy {
         export_allowed: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        presentable_types:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        quotas: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        presentable_types: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
             ::std::string::String,
         >,
-        signable_keys:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        trusted_verifiers:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        quotas: ::std::result::Result<
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+        signable_keys: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
+        trusted_verifiers: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for ContextPolicy {
         fn default() -> Self {
@@ -670,7 +677,9 @@ pub mod builder {
         }
         pub fn presentable_types<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.presentable_types = value
@@ -681,7 +690,9 @@ pub mod builder {
         pub fn quotas<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -692,7 +703,9 @@ pub mod builder {
         }
         pub fn signable_keys<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.signable_keys = value
@@ -702,7 +715,9 @@ pub mod builder {
         }
         pub fn trusted_verifiers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.trusted_verifiers = value

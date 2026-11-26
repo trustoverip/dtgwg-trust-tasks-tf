@@ -71,10 +71,10 @@ fn nested_roundtrip_through_intermediary() {
     // On the wire it is addressed to the intermediary, not bob — bob's identity
     // stays hidden from anyone but the intermediary.
     //
-    // The *kind* is hidden too, and that is a Rev 3 change rather than a
-    // weaker assertion. Rev 2 carried the message type in the cleartext
-    // envelope, so a relay could tell a nested message from a direct one
-    // without holding any key. Rev 3 encrypts it: `MetaEnvelope::message_type`
+    // The *kind* is hidden too, and that is a change since the Rev 2 draft
+    // rather than a weaker assertion. Rev 2 carried the message type in the
+    // cleartext envelope, so a relay could tell a nested message from a direct
+    // one without holding any key. Rev 3 and TSP 1.0 encrypt it: `MetaEnvelope::message_type`
     // is documented as a keys-free placeholder that always reads `Direct`, and
     // a relay needing the real kind has to open the message. Asserting `Nested`
     // here would be asserting the leak.
@@ -125,7 +125,7 @@ fn routed_roundtrips_through_a_relay() {
     .expect("pack routed");
 
     // On the wire it is addressed to the first hop, not bob — and as with the
-    // nested case above, Rev 3 encrypts the message kind, so a keys-free parse
+    // nested case above, TSP 1.0 encrypts the message kind, so a keys-free parse
     // reads the `Direct` placeholder rather than `Routed`. The hop learns it is
     // routing by opening the message, not by reading the envelope.
     let meta = MetaEnvelope::parse(&wire).expect("parse meta");
