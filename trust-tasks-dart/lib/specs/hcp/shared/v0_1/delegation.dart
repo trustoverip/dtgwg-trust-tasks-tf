@@ -12,7 +12,7 @@ typedef Urn = String;
 /// An RFC 3339 instant.
 typedef Instant = String;
 
-/// `content`: the item's credential is the entry's content (VC Evidence profile).
+/// `content`: the item's credential is the entry's content (VC Evidence Profile).
 /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
@@ -124,7 +124,7 @@ class EvidenceItem {
                 json['verification'] as Map<String, dynamic>),
       );
 
-  /// `content`: the item's credential is the entry's content (VC Evidence profile).
+  /// `content`: the item's credential is the entry's content (VC Evidence Profile).
   /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
   final EvidenceItemRole role;
 

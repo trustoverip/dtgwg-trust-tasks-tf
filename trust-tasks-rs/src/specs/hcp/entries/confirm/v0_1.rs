@@ -966,20 +966,20 @@ impl<'de> ::serde::Deserialize<'de> for ClientDescriptionOperatorName {
             })
     }
 }
-///Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+///Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct Content {
-    ///Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
+    ///Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub evidence: ::std::option::Option<u64>,
-    ///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+    ///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub language: ::std::option::Option<ContentLanguage>,
     ///The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).
     pub profile: Uri,
-    ///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+    ///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub value: ::std::option::Option<ContentValue>,
 }
@@ -988,7 +988,7 @@ impl Content {
         Default::default()
     }
 }
-///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1047,7 +1047,7 @@ impl<'de> ::serde::Deserialize<'de> for ContentLanguage {
             })
     }
 }
-///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
@@ -1263,7 +1263,7 @@ pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub credential: ::std::option::Option<::serde_json::Value>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+    ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
     #[serde(rename = "type")]
@@ -1276,7 +1276,7 @@ impl EvidenceItem {
         Default::default()
     }
 }
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 #[derive(
     ::serde::Deserialize,
@@ -5354,7 +5354,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(524288usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_facccb41!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_9ff5fa61!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_b85c3770!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The entry, with the confirmation record appended to its current version and any status transition of HCP 4.7.3 applied (HCP 9.4.9). HCP's result body is the entry itself; the carriage wraps it in `entry`. Failures use trust-task-error, not this shape.\",\"properties\":{\"entry\":{\"$ref\":\"#/$defs/Entry\",\"description\":\"The HCP result (HCP 9.4.9): the whole entry, as a Management Client receives it (HCP 7.4), with the new record in `record.provenance.confirmations` (HCP 3.8).\"}},\"required\":[\"entry\"],\"title\":\"HCP — Confirm or Reject Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

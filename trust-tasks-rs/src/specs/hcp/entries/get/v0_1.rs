@@ -966,20 +966,20 @@ impl<'de> ::serde::Deserialize<'de> for ClientDescriptionOperatorName {
             })
     }
 }
-///Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+///Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct Content {
-    ///Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
+    ///Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub evidence: ::std::option::Option<u64>,
-    ///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+    ///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub language: ::std::option::Option<ContentLanguage>,
     ///The content profile, a URI: `https://hcp.example/spec/profiles/general-context/2.0` or `https://hcp.example/spec/profiles/vc-evidence/2.0` in HCP 2.0-draft-3, or a custom profile (HCP A.3).
     pub profile: Uri,
-    ///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+    ///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub value: ::std::option::Option<ContentValue>,
 }
@@ -988,7 +988,7 @@ impl Content {
         Default::default()
     }
 }
-///The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+///The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -1047,7 +1047,7 @@ impl<'de> ::serde::Deserialize<'de> for ContentLanguage {
             })
     }
 }
-///The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+///The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
@@ -1430,7 +1430,7 @@ pub struct DisclosedEvidenceItem {
     ///The JSON Pointers into the stored credential of the claims a derived credential reveals (HCP 7.4, 14.9).
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
     pub revealed: ::std::vec::Vec<DisclosedEvidenceItemRevealedItem>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+    ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: DisclosedEvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
     #[serde(rename = "type")]
@@ -1502,7 +1502,7 @@ impl<'de> ::serde::Deserialize<'de> for DisclosedEvidenceItemRevealedItem {
             })
     }
 }
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 #[derive(
     ::serde::Deserialize,
@@ -2377,7 +2377,7 @@ pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub credential: ::std::option::Option<::serde_json::Value>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+    ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
     #[serde(rename = "type")]
@@ -2390,7 +2390,7 @@ impl EvidenceItem {
         Default::default()
     }
 }
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 #[derive(
     ::serde::Deserialize,
@@ -7631,7 +7631,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(524288usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_facccb41!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",", crate::specs::shared_defs::d_DisclosedEvidenceItem_3514e7f9!(), ",", crate::specs::shared_defs::d_DisclosedProvenance_20a80e94!(), ",", crate::specs::shared_defs::d_DisclosedRelationship_411becf4!(), ",", crate::specs::shared_defs::d_Disclosure_536f5f00!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_MinimizationReport_00feca86!(), ",", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP Get entry result (HCP 5.2.2): the entry, inside a result so that the minimization report has somewhere to sit. Failures use trust-task-error, not this shape.\",\"properties\":{\"directives\":{\"description\":\"HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies. Null where the requester is not a Context Client, to whom HCP delivers no directives. HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that \\\"none applies\\\" is never confused with \\\"not a Context Client\\\", pending HCP confirmation (question 42).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"type\":[\"array\",\"null\"]},\"entry\":{\"anyOf\":[{\"$ref\":\"#/$defs/Disclosure\"},{\"$ref\":\"#/$defs/Entry\"}],\"description\":\"HCP `entry`: a Disclosure where the requester is a Context Client (HCP 7.4), with its `useUntil` (HCP 7.6); otherwise the whole Entry.\"},\"minimization\":{\"$ref\":\"#/$defs/MinimizationReport\",\"description\":\"HCP `minimization`: the minimization report (HCP 7.5). Its `method` is `none`, since the caller named a single entry (HCP 5.2.2, 9.4.2).\"},\"respondedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.2).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `retrievalId`: the `urn:uuid:` identifier of this retrieval, recorded in the `context.read` audit event (HCP 5.2.2, 8.2).\"}},\"required\":[\"entry\",\"retrievalId\",\"minimization\",\"directives\",\"respondedAt\"],\"title\":\"HCP — Get Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Standing_f84e650f!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Assertion_7258cdf9!(), ",", crate::specs::shared_defs::d_Assurance_debf452c!(), ",", crate::specs::shared_defs::d_Basis_811cd1e4!(), ",", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Classification_f9d67cb6!(), ",", crate::specs::shared_defs::d_ClientDescription_b9e66f88!(), ",", crate::specs::shared_defs::d_Content_9ff5fa61!(), ",", crate::specs::shared_defs::d_Directive_84bea5d6!(), ",", crate::specs::shared_defs::d_DisclosedEvidenceItem_3514e7f9!(), ",", crate::specs::shared_defs::d_DisclosedProvenance_20a80e94!(), ",", crate::specs::shared_defs::d_DisclosedRelationship_411becf4!(), ",", crate::specs::shared_defs::d_Disclosure_536f5f00!(), ",", crate::specs::shared_defs::d_Entry_97831f86!(), ",", crate::specs::shared_defs::d_EntrySubject_d714f210!(), ",", crate::specs::shared_defs::d_EvidenceItem_b85c3770!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},", crate::specs::shared_defs::d_MinimizationReport_00feca86!(), ",", crate::specs::shared_defs::d_Provenance_190796b6!(), ",", crate::specs::shared_defs::d_PurposeCode_364056e0!(), ",", crate::specs::shared_defs::d_Record_fb040dcd!(), ",", crate::specs::shared_defs::d_RecordedProposal_3a611e4e!(), ",", crate::specs::shared_defs::d_Relationship_6d76680c!(), ",", crate::specs::shared_defs::d_RelationshipType_41a887f3!(), ",\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The HCP Get entry result (HCP 5.2.2): the entry, inside a result so that the minimization report has somewhere to sit. Failures use trust-task-error, not this shape.\",\"properties\":{\"directives\":{\"description\":\"HCP `directives`: the directives that apply, where the requester is a Context Client (HCP 5.2.2, 6.4); empty when none applies. Null where the requester is not a Context Client, to whom HCP delivers no directives. HCP's own shape leaves the member optional; the carriage requires it, as a list or null, so that \\\"none applies\\\" is never confused with \\\"not a Context Client\\\", pending HCP confirmation (question 42).\",\"items\":{\"$ref\":\"#/$defs/Directive\"},\"type\":[\"array\",\"null\"]},\"entry\":{\"anyOf\":[{\"$ref\":\"#/$defs/Disclosure\"},{\"$ref\":\"#/$defs/Entry\"}],\"description\":\"HCP `entry`: a Disclosure where the requester is a Context Client (HCP 7.4), with its `useUntil` (HCP 7.6); otherwise the whole Entry.\"},\"minimization\":{\"$ref\":\"#/$defs/MinimizationReport\",\"description\":\"HCP `minimization`: the minimization report (HCP 7.5). Its `method` is `none`, since the caller named a single entry (HCP 5.2.2, 9.4.2).\"},\"respondedAt\":{\"$ref\":\"#/$defs/Instant\",\"description\":\"HCP `timestamp`, renamed: the date-time of the response (HCP 5.2.2).\"},\"retrievalId\":{\"$ref\":\"#/$defs/Urn\",\"description\":\"HCP `retrievalId`: the `urn:uuid:` identifier of this retrieval, recorded in the `context.read` audit event (HCP 5.2.2, 8.2).\"}},\"required\":[\"entry\",\"retrievalId\",\"minimization\",\"directives\",\"respondedAt\"],\"title\":\"HCP — Get Entry — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Standing_f84e650f!(), ",", crate::specs::shared_defs::d_Uri_07e686fd!(), ",", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

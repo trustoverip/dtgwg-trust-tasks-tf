@@ -851,7 +851,7 @@ pub struct EvidenceItem {
     ///The credential: for `verifiable-credential`, a W3C Verifiable Credential with `@context`, `type`, `issuer` and `credentialSubject`, whose own data model governs its contents (HCP 4.2.2, 14.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub credential: ::std::option::Option<::serde_json::Value>,
-    ///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+    ///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
     pub role: EvidenceItemRole,
     ///The evidence type: `verifiable-credential`, or a URI (HCP 4.2.2, A.3).
     #[serde(rename = "type")]
@@ -864,7 +864,7 @@ impl EvidenceItem {
         Default::default()
     }
 }
-///`content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+///`content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 #[derive(
     ::serde::Deserialize,
@@ -2219,7 +2219,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(2097152usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Delegation_62ece95d!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_EvidenceItem_9dda2fd0!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delegations the caller may see (HCP 9.4.13, 17.2). Not paginated (HCP 9.4.13). Failures use trust-task-error, not this shape.\",\"properties\":{\"delegations\":{\"description\":\"HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"type\":\"array\"}},\"required\":[\"delegations\"],\"title\":\"HCP — List Delegations — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
+        concat!("{\"$defs\":{", crate::specs::shared_defs::d_Category_bc23a848!(), ",", crate::specs::shared_defs::d_Delegation_62ece95d!(), ",", crate::specs::shared_defs::d_DelegationBasis_5707cab8!(), ",", crate::specs::shared_defs::d_DelegationEnded_652f9f46!(), ",", crate::specs::shared_defs::d_DelegationScope_7c41b3c9!(), ",", crate::specs::shared_defs::d_DelegationTerm_1bad5227!(), ",", crate::specs::shared_defs::d_EvidenceItem_b85c3770!(), ",\"Instant\":{\"description\":\"An RFC 3339 instant.\",\"format\":\"date-time\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delegations the caller may see (HCP 9.4.13, 17.2). Not paginated (HCP 9.4.13). Failures use trust-task-error, not this shape.\",\"properties\":{\"delegations\":{\"description\":\"HCP `delegations` (HCP 9.4.13): every delegation for the Context Subject, for a Management Client acting for them; the delegations naming the delegate, and the sub-delegations that delegate appointed (pending HCP confirmation, question 32), for one acting for a delegate. An ended delegation carries `ended` (HCP 17.2, 17.6). Empty when there are none.\",\"items\":{\"$ref\":\"#/$defs/Delegation\"},\"type\":\"array\"}},\"required\":[\"delegations\"],\"title\":\"HCP — List Delegations — response payload\",\"type\":\"object\"},", crate::specs::shared_defs::d_Urn_46c3cc7e!(), "},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n"),
     );
 }
 impl crate::RequestPayload for Payload {

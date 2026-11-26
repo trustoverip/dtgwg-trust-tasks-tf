@@ -41,8 +41,8 @@ class EntrySubject {
 typedef Uri = String;
 
 /// Entry content. `profile` names its shape (HCP 4.2). Under the General Context
-/// profile it carries `value` and optionally `language` (HCP 11.2); under the VC
-/// Evidence profile it carries `evidence`, the index of the evidence item holding the
+/// Profile it carries `value` and optionally `language` (HCP 11.2); under the VC
+/// Evidence Profile it carries `evidence`, the index of the evidence item holding the
 /// credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General
 /// Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden.
 /// This rule is stated here and not as a schema conditional: the registry's Rust
@@ -68,15 +68,15 @@ class Content {
   /// custom profile (HCP A.3).
   final Uri profile;
 
-  /// The statement, under the General Context profile: a string or a structured object
+  /// The statement, under the General Context Profile: a string or a structured object
   /// (HCP 11.2).
   final Object? value;
 
-  /// The BCP 47 language tag of a string `value`, under the General Context profile (HCP
+  /// The BCP 47 language tag of a string `value`, under the General Context Profile (HCP
   /// 11.2). Optional; may be null.
   final String? language;
 
-  /// Under the VC Evidence profile, the index in `evidence` of the item whose credential
+  /// Under the VC Evidence Profile, the index in `evidence` of the item whose credential
   /// is the content (HCP 4.2.2).
   final int? evidence;
 
@@ -270,7 +270,7 @@ class Classification {
 /// An RFC 3339 instant.
 typedef Instant = String;
 
-/// `content`: the item's credential is the entry's content (VC Evidence profile).
+/// `content`: the item's credential is the entry's content (VC Evidence Profile).
 /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
@@ -382,7 +382,7 @@ class EvidenceItem {
                 json['verification'] as Map<String, dynamic>),
       );
 
-  /// `content`: the item's credential is the entry's content (VC Evidence profile).
+  /// `content`: the item's credential is the entry's content (VC Evidence Profile).
   /// `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
   final EvidenceItemRole role;
 

@@ -10317,7 +10317,7 @@ export interface ContactRevision {
   document?: ContactDocument;
 }
 /**
- * Entry content. `profile` names its shape (HCP 4.2). Under the General Context profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
+ * Entry content. `profile` names its shape (HCP 4.2). Under the General Context Profile it carries `value` and optionally `language` (HCP 11.2); under the VC Evidence Profile it carries `evidence`, the index of the evidence item holding the credential, and no `value` (HCP 4.2.2, 14). So `value` is REQUIRED under General Context, and under VC Evidence `evidence` is REQUIRED and `value` is forbidden. This rule is stated here and not as a schema conditional: the registry's Rust generator does not support `if`/`then`/`else`, so a validator does not check it.
  */
 export interface Content {
   /**
@@ -10325,15 +10325,15 @@ export interface Content {
    */
   profile: Uri;
   /**
-   * The statement, under the General Context profile: a string or a structured object (HCP 11.2).
+   * The statement, under the General Context Profile: a string or a structured object (HCP 11.2).
    */
   value?: string | {};
   /**
-   * The BCP 47 language tag of a string `value`, under the General Context profile (HCP 11.2). Optional; may be null.
+   * The BCP 47 language tag of a string `value`, under the General Context Profile (HCP 11.2). Optional; may be null.
    */
   language?: string | null;
   /**
-   * Under the VC Evidence profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
+   * Under the VC Evidence Profile, the index in `evidence` of the item whose credential is the content (HCP 4.2.2).
    */
   evidence?: number;
   [k: string]: unknown | undefined;
@@ -13035,7 +13035,7 @@ export interface EvidenceDocument {}
  */
 export interface EvidenceItem {
   /**
-   * `content`: the item's credential is the entry's content (VC Evidence profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
+   * `content`: the item's credential is the entry's content (VC Evidence Profile). `supports`: the item backs content stated elsewhere in the entry (HCP 4.2.2).
    */
   role: "content" | "supports";
   /**
