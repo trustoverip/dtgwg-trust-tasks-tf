@@ -423,16 +423,24 @@ pub struct Record {
     #[serde(rename = "authorityId")]
     pub authority_id: RecordAuthorityId,
     ///Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub authorized: ::std::option::Option<bool>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub authorized: ::std::option::Option<::std::option::Option<bool>>,
     ///The entity the record is about.
     #[serde(rename = "entityId")]
     pub entity_id: RecordEntityId,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub recognized: ::std::option::Option<bool>,
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub recognized: ::std::option::Option<::std::option::Option<bool>>,
     ///Record discriminator, as the trust registry states it.
     #[serde(rename = "recordType")]
     pub record_type: RecordRecordType,
@@ -754,9 +762,10 @@ pub struct Response {
     #[serde(
         rename = "nextCursor",
         default,
+        deserialize_with = "crate::specs::__presence::present",
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub next_cursor: ::std::option::Option<::std::string::String>,
+    pub next_cursor: ::std::option::Option<::std::option::Option<::std::string::String>>,
     ///Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.
     pub source: Source,
 }
@@ -986,10 +995,16 @@ pub mod builder {
     pub struct Record {
         action: ::std::result::Result<super::RecordAction, ::std::string::String>,
         authority_id: ::std::result::Result<super::RecordAuthorityId, ::std::string::String>,
-        authorized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        authorized: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<bool>>,
+            ::std::string::String,
+        >,
         entity_id: ::std::result::Result<super::RecordEntityId, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        recognized: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        recognized: ::std::result::Result<
+            ::std::option::Option<::std::option::Option<bool>>,
+            ::std::string::String,
+        >,
         record_type: ::std::result::Result<super::RecordRecordType, ::std::string::String>,
         resource: ::std::result::Result<super::RecordResource, ::std::string::String>,
     }
@@ -1030,7 +1045,7 @@ pub mod builder {
         }
         pub fn authorized<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<bool>>>,
             T::Error: ::std::fmt::Display,
         {
             self.authorized = value
@@ -1060,7 +1075,7 @@ pub mod builder {
         }
         pub fn recognized<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T: ::std::convert::TryInto<::std::option::Option<::std::option::Option<bool>>>,
             T::Error: ::std::fmt::Display,
         {
             self.recognized = value
@@ -1123,7 +1138,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         items: ::std::result::Result<::std::vec::Vec<super::Record>, ::std::string::String>,
         next_cursor: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
+            ::std::option::Option<::std::option::Option<::std::string::String>>,
             ::std::string::String,
         >,
         source: ::std::result::Result<super::Source, ::std::string::String>,
@@ -1161,7 +1176,9 @@ pub mod builder {
         }
         pub fn next_cursor<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.next_cursor = value

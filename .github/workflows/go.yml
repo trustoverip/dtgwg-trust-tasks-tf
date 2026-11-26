@@ -217,10 +217,10 @@ jobs:
   # which excludes a nested module, so none of them pulls affinidi-tsp-go. This
   # job builds, vets and tests that module on its own floor.
   #
-  # It is NOT wired into a release: affinidi-tsp-go is required at a pseudo-version
-  # (it has no tag yet), so a `trust-tasks-go/tsp/vX.Y.Z` release waits until it is
-  # tagged. Until then `go get` of this module resolves the pseudo-version from
-  # the public repo.
+  # It is NOT wired into a release yet: affinidi-tsp-go is now tagged (v0.2.0,
+  # TSP 1.0), so nothing upstream blocks one, but the `trust-tasks-go/tsp/vX.Y.Z`
+  # leg in publish.yml is a follow-up. Until then `go get` of this module
+  # resolves a pseudo-version of this repository.
   tsp:
     name: go test trust-tasks-go/tsp (${{ matrix.go }})
     runs-on: ubuntu-24.04

@@ -220,9 +220,10 @@ pub struct Response {
     #[serde(
         rename = "reboundPersonaDids",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub rebound_persona_dids: ::std::vec::Vec<ResponseReboundPersonaDidsItem>,
+    pub rebound_persona_dids:
+        ::std::option::Option<::std::vec::Vec<ResponseReboundPersonaDidsItem>>,
     ///The face's version in the pool.
     pub version: Version,
 }
@@ -518,7 +519,7 @@ pub mod builder {
             ::std::string::String,
         >,
         rebound_persona_dids: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseReboundPersonaDidsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
             ::std::string::String,
         >,
         version: ::std::result::Result<super::Version, ::std::string::String>,
@@ -567,7 +568,9 @@ pub mod builder {
         }
         pub fn rebound_persona_dids<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseReboundPersonaDidsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.rebound_persona_dids = value.try_into().map_err(|e| {

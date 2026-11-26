@@ -37,7 +37,12 @@ impl DiscoveryRegistry {
     pub fn respond_to(&self, query: &wire::Payload) -> wire::Response {
         // Generated `Payload` wraps each pattern in a `PayloadPatternsItem`
         // newtype; deref to &str for matching.
-        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let patterns: Vec<&str> = query
+            .patterns
+            .iter()
+            .flatten()
+            .map(|p| p.as_str())
+            .collect();
         let supported_types: Vec<wire::ResponseSupportedTypesItem> = self
             .matching(&patterns)
             .map(|uri| match self.required_ext_for(uri) {
@@ -73,7 +78,12 @@ impl DiscoveryRegistry {
     ///
     /// 0.2 is superseded; this is removed when 0.2 is withdrawn.
     pub fn respond_to_v0_2(&self, query: &wire_v0_2::Payload) -> wire_v0_2::Response {
-        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let patterns: Vec<&str> = query
+            .patterns
+            .iter()
+            .flatten()
+            .map(|p| p.as_str())
+            .collect();
         let supported_types: Vec<wire_v0_2::ResponseSupportedTypesItem> = self
             .matching(&patterns)
             .map(|uri| match self.required_ext_for(uri) {
@@ -112,7 +122,12 @@ impl DiscoveryRegistry {
     /// narrower than the window applied, which 0.3's responder rule 1
     /// permits.
     pub fn respond_to_v0_3(&self, query: &wire_v0_3::Payload) -> wire_v0_3::Response {
-        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let patterns: Vec<&str> = query
+            .patterns
+            .iter()
+            .flatten()
+            .map(|p| p.as_str())
+            .collect();
         let supported_types: Vec<wire_v0_3::ResponseSupportedTypesItem> = self
             .matching(&patterns)
             .map(|uri| {
@@ -185,7 +200,7 @@ mod tests {
     #[test]
     fn v0_1_filters_by_pattern_and_writes_major_minor() {
         let response = registry().respond_to(&wire::Payload {
-            patterns: vec!["acl/*".parse().unwrap()],
+            patterns: Some(vec!["acl/*".parse().unwrap()]),
         });
         assert_eq!(
             response
@@ -202,23 +217,23 @@ mod tests {
             response.framework_version.as_ref().map(|v| v.to_string()),
             Some("0.6".to_string())
         );
-        let everything = registry().respond_to(&wire::Payload { patterns: vec![] });
+        let everything = registry().respond_to(&wire::Payload { patterns: None });
         assert_eq!(everything.supported_types.len(), 3);
     }
 
     #[test]
     fn no_framework_version_suppresses_field() {
         let registry = DiscoveryRegistry::new().no_framework_version();
-        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        let response = registry.respond_to(&wire::Payload { patterns: None });
         assert!(response.framework_version.is_none());
-        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert!(response.framework_version.is_none());
     }
 
     #[test]
     fn override_framework_version_is_emitted_verbatim_in_0_1() {
         let registry = DiscoveryRegistry::new().framework_version("0.2");
-        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        let response = registry.respond_to(&wire::Payload { patterns: None });
         assert_eq!(
             response.framework_version.as_ref().map(|v| v.to_string()),
             Some("0.2".to_string())
@@ -227,7 +242,7 @@ mod tests {
 
     #[test]
     fn v0_2_writes_the_full_three_part_release() {
-        let response = registry().respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let response = registry().respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert_eq!(
             response.framework_version.as_ref().map(|v| v.to_string()),
             Some("0.6.0".to_string())
@@ -239,8 +254,8 @@ mod tests {
     fn a_patch_release_survives_in_0_2_and_is_dropped_only_in_0_1() {
         // 0.1 cannot express a PATCH; 0.2 exists so that it can.
         let registry = DiscoveryRegistry::new().framework_version("0.6.1");
-        let v1 = registry.respond_to(&wire::Payload { patterns: vec![] });
-        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let v1 = registry.respond_to(&wire::Payload { patterns: None });
+        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert_eq!(
             v1.framework_version.map(|v| v.to_string()),
             Some("0.6".into())
@@ -255,7 +270,7 @@ mod tests {
     fn a_two_part_override_is_written_as_its_dot_zero_in_0_2() {
         // SPEC §5.1.1: a two-part M.N is the release M.N.0.
         let registry = DiscoveryRegistry::new().framework_version("0.5");
-        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert_eq!(
             v2.framework_version.map(|v| v.to_string()),
             Some("0.5.0".into())
@@ -275,9 +290,9 @@ mod tests {
     #[test]
     fn malformed_framework_version_override_is_omitted_not_panicked() {
         let registry = DiscoveryRegistry::new().framework_version("not-a-version");
-        let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        let response = registry.respond_to(&wire::Payload { patterns: None });
         assert!(response.framework_version.is_none());
-        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert!(response.framework_version.is_none());
     }
 
@@ -293,7 +308,7 @@ mod tests {
                 30,
             );
 
-        let v1 = registry.respond_to(&wire::Payload { patterns: vec![] });
+        let v1 = registry.respond_to(&wire::Payload { patterns: None });
         match &v1.supported_types[0] {
             wire::ResponseSupportedTypesItem::Object { required_ext, .. } => {
                 let namespaces: Vec<String> = required_ext
@@ -312,7 +327,7 @@ mod tests {
             wire::ResponseSupportedTypesItem::Uri(_)
         ));
 
-        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: None });
         assert!(matches!(
             &v2.supported_types[0],
             wire_v0_2::ResponseSupportedTypesItem::Object { required_ext: Some(ns), .. } if ns.len() == 1

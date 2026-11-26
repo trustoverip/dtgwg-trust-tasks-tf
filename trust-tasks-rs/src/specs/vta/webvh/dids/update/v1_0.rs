@@ -127,8 +127,9 @@ pub struct Payload {
     ///The did:webvh being updated. The agent MUST verify it speaks for this subject.
     pub did: PayloadDid,
     ///The new DID document. Omit to leave it unchanged. Supplying this ROTATES the DID's update key and refreshes its pre-rotation commitments, as a parallel consequence of the change — a consequence not visible anywhere in this payload, because it lives in the executing handler's semantics. A consent surface MUST therefore render effects the executor computed, and MUST NOT derive them from this document.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub document:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///Optimistic-concurrency precondition: the versionId the caller based this edit on. The agent MUST refuse the update if the DID's latest entry no longer matches. Without it a `get -> edit -> save` cycle silently overwrites a concurrent edit with a chain that is structurally valid, verifies perfectly, and is based on a stale read. Where a human approves the update the window is minutes wide, so this is a routine race rather than an exotic one. OPTIONAL because a scripted caller with no concurrent writers has nothing to protect against; not optional for anything a person looked at.
     #[serde(
         rename = "expectedVersionId",
@@ -152,11 +153,15 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ttl: ::std::option::Option<u64>,
     ///New watcher URLs. Omit to keep the current set; an empty array removes them.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub watchers: ::std::vec::Vec<::std::string::String>,
-    ///New witness configuration. Omit to keep the current one.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub witnesses: ::std::option::Option<::serde_json::Value>,
+    pub watchers: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ///New witness configuration. Omit to keep the current one.
+    #[serde(
+        default,
+        deserialize_with = "crate::specs::__presence::present",
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub witnesses: ::std::option::Option<::std::option::Option<::serde_json::Value>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -395,7 +400,7 @@ pub mod builder {
     pub struct Payload {
         did: ::std::result::Result<super::PayloadDid, ::std::string::String>,
         document: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         expected_version_id: ::std::result::Result<
@@ -410,10 +415,12 @@ pub mod builder {
         pre_rotation_count:
             ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         ttl: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
-        watchers:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        watchers: ::std::result::Result<
+            ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            ::std::string::String,
+        >,
         witnesses: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
+            ::std::option::Option<::std::option::Option<::serde_json::Value>>,
             ::std::string::String,
         >,
     }
@@ -446,7 +453,9 @@ pub mod builder {
         pub fn document<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {
@@ -507,7 +516,9 @@ pub mod builder {
         }
         pub fn watchers<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.watchers = value
@@ -517,7 +528,9 @@ pub mod builder {
         }
         pub fn witnesses<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::option::Option<::serde_json::Value>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.witnesses = value

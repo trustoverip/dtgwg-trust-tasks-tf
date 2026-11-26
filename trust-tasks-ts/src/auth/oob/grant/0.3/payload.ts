@@ -8,6 +8,8 @@ import type { DigestMultibase, OobKey, Origin, RequestId, SigningScope, TaskFami
 
 /**
  * The member's decision on one out-of-band request, as an attestation: "let this starter key act as me at this origin until sessionEndsAt, having seen this context" — and, where the grant carries `signingScope`, "and sign documents of these task families as me, for that session" — or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond/0.3. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/grant/0.4
  */
 export interface AuthOOBGrantPayload {
   requestId: RequestId;
@@ -61,9 +63,13 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by auth/oob/grant/0.4";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/grant/0.4
+ */
 export type Payload = AuthOOBGrantPayload;
 
 /**

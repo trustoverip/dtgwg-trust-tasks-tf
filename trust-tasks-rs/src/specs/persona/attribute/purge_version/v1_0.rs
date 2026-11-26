@@ -151,9 +151,9 @@ pub struct Response {
     #[serde(
         rename = "stalePins",
         default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub stale_pins: ::std::vec::Vec<ResponseStalePinsItem>,
+    pub stale_pins: ::std::option::Option<::std::vec::Vec<ResponseStalePinsItem>>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -360,7 +360,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         purged: ::std::result::Result<::std::vec::Vec<super::Version>, ::std::string::String>,
         stale_pins: ::std::result::Result<
-            ::std::vec::Vec<super::ResponseStalePinsItem>,
+            ::std::option::Option<::std::vec::Vec<super::ResponseStalePinsItem>>,
             ::std::string::String,
         >,
     }
@@ -407,7 +407,9 @@ pub mod builder {
         }
         pub fn stale_pins<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseStalePinsItem>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::vec::Vec<super::ResponseStalePinsItem>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.stale_pins = value

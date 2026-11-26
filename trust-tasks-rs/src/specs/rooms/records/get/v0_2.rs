@@ -587,8 +587,9 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub blobs: ::std::option::Option<Vec<BlobRef>>,
     ///Present on an `open` room.
-    #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
-    pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub cleartext:
+        ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
     ///The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and so a `trace` returned beside it has a root to reach.
     #[serde(
         rename = "dataCommitment",
@@ -954,7 +955,7 @@ pub mod builder {
             ::std::string::String,
         >,
         cleartext: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
             ::std::string::String,
         >,
         data_commitment: ::std::result::Result<
@@ -1028,7 +1029,9 @@ pub mod builder {
         pub fn cleartext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                ::std::option::Option<
+                    ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+                >,
             >,
             T::Error: ::std::fmt::Display,
         {

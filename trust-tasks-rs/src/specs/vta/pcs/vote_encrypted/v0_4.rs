@@ -46,11 +46,8 @@ pub struct Answer {
     pub question: Key,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ranking: ::std::option::Option<Vec<Key>>,
-    #[serde(
-        default,
-        skip_serializing_if = ":: std :: collections :: HashMap::is_empty"
-    )]
-    pub scores: ::std::collections::HashMap<Key, i64>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub scores: ::std::option::Option<::std::collections::HashMap<Key, i64>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub text: ::std::option::Option<AnswerText>,
 }
@@ -1916,7 +1913,7 @@ pub mod builder {
         ranking:
             ::std::result::Result<::std::option::Option<Vec<super::Key>>, ::std::string::String>,
         scores: ::std::result::Result<
-            ::std::collections::HashMap<super::Key, i64>,
+            ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
             ::std::string::String,
         >,
         text:
@@ -1977,7 +1974,9 @@ pub mod builder {
         }
         pub fn scores<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::collections::HashMap<super::Key, i64>>,
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::std::collections::HashMap<super::Key, i64>>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.scores = value

@@ -121,7 +121,7 @@ and `didcomm.NewMessageID` remain, as forwarders to it.
 
 ### The `trust-tasks-go/tsp` nested module
 
-The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
+The TSP transport binding (`tsp/0.3`) is a **separate Go module** under `trust-tasks-go/tsp`,
 not a package of the core. The core module has zero dependencies (its selling
 point, and what the website claims), and this one pulls in `affinidi-tsp-go` and
 its crypto. Keeping them apart is the whole point.
@@ -131,12 +131,20 @@ its crypto. Keeping them apart is the whole point.
   dependency. A dedicated `tsp` job in `go.yml` builds and tests it on its own
   floor (`go 1.27`, inherited from `affinidi-tsp-go`). `gofmt -l .` in the core
   job does recurse into the subdir, so keep the tsp files gofmt-clean.
-- **It is not released yet.** `affinidi-tsp-go` has no tag, so `go.mod` requires
-  it at a pseudo-version and there is no `trust-tasks-go/tsp/v*` release wiring in
-  `publish.yml`. `go get` of the module still works (the proxy resolves the
-  pseudo-version from the public repo). When `affinidi-tsp-go` is tagged: bump the
-  requirement to the tag and add a `publish-go`-style tag job for
-  `trust-tasks-go/tsp/vX.Y.Z`.
+- **It speaks TSP 1.0 only.** It requires the tagged `affinidi-tsp-go` v0.2.0
+  (`YTSP-BAA`), as the Rust and TypeScript TSP bindings speak 1.0. A peer on a TSP
+  draft (MAJOR other than 1) is refused `FailUnsupportedTSPVersion` from the
+  version marker, before `Open`; an unknown 1.x MINOR is not a version refusal
+  (TSP 1.0 §3.1). TSP has no version negotiation, so moving `affinidi-tsp-go` across
+  a TSP version is a wire break for every peer: do it deliberately, and
+  regenerate the fixtures in `interop_test.go` (each records how it was
+  produced) when the TSP version moves, not when the library does.
+- **It is not released yet.** Its dependency is tagged now, so nothing upstream
+  blocks a release, but there is no `trust-tasks-go/tsp/v*` release wiring in
+  `publish.yml` yet. `go get` of the module resolves a pseudo-version of this
+  repository. Wiring it is a follow-up: a `publish-go`-style leg and a
+  `GO_MODULES` entry, a `version.go`, and its scope in the bump script and
+  commit-lint's package list, like `didcomm`.
 - **The Go TSP library signs Ed25519 only** and does no DID resolution — the
   caller supplies the sender `*tsp.Identity` (read `AdvertisedSender`, look it up
   in your own store). The sealed `{type, document}` envelope matches the Rust

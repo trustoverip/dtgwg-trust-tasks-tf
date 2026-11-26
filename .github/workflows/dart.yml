@@ -342,12 +342,11 @@ jobs:
   # and the HTTPS, DIDComm and TSP bindings.
   #
   # trust_tasks_tsp is tested here but is NOT in the release matrices in
-  # publish.yml: it depends on affinidi_tsp, which is not on pub.dev yet, so it
-  # cannot be published (its pubspec_overrides.yaml supplies affinidi_tsp from
-  # git). CI resolves that override; a release, which deletes it, cannot. When
-  # affinidi_tsp publishes, a follow-up flips the dep to hosted and adds the
-  # release entries. `check-dart-packages` allows a package tested here that is
-  # not (yet) in the release matrices. Each is held to the same bar as the core — analysis with
+  # publish.yml yet. Its dependency affinidi_tsp is on pub.dev (0.2, TSP 1.0)
+  # and resolves hosted, so nothing upstream blocks a release; adding the
+  # release entries and the manual first publish is a follow-up.
+  # `check-dart-packages` allows a package tested here that is not (yet) in the
+  # release matrices. Each is held to the same bar as the core — analysis with
   # --fatal-infos, formatting at its own SDK floor, and its tests on that floor
   # and on stable.
   #
@@ -397,10 +396,9 @@ jobs:
             sdk: "3.6"
           - package: trust-tasks-dart-didcomm
             sdk: stable
-          # affinidi_tsp's floor is 3.8. Resolves affinidi_tsp from git via the
-          # package's committed pubspec_overrides.yaml.
+          # 3.10 is the floor affinidi_tsp 0.2 sets.
           - package: trust-tasks-dart-tsp
-            sdk: "3.8"
+            sdk: "3.10"
           - package: trust-tasks-dart-tsp
             sdk: stable
           # Pure wire logic, no crypto or transport dep. 3.6 is its floor — the
@@ -458,9 +456,8 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: |
           printf '  ssi: %s\n' "${{ matrix.ssi }}" >> pubspec_overrides.yaml
-      # Drop the trust_tasks override (only that one: trust-tasks-dart-tsp's
-      # also supplies affinidi_tsp from git), as tag-dart does before verifying
-      # a release, so the floor is resolved from pub.dev.
+      # Drop the trust_tasks override, as tag-dart does before verifying a
+      # release, so the floor is resolved from pub.dev.
       - name: Use the published core
         id: floor
         if: steps.changes.outputs.run == 'true' && (matrix.downgrade)

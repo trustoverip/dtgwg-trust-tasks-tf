@@ -76,7 +76,7 @@ A conforming **reader** (`issuer`) names the badge it was shown the picture on, 
 A conforming **consumer** (the community) **MUST**:
 
 1. Answer as if no badge existed while its badge settings have `enabled` false (VTI-BDG-004).
-2. Answer only an active member, signing with their membership DID or with a key they delegated for this community under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) whose `signingScope` covers `vtc/badges`, read as its member; and only for a badge that member may see — an active badge that is `listed`, or that they hold, own or have an open offer of; any badge to a holder of `vtc.badges.admin`; a retired badge to a holder of it. Anyone and anything else is `notFound`.
+2. Answer only an active member, signing with their membership DID or with a key they delegated for this community under [`auth/oob/grant/0.4`](../../../../../auth/oob/grant/0.4/spec.md) whose `signingScope` covers `vtc/badges`, read as its member; and only for a badge that member may see — an active badge that is `listed`, or that they hold, own or have an open offer of; any badge to a holder of `vtc.badges.admin`; a retired badge to a holder of it. Anyone and anything else is `notFound`.
 3. Where `sha256` is present, answer only when the badge's picture is that image.
 4. Answer every refusal with `notFound`, whatever its reason, so a reader cannot tell a withheld picture from a missing one.
 5. Return the stored bytes and their `CardBlobRef`, without `url` or `urlExpiresAt`.
