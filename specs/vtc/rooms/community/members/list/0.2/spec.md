@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-**VTC Rooms — Community — Members — List** returns, a page at a time, the members of one room the community owns — offered, admitted, suspended or removed — with their actions and expiry. A separate, paged read rather than part of [`vtc/rooms/community/get`](../../../../../../vtc/rooms/community/get/0.5/spec.md), because a community room may admit the whole community.
+**VTC Rooms — Community — Members — List** returns, a page at a time, the members of one room the community owns — offered, admitted, suspended or removed — with their actions and expiry. A separate, paged read rather than part of [`vtc/rooms/community/get`](../../../../../../vtc/rooms/community/get/0.6/spec.md), because a community room may admit the whole community.
 
 This is the **owner's** record, read by the owner's administrators. The community never reads it when it serves the room as host, so a list here grants nothing and gates nothing: who may act in the room is decided by the room's credential chains alone.
 

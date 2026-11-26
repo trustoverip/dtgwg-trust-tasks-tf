@@ -5363,6 +5363,13 @@ macro_rules! d_RoomProfile_489d8c74 {
 }
 pub(crate) use d_RoomProfile_489d8c74;
 
+macro_rules! d_RoomRecordMembers_17e99b43 {
+    () => {
+        "\"RoomRecordMembers\":{\"description\":\"The record members a community-owned room's profile lists: the optional `SealedRecordBody` members its writers may use beyond the base set, as a set (`RoomProfile.recordMembers`, rooms/_shared/0.2). Defined values there: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`, `height`, `preview`. `kind`, `inReplyTo` and `writtenAt` are what a room used as a conversation needs for replies, reactions and the order of its messages. The community writes them into the room's profile through its VTA, as the room's owner; a value a writer does not know grants it nothing.\",\"items\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9]*$\",\"type\":\"string\"},\"maxItems\":32,\"minItems\":1,\"title\":\"RoomRecordMembers\",\"type\":\"array\",\"uniqueItems\":true}"
+    };
+}
+pub(crate) use d_RoomRecordMembers_17e99b43;
+
 macro_rules! d_RoomRevocation_40f8434e {
     () => {
         "\"RoomRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.\",\"properties\":{\"kind\":{\"const\":\"room\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"revokedAt\"],\"title\":\"RoomRevocation\",\"type\":\"object\"}"
