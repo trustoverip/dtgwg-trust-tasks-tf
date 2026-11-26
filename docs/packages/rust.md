@@ -35,32 +35,48 @@ A schema can give an optional member three meanings: absent, present and empty
 (`[]`, `{}`), and present as `null`. `acl/update` 0.3 reads `"label": null` as
 "clear the label" and an absent `label` as "leave it unchanged". typify's own
 output folds these together (an empty `Vec` is skipped on the way out, and a
-`null` is read as `None`, even where the schema has no null form), so
-`trust-tasks-build` rewrites every optional member's field after typify runs
-(`trust-tasks-build/src/presence.rs`):
+`null` is read as `None`), so `trust-tasks-build` rewrites the optional
+members' fields after typify runs (`trust-tasks-build/src/presence.rs`):
 
 | Optional member's schema | Field type | absent | `null` | a value |
 |---|---|---|---|---|
-| array or map | `Option<Vec<T>>` / `Option<Map>` | `None` | refused | `Some(v)`, `[]` included |
+| array or map | `Option<Vec<T>>` / `Option<Map>` | `None` | `None` | `Some(v)`, `[]` included |
 | admits `null` | `Option<Option<T>>` | `None` | `Some(None)` | `Some(Some(v))` |
 | `{"type": "null"}` | `Option<()>` | `None` | `Some(())` | — |
 | `true`, `{}` or annotations only | `Option<Option<Value>>` | `None` | `Some(None)` | `Some(Some(v))` |
-| anything else | `Option<T>`, unchanged | `None` | **refused** | `Some(v)` |
+| anything else | `Option<T>`, unchanged | `None` | `None` | `Some(v)` |
 
-Decoding is strict: a `null` is accepted exactly where the member's schema
-admits one. `{"subject": "…", "purposes": null}` on `acl/update` 0.3 ("There
-is no null form") is refused with `invalid type: null, expected a value (this
-optional member has no null form: leave it out instead)`; it used to be read
-as absent, "leave unchanged". Whether a schema admits `null` is decided from
-`type`, `const`, `enum`, `oneOf` / `anyOf` / `allOf`, `$ref` and a `not` of
-exactly `null`; a schema those keywords don't settle (no `type`, say) is taken
-to admit it, so the generator can keep a `null` the schema would refuse but
-never refuses one it accepts. A `$ref` is read with JSON Schema 2020-12
+**Decoding does not refuse a `null` the schema forbids; schema validation
+does.** On an optional member with no null form, a `null` reads as absent:
+`{"subject": "…", "purposes": null}` on `acl/update` 0.3 ("There is no null
+form") decodes as "leave unchanged" and re-encodes without `purposes`. This is
+the decision recorded in [`runtime-parity.md`](../runtime-parity.md) for all
+four runtimes: such a `null` is refused by payload-schema validation, not by
+typed decoding. In Rust that means validating the payload **as received**:
+
+- `consume_dispatched` validates the received payload (`PayloadPolicy::Validate`)
+  before decoding it, so it refuses the document `malformedRequest`;
+- `ValidatedPayload::validate_value` on the received payload refuses it;
+- the typed `consume_inbound::<P>` does **not**: it validates `P` re-encoded,
+  from which the `null` is already gone. A typed consumer that must refuse it
+  calls `P::validate_value` on the received payload before decoding.
+
+(`trust-tasks-rs/tests/member_presence.rs` pins all three.) Refusing it at
+decode instead was tried in the change that introduced these shapes and
+dropped before release: a `deserialize_with` on each of the ~14,600 such
+fields in the prebuilt tree cost about 2 GiB of compiler memory, and it made
+Rust the only runtime refusing without a validator.
+
+Whether a schema admits `null` is decided from `type`, `const`, `enum`,
+`oneOf` / `anyOf` / `allOf`, `$ref` and a `not` of exactly `null`; a schema
+those keywords don't settle (no `type`, say) is taken to admit it, so the
+generator can keep a `null` the schema would refuse (validation still refuses
+it) but never loses one it accepts. A `$ref` is read with JSON Schema 2020-12
 semantics (its siblings apply too), which every registry schema uses. A `true`
 member is treated like `{}`: any value, `null` included.
 
-Generation fails rather than guess where that guarantee could break, and the
-error names the member:
+Generation fails rather than guess where a `null` the schema accepts could be
+lost (read as absent), and the error names the member:
 
 - A member that admits `null` but that typify renders as a bare collection
   instead of an `Option` (a type-less `{"additionalProperties": …}`, say). The
@@ -75,10 +91,12 @@ error names the member:
   description onto two fields, the tag read back off one copy also accounts
   for the other.
 
-Each optional field reads through one of two helpers, `present` (the member
-admits `null`) or `not_null` (it doesn't), and is skipped on the way out only
-when it is `None`, so a decoded document re-encodes with the same members. In
-`trust-tasks-rs` the helpers are the crate-private `specs::__presence`, shared
+A member that admits `null` reads through one helper, `present`, which maps a
+present member, `null` included, to `Some`; the other rewritten fields
+(arrays and maps) need none. Every rewritten field is skipped on the way out
+only when it is `None`, so a decoded document re-encodes with the same members
+(except a forbidden `null`, which reads as absent). In `trust-tasks-rs` the
+helper is the crate-private `specs::__presence`, shared
 by every prebuilt module (the leading underscores keep it apart from the family
 modules beside it: a slug segment starts with a letter); a module an
 application generates carries its own private copy, so it needs nothing new
@@ -101,8 +119,7 @@ The builder setters take the field's type through `TryInto`, so:
   it in `Some`.
 - Reading: `p.label.flatten()` gives the value when you don't care why there
   isn't one; match `Some(None)` to see an explicit `null`.
-- Any other optional member keeps its `Option<T>` setter and type; only its
-  decoding changed (a `null` is refused).
+- Any other optional member keeps its `Option<T>` setter, type and decoding.
 
 These are public type changes, so the change that introduced them was a
 breaking release of `trust-tasks-rs`, and an application generating its own

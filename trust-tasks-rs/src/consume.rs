@@ -396,10 +396,18 @@ pub trait PayloadValidator {
 ///
 /// What it has *not* cleared is everything typify cannot express in a Rust
 /// type — `minProperties`, `minItems` on an optional array, conditional
-/// subschemas. That residue is what [`Validate`](Self::Validate) catches, and
-/// it is why the choice is a required argument rather than a default: a
-/// consumer should decide knowingly whether that residue matters to it, not
-/// discover later that it never checked.
+/// subschemas, a `null` on an optional member whose schema has no null form
+/// (decoding reads it as absent). That residue is what
+/// [`Validate`](Self::Validate) catches, and it is why the choice is a
+/// required argument rather than a default: a consumer should decide
+/// knowingly whether that residue matters to it, not discover later that it
+/// never checked.
+///
+/// [`consume_dispatched`] validates the payload as received. The typed
+/// [`consume_inbound`] validates `P` re-encoded, so it cannot see what
+/// decoding into `P` already dropped, such as that forbidden `null`; a typed
+/// consumer that must refuse it validates the received payload itself
+/// (`ValidatedPayload::validate_value`, `validate` feature) before decoding.
 ///
 /// (The TypeScript binding is in a different position entirely — its types are
 /// erased at runtime, so *nothing* is enforced without a validator. Both
